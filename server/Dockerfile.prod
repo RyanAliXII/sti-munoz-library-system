@@ -1,0 +1,21 @@
+FROM golang:1.19.3-alpine3.16 as golang-builder
+
+WORKDIR /go/prod
+# ENV NODE_ENV production
+COPY . .
+
+RUN go mod download && \
+    go build -o ./app/cmd/main
+
+EXPOSE 8080
+
+FROM alpine:3.16
+WORKDIR /prod/
+COPY --from=golang-builder /go/prod/app/cmd/main ./app/cmd/
+COPY --from=golang-builder /go/prod/.env ./
+
+CMD [ "app/cmd/main" ]
+
+
+
+
