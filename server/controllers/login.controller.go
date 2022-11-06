@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"net/http"
-	"ryanali12/web_service/app/http/definitions"
-	"ryanali12/web_service/app/repository"
+	"slim-app/server/app/http/definitions"
+	"slim-app/server/app/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

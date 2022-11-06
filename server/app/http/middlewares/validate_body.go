@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"net/http"
-	"ryanali12/web_service/app/http/definitions"
+	"slim-app/server/app/http/definitions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

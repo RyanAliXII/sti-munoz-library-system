@@ -1,4 +1,4 @@
-module ryanali12/web_service
+module slim-app/server
 
 go 1.19
 

@@ -2,27 +2,39 @@ version: '3.8'
 services:
   slim_server:
       container_name: slim-server
-      image: slim-server
+      image: sti-munoz/slim-server
       ports: 
         - '5200:5200'
       volumes:
         - ./server:/go/dev
-  slim_spa: 
-    container_name: slim-spa
-    image: slim-spa
+      depends_on:
+        - postgres
+  slim_spa_admin: 
+    container_name: slim-spa-admin
+    image: sti-munoz/slim-spa-admin
     ports:
     - '5201:5201'
     volumes:
-        - ./spa:/node/dev
+        - ./spa-admin:/node/dev
     depends_on:
       - slim_server
-  # mysql_db: 
-  #   container_name: mysql_db
-  #   restart: always
-  #   image: mysql:8.0.30
-  #   ports:
-  #     - '3306:3306'
-  #   volumes:
-  #     - ./database:/var/lib/mysql
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: password
+  slim_spa_client: 
+    container_name: slim-spa-client
+    image: sti-munoz/slim-spa-client
+    ports:
+    - '5202:5202'
+    volumes:
+        - ./spa-client:/node/dev
+    depends_on:
+      - slim_server
+  postgres: 
+    container_name: postgreSQL
+    restart: always
+    image: postgres:15.0-alpine
+    ports:
+      - '5203:5432'
+    volumes:
+      - ./database:/var/lib/postgresql/data 
+    environment:
+      POSTGRES_USER: slimappdb
+      POSTGRES_PASSWORD: password

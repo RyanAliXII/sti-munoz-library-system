@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"ryanali12/web_service/app/models"
+	"slim-app/server/app/models"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
