@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { BaseProps } from "../definitions/interfaces/Props";
 import LogoutButton from "./LogoutButton";
@@ -10,8 +10,8 @@ const Header = ({ children }: BaseProps) => {
       setVisibility((visible)=>!visible)
     }
   return (
-    <header className="bg-white">
-      <div className="container mx-auto px-4 py-8 flex items-center">
+    <header className="fixed top-0 w-full bg-white">
+      <div className="container mx-auto px-4 h-20 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
         <div className="flex items-center">
             <img className="rounded-full w-10 h-10" src={`https://avatars.dicebear.com/api/initials/${user.firstname}${user.lastname}.svg?background=%230000ff`} alt="profile-image"></img>
@@ -24,7 +24,7 @@ const Header = ({ children }: BaseProps) => {
               </svg>
             </button>
         </div>
-            <div className={ visible ? "absolute right-2 top-10 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" : "hidden absolute right-2 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"  } role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabIndex={-1}>
+            <div className={ visible ? "absolute right-2 top-12 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" : "hidden absolute right-2 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"  } role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabIndex={-1}>
             <div className="py-1" role="none">
               <div className="flex flex-col px-4 py-2 gap-1">
                 <small className="font-medium">{user.firstname + " " + user.lastname}</small>
@@ -34,15 +34,11 @@ const Header = ({ children }: BaseProps) => {
               <a href="#" className="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabIndex={-1} id="menu-item-1">Support</a>
               <a href="#" className="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabIndex={-1} id="menu-item-2">License</a>
               <LogoutButton />
-              {/* <form method="POST" action="#" role="none">
-                <button type="submit" className="text-gray-700 block w-full px-4 py-2 text-left text-sm" role="menuitem" tabIndex={-1} id="menu-item-3">Sign out</button>
-              </form> */}
             </div>
        </div>
         </div>
         </div>
       </div>
-      <hr />
     </header>
   );
 };

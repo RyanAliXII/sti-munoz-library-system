@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { BaseProps } from "../definitions/interfaces/Props";
 import LogoutButton from "./LogoutButton";
@@ -42,7 +42,6 @@ const Header = ({ children }: BaseProps) => {
         </div>
         </div>
       </div>
-      <hr />
     </header>
   );
 };

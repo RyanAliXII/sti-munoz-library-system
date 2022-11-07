@@ -9,8 +9,12 @@ import Profile from './pages/Profile';
 import './assets/css/tailwind.css'
 import ProtectedRoutes from './components/ProtectedRoutes';
 import PublicRoutes from './components/PublicRoutes';
+import { useEffect } from 'react';
 function App() {
 const msalInstance = new PublicClientApplication(msalConfig)
+    useEffect(()=>{
+      document.title = "Client"
+    },[])
 const router = createBrowserRouter(
     createRoutesFromElements(
       <>        

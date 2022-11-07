@@ -1,8 +1,6 @@
 import { loginRequest } from "../definitions/configs/authConfig";
 import { useMsal } from "@azure/msal-react";
-// import { useContext } from "react";
-// import { AuthContext } from "../contexts/AuthContext";
-
+import {FaUniversalAccess} from 'react-icons/fa'
 
 const Login = () => {
   const { instance: msalClient } = useMsal();
@@ -28,8 +26,8 @@ const Login = () => {
                   alt="tailus logo"
                 />
                 <h2 className="mb-8 text-2xl text-cyan-900 font-bold">
-                  Sign in to browse
-                  <br /> SLiM book catalog and reserved them.
+                  Sign in to manage
+                  <br /> School's Library
                 </h2>
               </div>
               <div className="mt-16 grid space-y-4">
@@ -51,8 +49,21 @@ const Login = () => {
                       />
                     </svg>
                     <span className="block w-max font-semibold tracking-wide text-gray-700 text-sm transition duration-300 group-hover:text-blue-600 sm:text-base">
-                      Student and Staff Login
+                    Library Staff Login
                     </span>
+                    
+                  </div>
+                </button>
+                <button
+                  className="group h-12 px-6 border-2 border-gray-300 rounded-full transition duration-300 
+     hover:border-blue-400 focus:bg-blue-50 active:bg-blue-100 bg-blue-500"
+                >
+                  <div className="relative flex items-center space-x-4 justify-center">
+                  <FaUniversalAccess className="text-white text-2xl"/>
+                    <span className="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-blue-600 sm:text-base">
+                        Root User
+                    </span>
+                    
                   </div>
                 </button>
               </div>
