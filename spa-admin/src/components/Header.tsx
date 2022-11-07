@@ -14,7 +14,7 @@ const Header = ({ children }: BaseProps) => {
       <div className="container mx-auto px-4 h-20 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
         <div className="flex items-center">
-            <img className="rounded-full w-10 h-10" src={`https://avatars.dicebear.com/api/initials/${user.firstname}${user.lastname}.svg?background=%230000ff`} alt="profile-image"></img>
+            <img className="rounded-full w-10 h-10" src={`https://avatars.dicebear.com/api/initials/${user.firstname}${user.lastname}.svg?background=1F2937`} alt="profile-image"></img>
         </div>
         <div className="flex items-center relative text-left">
           <div>
