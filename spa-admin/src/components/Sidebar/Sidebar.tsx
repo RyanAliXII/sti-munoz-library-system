@@ -66,6 +66,21 @@ const Sidebar = () => {
           <small className="ml-12">Scanner</small>
         </NavLink>
       </Drawer>
+      <Drawer
+        drawerButton={
+          <DrawerButton
+            icon={<MdOutlineLibraryBooks className="text-xl" />}
+            text="Transactions"
+          />
+        }
+      >
+        <NavLink className={(active) => isNavActive(active.isActive)} to={"/"}>
+          <small className="ml-12">Transactions</small>
+        </NavLink>
+        <NavLink className={(active) => isNavActive(active.isActive)} to={"/"}>
+          <small className="ml-12">Transact</small>
+        </NavLink>
+      </Drawer>
       <NavLink className="w-full h-8 flex items-center" to={"/"}>
         <div className="ml-5 flex items-center h-11 gap-1">
           <MdOutlineInventory className="text-xl"></MdOutlineInventory>

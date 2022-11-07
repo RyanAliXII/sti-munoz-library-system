@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import {AuthProvider} from './contexts/AuthContext'
 import {PublicClientApplication} from "@azure/msal-browser"
 import {MsalProvider} from '@azure/msal-react';
-import msalConfig from './definitions/configs/authConfig'
+import msalConfig from './definitions/configs/msal.config'
 import './assets/css/tailwind.css'
 import ProtectedRoutes from './components/ProtectedRoutes';
 import PublicRoutes from './components/PublicRoutes';

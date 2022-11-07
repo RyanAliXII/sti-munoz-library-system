@@ -1,14 +1,11 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { BaseProps } from "../definitions/interfaces/Props";
+import useToggle from "../hooks/useToggle";
 import LogoutButton from "./LogoutButton";
 
-const Header = ({ children }: BaseProps) => {
+const Header = () => {
     const {user} = useContext(AuthContext)
-    const [visible, setVisibility] = useState(false)
-    const toggleDropdown = ()=>{
-      setVisibility((visible)=>!visible)
-    }
+    const {toggle, value:visible} = useToggle(false)
   return (
     <header className="fixed top-0 w-full bg-white">
       <div className="container mx-auto px-4 h-20 flex items-center">
@@ -18,7 +15,7 @@ const Header = ({ children }: BaseProps) => {
         </div>
         <div className="flex items-center relative text-left">
           <div>
-            <button type="button"  onClick={toggleDropdown} className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700 shadow-sm" id="menu-button" aria-expanded="true" aria-haspopup="true">
+            <button type="button"  onClick={toggle} className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700 shadow-sm" id="menu-button" aria-expanded="true" aria-haspopup="true">
               <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
               </svg>

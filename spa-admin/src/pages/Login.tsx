@@ -1,4 +1,4 @@
-import { loginRequest } from "../definitions/configs/authConfig";
+import { loginRequest } from "../definitions/configs/msal.config";
 import { useMsal } from "@azure/msal-react";
 import {FaUniversalAccess} from 'react-icons/fa'
 

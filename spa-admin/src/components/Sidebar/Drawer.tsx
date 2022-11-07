@@ -2,17 +2,16 @@ import { useState } from "react";
 import {
   DrawerButtonProps,
   DrawerProps,
-} from "../../definitions/interfaces/Props";
+} from "../../definitions/props.definition";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
+import useToggle from "../../hooks/useToggle";
 const Drawer = ({ children, drawerButton }: DrawerProps) => {
-  const [visible, setVisibility] = useState(false);
+  const {toggle, value: visible} = useToggle()
   return (
     <div className="w-full">
       <div
         className="w-full cursor-pointer flex items-center justify-between"
-        onClick={() => {
-          setVisibility((prev) => !prev);
-        }}
+        onClick={toggle}
       >
         {drawerButton}{" "}
         {visible ? (

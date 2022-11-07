@@ -1,10 +1,10 @@
 import { createContext, useEffect, useState } from "react";
-import {BaseProps } from "../definitions/interfaces/Props";
+import {BaseProps } from "../definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
-import { AuthContextState } from "../definitions/interfaces/Contexts";
+import { AuthContextState } from "../definitions/contexts.definition";
 import Loader from "../components/Loader";
 import axios from "axios";
-import { User } from "../definitions/configs/authConfig";
+import { User } from "../definitions/configs/msal.config";
 import {
   AccountInfo,
   EventType,
