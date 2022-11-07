@@ -6,8 +6,8 @@ import {PublicClientApplication} from "@azure/msal-browser"
 import {MsalProvider} from '@azure/msal-react';
 import msalConfig from './definitions/configs/msal.config'
 import './assets/css/tailwind.css'
-import ProtectedRoutes from './components/ProtectedRoutes';
-import PublicRoutes from './components/PublicRoutes';
+import ProtectedRoutes from './components/auth/ProtectedRoutes';
+import PublicRoutes from './components/auth/PublicRoutes';
 import { useEffect } from 'react';
 import Accession from './pages/protected/books/Accession';
 import BookCreator from './pages/protected/books/BookCreator';
@@ -24,7 +24,7 @@ const router = createBrowserRouter(
             <Route element={<ProtectedRoutes/>}>
                <Route path="/dashboard" element={<Dashboard/>}/>
                <Route path="/books/create" element={<BookCreator/>}/>
-               <Route path="/books/accessions" element={<Accession/>}/>
+               <Route path="/books/accession" element={<Accession/>}/>
                <Route path="/books/authors" element={<AuthorCreator/>}/>
                
             </Route>
