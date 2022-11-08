@@ -1,7 +1,9 @@
 import { NavLink } from "react-router-dom";
 import Drawer, { DrawerButton } from "./Drawer";
-import { SidebarNavItem } from "../../definitions/types";
-import { SidebarNavigationItems } from "../../definitions/global.definitions";
+import { MdOutlineLibraryBooks, MdOutlineInventory, MdOutlineDashboard } from "react-icons/md";
+import { RiReservedLine } from "react-icons/ri";
+import {CgArrowsExchange} from 'react-icons/cg'
+import { ReactNode } from "react";
 const Sidebar = () => {
   return (
     <div className="flex flex-col gap-3">
@@ -54,11 +56,95 @@ const NavigationDrawer = (item: SidebarNavItem) => {
     </Drawer>
   );
 };
-const isNavActive = (active: boolean) => {
+
+const isNavActive = (active: boolean):string => {
   if (active) {
     return "w-full h-8 text-gray-800 bg-white text-bg-gray-800 flex items-center rounded-sm font-semibold";
   } else {
     return "w-full h-8 text-gray-400 flex items-center";
   }
 };
+
+
+export type SidebarNavItem = {
+  to: string
+  text?: string
+  items:SidebarNavItem[] | []
+  icon?: ReactNode | JSX.Element | JSX.Element[] 
+}
+
+export const SidebarNavigationItems:SidebarNavItem[] = 
+[
+    {
+        text:"Dashboard",
+        to:"/dashboard",
+        icon:<MdOutlineDashboard className="text-xl"/>,
+        items:[]
+    },
+    {
+        text:"Books",
+        to:"",
+        icon:<MdOutlineLibraryBooks className="text-xl"/>,
+        items:[
+            {
+                text:"Create book",
+                to:"/books/create",
+                items:[]
+            },
+            {
+                text:"Accession",
+                to:"/books/accession",
+                items:[]
+            },
+            {
+                text:"Authors",
+                to:"/",
+                items:[]
+            },
+           
+            {
+                text:"Cutter's Table",
+                to:"/",
+                items:[]
+            },
+            {
+                text:"Dewey Decimal Class",
+                to:"/",
+                items:[]
+            },
+            
+        ]
+    },
+    {
+        text:"Inventory",
+        to:"/",
+        icon:<MdOutlineInventory className="text-xl"/>,
+        items:[]
+    },
+    {
+        text:"Reservation",
+        to:"/",
+        icon:<RiReservedLine className="text-xl"/>,
+        items:[]
+    },
+    {
+        text:"Transaction",
+        to:"",
+        icon:<CgArrowsExchange className="text-xl"/>,
+        items:[
+            {
+                text:"Transact",
+                to:"",
+                items:[]
+            },
+            {
+                text:"View Transaction",
+                to:"",
+                items:[]
+            },
+        ]
+    },
+    
+    
+]
 export default Sidebar;

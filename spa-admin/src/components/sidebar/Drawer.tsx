@@ -1,11 +1,14 @@
-import {
-  DrawerButtonProps,
-  DrawerProps,
-} from "../../definitions/props.definition";
+// import {
+//   DrawerButtonProps,
+//   DrawerProps,
+// } from "../../definitions/props.definition";
+import { ReactNode } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
+import { BaseProps } from "../../definitions/props.definition";
 import useToggle from "../../hooks/useToggle";
 
 const Drawer = ({ children, drawerButton }: DrawerProps) => {
+  
   const { toggle, value: visible } = useToggle();
   return (
     <div className="w-full">
@@ -32,5 +35,11 @@ export const DrawerButton = ({ icon, text }: DrawerButtonProps) => {
   );
 };
 
-
+export interface DrawerProps extends BaseProps {
+  drawerButton: ReactNode | JSX.Element | JSX.Element[];
+}
+export interface DrawerButtonProps extends BaseProps {
+  icon: ReactNode | JSX.Element | JSX.Element[];
+  text: string;
+}
 export default Drawer;
