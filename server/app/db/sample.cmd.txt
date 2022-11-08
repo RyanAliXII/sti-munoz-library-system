@@ -2,7 +2,6 @@
 migrate create -ext sql -dir app/db/migrations -seq  create_app_schema
 migrate -path app/db/migrations -database postgres://ADMIN:password@slim_postgres/slim-db?sslmode=disable up
 
-#
 
 
 

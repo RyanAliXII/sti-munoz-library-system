@@ -17,18 +17,26 @@ Clone the project
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd slim-app
 ```
 
 Build containers 
 
 ```bash
-    cd spa
-    docker build -t slim-spa . 
-    cd .. 
-    cd server 
-    docker build -t slim-server . 
 
+    docker build -t sti-munoz/slim-spa-admin ./spa-admin
+   
+    docker build -t sti-munoz/slim-spa-client ./spa-client
+
+    docker build -t sti-munoz/slim-server ./server
+
+```
+
+ Create .env file and copy the contents of .env.sample. Add values.
+
+```bash
+  
+   touch .env
 ```
 
  Go to project root directory and run
@@ -54,11 +62,9 @@ Go to the project directory
 Go to each services folder
 
 ```bash
-    cd spa
-    npm run dev. 
-    cd .. 
-    cd server 
-    go run main.go
+    in spa-admin folder run :   npm run dev
+    in spa-client folder run :   npm run dev
+    in server folder: go run main.go
 
 ```
 
