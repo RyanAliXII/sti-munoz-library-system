@@ -45,7 +45,7 @@ Build containers
     
     docker compose up
 ```
-## Run Locally without docker
+## Run Locally without Docker
 
 Clone the project
 
