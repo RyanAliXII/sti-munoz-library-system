@@ -6,7 +6,8 @@ COPY . .
 
 RUN go mod download && \
     go build -o ./app/cmd/main &&\
-    go install github.com/cosmtrek/air@latest
+    go install github.com/cosmtrek/air@latest &&\
+    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 EXPOSE 5200
   

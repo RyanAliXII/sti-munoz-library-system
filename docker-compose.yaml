@@ -8,7 +8,7 @@ services:
       volumes:
         - ./server:/go/dev
       depends_on:
-        - postgres
+        - slim_postgres
   slim_spa_admin: 
     container_name: slim-spa-admin
     image: sti-munoz/slim-spa-admin
@@ -27,8 +27,8 @@ services:
         - ./spa-client:/node/dev
     depends_on:
       - slim_server
-  postgres: 
-    container_name: postgreSQL
+  slim_postgres: 
+    container_name: slim-postgres
     restart: always
     image: postgres:15.0-alpine
     ports:
@@ -36,5 +36,21 @@ services:
     volumes:
       - ./database:/var/lib/postgresql/data 
     environment:
-      POSTGRES_USER: slimappdb
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+  slim_pgadmin:
+    container_name: slim-pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - slim_postgres
+    volumes:
+    - ./pgadmin:/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5204:80"
+
+    
