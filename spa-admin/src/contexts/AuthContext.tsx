@@ -1,10 +1,9 @@
 import { createContext, useEffect, useState } from "react";
 import {BaseProps } from "../definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
-import { AuthContextState } from "../definitions/contexts.definition";
 import Loader from "../components/Loader";
 import axios from "axios";
-import { User } from "../definitions/configs/msal.config";
+import { User} from "../definitions/types";
 import {
   AccountInfo,
   EventType,
@@ -13,6 +12,14 @@ import {
 } from "@azure/msal-browser";
 
 export const AuthContext = createContext({} as AuthContextState);
+
+export type AuthContextState = {
+  authenticated: boolean;
+  setAuthenticated: Function;
+  loading?: boolean;
+  user: User;
+};
+
 export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
   const [authenticated, setAuthenticated] = useState(false);
@@ -95,3 +102,4 @@ export const AuthProvider = ({ children }: BaseProps) => {
     </AuthContext.Provider>
   );
 };
+

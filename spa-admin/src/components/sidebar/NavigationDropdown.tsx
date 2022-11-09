@@ -1,13 +1,9 @@
-// import {
-//   DrawerButtonProps,
-//   DrawerProps,
-// } from "../../definitions/props.definition";
 import { ReactNode } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { BaseProps } from "../../definitions/props.definition";
 import useToggle from "../../hooks/useToggle";
 
-const Drawer = ({ children, drawerButton }: DrawerProps) => {
+export const NavigationDropdown = ({ children, drawerButton }: NavigationDropdownProps) => {
   
   const { toggle, value: visible } = useToggle();
   return (
@@ -27,7 +23,7 @@ const Drawer = ({ children, drawerButton }: DrawerProps) => {
     </div>
   );
 };
-export const DrawerButton = ({ icon, text }: DrawerButtonProps) => {
+export const NavigationDropdownButton = ({ icon, text }: NavigationDropdownButtonProps) => {
   return (
     <div className="ml-5 flex items-center h-11 gap-1">
       {icon} <span>{text}</span>
@@ -35,11 +31,11 @@ export const DrawerButton = ({ icon, text }: DrawerButtonProps) => {
   );
 };
 
-export interface DrawerProps extends BaseProps {
+export interface NavigationDropdownProps extends BaseProps {
   drawerButton: ReactNode | JSX.Element | JSX.Element[];
 }
-export interface DrawerButtonProps extends BaseProps {
+export interface NavigationDropdownButtonProps extends BaseProps {
   icon: ReactNode | JSX.Element | JSX.Element[];
   text: string;
 }
-export default Drawer;
+export default NavigationDropdown;

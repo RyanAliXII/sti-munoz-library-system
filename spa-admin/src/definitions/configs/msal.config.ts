@@ -15,12 +15,5 @@ const msalConfig: Configuration = {
 export const loginRequest: PopupRequest = {
   scopes: ["User.Read"],
 };
-export type User = {
-  firstname?: string;
-  lastname?: string;
-  email?: string;
-  id: string;
-  image?: Blob;
-};
 
 export default msalConfig;
