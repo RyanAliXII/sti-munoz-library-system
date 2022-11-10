@@ -1,1 +1,3 @@
 /database
+/pg-admin
+.env
