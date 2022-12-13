@@ -1,6 +1,6 @@
 import { useState } from "react";
 const useToggle = (initial?: boolean) => {
-    const [bool, setBool] = useState(initial ?? false) 
+    const [bool, setBool] = useState<boolean>(initial ?? false) 
     return {
         value: bool,
         toggle:()=>{
@@ -8,5 +8,13 @@ const useToggle = (initial?: boolean) => {
         }
     }
 };
-
+export const useToggleManual = (initial?: boolean) => {
+    const [bool, setBool] = useState<boolean>(initial ?? false) 
+    return {
+        value: bool,
+        set:(boolParam: boolean)=>{
+            setBool(prev=> boolParam)
+        }
+    }
+};
 export default useToggle

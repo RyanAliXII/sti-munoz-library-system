@@ -11,7 +11,7 @@ const Header = () => {
       <div className="container mx-auto px-4 h-20 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
         <div className="flex items-center">
-            <img className="rounded-full w-10 h-10" src={`https://avatars.dicebear.com/api/initials/${user.firstname}${user.lastname}.svg?background=1F2937`} alt="profile-image"></img>
+            <img className="rounded-full w-10 h-10" src={`https://ui-avatars.com/api/?name=${user.firstname}${user.lastname}&background=2563EB&color=fff`} alt="profile-image"></img>
         </div>
         <div className="flex items-center relative text-left">
           <div>
@@ -27,9 +27,6 @@ const Header = () => {
                 <small className="font-medium">{user.firstname + " " + user.lastname}</small>
                 <small>{user.email}</small>
               </div>
-              {/* <a href="#" className="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabIndex={-1} id="menu-item-0">Account settings</a>
-              <a href="#" className="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabIndex={-1} id="menu-item-1">Support</a>
-              <a href="#" className="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabIndex={-1} id="menu-item-2">License</a> */}
               <LogoutButton />
             </div>
        </div>

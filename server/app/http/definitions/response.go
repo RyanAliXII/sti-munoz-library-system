@@ -7,8 +7,8 @@ type HttpResponse struct {
 	Message string                 `json:"message"`
 }
 
-func Fail(code int, data map[string]interface{}, message string) HttpResponse {
-	return HttpResponse{
+func Fail(code int, data map[string]interface{}, message string) (int, HttpResponse) {
+	return code, HttpResponse{
 		Status:  "fail",
 		Code:    code,
 		Data:    data,
@@ -16,8 +16,8 @@ func Fail(code int, data map[string]interface{}, message string) HttpResponse {
 	}
 }
 
-func Success(code int, data map[string]interface{}, message string) HttpResponse {
-	return HttpResponse{
+func Success(code int, data map[string]interface{}, message string) (int, HttpResponse) {
+	return code, HttpResponse{
 		Status:  "success",
 		Code:    code,
 		Data:    data,

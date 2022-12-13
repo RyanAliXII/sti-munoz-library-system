@@ -9,7 +9,7 @@ export const NavigationDropdown = ({ children, drawerButton }: NavigationDropdow
   return (
     <div className="w-full">
       <div
-        className="w-full cursor-pointer flex items-center justify-between"
+        className="w-full cursor-pointer flex items-center justify-between4"
         onClick={toggle}
       >
         {drawerButton}{" "}

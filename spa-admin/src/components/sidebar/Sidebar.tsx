@@ -14,7 +14,7 @@ const NavigationItems = () => {
   return (
     <>
       {SidebarNavigationItems.map((item) => {
-        console.log(item.text);
+      
         if (item.items.length > 0) {
           return NavigationDrawer(item);
         }
@@ -24,7 +24,7 @@ const NavigationItems = () => {
             to={item.to}
             key={item.text}
           >
-            <div className="ml-5 flex items-center h-11 gap-1">
+            <div className="ml-5 flex items-center h-11 gap-1 ">
               {item.icon} <span>{item.text}</span>
             </div>
           </NavLink>
@@ -56,9 +56,9 @@ const NavigationDrawer = (item: SidebarNavItem) => {
 
 const isNavActive = (active: boolean):string => {
   if (active) {
-    return "w-full h-8 text-gray-800 bg-white text-bg-gray-800 flex items-center rounded-sm font-semibold";
+    return "w-full h-8 flex items-center rounded-sm font-semibold bg-blue-100 text-blue-600 rounded";
   } else {
-    return "w-full h-8 text-gray-400 flex items-center";
+    return "w-full h-8 flex items-center";
   }
 };
 

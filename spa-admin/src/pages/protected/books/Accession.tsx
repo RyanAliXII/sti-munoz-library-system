@@ -2,9 +2,12 @@ import React from 'react';
 
 const Accession = () => {
     return (
-        <div>
-            <h1>Accession List</h1>
+   
+    <div className="w-full h-full">
+        <h1 className="text-3xl font-bold ml-9">Accessions</h1>
+            
         </div>
+      
     );
 };
 

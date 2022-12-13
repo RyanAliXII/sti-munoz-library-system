@@ -24,7 +24,7 @@ export const SidebarNavigationItems:SidebarNavItem[] =
           icon:<MdOutlineLibraryBooks className="text-xl"/>,
           items:[
               {
-                  text:"Create book",
+                  text:"Add book",
                   to:"/books/create",
                   items:[]
               },

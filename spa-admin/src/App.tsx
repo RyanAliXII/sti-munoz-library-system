@@ -10,7 +10,7 @@ import ProtectedRoutes from './components/auth/ProtectedRoutes';
 import PublicRoutes from './components/auth/PublicRoutes';
 import { useEffect } from 'react';
 import Accession from './pages/protected/books/Accession';
-import BookCreator from './pages/protected/books/BookCreator';
+import BookAdd from './pages/protected/books/BookAdd';
 import AuthorCreator from './pages/protected/books/AuthorCreator';
 function App() {
   useEffect(()=>{
@@ -23,7 +23,7 @@ const router = createBrowserRouter(
             {/* <Route path='/'  element={<h1>Hello world </h1>}/>  */}
             <Route element={<ProtectedRoutes/>}>
                <Route path="/dashboard" element={<Dashboard/>}/>
-               <Route path="/books/create" element={<BookCreator/>}/>
+               <Route path="/books/create" element={<BookAdd/>}/>
                <Route path="/books/accession" element={<Accession/>}/>
                <Route path="/books/authors" element={<AuthorCreator/>}/>
                

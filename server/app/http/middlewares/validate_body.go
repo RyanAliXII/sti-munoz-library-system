@@ -12,7 +12,7 @@ func ValidateBody[Body any](ctx *gin.Context) {
 	var body Body
 	bindingErr := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if bindingErr != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, definitions.Fail(http.StatusBadRequest, gin.H{}, bindingErr.Error()))
+		ctx.AbortWithStatusJSON(definitions.Fail(http.StatusBadRequest, gin.H{}, bindingErr.Error()))
 		return
 	}
 	ctx.Next()

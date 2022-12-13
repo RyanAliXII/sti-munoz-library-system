@@ -4,9 +4,9 @@ import { BaseProps } from "../definitions/props.definition";
 
 const AdminBaseLayout = ({ children }: BaseProps) => {
   return (
-    <div>
+    <div className="font-DM">
       <Header />
-      <div className="fixed top-0 bg-gray-800 text-white hidden lg:block lg:w-52 lg:h-screen">
+      <div className="fixed top-28 bg-gray-50 hidden lg:block lg:w-52 lg:h-screen">
         <Sidebar />
       </div>
       <div className="w-full lg:w-full mt-24 flex">
