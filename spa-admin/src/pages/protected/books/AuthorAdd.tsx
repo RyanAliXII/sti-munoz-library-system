@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AuthorCreator = () => {
+const AuthorAdd = () => {
     return (
         <div>
             
@@ -8,4 +8,4 @@ const AuthorCreator = () => {
     );
 };
 
-export default AuthorCreator;
+export default AuthorAdd;
