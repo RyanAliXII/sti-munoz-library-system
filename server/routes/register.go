@@ -2,7 +2,7 @@ package routes
 
 import (
 	"slim-app/server/controllers"
-	routes "slim-app/server/routes/1"
+	routes "slim-app/server/routes/v1"
 
 	"github.com/gin-gonic/gin"
 )
