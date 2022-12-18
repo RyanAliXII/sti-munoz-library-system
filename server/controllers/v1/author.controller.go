@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"slim-app/server/app/http/definitions"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type Author struct {
@@ -15,6 +17,9 @@ type Author struct {
 type AuthorController struct{}
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
+	var body definitions.NewAuthorBody = definitions.NewAuthorBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	fmt.Println(body)
 	ctx.JSON(definitions.Success(http.StatusOK, gin.H{}, "Author added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {

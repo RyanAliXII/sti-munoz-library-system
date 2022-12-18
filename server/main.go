@@ -26,7 +26,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{SPA_ADMIN},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))

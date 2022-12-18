@@ -1,6 +1,7 @@
 package definitions
 
 type NewAuthorBody struct {
-	Firstname string `json:"firstname" binding:"required" `
-	Lastname  string `json:"lastname" binding:"required" `
+	GivenName  string `json:"givenName" binding:"required" `
+	MiddleName string `json:"middleName"`
+	Surname    string `json:"surname" binding:"required" `
 }

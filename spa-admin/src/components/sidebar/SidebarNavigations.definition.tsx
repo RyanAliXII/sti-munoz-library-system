@@ -35,9 +35,14 @@ export const SidebarNavigationItems:SidebarNavItem[] =
               },
               {
                   text:"Authors",
-                  to:"/",
+                  to:"/books/authors",
                   items:[]
               },
+              {
+                text:"Categories",
+                to:"/books/categories",
+                items:[]
+                },
              
               {
                   text:"Cutter's Table",
