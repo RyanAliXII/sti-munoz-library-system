@@ -81,8 +81,9 @@ import {
           </table>
          
         </div>
-        <EditAuthorModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
-        <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+        <AddCategoryModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+        <EditCategoryModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
+      
       </>
     );
   };
@@ -92,7 +93,7 @@ import {
     closeModal: () => void;
   }
   
-  const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
+  const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
      if(!isOpen) return null //; temporary fix for react-responsive modal bug
 
     return (
@@ -103,7 +104,10 @@ import {
         center
       >
       <form>
-        <div className="w-full h-28 mt-2">
+        <div className="w-full h-46 mt-2">
+        <div className="px-2 mb-3"> 
+          <h1 className="text-xl font-medium">New Category</h1>
+        </div>
           <div className="px-2">
             <Input
               labelText="Category name"
@@ -122,7 +126,7 @@ import {
     );
   };
 
-  const EditAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
+  const EditCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
    if(!isOpen) return null //; temporary fix for react-responsive modal bug
     return (
       <Modal
@@ -132,14 +136,17 @@ import {
         center
       >
       <form>
-        <div className="w-full h-28 mt-2">
+        <div className="w-full h-46">
+        <div className="px-2 mb-3"> 
+          <h1 className="text-xl font-medium">Edit Category</h1>
+        </div>
           <div className="px-2">
             <Input
               labelText="Category name"
               props={{ type: "text", name: "category" }}
             />
           </div>
-          <div className="flex gap-1 mt-2 p-2">
+          <div className="flex gap-1 p-2">
             <PrimaryButton>Update category</PrimaryButton>
             <LighButton props={{ onClick: closeModal }}>
               Cancel

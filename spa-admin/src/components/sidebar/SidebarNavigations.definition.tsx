@@ -29,11 +29,6 @@ export const SidebarNavigationItems:SidebarNavItem[] =
                   items:[]
               },
               {
-                  text:"Accession",
-                  to:"/books/accession",
-                  items:[]
-              },
-              {
                   text:"Authors",
                   to:"/books/authors",
                   items:[]
@@ -44,16 +39,6 @@ export const SidebarNavigationItems:SidebarNavItem[] =
                 items:[]
                 },
              
-              {
-                  text:"Cutter's Table",
-                  to:"/",
-                  items:[]
-              },
-              {
-                  text:"Dewey Decimal Class",
-                  to:"/",
-                  items:[]
-              },
               
           ]
       },
