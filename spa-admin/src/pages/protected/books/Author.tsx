@@ -9,10 +9,10 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { useToggleManual } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "../../../definitions/configs/axios";
 import LoadingBoundary from "../../../components/loader/LoadingBoundary";
-import { BaseSyntheticEvent} from "react";
+import { BaseSyntheticEvent } from "react";
 import { CreateAuthorSchema } from "./schema";
 import { useForm } from "../../../hooks/useForm";
 import { StatusCodes } from "http-status-codes";
@@ -44,7 +44,6 @@ const Author = () => {
     }
   };
 
-
   const {
     data: authors,
     isLoading,
@@ -64,25 +63,28 @@ const Author = () => {
           ></PrimaryButton>
         </div>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
-          <table className=" mx-auto w-11/12 mt-3 lg:ml-9 lg:w-1/2 rounded">
-            <thead>
-              <tr className="border">
-                <th className="p-2">Given name</th>
-                <th className="p-2">Middle name/initial</th>
-                <th className="p-2">Surname</th>
-              </tr>
-            </thead>
+          <div className="w-full flex justify-center mt-5">
+            <table className="w-11/12">
+              <thead className="bg-gray-50 text-gray-700">
+                <tr className="border border-l-0 border-r-0 border-t-0">
+                  <th className="py-4 text-left px-2">Given name</th>
+                  <th className="py-4 text-left">Middle name/initial</th>
+                  <th className="py-4 text-left">Surname</th>
+                  <th className="py-4 text-left"></th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {authors?.map((author, index) => (
-                <AuthorTableRow
-                  author={author}
-                  openEditModal={openEditModal}
-                  key={index}
-                ></AuthorTableRow>
-              ))}
-            </tbody>
-          </table>
+              <tbody>
+                {authors?.map((author, index) => (
+                  <AuthorTableRow
+                    author={author}
+                    openEditModal={openEditModal}
+                    key={index}
+                  ></AuthorTableRow>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </LoadingBoundary>
       </div>
       <EditAuthorModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
@@ -105,11 +107,11 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   openEditModal,
 }) => {
   return (
-    <tr className="border">
-      <td className="p-2 text-center">{author.givenName}</td>
-      <td className="p-2 text-center">{author.middleName}</td>
-      <td className="p-2 text-center">{author.surname}</td>
-      <td className="p-2 text-center">
+    <tr className="border border-l-0 border-r-0 border-t-0 text-gray-500 font-medium">
+      <td className="p-2">{author.givenName}</td>
+      <td className="p-2">{author.middleName}</td>
+      <td className="p-2">{author.surname}</td>
+      <td className="p-2">
         <SecondaryButton
           props={{
             className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
@@ -134,31 +136,32 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     surname: "",
   };
   const { form, errors, setForm, validate, clearErrorWithKey } =
-  useForm<Author>({
-    default: FORM_DEFAULT_VALUES,
-    schema: CreateAuthorSchema,
-  });
-  const addNewAuthor = async() => {
-    try{
-    const response = await axiosClient.post("/authors/", form)
-    if(response.status === StatusCodes.OK){
-      toast.success("New author has been added.")
-    } 
-    }catch{
-      toast.error("Unknown error occured.")
+    useForm<Author>({
+      default: FORM_DEFAULT_VALUES,
+      schema: CreateAuthorSchema,
+    });
+  const queryClient = useQueryClient();
+  const addNewAuthor = async () => {
+    try {
+      const response = await axiosClient.post("/authors/", form);
+      if (response.status === StatusCodes.OK) {
+        toast.success("New author has been added.");
+        queryClient.invalidateQueries(["authors"]);
+      }
+    } catch {
+      toast.error("Failed to add new author.");
     }
-   
   };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
       await validate();
-      mutation.mutate()
+      mutation.mutate();
     } catch {}
   };
   const mutation = useMutation({ mutationFn: addNewAuthor });
- 
-  const handleInput = (event: BaseSyntheticEvent) => {
+
+  const handleFormInput = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
     const value = event.target.value;
     clearErrorWithKey(name);
@@ -181,9 +184,9 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     >
       <form onSubmit={submit}>
         <div className="w-full h-96">
-        <div className="px-2 mb-3"> 
-          <h1 className="text-xl font-medium">New Author</h1>
-        </div>
+          <div className="px-2 mb-3">
+            <h1 className="text-xl font-medium">New Author</h1>
+          </div>
           <div className="px-2 mb-1">
             <Input
               labelText="Given name"
@@ -191,7 +194,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               props={{
                 type: "text",
                 name: "givenName",
-                onChange: handleInput,
+                onChange: handleFormInput,
                 value: form.givenName,
               }}
             />
@@ -203,7 +206,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               props={{
                 type: "text",
                 name: "middleName",
-                onChange: handleInput,
+                onChange: handleFormInput,
                 value: form.middleName,
               }}
             />
@@ -215,14 +218,16 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               props={{
                 type: "text",
                 name: "surname",
-                onChange: handleInput,
+                onChange: handleFormInput,
                 value: form.surname,
               }}
             />
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Add author</PrimaryButton>
-            <LighButton props={{ onClick: closeModal }}>Cancel</LighButton>
+            <LighButton props={{ onClick: closeModal, type: "button" }}>
+              Cancel
+            </LighButton>
           </div>
         </div>
       </form>
@@ -238,12 +243,11 @@ const EditAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
       center
     >
-      
       <form>
         <div className="w-full h-96 mt-2">
-        <div className="px-2 mb-3"> 
-          <h1 className="text-xl font-medium">Edit Author</h1>
-        </div>
+          <div className="px-2 mb-3">
+            <h1 className="text-xl font-medium">Edit Author</h1>
+          </div>
           <div className="px-2">
             <Input
               labelText="Given name"
@@ -264,7 +268,9 @@ const EditAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Update author</PrimaryButton>
-            <LighButton props={{ onClick: closeModal }}>Cancel</LighButton>
+            <LighButton props={{ onClick: closeModal, type: "button" }}>
+              Cancel
+            </LighButton>
           </div>
         </div>
       </form>

@@ -13,6 +13,7 @@ export const useForm = <T>(props: useFormProps<T>) => {
     setErrors(() => undefined);
   };
   const clearErrorWithKey = (key: string) => {
+    try{
     if (!errors) return;
     if (errors[key]?.length === 0) return;
     setErrors((prevErrors: any) => {
@@ -21,6 +22,9 @@ export const useForm = <T>(props: useFormProps<T>) => {
         [key]: "",
       };
     });
+  } catch(error){
+    console.log(error)
+  }
   };
   const validate = async () => {
     try {
