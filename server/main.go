@@ -1,17 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
+	"slim-app/server/app/db"
+	"slim-app/server/app/repository"
+	"slim-app/server/controllers"
 	"slim-app/server/routes"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -36,25 +37,10 @@ func main() {
 			"message": "Hello from server",
 		})
 	})
-
-	routes.RegisterV1(r)
+	db := db.Connect()
+	repos := repository.NewRepositories(db)
+	v1Controller := controllers.RegisterV1(&repos)
+	routes.RegisterV1(r, &v1Controller)
 	r.Run(":5200")
 
-}
-
-func InitDBConnection() *sqlx.DB {
-
-	DB_DRIVER := os.Getenv("DB_DRIVER")
-	DB_USERNAME := os.Getenv("DB_USERNAME")
-	DB_PASSWORD := os.Getenv("DB_PASSWORD")
-	DB_HOST := os.Getenv("DB_HOST")
-	DB_PORT := os.Getenv("DB_PORT")
-	CONNECTION_STRING := fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true", DB_USERNAME, DB_PASSWORD, DB_HOST, DB_PORT)
-	fmt.Println(CONNECTION_STRING)
-	connection, connectErr := sqlx.Open(DB_DRIVER, CONNECTION_STRING)
-
-	if connectErr != nil {
-		panic(connectErr.Error())
-	}
-	return connection
 }

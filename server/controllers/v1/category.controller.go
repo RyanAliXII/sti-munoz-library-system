@@ -15,3 +15,8 @@ func (ctrler *CategoryController) NewCategory(ctx *gin.Context) {
 func (ctrler *CategoryController) GetCategories(ctx *gin.Context) {
 	ctx.JSON(definitions.Success(http.StatusOK, gin.H{"categories": []gin.H{}}, "Categories fetched."))
 }
+
+type CategoryControllerInterface interface {
+	NewCategory(ctx *gin.Context)
+	GetCategories(ctx *gin.Context)
+}
