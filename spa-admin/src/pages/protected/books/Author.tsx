@@ -3,9 +3,11 @@ import {
   SecondaryButton,
   Input,
   SECONDARY_BTN_DEFAULT_CLASS,
+  DANGER_BTN_DEFAULT_CLASS,
+  DangerButton,
   LighButton,
 } from "../../../components/forms/Forms";
-import { AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useToggleManual } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
@@ -17,6 +19,7 @@ import { CreateAuthorSchema } from "./schema";
 import { useForm } from "../../../hooks/useForm";
 import { StatusCodes } from "http-status-codes";
 import { toast } from "react-toastify";
+
 const Author = () => {
   const { set: setAddModalState, value: isAddModalOpen } = useToggleManual();
   const { set: setEditModalState, value: isEditModalOpen } = useToggleManual();
@@ -52,19 +55,19 @@ const Author = () => {
 
   return (
     <>
-      <div className="w-full h-full">
-        <div>
-          <h1 className="text-3xl font-bold ml-5 lg:ml-9 ">Authors</h1>
+      <div className="w-11/12 mx-auto h-full">
+        <div className="mb-3">
+          <h1 className="text-3xl font-bold ">Authors</h1>
         </div>
-        <div className="mx-auto mt-3 w-11/12 lg:ml-9">
+        <div className="mb-3">
           <PrimaryButton
             buttonText="Add author"
             props={{ onClick: openAddModal }}
           ></PrimaryButton>
         </div>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
-          <div className="w-full flex justify-center mt-5">
-            <table className="w-11/12">
+          <div className="w-full">
+            <table className="w-full">
               <thead className="bg-gray-50 text-gray-700">
                 <tr className="border border-l-0 border-r-0 border-t-0">
                   <th className="py-4 text-left px-2">Given name</th>
@@ -94,6 +97,7 @@ const Author = () => {
 };
 
 type Author = {
+  id: number;
   givenName: string;
   middleName?: string;
   surname: string;
@@ -106,20 +110,43 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   author,
   openEditModal,
 }) => {
+  const queryClient = useQueryClient();
+  const deleteAuthor = async () => {
+    try {
+      const response = await axiosClient.delete(`/authors/${author.id}/`);
+      if (response.status === 200) {
+        queryClient.invalidateQueries(["authors"]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const mutation = useMutation({ mutationFn: deleteAuthor });
+  const submit = () => {
+    mutation.mutate();
+  };
   return (
     <tr className="border border-l-0 border-r-0 border-t-0 text-gray-500 font-medium">
       <td className="p-2">{author.givenName}</td>
       <td className="p-2">{author.middleName}</td>
       <td className="p-2">{author.surname}</td>
-      <td className="p-2">
+      <td className="p-2 flex gap-2 items-center">
         <SecondaryButton
           props={{
             className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
             onClick: openEditModal,
           }}
         >
-          <AiOutlineEdit /> Edit
+          <AiOutlineEdit />
         </SecondaryButton>
+        <DangerButton
+          props={{
+            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+            onClick: submit,
+          }}
+        >
+          <AiOutlineDelete />
+        </DangerButton>
       </td>
     </tr>
   );
@@ -131,6 +158,7 @@ interface ModalProps {
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const FORM_DEFAULT_VALUES: Author = {
+    id: 0,
     givenName: "",
     middleName: "",
     surname: "",
