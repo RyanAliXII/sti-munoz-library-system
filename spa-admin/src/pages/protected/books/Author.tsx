@@ -14,16 +14,35 @@ import { Modal } from "react-responsive-modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "../../../definitions/configs/axios";
 import LoadingBoundary from "../../../components/loader/LoadingBoundary";
-import { BaseSyntheticEvent } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { CreateAuthorSchema } from "./schema";
 import { useForm } from "../../../hooks/useForm";
 import { StatusCodes } from "http-status-codes";
 import { toast } from "react-toastify";
+import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  TrBody,
+  TrHead,
+} from "../../../components/table/Table";
+const AUTHOR_FORM_DEFAULT_VALUES: Author = {
+  id: 0,
+  givenName: "",
+  middleName: "",
+  surname: "",
+};
 
 const Author = () => {
   const { set: setAddModalState, value: isAddModalOpen } = useToggleManual();
   const { set: setEditModalState, value: isEditModalOpen } = useToggleManual();
-
+  const { set: setDialogState, value: isDialogOpen } = useToggleManual();
+  const [selectedRow, setSelectedRow] = useState<Author>(
+    AUTHOR_FORM_DEFAULT_VALUES
+  );
   const closeAddModal = () => {
     setAddModalState(false);
   };
@@ -47,51 +66,88 @@ const Author = () => {
     }
   };
 
+  const queryClient = useQueryClient();
+  const deleteAuthor = async () => {
+    try {
+      const response = await axiosClient.delete(`/authors/${selectedRow?.id}/`);
+      if (response.status === StatusCodes.OK) {
+        queryClient.invalidateQueries(["authors"]);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setDialogState(false);
+    }
+  };
+  const mutation = useMutation({ mutationFn: deleteAuthor });
+  const onConfirmDialog = () => {
+    mutation.mutate();
+  };
   const {
     data: authors,
     isLoading,
     isError,
   } = useQuery<Author[]>({ queryFn: fetchAuthors, queryKey: ["authors"] });
-
   return (
     <>
-      <div className="w-11/12 mx-auto h-full">
-        <div className="mb-3">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold ">Authors</h1>
         </div>
-        <div className="mb-3">
+        <div className="mb-4">
           <PrimaryButton
             buttonText="Add author"
             props={{ onClick: openAddModal }}
           ></PrimaryButton>
         </div>
+
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
-            <table className="w-full">
-              <thead className="bg-gray-50 text-gray-700">
-                <tr className="border border-l-0 border-r-0 border-t-0">
-                  <th className="py-4 text-left px-2">Given name</th>
-                  <th className="py-4 text-left">Middle name/initial</th>
-                  <th className="py-4 text-left">Surname</th>
-                  <th className="py-4 text-left"></th>
-                </tr>
-              </thead>
+            <Table>
+              <Thead>
+                <TrHead>
+                  <Th>Given name</Th>
+                  <Th>Middle name/initial</Th>
+                  <Th>Surname</Th>
+                  <Th></Th>
+                </TrHead>
+              </Thead>
 
-              <tbody>
+              <Tbody>
                 {authors?.map((author, index) => (
                   <AuthorTableRow
                     author={author}
-                    openEditModal={openEditModal}
+                    openEditModal={() => {
+                      setSelectedRow({ ...author });
+                      openEditModal();
+                    }}
+                    openDialog={() => {
+                      setSelectedRow({ ...author });
+                      setDialogState(true);
+                    }}
                     key={index}
                   ></AuthorTableRow>
                 ))}
-              </tbody>
-            </table>
+              </Tbody>
+            </Table>
           </div>
         </LoadingBoundary>
       </div>
-      <EditAuthorModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
+      <EditAuthorModal
+        isOpen={isEditModalOpen}
+        formData={selectedRow}
+        closeModal={closeEditModal}
+      />
       <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+      <DangerConfirmDialog
+        close={() => {
+          setDialogState(false);
+        }}
+        isOpen={isDialogOpen}
+        title="Delete Author!"
+        text="Are you sure that you want to delete this author?"
+        onConfirm={onConfirmDialog}
+      ></DangerConfirmDialog>
     </>
   );
 };
@@ -105,32 +161,19 @@ type Author = {
 type AuthorTableRowType = {
   author: Author;
   openEditModal: () => void;
+  openDialog?: () => void;
 };
 const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   author,
   openEditModal,
+  openDialog,
 }) => {
-  const queryClient = useQueryClient();
-  const deleteAuthor = async () => {
-    try {
-      const response = await axiosClient.delete(`/authors/${author.id}/`);
-      if (response.status === 200) {
-        queryClient.invalidateQueries(["authors"]);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const mutation = useMutation({ mutationFn: deleteAuthor });
-  const submit = () => {
-    mutation.mutate();
-  };
   return (
-    <tr className="border border-l-0 border-r-0 border-t-0 text-gray-500 font-medium">
-      <td className="p-2">{author.givenName}</td>
-      <td className="p-2">{author.middleName}</td>
-      <td className="p-2">{author.surname}</td>
-      <td className="p-2 flex gap-2 items-center">
+    <TrBody>
+      <Td>{author.givenName}</Td>
+      <Td>{author.middleName}</Td>
+      <Td>{author.surname}</Td>
+      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
         <SecondaryButton
           props={{
             className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
@@ -142,30 +185,27 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
         <DangerButton
           props={{
             className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
-            onClick: submit,
+            onClick: openDialog,
           }}
         >
           <AiOutlineDelete />
         </DangerButton>
-      </td>
-    </tr>
+      </Td>
+    </TrBody>
   );
 };
 interface ModalProps {
   isOpen: boolean;
   closeModal: () => void;
 }
+interface EditModalProps extends ModalProps {
+  formData: Author;
+}
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const FORM_DEFAULT_VALUES: Author = {
-    id: 0,
-    givenName: "",
-    middleName: "",
-    surname: "",
-  };
   const { form, errors, setForm, validate, clearErrorWithKey } =
     useForm<Author>({
-      default: FORM_DEFAULT_VALUES,
+      default: AUTHOR_FORM_DEFAULT_VALUES,
       schema: CreateAuthorSchema,
     });
   const queryClient = useQueryClient();
@@ -178,6 +218,9 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       }
     } catch {
       toast.error("Failed to add new author.");
+    } finally {
+      setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
+      closeModal();
     }
   };
   const submit = async (event: BaseSyntheticEvent) => {
@@ -208,6 +251,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       open={isOpen}
       onClose={closeModal}
       classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
+      showCloseIcon={false}
       center
     >
       <form onSubmit={submit}>
@@ -215,7 +259,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           <div className="px-2 mb-3">
             <h1 className="text-xl font-medium">New Author</h1>
           </div>
-          <div className="px-2 mb-1">
+          <div className="px-2 mb-2">
             <Input
               labelText="Given name"
               error={errors?.givenName}
@@ -227,7 +271,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               }}
             />
           </div>
-          <div className="px-2 mb-1">
+          <div className="px-2 mb-2">
             <Input
               labelText="Middle name/initial"
               error={errors?.middleName}
@@ -262,36 +306,99 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
+const EditAuthorModal: React.FC<EditModalProps> = ({
+  isOpen,
+  closeModal,
+  formData,
+}) => {
+  const { form, errors, clearErrors, setForm, validate } = useForm<Author>({
+    default: AUTHOR_FORM_DEFAULT_VALUES,
+    schema: CreateAuthorSchema,
+  });
+  useEffect(() => {
+    setForm(() => {
+      return { ...formData };
+    });
+  }, [formData]);
+  useEffect(() => {
+    if (!isOpen) {
+      clearErrors();
+    }
+  }, [isOpen]);
+  const handleFormInput = (event: BaseSyntheticEvent) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setForm((prevForm) => {
+      return { ...prevForm, [name]: value };
+    });
+  };
+  const queryClient = useQueryClient();
+  const updateAuthor = async () => {
+    try {
+      await validate();
+      const id = formData.id;
+      const response = await axiosClient.put(`/authors/${id}/`, form);
+      if (response.status === StatusCodes.OK) {
+        toast.success("Author has been updated.");
+        queryClient.invalidateQueries(["authors"]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const submit = (event: BaseSyntheticEvent) => {
+    event.preventDefault();
+    mutation.mutate();
+  };
+  const mutation = useMutation({ mutationFn: updateAuthor });
   if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
   return (
     <Modal
       open={isOpen}
       onClose={closeModal}
       classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
+      showCloseIcon={false}
       center
     >
-      <form>
+      <form onSubmit={submit}>
         <div className="w-full h-96 mt-2">
           <div className="px-2 mb-3">
             <h1 className="text-xl font-medium">Edit Author</h1>
           </div>
-          <div className="px-2">
+          <div className="px-2 mb-2">
             <Input
               labelText="Given name"
-              props={{ type: "text", name: "givenName" }}
+              error={errors?.givenName}
+              props={{
+                type: "text",
+                name: "givenName",
+                value: form.givenName,
+                onChange: handleFormInput,
+              }}
             />
           </div>
-          <div className="px-2">
+          <div className="px-2 mb-2">
             <Input
+              error={errors?.middleName}
               labelText="Middle name/initial"
-              props={{ type: "text", name: "middlename" }}
+              props={{
+                type: "text",
+                name: "middleName",
+                value: form.middleName,
+                onChange: handleFormInput,
+              }}
             />
           </div>
-          <div className="px-2">
+          <div className="px-2 mb-2">
             <Input
               labelText="Surname"
-              props={{ type: "text", name: "surname" }}
+              error={errors?.surname}
+              props={{
+                type: "text",
+                name: "surname",
+                value: form.surname,
+                onChange: handleFormInput,
+              }}
             />
           </div>
           <div className="flex gap-1 p-2">

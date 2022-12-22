@@ -75,7 +75,7 @@ export const DangerButton: React.FC<ButtonProps> = ({
   children,
 }) => {
   return (
-    <button className={LIGHT_BTN_DEFAULT_CLASS} {...props}>
+    <button className={DANGER_BTN_DEFAULT_CLASS} {...props}>
       {children ? children : buttonText}
     </button>
   );

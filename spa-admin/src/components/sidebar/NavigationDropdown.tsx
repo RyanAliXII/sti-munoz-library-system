@@ -3,8 +3,10 @@ import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { BaseProps } from "../../definitions/props.definition";
 import useToggle from "../../hooks/useToggle";
 
-export const NavigationDropdown = ({ children, drawerButton }: NavigationDropdownProps) => {
-  
+export const NavigationDropdown = ({
+  children,
+  drawerButton,
+}: NavigationDropdownProps) => {
   const { toggle, value: visible } = useToggle();
   return (
     <div className="w-full">
@@ -23,10 +25,13 @@ export const NavigationDropdown = ({ children, drawerButton }: NavigationDropdow
     </div>
   );
 };
-export const NavigationDropdownButton = ({ icon, text }: NavigationDropdownButtonProps) => {
+export const NavigationDropdownButton = ({
+  icon,
+  text,
+}: NavigationDropdownButtonProps) => {
   return (
     <div className="ml-5 flex items-center h-11 gap-1">
-      {icon} <span>{text}</span>
+      {icon} <span className="font-medium">{text}</span>
     </div>
   );
 };

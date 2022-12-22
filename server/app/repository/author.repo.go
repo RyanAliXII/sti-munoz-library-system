@@ -41,8 +41,28 @@ func (repo *AuthorRepository) Delete(id int) error {
 	if getAffectedErr != nil {
 		logger.Warn(getAffectedErr.Error(), zap.Int("id", id), zap.String("function", "AuthorRepository.Delete"))
 	}
-	logger.Info("Author deleted", zap.Int("id", id), zap.Int64("affected", affected), zap.String("function", "AuthorRepository.Delete"))
+	logger.Info("Author deleted", zap.Int("authorId", id), zap.Int64("affectedRows", affected), zap.String("function", "AuthorRepository.Delete"))
 	return deleteErr
+}
+
+func (repo *AuthorRepository) Update(id int, author model.Author) error {
+
+	updateStmt, prepareErr := repo.db.Preparex("Update book.authors SET given_name = $1, middle_name = $2, surname = $3 where id = $4")
+	if prepareErr != nil {
+		logger.Error(prepareErr.Error(), zap.Int("authorId", id), zap.String("function", "AuthorRepository.Update"))
+		return prepareErr
+	}
+	updateResult, updateErr := updateStmt.Exec(author.GivenName, author.MiddleName, author.Surname, id)
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), zap.Int("authorId", id), zap.String("function", "AuthorRepository.Update"))
+		return updateErr
+	}
+	affected, getAffectedErr := updateResult.RowsAffected()
+	if getAffectedErr != nil {
+		logger.Warn(getAffectedErr.Error(), zap.Int("authordId", id), zap.String("function", "AuthorRepository.Update"))
+	}
+	logger.Info("Author updated", zap.Int("authorId", id), zap.Int64("affectedRows", affected), zap.String("function", "AuthorRepository.Update"))
+	return updateErr
 }
 func NewAuthorRepository(db *sqlx.DB) *AuthorRepository {
 	return &AuthorRepository{
@@ -54,4 +74,5 @@ type AuthorRepositoryInterface interface {
 	New(model.Author) error
 	Get() []model.Author
 	Delete(id int) error
+	Update(id int, author model.Author) error
 }

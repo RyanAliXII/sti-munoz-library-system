@@ -1,14 +1,14 @@
 import { loginRequest } from "../definitions/configs/msal.config";
 import { useMsal } from "@azure/msal-react";
-import {FaUniversalAccess} from 'react-icons/fa'
+import { FaUniversalAccess } from "react-icons/fa";
 
 const Login = () => {
   const { instance: msalClient } = useMsal();
   const handleLogin = async () => {
     try {
-     await msalClient.loginRedirect(loginRequest);
+      await msalClient.loginRedirect(loginRequest);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -49,9 +49,8 @@ const Login = () => {
                       />
                     </svg>
                     <span className="block w-max font-semibold tracking-wide text-gray-700 text-sm transition duration-300 group-hover:text-blue-600 sm:text-base">
-                    Library Staff Login
+                      Library Staff Login
                     </span>
-                    
                   </div>
                 </button>
                 <button
@@ -59,11 +58,10 @@ const Login = () => {
      hover:border-blue-400 focus:bg-blue-50 active:bg-blue-100 bg-blue-500"
                 >
                   <div className="relative flex items-center space-x-4 justify-center">
-                  <FaUniversalAccess className="text-white text-2xl"/>
+                    <FaUniversalAccess className="text-white text-2xl" />
                     <span className="block w-max font-semibold tracking-wide text-white text-sm transition duration-300 group-hover:text-blue-600 sm:text-base">
-                        Root User
+                      Root User
                     </span>
-                    
                   </div>
                 </button>
               </div>

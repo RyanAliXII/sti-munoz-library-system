@@ -1,9 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { SidebarNavigationItems, SidebarNavItem} from "./SidebarNavigations.definition";
-import { NavigationDropdownButton,NavigationDropdown} from "./NavigationDropdown";
+import {
+  SidebarNavigationItems,
+  SidebarNavItem,
+} from "./SidebarNavigations.definition";
+import {
+  NavigationDropdownButton,
+  NavigationDropdown,
+} from "./NavigationDropdown";
 const Sidebar = () => {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 mt-20 w-full">
       <div className="w-full h-5"></div>
       <NavigationItems />
     </div>
@@ -14,7 +20,6 @@ const NavigationItems = () => {
   return (
     <>
       {SidebarNavigationItems.map((item) => {
-      
         if (item.items.length > 0) {
           return NavigationDrawer(item);
         }
@@ -24,8 +29,8 @@ const NavigationItems = () => {
             to={item.to}
             key={item.text}
           >
-            <div className="ml-5 flex items-center h-11 gap-1 ">
-              {item.icon} <span>{item.text}</span>
+            <div className="ml-5 flex items-center h-11 gap-1">
+              {item.icon} <span className="font-medium">{item.text}</span>
             </div>
           </NavLink>
         );
@@ -37,7 +42,12 @@ const NavigationDrawer = (item: SidebarNavItem) => {
   return (
     <NavigationDropdown
       key={item.text}
-      drawerButton={<NavigationDropdownButton icon={item.icon} text={item.text ?? "NO TEXT"} />}
+      drawerButton={
+        <NavigationDropdownButton
+          icon={item.icon}
+          text={item.text ?? "NO TEXT"}
+        />
+      }
     >
       {item.items.map((innerItem) => {
         return (
@@ -54,14 +64,12 @@ const NavigationDrawer = (item: SidebarNavItem) => {
   );
 };
 
-const isNavActive = (active: boolean):string => {
+const isNavActive = (active: boolean): string => {
   if (active) {
     return "w-full h-8 flex items-center rounded-sm font-semibold bg-blue-100 text-blue-600 rounded";
   } else {
     return "w-full h-8 flex items-center";
   }
 };
-
-
 
 export default Sidebar;
