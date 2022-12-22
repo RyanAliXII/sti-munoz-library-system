@@ -1,21 +1,40 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
-	"slim-app/server/routes"
+	"slim-app/server/app/db"
+	"slim-app/server/app/pkg/slimlog"
+	"slim-app/server/app/repository"
+	"slim-app/server/app/src/v1"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
+var logger *zap.Logger = slimlog.GetInstance()
+
 func main() {
+	envErr := godotenv.Load()
+	if envErr != nil {
+		panic(envErr.Error())
+	}
+
+	SPA_ADMIN := os.Getenv("SPA_ADMIN_URL")
 	r := gin.New()
 	r.Use(gin.Recovery())
-
+	r.Use(CustomLogger())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{SPA_ADMIN},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	r.GET("/", func(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, gin.H{
@@ -23,24 +42,26 @@ func main() {
 		})
 	})
 
-	routes.RegisterV1(r)
+	db := db.Connect()
+	repos := repository.NewRepositories(db)
+	src.RegisterRoutesV1(r, &repos)
+	logger.Info("Server starting")
 	r.Run(":5200")
 
 }
 
-func InitDBConnection() *sqlx.DB {
+func CustomLogger() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.Next()
+		method := ctx.Request.Method
+		statusCode := ctx.Writer.Status()
+		clientIP := ctx.ClientIP()
 
-	DB_DRIVER := os.Getenv("DB_DRIVER")
-	DB_USERNAME := os.Getenv("DB_USERNAME")
-	DB_PASSWORD := os.Getenv("DB_PASSWORD")
-	DB_HOST := os.Getenv("DB_HOST")
-	DB_PORT := os.Getenv("DB_PORT")
-	CONNECTION_STRING := fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true", DB_USERNAME, DB_PASSWORD, DB_HOST, DB_PORT)
-	fmt.Println(CONNECTION_STRING)
-	connection, connectErr := sqlx.Open(DB_DRIVER, CONNECTION_STRING)
-
-	if connectErr != nil {
-		panic(connectErr.Error())
+		path := ctx.Request.URL.Path
+		if ctx.Writer.Status() >= 500 {
+			logger.Error("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP))
+		} else {
+			logger.Info("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP))
+		}
 	}
-	return connection
 }

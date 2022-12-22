@@ -39,7 +39,7 @@ const BookAdd = () => {
   };
   return (
     <div className="w-full h-full">
-      <h1 className="text-3xl font-bold ml-9">Add Book</h1>
+      <h1 className="text-3xl font-bold ml-1 lg:ml-9">Add Book</h1>
       <div className="w-9/12 ml-9 mt-6 flex items-center gap-2">
         <select className="w-44 border rounded border-gray-300 h-11">
           <option value={"title"}>Title</option>

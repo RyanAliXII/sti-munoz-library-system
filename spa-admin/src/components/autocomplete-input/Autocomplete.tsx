@@ -1,6 +1,6 @@
-import React, { BaseSyntheticEvent, ChangeEventHandler, useEffect, useRef } from "react";
+import React, {ChangeEventHandler, useEffect, useRef } from "react";
 import { BaseProps } from "../../definitions/props.definition";
-import useToggle, { useToggleManual } from "../../hooks/useToggle";
+import  { useToggleManual } from "../../hooks/useToggle";
 
 interface AutocompleteProps extends BaseProps {
   className?: string;

@@ -1,3 +1,5 @@
+import { ValidationError } from "yup";
+
 export const constructQuery= (word: string):string=>{
     const WHITESPACE_CODE = 32;
     let prevChar = ""
@@ -22,3 +24,12 @@ export const falsyValidate = <T>(value:any, fallback:T)=>{
           } 
           return value
 }
+
+export const processSchemaError = (error: ValidationError)=>{
+            const errorObject:any = {}
+            error.inner.forEach((err)=>{
+                    const key:string  = err.path ?? ""
+                    errorObject[key] = err.message
+            })
+            return errorObject
+}   
