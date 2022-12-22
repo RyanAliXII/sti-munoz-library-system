@@ -20,11 +20,7 @@ var logger = slimlog.GetInstance()
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	var body model.Author = model.Author{}
 
-	bindingErr := ctx.ShouldBindBodyWith(&body, binding.JSON)
-	if bindingErr != nil {
-		logger.Error(bindingErr.Error())
-		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
-	}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	insertErr := ctrler.Repos.AuthorRepository.New(body)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
@@ -42,6 +38,7 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 	if castErr != nil {
 		logger.Warn(castErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
+		return
 	}
 	err := ctrler.Repos.AuthorRepository.Delete(id)
 	if err != nil {

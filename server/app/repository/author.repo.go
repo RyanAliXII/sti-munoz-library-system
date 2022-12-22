@@ -2,13 +2,10 @@ package repository
 
 import (
 	"slim-app/server/app/model"
-	"slim-app/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
-
-var logger = slimlog.GetInstance()
 
 type AuthorRepository struct {
 	db *sqlx.DB
@@ -64,7 +61,7 @@ func (repo *AuthorRepository) Update(id int, author model.Author) error {
 	logger.Info("Author updated", zap.Int("authorId", id), zap.Int64("affectedRows", affected), zap.String("function", "AuthorRepository.Update"))
 	return updateErr
 }
-func NewAuthorRepository(db *sqlx.DB) *AuthorRepository {
+func NewAuthorRepository(db *sqlx.DB) AuthorRepositoryInterface {
 	return &AuthorRepository{
 		db: db,
 	}
