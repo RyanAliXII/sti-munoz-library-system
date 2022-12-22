@@ -1,3 +1,4 @@
 /database
 /pg-admin
+*.log
 .env

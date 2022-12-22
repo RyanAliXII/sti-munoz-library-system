@@ -15,7 +15,7 @@ func BuildLogger() *zap.Logger {
 		Encoding:         "json",
 		Level:            zap.NewAtomicLevel(),
 		ErrorOutputPaths: []string{"stderr"},
-		OutputPaths:      []string{"stdout", "app/logs/slim.logs"},
+		OutputPaths:      []string{"stdout", "app/logs/slim.log"},
 		EncoderConfig: zapcore.EncoderConfig{
 			MessageKey:  "message",
 			LevelKey:    "level",
