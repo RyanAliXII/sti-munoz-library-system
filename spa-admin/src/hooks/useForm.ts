@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import { ObjectShape } from "yup/lib/object";
 
@@ -23,8 +23,19 @@ export const useForm = <T>(props: useFormProps<T>) => {
       };
     });
   } catch(error){
-    console.log(error)
+    console.error(error)
   }
+  };
+  const handleFormInput = (event: BaseSyntheticEvent) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    clearErrorWithKey(name);
+    setForm((prevForm) => {
+      return {
+        ...prevForm,
+        [name]: value,
+      };
+    });
   };
   const validate = async () => {
     try {
@@ -53,5 +64,6 @@ export const useForm = <T>(props: useFormProps<T>) => {
     validate,
     clearErrors,
     clearErrorWithKey,
+    handleFormInput
   };
 };

@@ -171,11 +171,10 @@ const Sof = () => {
 };
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, setForm, validate, clearErrorWithKey } =
-    useForm<Source>({
-      default: SOURCE_FORM_DEFAULT_VALUES,
-      schema: SourceofFundSchema,
-    });
+  const { errors, form, validate, handleFormInput } = useForm<Source>({
+    default: SOURCE_FORM_DEFAULT_VALUES,
+    schema: SourceofFundSchema,
+  });
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => axiosClient.post("/source-of-funds/", form),
@@ -192,14 +191,6 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     },
   });
 
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -251,23 +242,14 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, clearErrorWithKey } =
-    useForm<Source>({
-      default: SOURCE_FORM_DEFAULT_VALUES,
-      schema: SourceofFundSchema,
-    });
+  const { errors, form, setForm, validate, handleFormInput } = useForm<Source>({
+    default: SOURCE_FORM_DEFAULT_VALUES,
+    schema: SourceofFundSchema,
+  });
 
   useEffect(() => {
     setForm({ ...formData });
   }, [formData]);
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => axiosClient.put(`/source-of-funds/${formData.id}/`, form),

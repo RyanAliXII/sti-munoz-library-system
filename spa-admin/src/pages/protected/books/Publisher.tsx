@@ -186,11 +186,10 @@ const Publisher = () => {
 
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
-  const { errors, form, setForm, validate, clearErrorWithKey } =
-    useForm<Publisher>({
-      default: PUBLISHER_FORM_DEFAULT_VALUES,
-      schema: PublisherSchema,
-    });
+  const { errors, form, validate, handleFormInput } = useForm<Publisher>({
+    default: PUBLISHER_FORM_DEFAULT_VALUES,
+    schema: PublisherSchema,
+  });
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => axiosClient.post("/publishers/", form),
@@ -207,14 +206,6 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     },
   });
 
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -266,7 +257,7 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, clearErrorWithKey } =
+  const { errors, form, setForm, validate, handleFormInput } =
     useForm<Publisher>({
       default: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
@@ -275,14 +266,7 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
   useEffect(() => {
     setForm({ ...formData });
   }, [formData]);
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
+
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => axiosClient.put(`/publishers/${formData.id}/`, form),

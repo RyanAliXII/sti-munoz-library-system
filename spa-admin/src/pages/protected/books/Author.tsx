@@ -205,11 +205,10 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
 };
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, setForm, validate, clearErrorWithKey } =
-    useForm<Author>({
-      default: AUTHOR_FORM_DEFAULT_VALUES,
-      schema: CreateAuthorSchema,
-    });
+  const { form, errors, setForm, validate, handleFormInput } = useForm<Author>({
+    default: AUTHOR_FORM_DEFAULT_VALUES,
+    schema: CreateAuthorSchema,
+  });
   const queryClient = useQueryClient();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
@@ -235,18 +234,6 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       closeModal();
     },
   });
-
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return {
-        ...prevForm,
-        [name]: value,
-      };
-    });
-  };
 
   if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
 
@@ -315,10 +302,11 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   closeModal,
   formData,
 }) => {
-  const { form, errors, clearErrors, setForm, validate } = useForm<Author>({
-    default: AUTHOR_FORM_DEFAULT_VALUES,
-    schema: CreateAuthorSchema,
-  });
+  const { form, errors, clearErrors, setForm, validate, handleFormInput } =
+    useForm<Author>({
+      default: AUTHOR_FORM_DEFAULT_VALUES,
+      schema: CreateAuthorSchema,
+    });
   useEffect(() => {
     setForm(() => {
       return { ...formData };
@@ -329,13 +317,7 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
       clearErrors();
     }
   }, [isOpen]);
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
+
   const queryClient = useQueryClient();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
