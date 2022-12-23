@@ -1,1 +1,1 @@
-DROP SCHEMA IF EXISTS accession
+DROP SCHEMA IF EXISTS category
