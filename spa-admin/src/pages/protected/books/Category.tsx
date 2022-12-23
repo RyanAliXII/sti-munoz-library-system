@@ -7,7 +7,7 @@ import {
   SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
 import { AiOutlineEdit } from "react-icons/ai";
-import { useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useForm } from "../../../hooks/useForm";
@@ -15,22 +15,17 @@ import { CategorySchema } from "./schema";
 import { toast } from "react-toastify";
 
 const Category = () => {
-  const { set: setAddModalState, value: isAddModalOpen } = useToggleManual();
-  const { set: setEditModalState, value: isEditModalOpen } = useToggleManual();
+  const {
+    isOpen: isAddModalOpen,
+    open: openAddModal,
+    close: closeAddModal,
+  } = useSwitch();
 
-  const closeAddModal = () => {
-    setAddModalState(false);
-  };
-  const openAddModal = () => {
-    setAddModalState(true);
-  };
-
-  const closeEditModal = () => {
-    setEditModalState(false);
-  };
-  const openEditModal = () => {
-    setEditModalState(true);
-  };
+  const {
+    isOpen: isEditModalOpen,
+    open: openEditModal,
+    close: closeEditModal,
+  } = useSwitch();
 
   return (
     <>
