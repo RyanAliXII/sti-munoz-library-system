@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS book.source_of_funds

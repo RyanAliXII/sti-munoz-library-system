@@ -16,7 +16,7 @@ func (repo *PublisherRepository) Get() []model.Publisher {
 	var publishers []model.Publisher = make([]model.Publisher, 0)
 	selectErr := repo.db.Select(&publishers, "SELECT id, name from book.publishers where deleted_at is null")
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(GET_PUBLISHER))
+		logger.Error(selectErr.Error(), slimlog.Function(GET_PUBLISHERS))
 	}
 	return publishers
 }

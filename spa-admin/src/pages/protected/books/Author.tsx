@@ -155,7 +155,7 @@ const Author = () => {
         title="Delete Author"
         text="Are you sure that you want to delete this author?"
         onConfirm={onConfirmDialog}
-      ></DangerConfirmDialog>
+      />
     </>
   );
 };
@@ -230,7 +230,9 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     try {
       await validate();
       mutation.mutate();
-    } catch {}
+    } catch (error) {
+      console.error(error);
+    }
   };
   const mutation = useMutation({ mutationFn: newAuthor });
 
@@ -337,7 +339,6 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   const queryClient = useQueryClient();
   const updateAuthor = async () => {
     try {
-      await validate();
       const id = formData.id;
       const response = await axiosClient.put(`/authors/${id}/`, form);
       if (response.status === StatusCodes.OK) {
@@ -347,11 +348,18 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
     } catch (error) {
       toast.error(ErrorMsg.Delete);
       console.error(error);
+    } finally {
+      closeModal();
     }
   };
-  const submit = (event: BaseSyntheticEvent) => {
+  const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
-    mutation.mutate();
+    try {
+      await validate();
+      mutation.mutate();
+    } catch (error) {
+      console.error(error);
+    }
   };
   const mutation = useMutation({ mutationFn: updateAuthor });
   if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
