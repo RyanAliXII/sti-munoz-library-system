@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { StatusCodes } from "http-status-codes";
 import React, { BaseSyntheticEvent, useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
@@ -14,7 +13,6 @@ import {
   SecondaryButton,
   SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
-import LoadingBoundary from "../../../components/loader/LoadingBoundary";
 import {
   Table,
   Tbody,
@@ -63,25 +61,18 @@ const Sof = () => {
   };
 
   const queryClient = useQueryClient();
-  const deleteAuthor = async () => {
-    try {
-      const response = await axiosClient.delete(
-        `/source-of-funds/${selectedRow.id}/`
-      );
-      if (response.status === StatusCodes.OK) {
-        toast.success("Source deleted.");
-      }
-    } catch (error) {
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.delete(`/source-of-funds/${selectedRow.id}/`),
+    onSuccess: () => {
+      toast.success("Source deleted.");
+      queryClient.invalidateQueries(["sources"]);
+    },
+    onError: (error) => {
       console.error(error);
       toast.error(ErrorMsg.Delete);
-    } finally {
+    },
+    onSettled: () => {
       closeConfirmDialog();
-    }
-  };
-  const mutation = useMutation({
-    mutationFn: deleteAuthor,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["sources"]);
     },
   });
   const onConfirmDialog = () => {
@@ -179,37 +170,26 @@ const Sof = () => {
 };
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, setForm, validate, clearErrorWithKey } =
-    useForm<Source>({
-      default: SOURCE_FORM_DEFAULT_VALUES,
-      schema: SourceofFundSchema,
-    });
-
-  const newSource = async () => {
-    try {
-      const response = await axiosClient.post("/source-of-funds/", form);
-      if (response.status === StatusCodes.OK) {
-        toast.success("New source has been added.");
-        queryClient.invalidateQueries(["sources"]);
-      }
-    } catch (error) {
+  const { errors, form, validate, handleFormInput } = useForm<Source>({
+    default: SOURCE_FORM_DEFAULT_VALUES,
+    schema: SourceofFundSchema,
+  });
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.post("/source-of-funds/", form),
+    onSuccess: () => {
+      toast.success("New source has been added.");
+      queryClient.invalidateQueries(["sources"]);
+    },
+    onError: (error) => {
       toast.error(ErrorMsg.New);
       console.error(error);
-    } finally {
+    },
+    onSettled: () => {
       closeModal();
-    }
-  };
-  const queryClient = useQueryClient();
-  const mutation = useMutation({ mutationFn: newSource });
+    },
+  });
 
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -261,44 +241,27 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, clearErrorWithKey } =
-    useForm<Source>({
-      default: SOURCE_FORM_DEFAULT_VALUES,
-      schema: SourceofFundSchema,
-    });
+  const { errors, form, setForm, validate, handleFormInput } = useForm<Source>({
+    default: SOURCE_FORM_DEFAULT_VALUES,
+    schema: SourceofFundSchema,
+  });
 
   useEffect(() => {
     setForm({ ...formData });
   }, [formData]);
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
   const queryClient = useQueryClient();
-  const updatePublisher = async () => {
-    try {
-      const response = await axiosClient.put(
-        `/source-of-funds/${formData.id}/`,
-        form
-      );
-      if (response.status === StatusCodes.OK) {
-        toast.success("Source has been updated");
-      }
-    } catch (error) {
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.put(`/source-of-funds/${formData.id}/`, form),
+    onSuccess: () => {
+      toast.success("Source has been updated");
+      queryClient.invalidateQueries(["sources"]);
+    },
+    onError: (error) => {
       toast.error(ErrorMsg.Update);
       console.error(error);
-    } finally {
+    },
+    onSettled: () => {
       closeModal();
-    }
-  };
-  const mutation = useMutation({
-    mutationFn: updatePublisher,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["sources"]);
     },
   });
 
