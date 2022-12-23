@@ -24,7 +24,7 @@ func (repo *AuthorRepository) Get() []model.Author {
 	var authors []model.Author = make([]model.Author, 0)
 	selectErr := repo.db.Select(&authors, "SELECT * FROM book.authors where deleted_at IS NULL")
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHOR))
+		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS))
 	}
 	return authors
 }

@@ -195,12 +195,13 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       if (response.status === StatusCodes.OK) {
         toast.success("New publisher has been added.");
         queryClient.invalidateQueries(["publishers"]);
-        closeModal();
       }
     } catch (error) {
       toast.error(ErrorMsg.New);
       console.error(error);
+    } finally {
     }
+    closeModal();
   };
   const queryClient = useQueryClient();
   const mutation = useMutation({ mutationFn: newPublisher });
@@ -219,7 +220,6 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       await validate();
       mutation.mutate();
     } catch (error) {
-      toast.error(ErrorMsg.New);
       console.error(error);
     }
   };
@@ -306,7 +306,6 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
       await validate();
       mutation.mutate();
     } catch (error) {
-      toast.error(ErrorMsg.Update);
       console.error(error);
     }
   };

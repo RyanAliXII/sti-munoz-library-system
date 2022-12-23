@@ -5,6 +5,7 @@ import (
 	authorsrc "slim-app/server/app/src/v1/author"
 	categorysrc "slim-app/server/app/src/v1/category"
 	publishersrc "slim-app/server/app/src/v1/publisher"
+	sofsrc "slim-app/server/app/src/v1/sof"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,7 @@ import (
 func RegisterRoutesV1(router *gin.Engine, repositories *repository.Repositories) {
 	grp := router.Group("/api/1")
 	authorsrc.AuthorRoutes(grp.Group("/authors"), repositories)
-	categorysrc.CategoryRoutes(grp.Group("/categories"))
 	publishersrc.PublisherRoutes(grp.Group("/publishers"), repositories)
-
+	sofsrc.FundSourceRoutes(grp.Group("/source-of-funds"), repositories)
+	categorysrc.CategoryRoutes(grp.Group("/categories"))
 }

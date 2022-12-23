@@ -13,3 +13,6 @@ export const CategorySchema = object().shape({
 export const PublisherSchema = object().shape({
         name: string().max(150, "Character should not exceed 150", ).required("Publisher name is required")
 })
+export const SourceofFundSchema = object().shape({
+    name: string().max(150, "Character should not exceed 150", ).required("Source name is required")
+})
