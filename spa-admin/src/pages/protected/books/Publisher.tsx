@@ -28,7 +28,7 @@ import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
-import { useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
 import { PublisherSchema } from "./schema";
 
 type Publisher = {
@@ -37,31 +37,26 @@ type Publisher = {
 };
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const Publisher = () => {
-  const { value: isAddModalOpen, set: setAddModalState } = useToggleManual();
-  const { value: isEditModalOpen, set: setEditModalState } = useToggleManual();
-  const { value: isConfirmDialogOpen, set: setConfirmDialogState } =
-    useToggleManual();
+  const {
+    isOpen: isAddModalOpen,
+    open: openAddModal,
+    close: closeAddModal,
+  } = useSwitch();
+
+  const {
+    isOpen: isEditModalOpen,
+    open: openEditModal,
+    close: closeEditModal,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmDialogOpen,
+    open: openConfirmDialog,
+    close: closeConfirmDialog,
+  } = useSwitch();
+
   const [selectedRow, setSelectedRow] = useState<Publisher>(
     PUBLISHER_FORM_DEFAULT_VALUES
   );
-  const openAddModal = () => {
-    setAddModalState(true);
-  };
-  const closeAddModal = () => {
-    setAddModalState(false);
-  };
-  const openEditModal = () => {
-    setEditModalState(true);
-  };
-  const closeEditModal = () => {
-    setEditModalState(false);
-  };
-  const openConfirmDialog = () => {
-    setConfirmDialogState(true);
-  };
-  const closeConfirmDialog = () => {
-    setConfirmDialogState(false);
-  };
 
   const fetchPublisher = async () => {
     try {

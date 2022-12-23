@@ -8,7 +8,7 @@ import {
   LighButton,
 } from "../../../components/forms/Forms";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
-import { useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,31 +39,27 @@ const AUTHOR_FORM_DEFAULT_VALUES: Author = {
 };
 
 const Author = () => {
-  const { set: setAddModalState, value: isAddModalOpen } = useToggleManual();
-  const { set: setEditModalState, value: isEditModalOpen } = useToggleManual();
-  const { set: setDialogState, value: isDialogOpen } = useToggleManual();
+  const {
+    isOpen: isAddModalOpen,
+    open: openAddModal,
+    close: closeAddModal,
+  } = useSwitch();
+
+  const {
+    isOpen: isEditModalOpen,
+    open: openEditModal,
+    close: closeEditModal,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmDialogOpen,
+    open: openConfirmDialog,
+    close: closeConfirmDialog,
+  } = useSwitch();
+
   const [selectedRow, setSelectedRow] = useState<Author>(
     AUTHOR_FORM_DEFAULT_VALUES
   );
-  const closeAddModal = () => {
-    setAddModalState(false);
-  };
-  const openAddModal = () => {
-    setAddModalState(true);
-  };
 
-  const closeEditModal = () => {
-    setEditModalState(false);
-  };
-  const openEditModal = () => {
-    setEditModalState(true);
-  };
-  const openConfirmDialog = () => {
-    setDialogState(true);
-  };
-  const closeConfirmDialog = () => {
-    setDialogState(false);
-  };
   const fetchAuthors = async () => {
     try {
       const { data: response } = await axiosClient.get("/authors/");
@@ -151,7 +147,7 @@ const Author = () => {
 
       <DangerConfirmDialog
         close={closeConfirmDialog}
-        isOpen={isDialogOpen}
+        isOpen={isConfirmDialogOpen}
         title="Delete Author"
         text="Are you sure that you want to delete this author?"
         onConfirm={onConfirmDialog}

@@ -26,7 +26,7 @@ import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
-import { useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
 
 type Source = {
@@ -35,30 +35,26 @@ type Source = {
 };
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const Sof = () => {
-  const { value: isAddModalOpen, set: setAddModalState } = useToggleManual();
-  const { value: isEditModalOpen, set: setEditModalState } = useToggleManual();
-  const { value: isDialogOpen, set: setDialogState } = useToggleManual();
+  const {
+    isOpen: isAddModalOpen,
+    open: openAddModal,
+    close: closeAddModal,
+  } = useSwitch();
+
+  const {
+    isOpen: isEditModalOpen,
+    open: openEditModal,
+    close: closeEditModal,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmDialogOpen,
+    open: openConfirmDialog,
+    close: closeConfirmDialog,
+  } = useSwitch();
+
   const [selectedRow, setSelectedRow] = useState<Source>(
     SOURCE_FORM_DEFAULT_VALUES
   );
-  const openAddModal = () => {
-    setAddModalState(true);
-  };
-  const closeAddModal = () => {
-    setAddModalState(false);
-  };
-  const openEditModal = () => {
-    setEditModalState(true);
-  };
-  const closeEditModal = () => {
-    setEditModalState(false);
-  };
-  const openConfirmDialog = () => {
-    setDialogState(true);
-  };
-  const closeConfirmDialog = () => {
-    setDialogState(false);
-  };
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -160,7 +156,7 @@ const Sof = () => {
       />
       <DangerConfirmDialog
         close={closeConfirmDialog}
-        isOpen={isDialogOpen}
+        isOpen={isConfirmDialogOpen}
         title="Delete Source"
         text="Are you sure that you want to delete this source?"
         onConfirm={onConfirmDialog}
