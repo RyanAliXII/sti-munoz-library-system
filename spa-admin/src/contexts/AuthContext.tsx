@@ -1,9 +1,9 @@
 import { createContext, useEffect, useState } from "react";
-import {BaseProps } from "../definitions/props.definition";
+import { BaseProps } from "../definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
 import Loader from "../components/Loader";
 import axios from "axios";
-import { User} from "../definitions/types";
+import { User } from "../definitions/types";
 import {
   AccountInfo,
   EventType,
@@ -40,14 +40,13 @@ export const AuthProvider = ({ children }: BaseProps) => {
     } catch (error) {
       setAuthenticated(false);
     }
-
   };
   const useAccount = async (account: AccountInfo | null, accessToken = "") => {
     if (account && accessToken.length > 0) {
       msalClient.setActiveAccount(account);
       await fetchUser(accessToken);
       setAuthenticated(true);
-      return
+      return;
     }
     setAuthenticated(false);
   };
@@ -70,11 +69,11 @@ export const AuthProvider = ({ children }: BaseProps) => {
     msalClient.enableAccountStorageEvents();
     const callbackId = msalClient.addEventCallback((message: EventMessage) => {
       if (message.eventType === EventType.INITIALIZE_END) {
-          init()
+        init();
       }
       if (message.eventType === EventType.LOGIN_SUCCESS) {
         const payload: AuthenticationResult =
-        message.payload as AuthenticationResult;
+          message.payload as AuthenticationResult;
         useAccount(payload.account, payload.accessToken);
       }
     });
@@ -86,10 +85,10 @@ export const AuthProvider = ({ children }: BaseProps) => {
       msalClient.removeEventCallback(id);
     }
   };
-  const init = async()=>{
+  const init = async () => {
     await useAccountFromStorage();
-    setLoading(false)
-  }
+    setLoading(false);
+  };
   useEffect(() => {
     const id = subscribeMsalEvent();
     return () => {
@@ -102,4 +101,3 @@ export const AuthProvider = ({ children }: BaseProps) => {
     </AuthContext.Provider>
   );
 };
-
