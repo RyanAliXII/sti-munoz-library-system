@@ -59,7 +59,12 @@ const Author = () => {
   const openEditModal = () => {
     setEditModalState(true);
   };
-
+  const openConfirmDialog = () => {
+    setDialogState(true);
+  };
+  const closeConfirmDialog = () => {
+    setDialogState(false);
+  };
   const fetchAuthors = async () => {
     try {
       const { data: response } = await axiosClient.get("/authors/");
@@ -70,23 +75,21 @@ const Author = () => {
       return [];
     }
   };
-
   const queryClient = useQueryClient();
-  const deleteAuthor = async () => {
-    try {
-      const response = await axiosClient.delete(`/authors/${selectedRow?.id}/`);
-      if (response.status === StatusCodes.OK) {
-        queryClient.invalidateQueries(["authors"]);
-        toast.success("Author has been deleted.");
-      }
-    } catch (error) {
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.delete(`/authors/${selectedRow?.id}/`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["authors"]);
+      toast.success("Author has been deleted.");
+    },
+    onError: (error) => {
       toast.error(ErrorMsg.Delete);
       console.error(error);
-    } finally {
-      setDialogState(false);
-    }
-  };
-  const mutation = useMutation({ mutationFn: deleteAuthor });
+    },
+    onSettled: () => {
+      closeConfirmDialog();
+    },
+  });
   const onConfirmDialog = () => {
     mutation.mutate();
   };
@@ -130,7 +133,7 @@ const Author = () => {
                     }}
                     openDialog={() => {
                       setSelectedRow({ ...author });
-                      setDialogState(true);
+                      openConfirmDialog();
                     }}
                     key={author.id}
                   ></AuthorTableRow>
@@ -148,9 +151,7 @@ const Author = () => {
       />
 
       <DangerConfirmDialog
-        close={() => {
-          setDialogState(false);
-        }}
+        close={closeConfirmDialog}
         isOpen={isDialogOpen}
         title="Delete Author"
         text="Are you sure that you want to delete this author?"
@@ -210,21 +211,6 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       schema: CreateAuthorSchema,
     });
   const queryClient = useQueryClient();
-  const newAuthor = async () => {
-    try {
-      const response = await axiosClient.post("/authors/", form);
-      if (response.status === StatusCodes.OK) {
-        toast.success("New author has been added.");
-        queryClient.invalidateQueries(["authors"]);
-      }
-    } catch (error) {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    } finally {
-      setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
-      closeModal();
-    }
-  };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -234,7 +220,21 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     }
   };
-  const mutation = useMutation({ mutationFn: newAuthor });
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.post("/authors/", form),
+    onSuccess: () => {
+      toast.success("New author has been added.");
+      queryClient.invalidateQueries(["authors"]);
+    },
+    onError: (error) => {
+      toast.error(ErrorMsg.New);
+      console.error(error);
+    },
+    onSettled: () => {
+      setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
+      closeModal();
+    },
+  });
 
   const handleFormInput = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
@@ -337,21 +337,6 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
     });
   };
   const queryClient = useQueryClient();
-  const updateAuthor = async () => {
-    try {
-      const id = formData.id;
-      const response = await axiosClient.put(`/authors/${id}/`, form);
-      if (response.status === StatusCodes.OK) {
-        toast.success("Author has been updated.");
-        queryClient.invalidateQueries(["authors"]);
-      }
-    } catch (error) {
-      toast.error(ErrorMsg.Delete);
-      console.error(error);
-    } finally {
-      closeModal();
-    }
-  };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -361,7 +346,20 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
       console.error(error);
     }
   };
-  const mutation = useMutation({ mutationFn: updateAuthor });
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.put(`/authors/${formData.id}/`, form),
+    onSuccess: () => {
+      toast.success("Author has been updated.");
+      queryClient.invalidateQueries(["authors"]);
+    },
+    onError: (error) => {
+      toast.error(ErrorMsg.Delete);
+      console.error(error);
+    },
+    onSettled: () => {
+      closeModal();
+    },
+  });
   if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
   return (
     <Modal
