@@ -17,7 +17,6 @@ import LoadingBoundary from "../../../components/loader/LoadingBoundary";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { CreateAuthorSchema } from "./schema";
 import { useForm } from "../../../hooks/useForm";
-import { StatusCodes } from "http-status-codes";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
 import {
