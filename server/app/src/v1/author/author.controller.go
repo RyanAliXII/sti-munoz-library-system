@@ -12,7 +12,7 @@ import (
 )
 
 type AuthorController struct {
-	Repos *repository.Repositories
+	repos *repository.Repositories
 }
 
 var logger = slimlog.GetInstance()
@@ -20,12 +20,8 @@ var logger = slimlog.GetInstance()
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	var body model.Author = model.Author{}
 
-	bindingErr := ctx.ShouldBindBodyWith(&body, binding.JSON)
-	if bindingErr != nil {
-		logger.Error(bindingErr.Error())
-		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
-	}
-	insertErr := ctrler.Repos.AuthorRepository.New(body)
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	insertErr := ctrler.repos.AuthorRepository.New(body)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
@@ -33,7 +29,7 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{}, "Author added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
-	var authors []model.Author = ctrler.Repos.AuthorRepository.Get()
+	var authors []model.Author = ctrler.repos.AuthorRepository.Get()
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors}, "Authors fetched."))
 }
 
@@ -42,8 +38,9 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 	if castErr != nil {
 		logger.Warn(castErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
+		return
 	}
-	err := ctrler.Repos.AuthorRepository.Delete(id)
+	err := ctrler.repos.AuthorRepository.Delete(id)
 	if err != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, err.Error()))
 		return
@@ -63,7 +60,7 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		logger.Error(bindingErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
 	}
-	updateErr := ctrler.Repos.AuthorRepository.Update(id, model.Author{GivenName: author.GivenName, MiddleName: author.MiddleName, Surname: author.Surname})
+	updateErr := ctrler.repos.AuthorRepository.Update(id, model.Author{GivenName: author.GivenName, MiddleName: author.MiddleName, Surname: author.Surname})
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, updateErr.Error()))
 	}

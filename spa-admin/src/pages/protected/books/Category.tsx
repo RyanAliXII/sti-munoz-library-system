@@ -34,7 +34,7 @@ const Category = () => {
 
   return (
     <>
-      <div className="w-full h-full">
+      <div className="w-full h-full ">
         <div>
           <h1 className="text-3xl font-bold ml-5 lg:ml-9 ">Category</h1>
         </div>

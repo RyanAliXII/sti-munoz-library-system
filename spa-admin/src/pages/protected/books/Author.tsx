@@ -29,6 +29,9 @@ import {
   TrBody,
   TrHead,
 } from "../../../components/table/Table";
+import { EditModalProps, ModalProps } from "../../../definitions/types";
+import { ErrorMsg } from "../../../definitions/var";
+
 const AUTHOR_FORM_DEFAULT_VALUES: Author = {
   id: 0,
   givenName: "",
@@ -62,6 +65,8 @@ const Author = () => {
       const { data: response } = await axiosClient.get("/authors/");
       return response.data.authors ?? [];
     } catch (error) {
+      toast.error(ErrorMsg.Get);
+      console.error(error);
       return [];
     }
   };
@@ -72,9 +77,11 @@ const Author = () => {
       const response = await axiosClient.delete(`/authors/${selectedRow?.id}/`);
       if (response.status === StatusCodes.OK) {
         queryClient.invalidateQueries(["authors"]);
+        toast.success("Author has been deleted.");
       }
     } catch (error) {
-      console.log(error);
+      toast.error(ErrorMsg.Delete);
+      console.error(error);
     } finally {
       setDialogState(false);
     }
@@ -125,7 +132,7 @@ const Author = () => {
                       setSelectedRow({ ...author });
                       setDialogState(true);
                     }}
-                    key={index}
+                    key={author.id}
                   ></AuthorTableRow>
                 ))}
               </Tbody>
@@ -133,18 +140,19 @@ const Author = () => {
           </div>
         </LoadingBoundary>
       </div>
+      <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditAuthorModal
         isOpen={isEditModalOpen}
         formData={selectedRow}
         closeModal={closeEditModal}
       />
-      <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+
       <DangerConfirmDialog
         close={() => {
           setDialogState(false);
         }}
         isOpen={isDialogOpen}
-        title="Delete Author!"
+        title="Delete Author"
         text="Are you sure that you want to delete this author?"
         onConfirm={onConfirmDialog}
       ></DangerConfirmDialog>
@@ -153,7 +161,7 @@ const Author = () => {
 };
 
 type Author = {
-  id: number;
+  id?: number;
   givenName: string;
   middleName?: string;
   surname: string;
@@ -194,13 +202,6 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
     </TrBody>
   );
 };
-interface ModalProps {
-  isOpen: boolean;
-  closeModal: () => void;
-}
-interface EditModalProps extends ModalProps {
-  formData: Author;
-}
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { form, errors, setForm, validate, clearErrorWithKey } =
@@ -209,15 +210,16 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       schema: CreateAuthorSchema,
     });
   const queryClient = useQueryClient();
-  const addNewAuthor = async () => {
+  const newAuthor = async () => {
     try {
       const response = await axiosClient.post("/authors/", form);
       if (response.status === StatusCodes.OK) {
         toast.success("New author has been added.");
         queryClient.invalidateQueries(["authors"]);
       }
-    } catch {
-      toast.error("Failed to add new author.");
+    } catch (error) {
+      toast.error(ErrorMsg.New);
+      console.error(error);
     } finally {
       setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
       closeModal();
@@ -230,7 +232,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       mutation.mutate();
     } catch {}
   };
-  const mutation = useMutation({ mutationFn: addNewAuthor });
+  const mutation = useMutation({ mutationFn: newAuthor });
 
   const handleFormInput = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
@@ -306,7 +308,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditAuthorModal: React.FC<EditModalProps> = ({
+const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   isOpen,
   closeModal,
   formData,
@@ -343,6 +345,7 @@ const EditAuthorModal: React.FC<EditModalProps> = ({
         queryClient.invalidateQueries(["authors"]);
       }
     } catch (error) {
+      toast.error(ErrorMsg.Delete);
       console.error(error);
     }
   };

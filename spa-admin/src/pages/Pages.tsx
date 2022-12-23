@@ -9,6 +9,7 @@ import BookAdd from "./protected/books/BookAdd";
 import Dashboard from "./protected/Dashboard";
 import Category from "./protected/books/Category";
 import Publisher from "./protected/books/Publisher";
+import Sof from "./protected/books/Sof";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -18,6 +19,7 @@ const pages = createRoutesFromChildren(
       <Route path="/books/authors" element={<Author />} />
       <Route path="/books/categories" element={<Category />} />
       <Route path="/books/publishers" element={<Publisher />} />
+      <Route path="/books/source-of-funds" element={<Sof />} />
     </Route>
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />

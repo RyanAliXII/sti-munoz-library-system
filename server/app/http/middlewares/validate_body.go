@@ -16,7 +16,7 @@ func ValidateBody[Body any](ctx *gin.Context) {
 	var body Body
 	bindingErr := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if bindingErr != nil {
-		logger.Error(bindingErr.Error())
+		logger.Error(bindingErr.Error(), zap.String("func", "middlewares.ValidateBody"))
 		ctx.AbortWithStatusJSON(httpresp.Fail(http.StatusBadRequest, gin.H{}, bindingErr.Error()))
 		return
 	}
