@@ -124,7 +124,6 @@ const Sof = () => {
             </Thead>
             <Tbody>
               {sources?.map((source) => {
-                console.log(source);
                 return (
                   <TrBody key={source.id}>
                     <Td>{source.name}</Td>
