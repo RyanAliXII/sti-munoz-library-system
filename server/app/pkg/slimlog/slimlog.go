@@ -37,3 +37,9 @@ func GetInstance() *zap.Logger {
 	})
 	return logger
 }
+func Function(name string) zapcore.Field {
+	return zap.String("function", name)
+}
+func AffectedRows(affected int64) zapcore.Field {
+	return zap.Int64("affectedRows", affected)
+}

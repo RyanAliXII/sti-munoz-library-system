@@ -27,6 +27,7 @@ import {
 } from "../../../components/table/Table";
 import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
+import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
 import { useToggleManual } from "../../../hooks/useToggle";
 import { PublisherSchema } from "./schema";
@@ -68,8 +69,9 @@ const Publisher = () => {
     try {
       const { data: response } = await axiosClient.get("/publishers/");
       return response?.data?.publishers || [];
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.error(error);
+      toast.error(ErrorMsg.Get);
     }
     return [];
   };
@@ -83,10 +85,11 @@ const Publisher = () => {
       );
       if (response.status == StatusCodes.OK) {
         queryClient.invalidateQueries(["publishers"]);
-        toast.success("Publisher successfully deleted.");
+        toast.success("Publisher deleted.");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error(ErrorMsg.Delete);
     } finally {
       setConfirmDialogState(false);
     }
@@ -194,8 +197,9 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
         queryClient.invalidateQueries(["publishers"]);
         closeModal();
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      toast.error(ErrorMsg.New);
+      console.error(error);
     }
   };
   const queryClient = useQueryClient();
@@ -214,7 +218,10 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     try {
       await validate();
       mutation.mutate();
-    } catch {}
+    } catch (error) {
+      toast.error(ErrorMsg.New);
+      console.error(error);
+    }
   };
   if (!isOpen) return null;
   return (
@@ -275,11 +282,33 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
       return { ...prevForm, [name]: value };
     });
   };
+  const queryClient = useQueryClient();
+  const updatePublisher = async () => {
+    try {
+      const response = await axiosClient.put(
+        `/publishers/${formData.id}/`,
+        form
+      );
+      if (response.status === StatusCodes.OK) {
+        toast.success("Publisher has been updated.");
+        queryClient.invalidateQueries(["publishers"]);
+      }
+    } catch (error) {
+      toast.error(ErrorMsg.Update);
+      console.error(error);
+    }
+  };
+  const mutation = useMutation({ mutationFn: updatePublisher });
+
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
       await validate();
-    } catch {}
+      mutation.mutate();
+    } catch (error) {
+      toast.error(ErrorMsg.Update);
+      console.error(error);
+    }
   };
   if (!isOpen) return null;
   return (

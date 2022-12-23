@@ -30,6 +30,7 @@ import {
   TrHead,
 } from "../../../components/table/Table";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
+import { ErrorMsg } from "../../../definitions/var";
 
 const AUTHOR_FORM_DEFAULT_VALUES: Author = {
   id: 0,
@@ -64,6 +65,8 @@ const Author = () => {
       const { data: response } = await axiosClient.get("/authors/");
       return response.data.authors ?? [];
     } catch (error) {
+      toast.error(ErrorMsg.Get);
+      console.error(error);
       return [];
     }
   };
@@ -74,9 +77,11 @@ const Author = () => {
       const response = await axiosClient.delete(`/authors/${selectedRow?.id}/`);
       if (response.status === StatusCodes.OK) {
         queryClient.invalidateQueries(["authors"]);
+        toast.success("Author has been deleted.");
       }
     } catch (error) {
-      console.log(error);
+      toast.error(ErrorMsg.Delete);
+      console.error(error);
     } finally {
       setDialogState(false);
     }
@@ -212,8 +217,9 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
         toast.success("New author has been added.");
         queryClient.invalidateQueries(["authors"]);
       }
-    } catch {
-      toast.error("Failed to add new author.");
+    } catch (error) {
+      toast.error(ErrorMsg.New);
+      console.error(error);
     } finally {
       setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
       closeModal();
@@ -339,6 +345,7 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
         queryClient.invalidateQueries(["authors"]);
       }
     } catch (error) {
+      toast.error(ErrorMsg.Delete);
       console.error(error);
     }
   };

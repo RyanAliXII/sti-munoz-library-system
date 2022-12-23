@@ -13,5 +13,7 @@ func PublisherRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
 	}
 	router.GET("/", controller.GetPublishers)
 	router.POST("/", middlewares.ValidateBody[PublisherBody], controller.NewPublisher)
+	router.PUT("/:id/", middlewares.ValidateBody[PublisherBody], controller.UpdatePublisher)
 	router.DELETE("/:id/", controller.DeletePublisher)
+
 }

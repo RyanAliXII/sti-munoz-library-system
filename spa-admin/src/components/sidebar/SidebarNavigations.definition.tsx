@@ -24,24 +24,29 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     to: "",
     icon: <AiOutlineBook className="text-xl" />,
     items: [
-      {
-        text: "Add book",
-        to: "/books/create",
-        items: [],
-      },
+      // {
+      //   text: "Add book",
+      //   to: "/books/create",
+      //   items: [],
+      // },
       {
         text: "Authors",
         to: "/books/authors",
         items: [],
       },
-      {
-        text: "Categories",
-        to: "/books/categories",
-        items: [],
-      },
+      // {
+      //   text: "Categories",
+      //   to: "/books/categories",
+      //   items: [],
+      // },
       {
         text: "Publishers",
         to: "/books/publishers",
+        items: [],
+      },
+      {
+        text: "Source of Funds",
+        to: "/books/source-of-funds",
         items: [],
       },
     ],

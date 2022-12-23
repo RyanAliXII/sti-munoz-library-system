@@ -35,6 +35,20 @@ func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	}, "Publishers successfully fetched."))
 }
 func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
+	id, castErr := strconv.Atoi(ctx.Param("id"))
+	if castErr != nil {
+		logger.Warn(castErr.Error(), zap.String("error", "castErr"))
+		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
+		return
+	}
+	var publisher PublisherBody
+	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
+	updateErr := ctrler.repos.PublisherRepository.Update(id, model.Publisher{Name: publisher.Name})
+	if updateErr != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{}, updateErr.Error()))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{}, "Publishers successfully updated."))
 
 }
 func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
