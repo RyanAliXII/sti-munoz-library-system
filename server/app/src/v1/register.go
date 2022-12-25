@@ -15,5 +15,5 @@ func RegisterRoutesV1(router *gin.Engine, repositories *repository.Repositories)
 	authorsrc.AuthorRoutes(grp.Group("/authors"), repositories)
 	publishersrc.PublisherRoutes(grp.Group("/publishers"), repositories)
 	sofsrc.FundSourceRoutes(grp.Group("/source-of-funds"), repositories)
-	categorysrc.CategoryRoutes(grp.Group("/categories"))
+	categorysrc.CategoryRoutes(grp.Group("/categories"), repositories)
 }

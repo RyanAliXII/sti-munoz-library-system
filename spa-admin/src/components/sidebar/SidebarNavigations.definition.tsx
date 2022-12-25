@@ -34,11 +34,11 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/books/authors",
         items: [],
       },
-      // {
-      //   text: "Categories",
-      //   to: "/books/categories",
-      //   items: [],
-      // },
+      {
+        text: "Categories",
+        to: "/books/categories",
+        items: [],
+      },
       {
         text: "Publishers",
         to: "/books/publishers",

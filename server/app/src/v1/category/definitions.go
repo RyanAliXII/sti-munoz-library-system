@@ -1,5 +1,5 @@
 package categorysrc
 
-type CreateCategoryBody struct {
-	Name string `json:"name" binding:"required" `
+type CategoryBody struct {
+	Name string `json:"name" binding:"required,alphanum"`
 }

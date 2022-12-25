@@ -5,14 +5,28 @@ import {
   LighButton,
   Input,
   SECONDARY_BTN_DEFAULT_CLASS,
+  DANGER_BTN_DEFAULT_CLASS,
+  DangerButton,
 } from "../../../components/forms/Forms";
-import { AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useForm } from "../../../hooks/useForm";
 import { CategorySchema } from "./schema";
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  TrBody,
+  TrHead,
+} from "../../../components/table/Table";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axiosClient from "../../../definitions/configs/axios";
 import { toast } from "react-toastify";
+import LoadingBoundary from "../../../components/loader/LoadingBoundary";
 
 const Category = () => {
   const {
@@ -27,59 +41,87 @@ const Category = () => {
     close: closeEditModal,
   } = useSwitch();
 
+  type Category = {
+    name: string;
+  };
+  const fetchCategories = async () => {
+    try {
+      const { data: response } = await axiosClient.get("/categories/");
+      return response.data?.categories ?? [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
+  const {
+    data: categories,
+    isLoading,
+    isError,
+  } = useQuery<Category[]>({
+    queryFn: fetchCategories,
+    queryKey: ["categories"],
+  });
   return (
     <>
-      <div className="w-full h-full ">
-        <div>
-          <h1 className="text-3xl font-bold ml-5 lg:ml-9 ">Category</h1>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
+        <div className="mb-4">
+          <h1 className="text-3xl font-bold">Category</h1>
         </div>
-        <div className="mx-auto mt-3 w-11/12 lg:ml-9">
-          <PrimaryButton props={{ onClick: openAddModal }}>
-            {" "}
-            Create Category{" "}
-          </PrimaryButton>
+        <div className="mb-4">
+          <PrimaryButton
+            buttonText="Add Category"
+            props={{ onClick: openAddModal }}
+          ></PrimaryButton>
         </div>
-        <table className="border mx-auto w-11/12 mt-3 lg:ml-9 lg:w-1/2 rounded">
-          <thead>
-            <tr className="border">
-              <th className="p-2">Category name</th>
-              <th className="p-2">Date Created </th>
-              <th className="p-2">Updated at</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border">
-              <td className="p-2 text-center">Thesis</td>
-              <td className="p-2 text-center"></td>
-              <td className="p-2 text-center"></td>
-              <td className="p-2 text-center">
-                <SecondaryButton
-                  props={{
-                    className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
-                    onClick: openEditModal,
-                  }}
-                >
-                  <AiOutlineEdit /> Edit
-                </SecondaryButton>
-              </td>
-            </tr>
-            <tr className="border">
-              <td className="p-2 text-center">References</td>
-              <td className="p-2 text-center"></td>
-              <td className="p-2 text-center"></td>
-              <td className="p-2 text-center">
-                <SecondaryButton
-                  props={{
-                    className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
-                    onClick: openEditModal,
-                  }}
-                >
-                  <AiOutlineEdit /> Edit
-                </SecondaryButton>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+
+        <LoadingBoundary isLoading={isLoading} isError={isError}>
+          <div className="w-full">
+            <Table>
+              <Thead>
+                <TrHead>
+                  <Th>Category</Th>
+                  <Th></Th>
+                </TrHead>
+              </Thead>
+              <Tbody>
+                {categories?.map((category) => {
+                  return (
+                    <TrBody key={category.name}>
+                      <Td props={{ className: "p-2 capitalize" }}>
+                        {category.name}
+                      </Td>
+                      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
+                        <SecondaryButton
+                          props={{
+                            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
+                            onClick: () => {
+                              // setSelectedRow({ ...publisher});
+                              openEditModal();
+                            },
+                          }}
+                        >
+                          <AiOutlineEdit />
+                        </SecondaryButton>
+                        <DangerButton
+                          props={{
+                            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+                            onClick: () => {
+                              // openConfirmDialog();
+                              // setSelectedRow({ ...publisher });
+                            },
+                          }}
+                        >
+                          {" "}
+                          <AiOutlineDelete />
+                        </DangerButton>
+                      </Td>
+                    </TrBody>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </div>
+        </LoadingBoundary>
       </div>
       <AddCategoryModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditCategoryModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
@@ -98,25 +140,30 @@ const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const FORM_DEFAULT_VALUES: Category = {
     name: "",
   };
-  const { form, setForm, errors, clearErrorWithKey, validate } =
-    useForm<Category>({
-      default: FORM_DEFAULT_VALUES,
-      schema: CategorySchema,
-    });
+  const { form, errors, handleFormInput, validate } = useForm<Category>({
+    default: FORM_DEFAULT_VALUES,
+    schema: CategorySchema,
+  });
 
-  const handleFormInput = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return { ...prevForm, [name]: value };
-    });
-  };
-
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => axiosClient.post("/categories/", form),
+    onSuccess: () => {
+      toast.success("New category added");
+      queryClient.invalidateQueries(["categories"]);
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+    onSettled: () => {
+      closeModal();
+    },
+  });
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
       await validate();
+      mutation.mutate();
     } catch {}
   };
 

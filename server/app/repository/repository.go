@@ -6,6 +6,7 @@ type Repositories struct {
 	AuthorRepository    AuthorRepositoryInterface
 	PublisherRepository PublisherRepositoryInterface
 	SOFRepository       SOFInterface
+	CategoryRepository  CategoryRepositoryInterface
 }
 
 func NewRepositories(db *sqlx.DB) Repositories {
@@ -13,5 +14,6 @@ func NewRepositories(db *sqlx.DB) Repositories {
 		AuthorRepository:    NewAuthorRepository(db),
 		PublisherRepository: NewPublisherRepository(db),
 		SOFRepository:       NewSOFRepository(db),
+		CategoryRepository:  NewCategoryRepository(db),
 	}
 }
