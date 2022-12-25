@@ -14,8 +14,8 @@ type CategoryRepository struct {
 }
 
 func (repo *CategoryRepository) New(category model.Category) error {
-	var query string = fmt.Sprintf(`
-		CREATE TABLE category.%s(
+	var query string = `
+		CREATE TABLE IF NOT EXISTS ? (
 			id integer primary key generated always as identity,
 			book_id uuid,
 			copy_number int,
@@ -26,9 +26,8 @@ func (repo *CategoryRepository) New(category model.Category) error {
 			weeded_at timestamptz,
 			FOREIGN KEY(source_of_fund_id) REFERENCES book.source_of_funds(id),
 			FOREIGN KEY(book_id) REFERENCES book.books(id)
-		)
-	`, category.Name)
-	_, createErr := repo.db.Exec(query)
+		)`
+	_, createErr := repo.db.Exec(query, fmt.Sprintf("category.%s", category.Name))
 	if createErr != nil {
 		logger.Error(createErr.Error(), slimlog.Function("categoryrepo"), zap.String("error", "prepareERror"))
 	}
