@@ -1,18 +1,15 @@
 import axios from "axios";
-import React, { BaseSyntheticEvent, useEffect, useId, useState } from "react";
+import React, { BaseSyntheticEvent, useId, useState } from "react";
 import Autocomplete from "../../../components/autocomplete-input/Autocomplete";
 import { BaseProps } from "../../../definitions/props.definition";
-import { constructQuery, falsyValidate } from "../../../helpers/helper";
+import { constructQuery } from "../../../helpers/helper";
 import useDebounce from "../../../hooks/useDebounce";
 import {
   DangerButton,
-  DANGER_BTN_DEFAULT_CLASS,
   Input,
-  INPUT_DEFAULT_CLASS,
+  InputClasses,
   PrimaryButton,
-  PRIMARY_BTN_DEFAULT_CLASS,
   SecondaryButton,
-  SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
 import { useForm } from "../../../hooks/useForm";
 import { CategorySchema } from "./schema";
@@ -20,17 +17,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import DatePicker from "react-datepicker";
 import { Author } from "../../../definitions/types";
 import "react-datepicker/dist/react-datepicker.css";
-import {
-  DEFAULT_THEAD_CLASS,
-  Table,
-  TABLE_BODY_ROW_DEFAULT_CLASS,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  TrBody,
-  TrHead,
-} from "../../../components/table/Table";
+import TC from "../../../components/table/Table";
 import { useSwitch } from "../../../hooks/useToggle";
 import Modal from "react-responsive-modal";
 import { ModalProps } from "../../../definitions/types";
@@ -202,7 +189,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           </div>
           <div>
             <label>Category</label>
-            <select className={INPUT_DEFAULT_CLASS}>
+            <select className={InputClasses.InputDefaultClasslist}>
               <option>Select Category</option>
             </select>
           </div>
@@ -265,7 +252,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           <div>
             <label>Year Published</label>
             <DatePicker
-              className={INPUT_DEFAULT_CLASS}
+              className={InputClasses.InputDefaultClasslist}
               selected={new Date()}
               onChange={(date) => {
                 console.log(date);
@@ -308,7 +295,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             <PrimaryButton
               props={{
                 type: "button",
-                className: `${PRIMARY_BTN_DEFAULT_CLASS} mt-2 `,
+                className: "mt-2 ",
               }}
             >
               <AiOutlineSearch />
@@ -329,7 +316,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             <PrimaryButton
               props={{
                 type: "button",
-                className: `${PRIMARY_BTN_DEFAULT_CLASS} mt-2 `,
+                className: "mt-2 ",
               }}
             >
               <RiAddLine />
@@ -337,7 +324,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             <SecondaryButton
               props={{
                 type: "button",
-                className: `${SECONDARY_BTN_DEFAULT_CLASS} mt-2 `,
+                className: "mt-2 ",
               }}
             >
               <AiOutlineSearch />
@@ -356,32 +343,27 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
         </div>
 
         <div className="mb-10 overflow-y-scroll h-64">
-          <Table props={{ className: "w-full" }}>
-            <Thead props={{ className: `${DEFAULT_THEAD_CLASS} sticky top-0` }}>
-              <TrHead>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
-                <Th></Th>
-              </TrHead>
-            </Thead>
-            <Tbody props={{ className: "" }}>
+          <TC.Table className="w-full">
+            <TC.Thead className=" sticky top-0">
+              <TC.HeadingRow>
+                <TC.Th>Given name</TC.Th>
+                <TC.Th>Middle name/initial</TC.Th>
+                <TC.Th>Surname</TC.Th>
+                <TC.Th></TC.Th>
+              </TC.HeadingRow>
+            </TC.Thead>
+            <TC.Tbody>
               {form.authors?.map((author) => {
                 return (
-                  <TrBody key={author.id ?? useId()}>
-                    <Td>{author.givenName}</Td>
-                    <Td>{author.middleName}</Td>
-                    <Td>{author.surname}</Td>
-                    <Td
-                      props={{
-                        className:
-                          "p-2 flex gap-2 items-center justify-center h-full",
-                      }}
-                    >
+                  <TC.BodyRow key={author.id ?? useId()}>
+                    <TC.Td>{author.givenName}</TC.Td>
+                    <TC.Td>{author.middleName}</TC.Td>
+                    <TC.Td>{author.surname}</TC.Td>
+                    <TC.Td className="p-2 flex gap-2 items-center justify-center h-full">
                       {!author.id && (
                         <SecondaryButton
                           props={{
-                            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
+                            className: "flex items-center gap-1 text-sm",
                             // onClick: openEditModal,
                           }}
                         >
@@ -390,7 +372,8 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
                       )}
                       <DangerButton
                         props={{
-                          className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+                          className:
+                            " bg-red-500 flex items-center gap-1 text-sm",
                           onClick: () => {
                             removeAuthorFromTable(author);
                           },
@@ -398,12 +381,12 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
                       >
                         <AiOutlineDelete />
                       </DangerButton>
-                    </Td>
-                  </TrBody>
+                    </TC.Td>
+                  </TC.BodyRow>
                 );
               })}
-            </Tbody>
-          </Table>
+            </TC.Tbody>
+          </TC.Table>
         </div>
         <div className="mb-5">
           <label>Description</label>
@@ -480,51 +463,49 @@ const AuthorModal: React.FC<AuthorModalProps> = ({
               {selectedAuthorsCount > 1 ? "authors" : "author"}
             </small>
           </div>
-          <Table>
-            <Thead>
-              <TrHead>
-                <Th></Th>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
-              </TrHead>
-            </Thead>
-            <Tbody>
+          <TC.Table>
+            <TC.Thead>
+              <TC.HeadingRow>
+                <TC.Th></TC.Th>
+                <TC.Th>Given name</TC.Th>
+                <TC.Th>Middle name/initial</TC.Th>
+                <TC.Th>Surname</TC.Th>
+              </TC.HeadingRow>
+            </TC.Thead>
+            <TC.Tbody>
               {authors?.map((author) => {
                 const isChecked = selectedAuthors.find(
                   (a) => a.id === author.id
                 );
 
                 return (
-                  <TrBody
+                  <TC.Tbody
                     key={author.id}
-                    props={{
-                      className: `${TABLE_BODY_ROW_DEFAULT_CLASS} cursor-pointer`,
-                      onClick: () => {
-                        if (!isChecked) {
-                          selectAuthor?.(author);
-                        } else {
-                          removeAuthor?.(author);
-                        }
-                      },
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (!isChecked) {
+                        selectAuthor?.(author);
+                      } else {
+                        removeAuthor?.(author);
+                      }
                     }}
                   >
-                    <Td>
+                    <TC.BodyRow>
                       <input
                         type="checkbox"
                         onChange={() => {}}
                         checked={isChecked ? true : false}
                         className="h-4 w-4 border"
                       />
-                    </Td>
-                    <Td>{author.givenName}</Td>
-                    <Td>{author.middleName}</Td>
-                    <Td>{author.surname}</Td>
-                  </TrBody>
+                    </TC.BodyRow>
+                    <TC.Td>{author.givenName}</TC.Td>
+                    <TC.Td>{author.middleName}</TC.Td>
+                    <TC.Td>{author.surname}</TC.Td>
+                  </TC.Tbody>
                 );
               })}
-            </Tbody>
-          </Table>
+            </TC.Tbody>
+          </TC.Table>
         </div>
       </Modal>
     </>

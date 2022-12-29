@@ -6,12 +6,10 @@ import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
 import {
   DangerButton,
-  DANGER_BTN_DEFAULT_CLASS,
   Input,
   LighButton,
   PrimaryButton,
   SecondaryButton,
-  SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
 import LoadingBoundary from "../../../components/loader/LoadingBoundary";
 
@@ -21,14 +19,14 @@ import {
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  HeadingRow,
+  BodyRow,
 } from "../../../components/table/Table";
 import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import { PublisherSchema } from "./schema";
 
 type Publisher = {
@@ -113,20 +111,20 @@ const Publisher = () => {
           <div className="w-full">
             <Table>
               <Thead>
-                <TrHead>
+                <HeadingRow>
                   <Th>Publisher</Th>
                   <Th></Th>
-                </TrHead>
+                </HeadingRow>
               </Thead>
               <Tbody>
                 {publishers?.map((publisher) => {
                   return (
-                    <TrBody key={publisher.id}>
+                    <BodyRow key={publisher.id}>
                       <Td>{publisher.name}</Td>
-                      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
+                      <Td className="p-2 flex gap-2 items-center">
                         <SecondaryButton
                           props={{
-                            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
+                            className: "flex items-center gap-1 text-sm",
                             onClick: () => {
                               setSelectedRow({ ...publisher });
                               openEditModal();
@@ -137,7 +135,8 @@ const Publisher = () => {
                         </SecondaryButton>
                         <DangerButton
                           props={{
-                            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+                            className:
+                              "bg-red-500 flex items-center gap-1 text-sm",
                             onClick: () => {
                               openConfirmDialog();
                               setSelectedRow({ ...publisher });
@@ -148,7 +147,7 @@ const Publisher = () => {
                           <AiOutlineDelete />
                         </DangerButton>
                       </Td>
-                    </TrBody>
+                    </BodyRow>
                   );
                 })}
               </Tbody>

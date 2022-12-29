@@ -4,12 +4,10 @@ import {
   SecondaryButton,
   LighButton,
   Input,
-  SECONDARY_BTN_DEFAULT_CLASS,
-  DANGER_BTN_DEFAULT_CLASS,
   DangerButton,
 } from "../../../components/forms/Forms";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useForm } from "../../../hooks/useForm";
@@ -20,8 +18,8 @@ import {
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  BodyRow,
+  HeadingRow,
 } from "../../../components/table/Table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "../../../definitions/configs/axios";
@@ -78,22 +76,20 @@ const Category = () => {
           <div className="w-full">
             <Table>
               <Thead>
-                <TrHead>
+                <HeadingRow>
                   <Th>Category</Th>
                   <Th></Th>
-                </TrHead>
+                </HeadingRow>
               </Thead>
               <Tbody>
                 {categories?.map((category) => {
                   return (
-                    <TrBody key={category.name}>
-                      <Td props={{ className: "p-2 capitalize" }}>
-                        {category.name}
-                      </Td>
-                      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
+                    <BodyRow key={category.name}>
+                      <Td className="p-2 capitalize">{category.name}</Td>
+                      <Td className="p-2 flex gap-2 items-center">
                         <SecondaryButton
                           props={{
-                            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
+                            className: "flex items-center gap-1 text-sm",
                             onClick: () => {
                               // setSelectedRow({ ...publisher});
                               openEditModal();
@@ -104,7 +100,8 @@ const Category = () => {
                         </SecondaryButton>
                         <DangerButton
                           props={{
-                            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+                            className:
+                              "bg-red-500 flex items-center gap-1 text-sm",
                             onClick: () => {
                               // openConfirmDialog();
                               // setSelectedRow({ ...publisher });
@@ -115,7 +112,7 @@ const Category = () => {
                           <AiOutlineDelete />
                         </DangerButton>
                       </Td>
-                    </TrBody>
+                    </BodyRow>
                   );
                 })}
               </Tbody>

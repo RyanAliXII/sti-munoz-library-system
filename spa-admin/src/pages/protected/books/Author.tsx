@@ -2,8 +2,6 @@ import {
   PrimaryButton,
   SecondaryButton,
   Input,
-  SECONDARY_BTN_DEFAULT_CLASS,
-  DANGER_BTN_DEFAULT_CLASS,
   DangerButton,
   LighButton,
 } from "../../../components/forms/Forms";
@@ -26,8 +24,8 @@ import {
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  HeadingRow,
+  BodyRow,
 } from "../../../components/table/Table";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
@@ -111,12 +109,12 @@ const AuthorPage = () => {
           <div className="w-full">
             <Table>
               <Thead>
-                <TrHead>
+                <HeadingRow>
                   <Th>Given name</Th>
                   <Th>Middle name/initial</Th>
                   <Th>Surname</Th>
                   <Th></Th>
-                </TrHead>
+                </HeadingRow>
               </Thead>
 
               <Tbody>
@@ -168,14 +166,14 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   openDialog,
 }) => {
   return (
-    <TrBody>
+    <BodyRow>
       <Td>{author.givenName}</Td>
       <Td>{author.middleName}</Td>
       <Td>{author.surname}</Td>
-      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
+      <Td className="p-2 flex gap-2 items-center">
         <SecondaryButton
           props={{
-            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
+            className: "flex items-center gap-1 text-sm",
             onClick: openEditModal,
           }}
         >
@@ -183,14 +181,14 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
         </SecondaryButton>
         <DangerButton
           props={{
-            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+            className: "bg-red-500 flex items-center gap-1 text-sm",
             onClick: openDialog,
           }}
         >
           <AiOutlineDelete />
         </DangerButton>
       </Td>
-    </TrBody>
+    </BodyRow>
   );
 };
 

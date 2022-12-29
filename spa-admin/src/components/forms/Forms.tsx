@@ -7,43 +7,34 @@ interface InputProps {
 }
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
-export const PRIMARY_BTN_DEFAULT_CLASS = "bg-blue-600 p-2 rounded text-white";
-export const DANGER_BTN_DEFAULT_CLASS = "bg-red-500 p-2 rounded text-white";
-export const SECONDARY_BTN_DEFAULT_CLASS =
-  "bg-yellow-400 p-2 rounded text-white";
-export const LIGHT_BTN_DEFAULT_CLASS = "bg-gray-400 p-2 rounded text-white";
-export const INPUT_DEFAULT_CLASS = `
-form-control
-block
-w-full
-px-3
-py-1.5
-text-base
-font-normal
-text-gray-700
-bg-white bg-clip-padding
-border border-solid border-gray-300
-rounded
-transition
-ease-in-out
-focus:text-gray-700 focus:bg-white focus:outline-yellow-400 
-`;
+export enum ButtonClasses {
+  PrimaryButtonDefaultClasslist = "bg-blue-600 p-2 rounded text-white",
+  DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-white",
+  SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 rounded text-white",
+  LightButtonDefaultClasslist = "bg-gray-400 p-2 rounded text-white",
+}
+export enum InputClasses {
+  InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 
+  rounded transition ease-in-out
+  focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
+  InputErrorClassList = "border-red-500 focus:border-red-500",
+}
+
 export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
-  const ERROR_BORDER_CLASS = "border-red-500 focus:border-red-500";
   return (
     <>
       <label className="text-gray-700" htmlFor={props?.name}>
         {labelText}
       </label>
       <input
-        className={
-          error
-            ? `${INPUT_DEFAULT_CLASS} ${ERROR_BORDER_CLASS}`
-            : INPUT_DEFAULT_CLASS
-        }
         name={props?.name}
         placeholder={props?.placeholder}
-        {...props}
+        {...{
+          ...props,
+          className: `${InputClasses.InputDefaultClasslist} ${
+            props?.className
+          } ${error ? InputClasses.InputErrorClassList : ""}`,
+        }}
       />
       <div className="h-2 flex items-center mt-2">
         <small className="text-red-500">{error}</small>
@@ -67,18 +58,12 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
   children,
 }) => {
   return (
-    <button className={PRIMARY_BTN_DEFAULT_CLASS} {...props}>
-      {children ? children : buttonText}
-    </button>
-  );
-};
-export const DangerButton: React.FC<ButtonProps> = ({
-  buttonText,
-  props,
-  children,
-}) => {
-  return (
-    <button className={DANGER_BTN_DEFAULT_CLASS} {...props}>
+    <button
+      {...{
+        ...props,
+        className: `${ButtonClasses.PrimaryButtonDefaultClasslist} ${props?.className}`,
+      }}
+    >
       {children ? children : buttonText}
     </button>
   );
@@ -89,7 +74,28 @@ export const SecondaryButton: React.FC<ButtonProps> = ({
   children,
 }) => {
   return (
-    <button className={SECONDARY_BTN_DEFAULT_CLASS} {...props}>
+    <button
+      {...{
+        ...props,
+        className: `${ButtonClasses.SecondaryButtonDefaultClasslist} ${props?.className}`,
+      }}
+    >
+      {children ? children : buttonText}
+    </button>
+  );
+};
+export const DangerButton: React.FC<ButtonProps> = ({
+  buttonText,
+  props,
+  children,
+}) => {
+  return (
+    <button
+      {...{
+        ...props,
+        className: `${ButtonClasses.DangerButtonDefaultClasslist} ${props?.className}`,
+      }}
+    >
       {children ? children : buttonText}
     </button>
   );
@@ -100,7 +106,12 @@ export const LighButton: React.FC<ButtonProps> = ({
   children,
 }) => {
   return (
-    <button className={LIGHT_BTN_DEFAULT_CLASS} {...props}>
+    <button
+      {...{
+        ...props,
+        className: `${ButtonClasses.LightButtonDefaultClasslist} ${props?.className}`,
+      }}
+    >
       {children ? children : buttonText}
     </button>
   );

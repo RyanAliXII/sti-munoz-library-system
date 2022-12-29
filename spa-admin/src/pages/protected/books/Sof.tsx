@@ -6,12 +6,10 @@ import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
 import {
   DangerButton,
-  DANGER_BTN_DEFAULT_CLASS,
   Input,
   LighButton,
   PrimaryButton,
   SecondaryButton,
-  SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
 import {
   Table,
@@ -19,14 +17,14 @@ import {
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  BodyRow,
+  HeadingRow,
 } from "../../../components/table/Table";
 import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
 
 type Source = {
@@ -104,20 +102,20 @@ const Sof = () => {
         <div className="w-full">
           <Table>
             <Thead>
-              <TrHead>
+              <HeadingRow>
                 <Th>Source of fund</Th>
                 <Th></Th>
-              </TrHead>
+              </HeadingRow>
             </Thead>
             <Tbody>
               {sources?.map((source) => {
                 return (
-                  <TrBody key={source.id}>
+                  <BodyRow key={source.id}>
                     <Td>{source.name}</Td>
-                    <Td props={{ className: "p-2 flex gap-2 items-center" }}>
+                    <Td className="p-2 flex gap-2 items-center">
                       <SecondaryButton
                         props={{
-                          className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
+                          className: "flex items-center gap-1 text-sm",
                           onClick: () => {
                             setSelectedRow({ ...source });
                             openEditModal();
@@ -128,7 +126,8 @@ const Sof = () => {
                       </SecondaryButton>
                       <DangerButton
                         props={{
-                          className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
+                          className:
+                            " bg-red-500 flex items-center gap-1 text-sm",
                           onClick: () => {
                             openConfirmDialog();
                             setSelectedRow({ ...source });
@@ -139,7 +138,7 @@ const Sof = () => {
                         <AiOutlineDelete />
                       </DangerButton>
                     </Td>
-                  </TrBody>
+                  </BodyRow>
                 );
               })}
             </Tbody>
