@@ -101,10 +101,7 @@ const Publisher = () => {
           <h1 className="text-3xl font-bold ">Publishers</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add Publisher"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}>Add Publisher</PrimaryButton>
         </div>
 
         <LoadingBoundary isLoading={isLoading} isError={isError}>
@@ -123,24 +120,19 @@ const Publisher = () => {
                       <Td>{publisher.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
                         <SecondaryButton
-                          props={{
-                            className: "flex items-center gap-1 text-sm",
-                            onClick: () => {
-                              setSelectedRow({ ...publisher });
-                              openEditModal();
-                            },
+                          className="flex items-center gap-1 text-sm"
+                          onClick={() => {
+                            setSelectedRow({ ...publisher });
+                            openEditModal();
                           }}
                         >
                           <AiOutlineEdit />
                         </SecondaryButton>
                         <DangerButton
-                          props={{
-                            className:
-                              "bg-red-500 flex items-center gap-1 text-sm",
-                            onClick: () => {
-                              openConfirmDialog();
-                              setSelectedRow({ ...publisher });
-                            },
+                          className="bg-red-500 flex items-center gap-1 text-sm"
+                          onClick={() => {
+                            openConfirmDialog();
+                            setSelectedRow({ ...publisher });
                           }}
                         >
                           {" "}
@@ -231,7 +223,7 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Add publisher</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>
@@ -308,7 +300,7 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Update publisher</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>

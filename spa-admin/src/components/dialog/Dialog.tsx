@@ -42,8 +42,8 @@ export const DangerConfirmDialog = ({
           <small className="text-gray-500">{text}</small>
         </div>
         <div className="flex gap-2 h-30 p-2 w-full justify-end">
-          <LighButton props={{ onClick: close }}>Cancel</LighButton>
-          <DangerButton props={{ onClick: onConfirm }}>Confirm</DangerButton>
+          <LighButton onClick={close}>Cancel</LighButton>
+          <DangerButton onClick={onConfirm}>Confirm</DangerButton>
         </div>
       </div>
     </Modal>

@@ -66,10 +66,7 @@ const Category = () => {
           <h1 className="text-3xl font-bold">Category</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add Category"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}>New Category</PrimaryButton>
         </div>
 
         <LoadingBoundary isLoading={isLoading} isError={isError}>
@@ -88,24 +85,16 @@ const Category = () => {
                       <Td className="p-2 capitalize">{category.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
                         <SecondaryButton
-                          props={{
-                            className: "flex items-center gap-1 text-sm",
-                            onClick: () => {
-                              // setSelectedRow({ ...publisher});
-                              openEditModal();
-                            },
-                          }}
+                          className="flex items-center gap-1 text-sm"
+                          onClick={openEditModal}
                         >
                           <AiOutlineEdit />
                         </SecondaryButton>
                         <DangerButton
-                          props={{
-                            className:
-                              "bg-red-500 flex items-center gap-1 text-sm",
-                            onClick: () => {
-                              // openConfirmDialog();
-                              // setSelectedRow({ ...publisher });
-                            },
+                          className="bg-red-500 flex items-center gap-1 text-sm"
+                          onClick={() => {
+                            // openConfirmDialog();
+                            // setSelectedRow({ ...publisher });
                           }}
                         >
                           {" "}
@@ -192,7 +181,7 @@ const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Create category</PrimaryButton>
-            <LighButton props={{ onClick: closeModal }}>Cancel</LighButton>
+            <LighButton onClick={closeModal}>Cancel</LighButton>
           </div>
         </div>
       </form>
@@ -222,7 +211,7 @@ const EditCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Update category</PrimaryButton>
-            <LighButton props={{ onClick: closeModal }}>Cancel</LighButton>
+            <LighButton onClick={closeModal}>Cancel</LighButton>
           </div>
         </div>
       </form>

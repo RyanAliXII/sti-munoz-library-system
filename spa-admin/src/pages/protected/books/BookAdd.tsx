@@ -17,7 +17,15 @@ import { Editor } from "@tinymce/tinymce-react";
 import DatePicker from "react-datepicker";
 import { Author } from "../../../definitions/types";
 import "react-datepicker/dist/react-datepicker.css";
-import TC from "../../../components/table/Table";
+import {
+  BodyRow,
+  HeadingRow,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+} from "../../../components/table/Table";
 import { useSwitch } from "../../../hooks/useToggle";
 import Modal from "react-responsive-modal";
 import { ModalProps } from "../../../definitions/types";
@@ -292,12 +300,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
                 }}
               />
             </div>
-            <PrimaryButton
-              props={{
-                type: "button",
-                className: "mt-2 ",
-              }}
-            >
+            <PrimaryButton type="button" className="mt-2 ">
               <AiOutlineSearch />
             </PrimaryButton>
           </div>
@@ -313,20 +316,10 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
                 }}
               />
             </div>
-            <PrimaryButton
-              props={{
-                type: "button",
-                className: "mt-2 ",
-              }}
-            >
+            <PrimaryButton type="button" className="mt-2 ">
               <RiAddLine />
             </PrimaryButton>
-            <SecondaryButton
-              props={{
-                type: "button",
-                className: "mt-2 ",
-              }}
-            >
+            <SecondaryButton type="button" className="mt-2 ">
               <AiOutlineSearch />
             </SecondaryButton>
           </div>
@@ -334,59 +327,52 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
         <h2 className="mt-10 text-2xl">Author and Details</h2>
         <hr className="mb-5"></hr>
         <div className="flex gap-2 mb-5 ">
-          <PrimaryButton props={{ type: "button", onClick: openAuthorModal }}>
+          <PrimaryButton type="button" onClick={openAuthorModal}>
             Select Author
           </PrimaryButton>
-          <SecondaryButton props={{ type: "button" }}>
-            Add Author
-          </SecondaryButton>
+          <SecondaryButton type="button">Add Author</SecondaryButton>
         </div>
 
         <div className="mb-10 overflow-y-scroll h-64">
-          <TC.Table className="w-full">
-            <TC.Thead className=" sticky top-0">
-              <TC.HeadingRow>
-                <TC.Th>Given name</TC.Th>
-                <TC.Th>Middle name/initial</TC.Th>
-                <TC.Th>Surname</TC.Th>
-                <TC.Th></TC.Th>
-              </TC.HeadingRow>
-            </TC.Thead>
-            <TC.Tbody>
+          <Table className="w-full">
+            <Thead className=" sticky top-0">
+              <HeadingRow>
+                <Th>Given name</Th>
+                <Th>Middle name/initial</Th>
+                <Th>Surname</Th>
+                <Th></Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
               {form.authors?.map((author) => {
                 return (
-                  <TC.BodyRow key={author.id ?? useId()}>
-                    <TC.Td>{author.givenName}</TC.Td>
-                    <TC.Td>{author.middleName}</TC.Td>
-                    <TC.Td>{author.surname}</TC.Td>
-                    <TC.Td className="p-2 flex gap-2 items-center justify-center h-full">
+                  <BodyRow key={author.id ?? useId()}>
+                    <Td>{author.givenName}</Td>
+                    <Td>{author.middleName}</Td>
+                    <Td>{author.surname}</Td>
+                    <Td className="p-2 flex gap-2 items-center justify-center h-full">
                       {!author.id && (
                         <SecondaryButton
-                          props={{
-                            className: "flex items-center gap-1 text-sm",
-                            // onClick: openEditModal,
-                          }}
+                          className="flex items-center gap-1 text-sm"
+                          // onClick: openEditModal,
                         >
                           <AiOutlineEdit />
                         </SecondaryButton>
                       )}
                       <DangerButton
-                        props={{
-                          className:
-                            " bg-red-500 flex items-center gap-1 text-sm",
-                          onClick: () => {
-                            removeAuthorFromTable(author);
-                          },
+                        className=" bg-red-500 flex items-center gap-1 text-sm"
+                        onClick={() => {
+                          removeAuthorFromTable(author);
                         }}
                       >
                         <AiOutlineDelete />
                       </DangerButton>
-                    </TC.Td>
-                  </TC.BodyRow>
+                    </Td>
+                  </BodyRow>
                 );
               })}
-            </TC.Tbody>
-          </TC.Table>
+            </Tbody>
+          </Table>
         </div>
         <div className="mb-5">
           <label>Description</label>
@@ -395,7 +381,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           </div>
         </div>
         <div className="mb-2">
-          <PrimaryButton props={{ type: "button" }}>Add Authors</PrimaryButton>
+          <PrimaryButton type="button">Add Authors</PrimaryButton>
         </div>
       </form>
 
@@ -463,23 +449,23 @@ const AuthorModal: React.FC<AuthorModalProps> = ({
               {selectedAuthorsCount > 1 ? "authors" : "author"}
             </small>
           </div>
-          <TC.Table>
-            <TC.Thead>
-              <TC.HeadingRow>
-                <TC.Th></TC.Th>
-                <TC.Th>Given name</TC.Th>
-                <TC.Th>Middle name/initial</TC.Th>
-                <TC.Th>Surname</TC.Th>
-              </TC.HeadingRow>
-            </TC.Thead>
-            <TC.Tbody>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th></Th>
+                <Th>Given name</Th>
+                <Th>Middle name/initial</Th>
+                <Th>Surname</Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
               {authors?.map((author) => {
                 const isChecked = selectedAuthors.find(
                   (a) => a.id === author.id
                 );
 
                 return (
-                  <TC.Tbody
+                  <BodyRow
                     key={author.id}
                     className="cursor-pointer"
                     onClick={() => {
@@ -490,22 +476,22 @@ const AuthorModal: React.FC<AuthorModalProps> = ({
                       }
                     }}
                   >
-                    <TC.BodyRow>
+                    <Td>
                       <input
                         type="checkbox"
                         onChange={() => {}}
                         checked={isChecked ? true : false}
                         className="h-4 w-4 border"
                       />
-                    </TC.BodyRow>
-                    <TC.Td>{author.givenName}</TC.Td>
-                    <TC.Td>{author.middleName}</TC.Td>
-                    <TC.Td>{author.surname}</TC.Td>
-                  </TC.Tbody>
+                    </Td>
+                    <Td>{author.givenName}</Td>
+                    <Td>{author.middleName}</Td>
+                    <Td>{author.surname}</Td>
+                  </BodyRow>
                 );
               })}
-            </TC.Tbody>
-          </TC.Table>
+            </Tbody>
+          </Table>
         </div>
       </Modal>
     </>

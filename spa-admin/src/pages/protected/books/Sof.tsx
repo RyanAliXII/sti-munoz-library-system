@@ -93,10 +93,7 @@ const Sof = () => {
           <h1 className="text-3xl font-bold ">Source of Funds</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add Source"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}>Add Source</PrimaryButton>
         </div>
         {/* <LoadingBoundary isLoading={isLoading} isError={isError}> */}
         <div className="w-full">
@@ -114,24 +111,19 @@ const Sof = () => {
                     <Td>{source.name}</Td>
                     <Td className="p-2 flex gap-2 items-center">
                       <SecondaryButton
-                        props={{
-                          className: "flex items-center gap-1 text-sm",
-                          onClick: () => {
-                            setSelectedRow({ ...source });
-                            openEditModal();
-                          },
+                        className="flex items-center gap-1 text-sm"
+                        onClick={() => {
+                          setSelectedRow({ ...source });
+                          openEditModal();
                         }}
                       >
                         <AiOutlineEdit />
                       </SecondaryButton>
                       <DangerButton
-                        props={{
-                          className:
-                            " bg-red-500 flex items-center gap-1 text-sm",
-                          onClick: () => {
-                            openConfirmDialog();
-                            setSelectedRow({ ...source });
-                          },
+                        className=" bg-red-500 flex items-center gap-1 text-sm"
+                        onClick={() => {
+                          openConfirmDialog();
+                          setSelectedRow({ ...source });
                         }}
                       >
                         {" "}
@@ -222,7 +214,7 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Add Source</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>
@@ -297,7 +289,7 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Update source</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>

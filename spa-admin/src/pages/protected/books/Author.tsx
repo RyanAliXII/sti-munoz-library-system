@@ -99,10 +99,7 @@ const AuthorPage = () => {
           <h1 className="text-3xl font-bold ">Authors</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add author"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
         </div>
 
         <LoadingBoundary isLoading={isLoading} isError={isError}>
@@ -172,18 +169,14 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
       <Td>{author.surname}</Td>
       <Td className="p-2 flex gap-2 items-center">
         <SecondaryButton
-          props={{
-            className: "flex items-center gap-1 text-sm",
-            onClick: openEditModal,
-          }}
+          className="flex items-center gap-1 text-sm"
+          onClick={openEditModal}
         >
           <AiOutlineEdit />
         </SecondaryButton>
         <DangerButton
-          props={{
-            className: "bg-red-500 flex items-center gap-1 text-sm",
-            onClick: openDialog,
-          }}
+          className="flex items-center gap-1 text-sm"
+          onClick={openDialog}
         >
           <AiOutlineDelete />
         </DangerButton>
@@ -276,7 +269,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Add author</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton type="button" onClick={closeModal}>
               Cancel
             </LighButton>
           </div>
@@ -382,7 +375,7 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Update author</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>

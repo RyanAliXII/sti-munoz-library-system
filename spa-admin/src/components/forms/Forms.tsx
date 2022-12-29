@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React, { ButtonHTMLAttributes, ChangeEvent } from "react";
 
 interface InputProps {
   labelText: string;
@@ -43,20 +43,9 @@ export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
   );
 };
 
-interface HTMLButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
 
-interface ButtonProps {
-  buttonText?: string;
-  props?: HTMLButtonProps;
-  children?: React.ReactNode;
-}
-
-export const PrimaryButton: React.FC<ButtonProps> = ({
-  buttonText,
-  props,
-  children,
-}) => {
+export const PrimaryButton: React.FC<ButtonProps> = (props: ButtonProps) => {
   return (
     <button
       {...{
@@ -64,15 +53,11 @@ export const PrimaryButton: React.FC<ButtonProps> = ({
         className: `${ButtonClasses.PrimaryButtonDefaultClasslist} ${props?.className}`,
       }}
     >
-      {children ? children : buttonText}
+      {props.children}
     </button>
   );
 };
-export const SecondaryButton: React.FC<ButtonProps> = ({
-  buttonText,
-  props,
-  children,
-}) => {
+export const SecondaryButton: React.FC<ButtonProps> = (props) => {
   return (
     <button
       {...{
@@ -80,31 +65,21 @@ export const SecondaryButton: React.FC<ButtonProps> = ({
         className: `${ButtonClasses.SecondaryButtonDefaultClasslist} ${props?.className}`,
       }}
     >
-      {children ? children : buttonText}
+      {props.children}
     </button>
   );
 };
-export const DangerButton: React.FC<ButtonProps> = ({
-  buttonText,
-  props,
-  children,
-}) => {
+export const DangerButton: React.FC<ButtonProps> = (props: ButtonProps) => {
   return (
     <button
       {...{
         ...props,
         className: `${ButtonClasses.DangerButtonDefaultClasslist} ${props?.className}`,
       }}
-    >
-      {children ? children : buttonText}
-    </button>
+    ></button>
   );
 };
-export const LighButton: React.FC<ButtonProps> = ({
-  buttonText,
-  props,
-  children,
-}) => {
+export const LighButton: React.FC<ButtonProps> = (props: ButtonProps) => {
   return (
     <button
       {...{
@@ -112,7 +87,7 @@ export const LighButton: React.FC<ButtonProps> = ({
         className: `${ButtonClasses.LightButtonDefaultClasslist} ${props?.className}`,
       }}
     >
-      {children ? children : buttonText}
+      {props.children}
     </button>
   );
 };
