@@ -8,7 +8,7 @@ import {
   LighButton,
 } from "../../../components/forms/Forms";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,6 +19,7 @@ import { CreateAuthorSchema } from "./schema";
 import { useForm } from "../../../hooks/useForm";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
+import { Author } from "../../../definitions/types";
 import {
   Table,
   Tbody,
@@ -38,7 +39,7 @@ const AUTHOR_FORM_DEFAULT_VALUES: Author = {
   surname: "",
 };
 
-const Author = () => {
+const AuthorPage = () => {
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -156,12 +157,6 @@ const Author = () => {
   );
 };
 
-type Author = {
-  id?: number;
-  givenName: string;
-  middleName?: string;
-  surname: string;
-};
 type AuthorTableRowType = {
   author: Author;
   openEditModal: () => void;
@@ -399,4 +394,4 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   );
 };
 
-export default Author;
+export default AuthorPage;

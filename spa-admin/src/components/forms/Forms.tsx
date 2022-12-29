@@ -12,24 +12,23 @@ export const DANGER_BTN_DEFAULT_CLASS = "bg-red-500 p-2 rounded text-white";
 export const SECONDARY_BTN_DEFAULT_CLASS =
   "bg-yellow-400 p-2 rounded text-white";
 export const LIGHT_BTN_DEFAULT_CLASS = "bg-gray-400 p-2 rounded text-white";
-
-export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
-  const CLASS_NAME = `
-  form-control
-  block
-  w-full
-  px-3
-  py-1.5
-  text-base
-  font-normal
-  text-gray-700
-  bg-white bg-clip-padding
-  border border-solid border-gray-300
-  rounded
-  transition
-  ease-in-out
-  focus:text-gray-700 focus:bg-white focus:outline-yellow-400 
+export const INPUT_DEFAULT_CLASS = `
+form-control
+block
+w-full
+px-3
+py-1.5
+text-base
+font-normal
+text-gray-700
+bg-white bg-clip-padding
+border border-solid border-gray-300
+rounded
+transition
+ease-in-out
+focus:text-gray-700 focus:bg-white focus:outline-yellow-400 
 `;
+export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
   const ERROR_BORDER_CLASS = "border-red-500 focus:border-red-500";
   return (
     <>
@@ -37,7 +36,11 @@ export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
         {labelText}
       </label>
       <input
-        className={error ? `${CLASS_NAME} ${ERROR_BORDER_CLASS}` : CLASS_NAME}
+        className={
+          error
+            ? `${INPUT_DEFAULT_CLASS} ${ERROR_BORDER_CLASS}`
+            : INPUT_DEFAULT_CLASS
+        }
         name={props?.name}
         placeholder={props?.placeholder}
         {...props}

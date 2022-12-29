@@ -30,10 +30,10 @@ export const AuthProvider = ({ children }: BaseProps) => {
     try {
       if (msalClient.getAllAccounts().length > 0) {
         const account = msalClient.getAllAccounts()[0];
-        const acquireTokenResp = await msalClient.acquireTokenSilent({
+        const response = await msalClient.acquireTokenSilent({
           scopes: ["User.Read"],
         });
-        await useAccount(account, acquireTokenResp.accessToken);
+        await useAccount(account, response.accessToken);
       } else {
         throw new Error("NO ACCOUNTS");
       }

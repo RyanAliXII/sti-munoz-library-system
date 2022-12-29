@@ -7,7 +7,7 @@ export const CreateAuthorSchema = object().shape({
     
 })
 export const CategorySchema = object().shape({
-    name: string().test("is-alpha","Name should not contain symbols and whitespaces",  (value) => validator.isAlphanumeric(value ?? "")).required("Name is required field")
+    name: string().test("is-alpha","Name should not contain symbols and whitespaces.",  (value) => validator.isAlphanumeric(value ?? "")).required("Name is required field")
 })
 // 
 export const PublisherSchema = object().shape({
