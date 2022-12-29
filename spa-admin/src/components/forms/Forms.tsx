@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, ChangeEvent } from "react";
+import React, { ButtonHTMLAttributes, SelectHTMLAttributes } from "react";
 
 interface InputProps {
   labelText: string;
@@ -18,6 +18,11 @@ export enum InputClasses {
   rounded transition ease-in-out
   focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
   InputErrorClassList = "border-red-500 focus:border-red-500",
+}
+export enum SelectClasses {
+  SelectDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white border border-solid border-gray-300 
+  rounded transition ease-in-out
+  focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
 }
 
 export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
@@ -39,6 +44,38 @@ export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
       <div className="h-2 flex items-center mt-2">
         <small className="text-red-500">{error}</small>
       </div>
+    </>
+  );
+};
+
+export interface SelectProps {
+  props?: SelectHTMLAttributes<HTMLSelectElement>;
+  labelText: string;
+  options?: any[];
+  idKey: any;
+  textKey: any;
+}
+export const Select: React.FC<SelectProps> = ({
+  options,
+  labelText,
+  idKey,
+  textKey,
+  props,
+}) => {
+  return (
+    <>
+      <label>{labelText}</label>
+      <select
+        {...{
+          ...props,
+          className: `${SelectClasses.SelectDefaultClasslist} ${props?.className}`,
+        }}
+      >
+        <option>Choose</option>
+        {options?.map((opt) => {
+          return <option key={opt[idKey]}>{opt[textKey]}</option>;
+        })}
+      </select>
     </>
   );
 };

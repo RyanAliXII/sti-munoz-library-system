@@ -10,6 +10,7 @@ import {
   InputClasses,
   PrimaryButton,
   SecondaryButton,
+  Select,
 } from "../../../components/forms/Forms";
 import { useForm } from "../../../hooks/useForm";
 import { CategorySchema } from "./schema";
@@ -196,10 +197,15 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             />
           </div>
           <div>
-            <label>Category</label>
-            <select className={InputClasses.InputDefaultClasslist}>
-              <option>Select Category</option>
-            </select>
+            <Select
+              labelText="Category"
+              options={[
+                { name: "test", id: 1 },
+                { name: "test 2", id: 2 },
+              ]}
+              idKey="id"
+              textKey="name"
+            ></Select>
           </div>
           <div>
             <Input
