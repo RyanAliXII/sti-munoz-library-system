@@ -4,6 +4,7 @@ import {
   Input,
   DangerButton,
   LighButton,
+  WarningButton,
 } from "../../../components/forms/Forms";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useSwitch } from "../../../hooks/useToggle";
@@ -30,7 +31,13 @@ import {
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 
-const AUTHOR_FORM_DEFAULT_VALUES: Author = {
+const ADD_AUTHOR_DEFAULT: Omit<Author, "id"> = {
+  givenName: "",
+  middleName: "",
+  surname: "",
+};
+
+const EDIT_AUTHOR_DEFAULT: Author = {
   id: 0,
   givenName: "",
   middleName: "",
@@ -55,9 +62,7 @@ const AuthorPage = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Author>(
-    AUTHOR_FORM_DEFAULT_VALUES
-  );
+  const [selectedRow, setSelectedRow] = useState<Author>(EDIT_AUTHOR_DEFAULT);
 
   const fetchAuthors = async () => {
     try {
@@ -168,26 +173,24 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
       <Td>{author.middleName}</Td>
       <Td>{author.surname}</Td>
       <Td className="p-2 flex gap-2 items-center">
-        <SecondaryButton
-          className="flex items-center gap-1 text-sm"
+        <AiOutlineEdit
+          className="cursor-pointer text-yellow-400 text-xl"
           onClick={openEditModal}
-        >
-          <AiOutlineEdit />
-        </SecondaryButton>
-        <DangerButton
-          className="flex items-center gap-1 text-sm"
+        />
+        <AiOutlineDelete
+          className="cursor-pointer text-orange-600  text-xl"
           onClick={openDialog}
-        >
-          <AiOutlineDelete />
-        </DangerButton>
+        />
       </Td>
     </BodyRow>
   );
 };
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, setForm, validate, handleFormInput } = useForm<Author>({
-    default: AUTHOR_FORM_DEFAULT_VALUES,
+  const { form, errors, setForm, validate, handleFormInput } = useForm<
+    Omit<Author, "id">
+  >({
+    default: ADD_AUTHOR_DEFAULT,
     schema: CreateAuthorSchema,
   });
   const queryClient = useQueryClient();
@@ -211,7 +214,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     },
     onSettled: () => {
-      setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
+      setForm({ ...ADD_AUTHOR_DEFAULT });
       closeModal();
     },
   });
@@ -285,7 +288,7 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
 }) => {
   const { form, errors, clearErrors, setForm, validate, handleFormInput } =
     useForm<Author>({
-      default: AUTHOR_FORM_DEFAULT_VALUES,
+      default: EDIT_AUTHOR_DEFAULT,
       schema: CreateAuthorSchema,
     });
   useEffect(() => {

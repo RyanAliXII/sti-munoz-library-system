@@ -25,7 +25,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "../../../definitions/configs/axios";
 import { toast } from "react-toastify";
 import LoadingBoundary from "../../../components/loader/LoadingBoundary";
-
+import { CategoryType } from "../../../definitions/types";
 const Category = () => {
   const {
     isOpen: isAddModalOpen,
@@ -39,9 +39,6 @@ const Category = () => {
     close: closeEditModal,
   } = useSwitch();
 
-  type Category = {
-    name: string;
-  };
   const fetchCategories = async () => {
     try {
       const { data: response } = await axiosClient.get("/categories/");
@@ -55,7 +52,7 @@ const Category = () => {
     data: categories,
     isLoading,
     isError,
-  } = useQuery<Category[]>({
+  } = useQuery<CategoryType[]>({
     queryFn: fetchCategories,
     queryKey: ["categories"],
   });
@@ -84,22 +81,11 @@ const Category = () => {
                     <BodyRow key={category.name}>
                       <Td className="p-2 capitalize">{category.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <SecondaryButton
-                          className="flex items-center gap-1 text-sm"
+                        <AiOutlineEdit
+                          className="cursor-pointer text-yellow-400 text-xl"
                           onClick={openEditModal}
-                        >
-                          <AiOutlineEdit />
-                        </SecondaryButton>
-                        <DangerButton
-                          className="bg-red-500 flex items-center gap-1 text-sm"
-                          onClick={() => {
-                            // openConfirmDialog();
-                            // setSelectedRow({ ...publisher });
-                          }}
-                        >
-                          {" "}
-                          <AiOutlineDelete />
-                        </DangerButton>
+                        />
+                        <AiOutlineDelete className="cursor-pointer text-orange-600  text-xl" />
                       </Td>
                     </BodyRow>
                   );
@@ -119,14 +105,12 @@ interface ModalProps {
   isOpen: boolean;
   closeModal: () => void;
 }
-type Category = {
-  name: string;
-};
+
 const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const FORM_DEFAULT_VALUES: Category = {
+  const FORM_DEFAULT_VALUES: CategoryType = {
     name: "",
   };
-  const { form, errors, handleFormInput, validate } = useForm<Category>({
+  const { form, errors, handleFormInput, validate } = useForm<CategoryType>({
     default: FORM_DEFAULT_VALUES,
     schema: CategorySchema,
   });

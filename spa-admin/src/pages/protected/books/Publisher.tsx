@@ -28,11 +28,7 @@ import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
 import { useSwitch } from "../../../hooks/useToggle";
 import { PublisherSchema } from "./schema";
-
-type Publisher = {
-  id?: number;
-  name: string;
-};
+import { PublisherType } from "../../../definitions/types";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const Publisher = () => {
   const {
@@ -52,7 +48,7 @@ const Publisher = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Publisher>(
+  const [selectedRow, setSelectedRow] = useState<PublisherType>(
     PUBLISHER_FORM_DEFAULT_VALUES
   );
 
@@ -89,7 +85,7 @@ const Publisher = () => {
     data: publishers,
     isLoading,
     isError,
-  } = useQuery<Publisher[]>({
+  } = useQuery<PublisherType[]>({
     queryFn: fetchPublisher,
     queryKey: ["publishers"],
   });
@@ -119,25 +115,17 @@ const Publisher = () => {
                     <BodyRow key={publisher.id}>
                       <Td>{publisher.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <SecondaryButton
-                          className="flex items-center gap-1 text-sm"
-                          onClick={() => {
-                            setSelectedRow({ ...publisher });
-                            openEditModal();
-                          }}
-                        >
-                          <AiOutlineEdit />
-                        </SecondaryButton>
-                        <DangerButton
-                          className="bg-red-500 flex items-center gap-1 text-sm"
+                        <AiOutlineEdit
+                          className="cursor-pointer text-yellow-400 text-xl"
+                          onClick={openEditModal}
+                        />
+                        <AiOutlineDelete
+                          className="cursor-pointer text-orange-600  text-xl"
                           onClick={() => {
                             openConfirmDialog();
                             setSelectedRow({ ...publisher });
                           }}
-                        >
-                          {" "}
-                          <AiOutlineDelete />
-                        </DangerButton>
+                        />
                       </Td>
                     </BodyRow>
                   );
@@ -165,8 +153,7 @@ const Publisher = () => {
 };
 
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
-  const { errors, form, validate, handleFormInput } = useForm<Publisher>({
+  const { errors, form, validate, handleFormInput } = useForm<PublisherType>({
     default: PUBLISHER_FORM_DEFAULT_VALUES,
     schema: PublisherSchema,
   });
@@ -232,13 +219,13 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
+const EditPublisherModal: React.FC<EditModalProps<PublisherType>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
   const { errors, form, setForm, validate, handleFormInput } =
-    useForm<Publisher>({
+    useForm<PublisherType>({
       default: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
     });

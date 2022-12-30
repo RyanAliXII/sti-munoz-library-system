@@ -10,13 +10,17 @@ import {
   InputClasses,
   PrimaryButton,
   SecondaryButton,
-  Select,
 } from "../../../components/forms/Forms";
 import { useForm } from "../../../hooks/useForm";
-import { CategorySchema } from "./schema";
+import { BookSchema, CategorySchema } from "./schema";
 import { Editor } from "@tinymce/tinymce-react";
 import DatePicker from "react-datepicker";
-import { Author } from "../../../definitions/types";
+import {
+  Author,
+  CategoryType,
+  PublisherType,
+  SourceType,
+} from "../../../definitions/types";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   BodyRow,
@@ -38,7 +42,8 @@ import {
   AiOutlineSearch,
 } from "react-icons/ai";
 import { RiAddLine } from "react-icons/ri";
-
+import { toast } from "react-toastify";
+import Select, { Props as ReactSelectProps } from "react-select";
 const BookAdd = () => {
   const ONE_SECOND = 1000;
   const [bookSuggestions, setBookSuggestions] = useState<BookSuggestion[]>([]);
@@ -111,7 +116,29 @@ const BookAdd = () => {
     </div>
   );
 };
-
+// const obj: ReactSelectProps = {
+//   styles: {
+//     control: (baseStyles) => ({
+//       ...baseStyles,
+//       borderColor: "none",
+//       boxShadow: "none",
+//     }),
+//     option: (baseStyles) => ({
+//       ...baseStyles,
+//       backgroundColor: "none",
+//     }),
+//   },
+//   classNames: {
+//     control: (props) => {
+//       return errors?.category
+//         ? `${InputClasses.InputBorderClasslist} ${InputClasses.InputErrorClassList}`
+//         : InputClasses.InputBorderClasslist;
+//     },
+//     option: (props) => {
+//       return props.isSelected ? "bg-yellow-400" : "";
+//     },
+//   },
+// };
 const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
   const {
     isOpen: isAuthorModalOpen,
@@ -119,18 +146,66 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
     open: openAuthorModal,
   } = useSwitch();
 
-  const { form, handleFormInput, setForm } = useForm<Book>({
+  const { form, handleFormInput, setForm, validate, errors } = useForm<
+    Omit<BookType, "id">
+  >({
     default: {
       title: "",
-      copies: 1,
-      costPrice: 0,
-      ddc: "",
-      cutterNumber: "",
       authors: [],
-      sourceOfFund: 0,
+      category: "",
+      copies: 0,
+      dateReceived: new Date(),
+      authorNumber: "",
+      ddc: "",
+      costPrice: 0,
+      description: "",
+      fundSource: 0,
+      edition: 0,
+      pages: 0,
       publisher: 0,
+      year: 2000,
     },
-    schema: CategorySchema,
+    schema: BookSchema,
+  });
+
+  const fetchPublishers = async () => {
+    try {
+      const { data: response } = await axiosClient.get("/publishers/");
+      return response.data?.publishers ?? [];
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+  const fetchSourceofFunds = async () => {
+    try {
+      const { data: response } = await axiosClient.get("/source-of-funds/");
+      return response.data?.sources ?? [];
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+  const fetchCategories = async () => {
+    try {
+      const { data: response } = await axiosClient.get("/categories/");
+      return response.data?.categories ?? [];
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+  const { data: publishers } = useQuery<PublisherType[]>({
+    queryFn: fetchPublishers,
+    queryKey: ["publishers"],
+  });
+  const { data: sourceOfFunds } = useQuery<SourceType[]>({
+    queryFn: fetchSourceofFunds,
+    queryKey: ["sources"],
+  });
+  const { data: categories } = useQuery<CategoryType[]>({
+    queryFn: fetchCategories,
+    queryKey: ["categories"],
   });
   const selectAuthorFromTable = (a: Author) => {
     setForm((prevForm) => {
@@ -149,17 +224,25 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
         authors: [...filtered],
       };
     });
+    toast.success(`${a.givenName} ${a.surname} has been removed.`);
   };
-
+  const submit = async (event: BaseSyntheticEvent) => {
+    event.preventDefault();
+    try {
+      console.log("SUBMITTED");
+      await validate();
+    } catch {}
+  };
   return (
     <div>
       <h2 className="text-2xl">General Information</h2>
       <hr className="mb-5"></hr>
-      <form>
+      <form onSubmit={submit}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl">
           <div>
             <Input
               labelText="Title"
+              error={errors?.title}
               props={{
                 value: form.title,
                 onChange: handleFormInput,
@@ -171,13 +254,14 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           <div>
             <Input
               labelText="Copies"
+              error={errors?.copies}
               props={{
                 type: "number",
-                min: 1,
+                min: 0,
                 max: 1000,
                 value: form.copies,
                 onChange: handleFormInput,
-                placeholder: "Book copies",
+                placeholder: "Number of copies",
                 name: "copies",
               }}
             />
@@ -185,83 +269,110 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           <div>
             <Input
               labelText="Pages"
+              error={errors?.pages}
               props={{
                 type: "number",
-                min: 1,
+                min: 0,
                 max: 1000,
-                value: form.copies,
+                value: form.pages,
                 onChange: handleFormInput,
-                placeholder: "Book copies",
-                name: "copies",
+                placeholder: "Number of pages",
+                name: "pages",
               }}
             />
           </div>
           <div>
+            <label>Category</label>
             <Select
-              labelText="Category"
-              options={[
-                { name: "test", id: 1 },
-                { name: "test 2", id: 2 },
-              ]}
-              idKey="id"
-              textKey="name"
+              styles={{
+                control: (baseStyles) => ({
+                  ...baseStyles,
+                  borderColor: "none",
+                  boxShadow: "none",
+                }),
+                option: (baseStyles) => ({
+                  ...baseStyles,
+                  backgroundColor: "none",
+                }),
+              }}
+              classNames={{
+                control: (props) => {
+                  return errors?.category
+                    ? `${InputClasses.InputBorderClasslist} ${InputClasses.InputErrorClassList}`
+                    : InputClasses.InputBorderClasslist;
+                },
+                option: (props) => {
+                  return props.isSelected ? "bg-yellow-400" : "";
+                },
+              }}
+              options={categories?.map((category) => {
+                return {
+                  value: category.name,
+                  label: category.name.toLocaleUpperCase(),
+                };
+              })}
             ></Select>
+            <div className={InputClasses.LabelWrapperClasslist}>
+              <small className={InputClasses.LabelClasslist}>
+                {errors?.category}
+              </small>
+            </div>
           </div>
           <div>
-            <Input
-              labelText="Source of funds"
-              props={{
-                type: "number",
-                min: 1,
-                max: 1000,
-                value: form.copies,
-                onChange: handleFormInput,
-                placeholder: "Book copies",
-                name: "copies",
-              }}
-            />
+            <label>Source of fund</label>
+            <Select
+              options={sourceOfFunds?.map((source) => {
+                return { value: source.id, label: source.name };
+              })}
+            ></Select>
+            <div className={InputClasses.LabelWrapperClasslist}>
+              <small className={InputClasses.LabelClasslist}>
+                {errors?.fundSource}
+              </small>
+            </div>
           </div>
           <div>
             <Input
               labelText="Cost Price"
+              error={errors?.costPrice}
               props={{
                 type: "number",
-                min: 1,
+                min: 0,
                 max: 1000,
-                value: form.copies,
+                value: form.costPrice,
                 onChange: handleFormInput,
                 placeholder: "Book copies",
-                name: "copies",
+                name: "costPrice",
               }}
             />
           </div>
           <div>
             <Input
               labelText="Edition"
+              error={errors?.edition}
               props={{
                 type: "number",
-                min: 1,
+                min: 0,
                 max: 1000,
-                value: form.copies,
+                value: form.edition,
                 onChange: handleFormInput,
                 placeholder: "Book copies",
-                name: "copies",
+                name: "edition",
               }}
             />
           </div>
           <div>
-            <Input
-              labelText="Publisher"
-              props={{
-                type: "number",
-                min: 1,
-                max: 1000,
-                value: form.copies,
-                onChange: handleFormInput,
-                placeholder: "Book copies",
-                name: "copies",
-              }}
-            />
+            <label> Publisher</label>
+            <Select
+              options={publishers?.map((publisher) => {
+                return { value: publisher.id, label: publisher.name };
+              })}
+            ></Select>
+            <div className={InputClasses.LabelWrapperClasslist}>
+              <small className={InputClasses.LabelClasslist}>
+                {errors?.publisher}
+              </small>
+            </div>
           </div>
           <div>
             <label>Year Published</label>
@@ -283,10 +394,9 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
               props={{
                 type: "date",
 
-                // value: form.copies,
+                // value: form.copies
                 // onChange: handleFormInput,
-                placeholder: "Book copies",
-                name: "",
+                name: "dateReceived",
               }}
             />
           </div>
@@ -298,6 +408,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             <div className="flex flex-col flex-grow">
               <Input
                 labelText="Dewey Decimal Class"
+                error={errors?.ddc}
                 props={{
                   value: form.ddc,
                   onChange: handleFormInput,
@@ -306,7 +417,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
                 }}
               />
             </div>
-            <PrimaryButton type="button" className="mt-2 ">
+            <PrimaryButton type="button" className="mt-2 bg-gray-500">
               <AiOutlineSearch />
             </PrimaryButton>
           </div>
@@ -314,29 +425,39 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             <div className="flex flex-col flex-grow">
               <Input
                 labelText="Cutter-Sanborn number"
+                error={errors?.authorNumber}
                 props={{
-                  value: form.ddc,
+                  value: form.authorNumber,
                   onChange: handleFormInput,
                   placeholder: "Author number",
-                  name: "ddc",
+                  name: "authorNumber",
                 }}
               />
             </div>
-            <PrimaryButton type="button" className="mt-2 ">
+            <PrimaryButton type="button" className="mt-2 bg-gray-500 ">
               <RiAddLine />
             </PrimaryButton>
-            <SecondaryButton type="button" className="mt-2 ">
+            <SecondaryButton type="button" className="mt-2 bg-gray-300 ">
               <AiOutlineSearch />
             </SecondaryButton>
           </div>
         </div>
         <h2 className="mt-10 text-2xl">Author and Details</h2>
         <hr className="mb-5"></hr>
-        <div className="flex gap-2 mb-5 ">
-          <PrimaryButton type="button" onClick={openAuthorModal}>
-            Select Author
-          </PrimaryButton>
-          <SecondaryButton type="button">Add Author</SecondaryButton>
+        <div className="flex gap-3 mb-5 ">
+          <span
+            className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer"
+            onClick={openAuthorModal}
+          >
+            Select Authors
+          </span>
+          {/* <PrimaryButton type="button" onClick={openAuthorModal}>
+       
+          </PrimaryButton> */}
+          <span className=" text-yellow-400 text-sm cursor-pointer ">
+            Add Author
+          </span>
+          {/* <SecondaryButton type="button"></SecondaryButton> */}
         </div>
 
         <div className="mb-10 overflow-y-scroll h-64">
@@ -358,21 +479,15 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
                     <Td>{author.surname}</Td>
                     <Td className="p-2 flex gap-2 items-center justify-center h-full">
                       {!author.id && (
-                        <SecondaryButton
-                          className="flex items-center gap-1 text-sm"
-                          // onClick: openEditModal,
-                        >
-                          <AiOutlineEdit />
-                        </SecondaryButton>
+                        <AiOutlineEdit className="cursor-pointer text-yellow-400 text-xl" />
                       )}
-                      <DangerButton
-                        className=" bg-red-500 flex items-center gap-1 text-sm"
+
+                      <AiOutlineDelete
+                        className="cursor-pointer text-orange-600  text-xl"
                         onClick={() => {
                           removeAuthorFromTable(author);
                         }}
-                      >
-                        <AiOutlineDelete />
-                      </DangerButton>
+                      />
                     </Td>
                   </BodyRow>
                 );
@@ -387,7 +502,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           </div>
         </div>
         <div className="mb-2">
-          <PrimaryButton type="button">Add Authors</PrimaryButton>
+          <PrimaryButton type="submit">Add to Collection</PrimaryButton>
         </div>
       </form>
 
@@ -422,10 +537,12 @@ const AuthorModal: React.FC<AuthorModalProps> = ({
       return [];
     }
   };
+
   const { data: authors } = useQuery<Author[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors"],
   });
+
   if (!isOpen) return null;
 
   const selectedAuthorsCount = selectedAuthors.length;
@@ -514,7 +631,23 @@ interface form {
   ddc?: string;
   cutterNumber?: string;
 }
-
+type BookType = {
+  id: string;
+  title: string;
+  copies: number;
+  edition: number;
+  costPrice: number;
+  fundSource: number;
+  publisher: number;
+  pages: number;
+  year: number;
+  dateReceived: Date;
+  category: string;
+  authorNumber: string;
+  ddc: string;
+  authors: Author[];
+  description: string;
+};
 type Book = {
   title: string;
   description?: string;

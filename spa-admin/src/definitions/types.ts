@@ -19,3 +19,15 @@ export type User = {
     middleName?: string;
     surname: string;
   };
+
+  export type PublisherType = {
+    id?: number;
+    name: string;
+  };
+  export type SourceType = {
+    id?: number;
+    name: string;
+  };
+  export type CategoryType = {
+    name: string;
+  };

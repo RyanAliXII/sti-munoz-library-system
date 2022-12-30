@@ -11,18 +11,22 @@ export enum ButtonClasses {
   PrimaryButtonDefaultClasslist = "bg-blue-600 p-2 rounded text-white",
   DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-white",
   SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 rounded text-white",
-  LightButtonDefaultClasslist = "bg-gray-400 p-2 rounded text-white",
+  LightButtonDefaultClasslist = "bg-gray-500 p-2 rounded text-white",
+  WarningButtonDefaultClasslist = "bg-orange-500 p-2 rounded text-white",
 }
 export enum InputClasses {
   InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 
   rounded transition ease-in-out
   focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
   InputErrorClassList = "border-red-500 focus:border-red-500",
+  LabelWrapperClasslist = "h-2 flex items-center mt-2",
+  LabelClasslist = "text-red-500",
+  InputBorderClasslist = "border-solid border-gray-300",
 }
 export enum SelectClasses {
   SelectDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white border border-solid border-gray-300 
   rounded transition ease-in-out
-  focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
+  focus:text-gray-700 focus:bg-white focus:outline-blue-500`,
 }
 
 export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
@@ -112,6 +116,16 @@ export const DangerButton: React.FC<ButtonProps> = (props: ButtonProps) => {
       {...{
         ...props,
         className: `${ButtonClasses.DangerButtonDefaultClasslist} ${props?.className}`,
+      }}
+    ></button>
+  );
+};
+export const WarningButton: React.FC<ButtonProps> = (props: ButtonProps) => {
+  return (
+    <button
+      {...{
+        ...props,
+        className: `${ButtonClasses.WarningButtonDefaultClasslist} ${props?.className}`,
       }}
     ></button>
   );

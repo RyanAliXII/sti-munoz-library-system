@@ -22,6 +22,7 @@
     "react-icons": "^4.6.0",
     "react-responsive-modal": "^6.4.1",
     "react-router-dom": "^6.4.2",
+    "react-select": "^5.7.0",
     "react-toastify": "^9.1.1",
     "uninstall": "^0.0.0",
     "validator": "^13.7.0",

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS book.books(
     id uuid primary key DEFAULT uuid_generate_v4 (),
-    name varchar(150) NOT NULL,
+    title varchar(150) NOT NULL,
     description TEXT,
     edition int DEFAULT 0,
     year date,

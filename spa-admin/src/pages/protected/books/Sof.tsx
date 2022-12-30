@@ -26,11 +26,8 @@ import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
 import { useSwitch } from "../../../hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
+import { SourceType } from "../../../definitions/types";
 
-type Source = {
-  id?: number;
-  name: string;
-};
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const Sof = () => {
   const {
@@ -50,7 +47,7 @@ const Sof = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Source>(
+  const [selectedRow, setSelectedRow] = useState<SourceType>(
     SOURCE_FORM_DEFAULT_VALUES
   );
 
@@ -82,7 +79,7 @@ const Sof = () => {
     }
   };
 
-  const { data: sources } = useQuery<Source[]>({
+  const { data: sources } = useQuery<SourceType[]>({
     queryFn: fetchSources,
     queryKey: ["sources"],
   });
@@ -110,25 +107,20 @@ const Sof = () => {
                   <BodyRow key={source.id}>
                     <Td>{source.name}</Td>
                     <Td className="p-2 flex gap-2 items-center">
-                      <SecondaryButton
-                        className="flex items-center gap-1 text-sm"
+                      <AiOutlineEdit
+                        className="cursor-pointer text-yellow-400 text-xl"
                         onClick={() => {
                           setSelectedRow({ ...source });
                           openEditModal();
                         }}
-                      >
-                        <AiOutlineEdit />
-                      </SecondaryButton>
-                      <DangerButton
-                        className=" bg-red-500 flex items-center gap-1 text-sm"
+                      />
+                      <AiOutlineDelete
+                        className="cursor-pointer text-orange-600  text-xl"
                         onClick={() => {
                           openConfirmDialog();
                           setSelectedRow({ ...source });
                         }}
-                      >
-                        {" "}
-                        <AiOutlineDelete />
-                      </DangerButton>
+                      />
                     </Td>
                   </BodyRow>
                 );
@@ -157,7 +149,7 @@ const Sof = () => {
 };
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput } = useForm<Source>({
+  const { errors, form, validate, handleFormInput } = useForm<SourceType>({
     default: SOURCE_FORM_DEFAULT_VALUES,
     schema: SourceofFundSchema,
   });
@@ -223,15 +215,16 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditSourceModal: React.FC<EditModalProps<Source>> = ({
+const EditSourceModal: React.FC<EditModalProps<SourceType>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, handleFormInput } = useForm<Source>({
-    default: SOURCE_FORM_DEFAULT_VALUES,
-    schema: SourceofFundSchema,
-  });
+  const { errors, form, setForm, validate, handleFormInput } =
+    useForm<SourceType>({
+      default: SOURCE_FORM_DEFAULT_VALUES,
+      schema: SourceofFundSchema,
+    });
 
   useEffect(() => {
     setForm({ ...formData });
