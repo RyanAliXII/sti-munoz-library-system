@@ -153,14 +153,12 @@ const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2">
             <Input
-              labelText="Category name"
+              label="Category name"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
@@ -189,8 +187,10 @@ const EditCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2">
             <Input
-              labelText="Category name"
-              props={{ type: "text", name: "category" }}
+              label="Category name"
+              // error={errors?.name}
+              type="text"
+              name="name"
             />
           </div>
           <div className="flex gap-1 p-2">

@@ -1,9 +1,9 @@
-import React, { ButtonHTMLAttributes, SelectHTMLAttributes } from "react";
+import React, { ButtonHTMLAttributes } from "react";
 
-interface InputProps {
-  labelText: string;
-  error?: string;
-  props?: HTMLInputProps;
+interface InputProps extends HTMLInputProps {
+  label?: string;
+  error?: any;
+  // props?: HTMLInputProps;
 }
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
@@ -18,7 +18,7 @@ export enum InputClasses {
   InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 
   rounded transition ease-in-out
   focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
-  InputErrorClassList = "border-red-500 focus:border-red-500",
+  InputErrorClasslist = "border-red-500 focus:border-red-500",
   LabelWrapperClasslist = "h-2 flex items-center mt-2",
   LabelClasslist = "text-red-500",
   InputBorderClasslist = "border-solid border-gray-300",
@@ -29,11 +29,11 @@ export enum SelectClasses {
   focus:text-gray-700 focus:bg-white focus:outline-blue-500`,
 }
 
-export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
+export const Input: React.FC<InputProps> = (props: InputProps) => {
   return (
     <>
       <label className="text-gray-700" htmlFor={props?.name}>
-        {labelText}
+        {props.label}
       </label>
       <input
         name={props?.name}
@@ -42,44 +42,12 @@ export const Input: React.FC<InputProps> = ({ labelText, error, props }) => {
           ...props,
           className: `${InputClasses.InputDefaultClasslist} ${
             props?.className
-          } ${error ? InputClasses.InputErrorClassList : ""}`,
+          } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
         }}
       />
       <div className="h-2 flex items-center mt-2">
-        <small className="text-red-500">{error}</small>
+        <small className="text-red-500">{props.error}</small>
       </div>
-    </>
-  );
-};
-
-export interface SelectProps {
-  props?: SelectHTMLAttributes<HTMLSelectElement>;
-  labelText: string;
-  options?: any[];
-  idKey: any;
-  textKey: any;
-}
-export const Select: React.FC<SelectProps> = ({
-  options,
-  labelText,
-  idKey,
-  textKey,
-  props,
-}) => {
-  return (
-    <>
-      <label>{labelText}</label>
-      <select
-        {...{
-          ...props,
-          className: `${SelectClasses.SelectDefaultClasslist} ${props?.className}`,
-        }}
-      >
-        <option>Choose</option>
-        {options?.map((opt) => {
-          return <option key={opt[idKey]}>{opt[textKey]}</option>;
-        })}
-      </select>
     </>
   );
 };

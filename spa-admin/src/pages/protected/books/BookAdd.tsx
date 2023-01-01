@@ -5,14 +5,13 @@ import { BaseProps } from "../../../definitions/props.definition";
 import { constructQuery } from "../../../helpers/helper";
 import useDebounce from "../../../hooks/useDebounce";
 import {
-  DangerButton,
   Input,
   InputClasses,
   PrimaryButton,
   SecondaryButton,
 } from "../../../components/forms/Forms";
 import { useForm } from "../../../hooks/useForm";
-import { BookSchema, CategorySchema } from "./schema";
+import { BookSchema } from "./schema";
 import { Editor } from "@tinymce/tinymce-react";
 import DatePicker from "react-datepicker";
 import {
@@ -43,7 +42,10 @@ import {
 } from "react-icons/ai";
 import { RiAddLine } from "react-icons/ri";
 import { toast } from "react-toastify";
-import Select, { Props as ReactSelectProps } from "react-select";
+import { SingleValue } from "react-select";
+import CustomSelect from "../../../components/forms/CustomSelect";
+import CustomDatePicker from "../../../components/forms/CustomDatePicker";
+import { date } from "yup";
 const BookAdd = () => {
   const ONE_SECOND = 1000;
   const [bookSuggestions, setBookSuggestions] = useState<BookSuggestion[]>([]);
@@ -116,29 +118,6 @@ const BookAdd = () => {
     </div>
   );
 };
-// const obj: ReactSelectProps = {
-//   styles: {
-//     control: (baseStyles) => ({
-//       ...baseStyles,
-//       borderColor: "none",
-//       boxShadow: "none",
-//     }),
-//     option: (baseStyles) => ({
-//       ...baseStyles,
-//       backgroundColor: "none",
-//     }),
-//   },
-//   classNames: {
-//     control: (props) => {
-//       return errors?.category
-//         ? `${InputClasses.InputBorderClasslist} ${InputClasses.InputErrorClassList}`
-//         : InputClasses.InputBorderClasslist;
-//     },
-//     option: (props) => {
-//       return props.isSelected ? "bg-yellow-400" : "";
-//     },
-//   },
-// };
 const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
   const {
     isOpen: isAuthorModalOpen,
@@ -146,15 +125,20 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
     open: openAuthorModal,
   } = useSwitch();
 
-  const { form, handleFormInput, setForm, validate, errors } = useForm<
-    Omit<BookType, "id">
-  >({
+  const {
+    form,
+    handleFormInput,
+    setForm,
+    validate,
+    errors,
+    clearErrorWithKey,
+  } = useForm<Omit<BookType, "id">>({
     default: {
       title: "",
       authors: [],
       category: "",
       copies: 0,
-      dateReceived: new Date(),
+      dateReceived: new Date().toISOString(),
       authorNumber: "",
       ddc: "",
       costPrice: 0,
@@ -163,11 +147,10 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
       edition: 0,
       pages: 0,
       publisher: 0,
-      year: 2000,
+      year: new Date().getFullYear(),
     },
     schema: BookSchema,
   });
-
   const fetchPublishers = async () => {
     try {
       const { data: response } = await axiosClient.get("/publishers/");
@@ -215,6 +198,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
       };
     });
   };
+
   const removeAuthorFromTable = (a: Author) => {
     setForm((prevForm) => {
       const filtered =
@@ -226,6 +210,34 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
     });
     toast.success(`${a.givenName} ${a.surname} has been removed.`);
   };
+  const handleCategorySelect = (
+    option: SingleValue<{ label: string; value: string }>
+  ) => {
+    if (!option?.value) return;
+    clearErrorWithKey("category");
+    setForm((prevForm) => ({ ...prevForm, category: option.value }));
+  };
+  const handleSourceSelect = (
+    option: SingleValue<{ label: string; value: number | undefined }>
+  ) => {
+    if (!option?.value) return;
+    clearErrorWithKey("fundSource");
+    setForm((prevForm) => ({
+      ...prevForm,
+      fundSource: option.value as number,
+    }));
+  };
+  const handlePublisherSelect = (
+    option: SingleValue<{ label: string; value: number | undefined }>
+  ) => {
+    if (!option?.value) return;
+    clearErrorWithKey("publisher");
+    setForm((prevForm) => ({
+      ...prevForm,
+      publisher: option?.value as number,
+    }));
+  };
+
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -241,146 +253,102 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl">
           <div>
             <Input
-              labelText="Title"
+              label="Title"
               error={errors?.title}
-              props={{
-                value: form.title,
-                onChange: handleFormInput,
-                placeholder: "Book title",
-                name: "title",
-              }}
+              value={form.title}
+              onChange={handleFormInput}
+              placeholder="Book title"
+              name="title"
             />
           </div>
           <div>
             <Input
-              labelText="Copies"
+              label="Copies"
               error={errors?.copies}
-              props={{
-                type: "number",
-                min: 0,
-                max: 1000,
-                value: form.copies,
-                onChange: handleFormInput,
-                placeholder: "Number of copies",
-                name: "copies",
-              }}
+              type="number"
+              value={form.copies}
+              onChange={handleFormInput}
+              placeholder="Number of copies"
+              name="copies"
             />
           </div>
           <div>
             <Input
-              labelText="Pages"
+              label="Pages"
               error={errors?.pages}
-              props={{
-                type: "number",
-                min: 0,
-                max: 1000,
-                value: form.pages,
-                onChange: handleFormInput,
-                placeholder: "Number of pages",
-                name: "pages",
-              }}
+              type="number"
+              value={form.pages}
+              onChange={handleFormInput}
+              placeholder="Number of pages"
+              name="pages"
             />
           </div>
           <div>
-            <label>Category</label>
-            <Select
-              styles={{
-                control: (baseStyles) => ({
-                  ...baseStyles,
-                  borderColor: "none",
-                  boxShadow: "none",
-                }),
-                option: (baseStyles) => ({
-                  ...baseStyles,
-                  backgroundColor: "none",
-                }),
-              }}
-              classNames={{
-                control: (props) => {
-                  return errors?.category
-                    ? `${InputClasses.InputBorderClasslist} ${InputClasses.InputErrorClassList}`
-                    : InputClasses.InputBorderClasslist;
-                },
-                option: (props) => {
-                  return props.isSelected ? "bg-yellow-400" : "";
-                },
-              }}
+            <CustomSelect
+              onChange={handleCategorySelect}
+              label="Category"
+              error={errors?.category}
               options={categories?.map((category) => {
                 return {
                   value: category.name,
                   label: category.name.toLocaleUpperCase(),
                 };
               })}
-            ></Select>
-            <div className={InputClasses.LabelWrapperClasslist}>
-              <small className={InputClasses.LabelClasslist}>
-                {errors?.category}
-              </small>
-            </div>
+            ></CustomSelect>
           </div>
           <div>
-            <label>Source of fund</label>
-            <Select
+            <CustomSelect
+              onChange={handleSourceSelect}
+              label="Source of fund"
+              error={errors?.fundSource}
               options={sourceOfFunds?.map((source) => {
                 return { value: source.id, label: source.name };
               })}
-            ></Select>
-            <div className={InputClasses.LabelWrapperClasslist}>
-              <small className={InputClasses.LabelClasslist}>
-                {errors?.fundSource}
-              </small>
-            </div>
+            ></CustomSelect>
           </div>
           <div>
             <Input
-              labelText="Cost Price"
+              label="Cost Price"
               error={errors?.costPrice}
-              props={{
-                type: "number",
-                min: 0,
-                max: 1000,
-                value: form.costPrice,
-                onChange: handleFormInput,
-                placeholder: "Book copies",
-                name: "costPrice",
-              }}
+              type="number"
+              value={form.costPrice}
+              onChange={handleFormInput}
+              placeholder="Book copies"
+              name="costPrice"
             />
           </div>
           <div>
             <Input
-              labelText="Edition"
+              label="Edition"
               error={errors?.edition}
-              props={{
-                type: "number",
-                min: 0,
-                max: 1000,
-                value: form.edition,
-                onChange: handleFormInput,
-                placeholder: "Book copies",
-                name: "edition",
-              }}
+              type="number"
+              value={form.edition}
+              onChange={handleFormInput}
+              placeholder="Book copies"
+              name="edition"
             />
           </div>
           <div>
-            <label> Publisher</label>
-            <Select
+            <CustomSelect
+              label="Publisher"
+              onChange={handlePublisherSelect}
+              error={errors?.publisher}
               options={publishers?.map((publisher) => {
                 return { value: publisher.id, label: publisher.name };
               })}
-            ></Select>
-            <div className={InputClasses.LabelWrapperClasslist}>
-              <small className={InputClasses.LabelClasslist}>
-                {errors?.publisher}
-              </small>
-            </div>
+            ></CustomSelect>
           </div>
           <div>
-            <label>Year Published</label>
-            <DatePicker
+            <CustomDatePicker
+              label="Year Published"
               className={InputClasses.InputDefaultClasslist}
-              selected={new Date()}
+              selected={new Date(form.year, 0, 24)}
               onChange={(date) => {
-                console.log(date);
+                if (!date?.getFullYear()) return;
+                setForm((prevForm) => ({
+                  ...prevForm,
+                  year: date.getFullYear(),
+                }));
               }}
               showYearPicker
               dateFormat="yyyy"
@@ -389,16 +357,18 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           </div>
 
           <div>
-            <Input
-              labelText="Date received"
-              props={{
-                type: "date",
-
-                // value: form.copies
-                // onChange: handleFormInput,
-                name: "dateReceived",
+            <CustomDatePicker
+              label="Date received"
+              className={InputClasses.InputDefaultClasslist}
+              onChange={(date) => {
+                if (!date) return;
+                setForm((prevForm) => ({
+                  ...prevForm,
+                  dateReceived: date?.toISOString(),
+                }));
               }}
-            />
+              selected={new Date(form.dateReceived)}
+            ></CustomDatePicker>
           </div>
         </div>
         <h3 className="text-lg mt-10">DDC and Author number</h3>
@@ -407,14 +377,12 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           <div className="flex items-center gap-1">
             <div className="flex flex-col flex-grow">
               <Input
-                labelText="Dewey Decimal Class"
+                label="Dewey Decimal Class"
                 error={errors?.ddc}
-                props={{
-                  value: form.ddc,
-                  onChange: handleFormInput,
-                  placeholder: "Book classification",
-                  name: "ddc",
-                }}
+                value={form.ddc}
+                onChange={handleFormInput}
+                placeholder="Book classification"
+                name="ddc"
               />
             </div>
             <PrimaryButton type="button" className="mt-2 bg-gray-500">
@@ -424,14 +392,12 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           <div className="flex items-center gap-1">
             <div className="flex flex-col flex-grow">
               <Input
-                labelText="Cutter-Sanborn number"
+                label="Cutter-Sanborn number"
                 error={errors?.authorNumber}
-                props={{
-                  value: form.authorNumber,
-                  onChange: handleFormInput,
-                  placeholder: "Author number",
-                  name: "authorNumber",
-                }}
+                value={form.authorNumber}
+                onChange={handleFormInput}
+                placeholder="Author number"
+                name="authorNumber"
               />
             </div>
             <PrimaryButton type="button" className="mt-2 bg-gray-500 ">
@@ -446,13 +412,13 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
         <hr className="mb-5"></hr>
         <div className="flex gap-3 mb-5 ">
           <span
-            className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer"
+            className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer font-semibold"
             onClick={openAuthorModal}
           >
             Select Authors
           </span>
           {/* <PrimaryButton type="button" onClick={openAuthorModal}>
-       
+
           </PrimaryButton> */}
           <span className=" text-yellow-400 text-sm cursor-pointer ">
             Add Author
@@ -641,7 +607,7 @@ type BookType = {
   publisher: number;
   pages: number;
   year: number;
-  dateReceived: Date;
+  dateReceived: string;
   category: string;
   authorNumber: string;
   ddc: string;

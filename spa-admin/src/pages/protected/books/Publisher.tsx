@@ -198,14 +198,12 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2">
             <Input
-              labelText="Publisher name"
+              label="Publisher name"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
@@ -275,14 +273,12 @@ const EditPublisherModal: React.FC<EditModalProps<PublisherType>> = ({
           </div>
           <div className="px-2">
             <Input
-              labelText="Publisher name"
+              label="Publisher name"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">

@@ -236,38 +236,32 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Given name"
+              label="Given name"
               error={errors?.givenName}
-              props={{
-                type: "text",
-                name: "givenName",
-                onChange: handleFormInput,
-                value: form.givenName,
-              }}
+              type="text"
+              name="givenName"
+              onChange={handleFormInput}
+              value={form.givenName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Middle name/initial"
+              label="Middle name/initial"
               error={errors?.middleName}
-              props={{
-                type: "text",
-                name: "middleName",
-                onChange: handleFormInput,
-                value: form.middleName,
-              }}
+              type="text"
+              name="middleName"
+              onChange={handleFormInput}
+              value={form.middleName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Surname"
+              label="Surname"
               error={errors?.surname}
-              props={{
-                type: "text",
-                name: "surname",
-                onChange: handleFormInput,
-                value: form.surname,
-              }}
+              type="text"
+              name="surname"
+              onChange={handleFormInput}
+              value={form.surname}
             />
           </div>
           <div className="flex gap-1 p-2">
@@ -342,38 +336,32 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Given name"
+              label="Given name"
               error={errors?.givenName}
-              props={{
-                type: "text",
-                name: "givenName",
-                value: form.givenName,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="givenName"
+              onChange={handleFormInput}
+              value={form.givenName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
+              label="Middle name/initial"
               error={errors?.middleName}
-              labelText="Middle name/initial"
-              props={{
-                type: "text",
-                name: "middleName",
-                value: form.middleName,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="middleName"
+              onChange={handleFormInput}
+              value={form.middleName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Surname"
+              label="Surname"
               error={errors?.surname}
-              props={{
-                type: "text",
-                name: "surname",
-                value: form.surname,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="surname"
+              onChange={handleFormInput}
+              value={form.surname}
             />
           </div>
           <div className="flex gap-1 p-2">
