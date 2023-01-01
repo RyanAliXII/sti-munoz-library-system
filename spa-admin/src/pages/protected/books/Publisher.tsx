@@ -5,11 +5,9 @@ import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
 import {
-  DangerButton,
   Input,
   LighButton,
   PrimaryButton,
-  SecondaryButton,
 } from "../../../components/forms/Forms";
 import LoadingBoundary from "../../../components/loader/LoadingBoundary";
 
@@ -117,7 +115,10 @@ const Publisher = () => {
                       <Td className="p-2 flex gap-2 items-center">
                         <AiOutlineEdit
                           className="cursor-pointer text-yellow-400 text-xl"
-                          onClick={openEditModal}
+                          onClick={() => {
+                            setSelectedRow({ ...publisher });
+                            openEditModal();
+                          }}
                         />
                         <AiOutlineDelete
                           className="cursor-pointer text-orange-600  text-xl"

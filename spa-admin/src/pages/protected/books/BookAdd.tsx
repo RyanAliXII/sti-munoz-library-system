@@ -13,7 +13,7 @@ import {
 import { useForm } from "../../../hooks/useForm";
 import { BookSchema } from "./schema";
 import { Editor } from "@tinymce/tinymce-react";
-import DatePicker from "react-datepicker";
+
 import {
   Author,
   CategoryType,
@@ -45,7 +45,35 @@ import { toast } from "react-toastify";
 import { SingleValue } from "react-select";
 import CustomSelect from "../../../components/forms/CustomSelect";
 import CustomDatePicker from "../../../components/forms/CustomDatePicker";
-import { date } from "yup";
+
+interface BookAddFormProps extends BaseProps {
+  selectedBookSuggestion: BookSuggestion;
+}
+type BookType = {
+  id: string;
+  title: string;
+  copies: number;
+  edition: number;
+  costPrice: number;
+  fundSource: number;
+  publisher: number;
+  pages: number;
+  year: number;
+  dateReceived: string;
+  category: string;
+  authorNumber: string;
+  ddc: string;
+  authors: Author[];
+  description: string;
+};
+
+interface BookSuggestion {
+  title: string;
+  key: string;
+  author_name: string[];
+  cover: string;
+  ddc: string[];
+}
 const BookAdd = () => {
   const ONE_SECOND = 1000;
   const [bookSuggestions, setBookSuggestions] = useState<BookSuggestion[]>([]);
@@ -586,51 +614,80 @@ const AuthorModal: React.FC<AuthorModalProps> = ({
     </>
   );
 };
-interface BookAddFormProps extends BaseProps {
-  selectedBookSuggestion: BookSuggestion;
-}
 
-interface form {
-  title?: string;
-  author?: string;
-  copies?: number;
-  ddc?: string;
-  cutterNumber?: string;
-}
-type BookType = {
-  id: string;
-  title: string;
-  copies: number;
-  edition: number;
-  costPrice: number;
-  fundSource: number;
-  publisher: number;
-  pages: number;
-  year: number;
-  dateReceived: string;
-  category: string;
-  authorNumber: string;
-  ddc: string;
-  authors: Author[];
-  description: string;
-};
-type Book = {
-  title: string;
-  description?: string;
-  copies: number;
-  ddc: string;
-  sourceOfFund: number;
-  publisher: number;
-  costPrice: number;
-  cutterNumber: string;
-  authors?: Author[];
+interface AuthorNumberModalProps extends ModalProps {}
+const AuthorNumberModal = ({ isOpen, closeModal }: AuthorNumberModalProps) => {
+  return (
+    <>
+      <Modal
+        open={isOpen}
+        onClose={closeModal}
+        center
+        showCloseIcon={false}
+        styles={{
+          modal: {
+            maxWidth: "none",
+          },
+        }}
+        classNames={{
+          modal: "w-8/12 rounded ",
+        }}
+      >
+        <div>
+          <div className="mb-3">
+            <h3 className="text-2xl"> Authors</h3>
+            {/* <small>
+              You have selected
+              <strong> {selectedAuthorsCount} </strong>
+              {selectedAuthorsCount > 1 ? "authors" : "author"}
+            </small> */}
+          </div>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th></Th>
+                <Th>Given name</Th>
+                <Th>Middle name/initial</Th>
+                <Th>Surname</Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {/* {authors?.map((author) => {
+                const isChecked = selectedAuthors.find(
+                  (a) => a.id === author.id
+                ); */}
+              return (
+              <BodyRow
+                // key={author.id}
+                className="cursor-pointer"
+                // onClick={() => {
+                //   if (!isChecked) {
+                //     selectAuthor?.(author);
+                //   } else {
+                //     removeAuthor?.(author);
+                //   }
+                // }}
+              >
+                <Td>
+                  <input
+                    type="checkbox"
+                    onChange={() => {}}
+                    // checked={isChecked ? true : false}
+                    className="h-4 w-4 border"
+                  />
+                </Td>
+                {/* <Td>{author.givenName}</Td>
+                    <Td>{author.middleName}</Td>
+                    <Td>{author.surname}</Td> */}
+              </BodyRow>
+              );
+              {/* })} */}
+            </Tbody>
+          </Table>
+        </div>
+      </Modal>
+    </>
+  );
 };
 
-interface BookSuggestion {
-  title: string;
-  key: string;
-  author_name: string[];
-  cover: string;
-  ddc: string[];
-}
 export default BookAdd;
