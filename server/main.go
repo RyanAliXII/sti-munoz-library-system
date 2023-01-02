@@ -42,8 +42,9 @@ func main() {
 		})
 	})
 
-	db := db.Connect()
-	repos := repository.NewRepositories(db)
+	dbConnection := db.Connect()
+	db.RunSeed(dbConnection)
+	repos := repository.NewRepositories(dbConnection)
 	services.RegisterServicesV1(r, &repos)
 	logger.Info("Server starting")
 	r.Run(":5200")
