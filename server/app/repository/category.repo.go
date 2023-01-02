@@ -6,7 +6,6 @@ import (
 	"slim-app/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
 
 type CategoryRepository struct {
@@ -30,7 +29,7 @@ func (repo *CategoryRepository) New(category model.Category) error {
 	`, category.Name)
 	_, createErr := repo.db.Exec(query)
 	if createErr != nil {
-		logger.Error(createErr.Error(), slimlog.Function("categoryrepo"), zap.String("error", "prepareERror"))
+		logger.Error(createErr.Error(), slimlog.Function(NEW_CATEGORY))
 	}
 	return createErr
 }
@@ -38,7 +37,7 @@ func (repo *CategoryRepository) Get() []model.Category {
 	var categories []model.Category = make([]model.Category, 0)
 	selectErr := repo.db.Select(&categories, "SELECT table_name as name FROM information_schema.tables WHERE table_schema = 'category'")
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("categoryrepo.Get"))
+		logger.Error(selectErr.Error(), slimlog.Function(GET_CATEGORY))
 	}
 	return categories
 }
