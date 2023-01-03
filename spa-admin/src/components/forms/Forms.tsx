@@ -8,7 +8,7 @@ interface InputProps extends HTMLInputProps {
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 export enum ButtonClasses {
-  PrimaryButtonDefaultClasslist = "bg-blue-600 p-2 rounded text-white",
+  PrimaryButtonDefaultClasslist = "bg-blue-500 p-2 rounded text-white",
   DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-white",
   SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 rounded text-white",
   LightButtonDefaultClasslist = "bg-gray-500 p-2 rounded text-white",
@@ -32,7 +32,7 @@ export enum SelectClasses {
 export const Input: React.FC<InputProps> = (props: InputProps) => {
   return (
     <>
-      <label className="text-gray-700" htmlFor={props?.name}>
+      <label className="text-gray-500" htmlFor={props?.name}>
         {props.label}
       </label>
       <input

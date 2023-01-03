@@ -236,7 +236,6 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
         authors: [...filtered],
       };
     });
-    toast.success(`${a.givenName} ${a.surname} has been removed.`);
   };
   const handleCategorySelect = (
     option: SingleValue<{ label: string; value: string }>
@@ -399,43 +398,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
             ></CustomDatePicker>
           </div>
         </div>
-        <h3 className="text-lg mt-10">DDC and Author number</h3>
-        <hr className="mb-5"></hr>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl">
-          <div className="flex items-center gap-1">
-            <div className="flex flex-col flex-grow">
-              <Input
-                label="Dewey Decimal Class"
-                error={errors?.ddc}
-                value={form.ddc}
-                onChange={handleFormInput}
-                placeholder="Book classification"
-                name="ddc"
-              />
-            </div>
-            <PrimaryButton type="button" className="mt-2 bg-gray-500">
-              <AiOutlineSearch />
-            </PrimaryButton>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="flex flex-col flex-grow">
-              <Input
-                label="Cutter-Sanborn number"
-                error={errors?.authorNumber}
-                value={form.authorNumber}
-                onChange={handleFormInput}
-                placeholder="Author number"
-                name="authorNumber"
-              />
-            </div>
-            <PrimaryButton type="button" className="mt-2 bg-gray-500 ">
-              <RiAddLine />
-            </PrimaryButton>
-            <SecondaryButton type="button" className="mt-2 bg-gray-300 ">
-              <AiOutlineSearch />
-            </SecondaryButton>
-          </div>
-        </div>
+
         <h2 className="mt-10 text-2xl">Author and Details</h2>
         <hr className="mb-5"></hr>
         <div className="flex gap-3 mb-5 ">
@@ -454,40 +417,84 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
           {/* <SecondaryButton type="button"></SecondaryButton> */}
         </div>
 
-        <div className="mb-10 overflow-y-scroll h-64">
-          <Table className="w-full">
-            <Thead className=" sticky top-0">
-              <HeadingRow>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {form.authors?.map((author) => {
-                return (
-                  <BodyRow key={author.id ?? useId()}>
-                    <Td>{author.givenName}</Td>
-                    <Td>{author.middleName}</Td>
-                    <Td>{author.surname}</Td>
-                    <Td className="p-2 flex gap-2 items-center justify-center h-full">
-                      {!author.id && (
-                        <AiOutlineEdit className="cursor-pointer text-yellow-400 text-xl" />
-                      )}
+        <div
+          className="mb-10 overflow-y-auto scroll-smooth"
+          style={{ maxHeight: "300px" }}
+        >
+          {form.authors?.length === 0 ? (
+            <div className="flex items-center h-10 justify-center">
+              <small className="text-gray-400">No authors selected.</small>
+            </div>
+          ) : (
+            <Table className="w-full">
+              <Thead className=" sticky top-0">
+                <HeadingRow>
+                  <Th>Given name</Th>
+                  <Th>Middle name/initial</Th>
+                  <Th>Surname</Th>
+                  <Th></Th>
+                </HeadingRow>
+              </Thead>
+              <Tbody>
+                {form.authors?.map((author) => {
+                  return (
+                    <BodyRow key={author.id ?? useId()}>
+                      <Td>{author.givenName}</Td>
+                      <Td>{author.middleName}</Td>
+                      <Td>{author.surname}</Td>
+                      <Td className="p-2 flex gap-2 items-center justify-center h-full">
+                        {!author.id && (
+                          <AiOutlineEdit className="cursor-pointer text-yellow-400 text-xl" />
+                        )}
 
-                      <AiOutlineDelete
-                        className="cursor-pointer text-orange-600  text-xl"
-                        onClick={() => {
-                          removeAuthorFromTable(author);
-                        }}
-                      />
-                    </Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
+                        <AiOutlineDelete
+                          className="cursor-pointer text-orange-600  text-xl"
+                          onClick={() => {
+                            removeAuthorFromTable(author);
+                          }}
+                        />
+                      </Td>
+                    </BodyRow>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          )}
+        </div>
+        <h3 className="text-lg mt-10">DDC and Author number</h3>
+        <hr className="mb-5"></hr>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl">
+          <div className="flex items-center gap-1">
+            <div className="flex flex-col flex-grow">
+              <Input
+                label="Dewey Decimal Class"
+                error={errors?.ddc}
+                value={form.ddc}
+                onChange={handleFormInput}
+                placeholder="Book classification"
+                name="ddc"
+              />
+            </div>
+            <SecondaryButton type="button" className="mt-2">
+              <AiOutlineSearch />
+            </SecondaryButton>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="flex flex-col flex-grow">
+              <Input
+                label="Author number"
+                error={errors?.authorNumber}
+                value={form.authorNumber}
+                onChange={handleFormInput}
+                placeholder="Author number"
+                name="authorNumber"
+              />
+            </div>
+
+            <SecondaryButton type="button" className="mt-2 ">
+              <AiOutlineSearch />
+            </SecondaryButton>
+          </div>
         </div>
         <div className="mb-5">
           <label>Description</label>
@@ -554,7 +561,7 @@ const AuthorModal: React.FC<AuthorModalProps> = ({
           },
         }}
         classNames={{
-          modal: "w-8/12 rounded ",
+          modal: "lg:w-8/12 rounded  ",
         }}
       >
         <div>

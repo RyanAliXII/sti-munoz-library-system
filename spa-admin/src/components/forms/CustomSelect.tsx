@@ -18,7 +18,7 @@ const CustomSelect = <
 ) => {
   return (
     <>
-      <label>{props.label}</label>
+      <label className="text-gray-500">{props.label}</label>
       <Select
         classNames={{
           option: (props) => {

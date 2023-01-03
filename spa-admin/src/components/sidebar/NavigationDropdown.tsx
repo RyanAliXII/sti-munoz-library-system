@@ -11,10 +11,10 @@ export const NavigationDropdown = ({
   return (
     <div className="w-full">
       <div
-        className="w-full cursor-pointer flex items-center justify-between4"
+        className="w-full cursor-pointer flex items-center justify-between"
         onClick={toggle}
       >
-        {drawerButton}{" "}
+        {drawerButton}
         {visible ? (
           <MdKeyboardArrowUp className="mr-3" />
         ) : (
@@ -30,8 +30,9 @@ export const NavigationDropdownButton = ({
   text,
 }: NavigationDropdownButtonProps) => {
   return (
-    <div className="ml-5 flex items-center h-11 gap-1">
-      {icon} <span className="font-medium">{text}</span>
+    <div className="ml-5 flex items-center h-11 gap-1 text-gray-600">
+      {icon}
+      <span className="font-medium text-sm">{text}</span>
     </div>
   );
 };

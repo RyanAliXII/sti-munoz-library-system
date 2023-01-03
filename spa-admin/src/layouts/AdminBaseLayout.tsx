@@ -8,7 +8,7 @@ const AdminBaseLayout = ({ children }: BaseProps) => {
       <Header />
 
       <div className="w-full h-full flex">
-        <div className="w-56 drop-shadow-md bg-white hidden lg:block">
+        <div className="w-56 drop-shadow-sm bg-white hidden lg:block z-20">
           <Sidebar />
         </div>
         <div className="flex-grow h-full overflow-y-scroll">

@@ -194,14 +194,12 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2">
             <Input
-              labelText="Fund Source"
+              label="Fund Source"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
@@ -270,14 +268,12 @@ const EditSourceModal: React.FC<EditModalProps<SourceType>> = ({
           </div>
           <div className="px-2">
             <Input
-              labelText="Fund Source"
+              label="Fund Source"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">

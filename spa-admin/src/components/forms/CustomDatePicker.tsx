@@ -8,7 +8,7 @@ interface CustomDatePickerProps extends ReactDatePickerProps {
 const CustomDatePicker = (props: CustomDatePickerProps) => {
   return (
     <>
-      <label className="text-gray-700" htmlFor={props?.name}>
+      <label className="text-gray-500" htmlFor={props?.name}>
         {props.label}
       </label>
       <DatePicker {...props}></DatePicker>

@@ -70,7 +70,6 @@ func SeedCuttersTable(DB *DB) {
 	}
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Insert("book.cutters").Cols("number", "surname")
-	// var arr []goqu.Vals = make([]exp.Vals, 0)
 	for _, cutter := range cutters.LoadWholeArray() {
 		ds = ds.Vals(goqu.Vals{cutter["number"], cutter["surname"]})
 	}

@@ -7,8 +7,8 @@ const Header = () => {
   const { user } = useContext(AuthContext);
   const { toggle, value: visible } = useToggle(false);
   return (
-    <header className="fixed top-0 w-full bg-white z-10">
-      <div className="container px-4 h-20 flex items-center">
+    <header className="fixed top-0 w-full bg-white z-10 drop-shadow-sm">
+      <div className="px-4 h-20 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
           <div className="flex items-center">
             <img
@@ -18,11 +18,11 @@ const Header = () => {
             ></img>
           </div>
           <div className="flex items-center relative text-left">
-            <div>
+            <div className="mr-10">
               <button
                 type="button"
                 onClick={toggle}
-                className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700 "
+                className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700"
                 id="menu-button"
                 aria-expanded="true"
                 aria-haspopup="true"
