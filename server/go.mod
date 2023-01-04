@@ -3,6 +3,7 @@ module slim-app/server
 go 1.19
 
 require (
+	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/doug-martin/goqu/v9 v9.18.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
