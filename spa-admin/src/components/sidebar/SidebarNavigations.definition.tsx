@@ -1,10 +1,12 @@
 import { MdOutlineInventory, MdOutlineDashboard } from "react-icons/md";
 import { RiReservedLine } from "react-icons/ri";
 import { GrHomeOption } from "react-icons/gr";
-import { CgArrowsExchange } from "react-icons/cg";
+import { RxDashboard } from "react-icons/rx";
 import { AiOutlineBook } from "react-icons/ai";
 import { BsBookshelf, BsListCheck } from "react-icons/bs";
+import { ImBooks } from "react-icons/im";
 import { ReactNode } from "react";
+
 export type SidebarNavItem = {
   to: string;
   text?: string;
@@ -16,29 +18,29 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Dashboard",
     to: "/dashboard",
-    icon: <GrHomeOption className="text-xl" />,
+    icon: <RxDashboard className="text-xl" />,
     items: [],
   },
   {
     text: "Books",
     to: "",
-    icon: <AiOutlineBook className="text-xl" />,
+    icon: <ImBooks className="text-xl" />,
     items: [
-      // {
-      //   text: "Add book",
-      //   to: "/books/create",
-      //   items: [],
-      // },
+      {
+        text: "Add book",
+        to: "/books/create",
+        items: [],
+      },
       {
         text: "Authors",
         to: "/books/authors",
         items: [],
       },
-      // {
-      //   text: "Categories",
-      //   to: "/books/categories",
-      //   items: [],
-      // },
+      {
+        text: "Categories",
+        to: "/books/categories",
+        items: [],
+      },
       {
         text: "Publishers",
         to: "/books/publishers",
@@ -54,7 +56,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Inventory",
     to: "/",
-    icon: <BsBookshelf className="text-xl" />,
+    icon: <MdOutlineInventory className="text-xl" />,
     items: [],
   },
   {

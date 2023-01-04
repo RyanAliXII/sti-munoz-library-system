@@ -5,13 +5,9 @@ import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
 import {
-  DangerButton,
-  DANGER_BTN_DEFAULT_CLASS,
   Input,
   LighButton,
   PrimaryButton,
-  SecondaryButton,
-  SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
 import LoadingBoundary from "../../../components/loader/LoadingBoundary";
 
@@ -21,20 +17,16 @@ import {
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  HeadingRow,
+  BodyRow,
 } from "../../../components/table/Table";
 import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import { PublisherSchema } from "./schema";
-
-type Publisher = {
-  id?: number;
-  name: string;
-};
+import { PublisherType } from "../../../definitions/types";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const Publisher = () => {
   const {
@@ -54,7 +46,7 @@ const Publisher = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Publisher>(
+  const [selectedRow, setSelectedRow] = useState<PublisherType>(
     PUBLISHER_FORM_DEFAULT_VALUES
   );
 
@@ -91,7 +83,7 @@ const Publisher = () => {
     data: publishers,
     isLoading,
     isError,
-  } = useQuery<Publisher[]>({
+  } = useQuery<PublisherType[]>({
     queryFn: fetchPublisher,
     queryKey: ["publishers"],
   });
@@ -103,52 +95,40 @@ const Publisher = () => {
           <h1 className="text-3xl font-bold ">Publishers</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add Publisher"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}>Add Publisher</PrimaryButton>
         </div>
 
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
               <Thead>
-                <TrHead>
+                <HeadingRow>
                   <Th>Publisher</Th>
                   <Th></Th>
-                </TrHead>
+                </HeadingRow>
               </Thead>
               <Tbody>
                 {publishers?.map((publisher) => {
                   return (
-                    <TrBody key={publisher.id}>
+                    <BodyRow key={publisher.id}>
                       <Td>{publisher.name}</Td>
-                      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
-                        <SecondaryButton
-                          props={{
-                            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
-                            onClick: () => {
-                              setSelectedRow({ ...publisher });
-                              openEditModal();
-                            },
+                      <Td className="p-2 flex gap-2 items-center">
+                        <AiOutlineEdit
+                          className="cursor-pointer text-yellow-400 text-xl"
+                          onClick={() => {
+                            setSelectedRow({ ...publisher });
+                            openEditModal();
                           }}
-                        >
-                          <AiOutlineEdit />
-                        </SecondaryButton>
-                        <DangerButton
-                          props={{
-                            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
-                            onClick: () => {
-                              openConfirmDialog();
-                              setSelectedRow({ ...publisher });
-                            },
+                        />
+                        <AiOutlineDelete
+                          className="cursor-pointer text-orange-600  text-xl"
+                          onClick={() => {
+                            openConfirmDialog();
+                            setSelectedRow({ ...publisher });
                           }}
-                        >
-                          {" "}
-                          <AiOutlineDelete />
-                        </DangerButton>
+                        />
                       </Td>
-                    </TrBody>
+                    </BodyRow>
                   );
                 })}
               </Tbody>
@@ -174,8 +154,7 @@ const Publisher = () => {
 };
 
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
-  const { errors, form, validate, handleFormInput } = useForm<Publisher>({
+  const { errors, form, validate, handleFormInput } = useForm<PublisherType>({
     default: PUBLISHER_FORM_DEFAULT_VALUES,
     schema: PublisherSchema,
   });
@@ -220,19 +199,17 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2">
             <Input
-              labelText="Publisher name"
+              label="Publisher name"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Add publisher</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>
@@ -241,13 +218,13 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
+const EditPublisherModal: React.FC<EditModalProps<PublisherType>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
   const { errors, form, setForm, validate, handleFormInput } =
-    useForm<Publisher>({
+    useForm<PublisherType>({
       default: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
     });
@@ -297,19 +274,17 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
           </div>
           <div className="px-2">
             <Input
-              labelText="Publisher name"
+              label="Publisher name"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Update publisher</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>

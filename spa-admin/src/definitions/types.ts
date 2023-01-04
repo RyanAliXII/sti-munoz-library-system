@@ -13,3 +13,21 @@ export type User = {
   export interface EditModalProps <T> extends ModalProps  {
     formData: T
   }
+  export type Author = {
+    id?: number;
+    givenName: string;
+    middleName?: string;
+    surname: string;
+  };
+
+  export type PublisherType = {
+    id?: number;
+    name: string;
+  };
+  export type SourceType = {
+    id?: number;
+    name: string;
+  };
+  export type CategoryType = {
+    name: string;
+  };

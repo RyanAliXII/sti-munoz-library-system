@@ -1,14 +1,10 @@
 import {
   PrimaryButton,
-  SecondaryButton,
   Input,
-  SECONDARY_BTN_DEFAULT_CLASS,
-  DANGER_BTN_DEFAULT_CLASS,
-  DangerButton,
   LighButton,
 } from "../../../components/forms/Forms";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,26 +15,33 @@ import { CreateAuthorSchema } from "./schema";
 import { useForm } from "../../../hooks/useForm";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
+import { Author } from "../../../definitions/types";
 import {
   Table,
   Tbody,
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  HeadingRow,
+  BodyRow,
 } from "../../../components/table/Table";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 
-const AUTHOR_FORM_DEFAULT_VALUES: Author = {
+const ADD_AUTHOR_DEFAULT: Omit<Author, "id"> = {
+  givenName: "",
+  middleName: "",
+  surname: "",
+};
+
+const EDIT_AUTHOR_DEFAULT: Author = {
   id: 0,
   givenName: "",
   middleName: "",
   surname: "",
 };
 
-const Author = () => {
+const AuthorPage = () => {
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -56,9 +59,7 @@ const Author = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Author>(
-    AUTHOR_FORM_DEFAULT_VALUES
-  );
+  const [selectedRow, setSelectedRow] = useState<Author>(EDIT_AUTHOR_DEFAULT);
 
   const fetchAuthors = async () => {
     try {
@@ -100,22 +101,19 @@ const Author = () => {
           <h1 className="text-3xl font-bold ">Authors</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add author"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
         </div>
 
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
               <Thead>
-                <TrHead>
+                <HeadingRow>
                   <Th>Given name</Th>
                   <Th>Middle name/initial</Th>
                   <Th>Surname</Th>
                   <Th></Th>
-                </TrHead>
+                </HeadingRow>
               </Thead>
 
               <Tbody>
@@ -156,12 +154,6 @@ const Author = () => {
   );
 };
 
-type Author = {
-  id?: number;
-  givenName: string;
-  middleName?: string;
-  surname: string;
-};
 type AuthorTableRowType = {
   author: Author;
   openEditModal: () => void;
@@ -173,35 +165,29 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   openDialog,
 }) => {
   return (
-    <TrBody>
+    <BodyRow>
       <Td>{author.givenName}</Td>
       <Td>{author.middleName}</Td>
       <Td>{author.surname}</Td>
-      <Td props={{ className: "p-2 flex gap-2 items-center" }}>
-        <SecondaryButton
-          props={{
-            className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
-            onClick: openEditModal,
-          }}
-        >
-          <AiOutlineEdit />
-        </SecondaryButton>
-        <DangerButton
-          props={{
-            className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
-            onClick: openDialog,
-          }}
-        >
-          <AiOutlineDelete />
-        </DangerButton>
+      <Td className="p-2 flex gap-2 items-center">
+        <AiOutlineEdit
+          className="cursor-pointer text-yellow-400 text-xl"
+          onClick={openEditModal}
+        />
+        <AiOutlineDelete
+          className="cursor-pointer text-orange-600  text-xl"
+          onClick={openDialog}
+        />
       </Td>
-    </TrBody>
+    </BodyRow>
   );
 };
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, setForm, validate, handleFormInput } = useForm<Author>({
-    default: AUTHOR_FORM_DEFAULT_VALUES,
+  const { form, errors, setForm, validate, handleFormInput } = useForm<
+    Omit<Author, "id">
+  >({
+    default: ADD_AUTHOR_DEFAULT,
     schema: CreateAuthorSchema,
   });
   const queryClient = useQueryClient();
@@ -225,7 +211,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     },
     onSettled: () => {
-      setForm({ ...AUTHOR_FORM_DEFAULT_VALUES });
+      setForm({ ...ADD_AUTHOR_DEFAULT });
       closeModal();
     },
   });
@@ -247,43 +233,37 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Given name"
+              label="Given name"
               error={errors?.givenName}
-              props={{
-                type: "text",
-                name: "givenName",
-                onChange: handleFormInput,
-                value: form.givenName,
-              }}
+              type="text"
+              name="givenName"
+              onChange={handleFormInput}
+              value={form.givenName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Middle name/initial"
+              label="Middle name/initial"
               error={errors?.middleName}
-              props={{
-                type: "text",
-                name: "middleName",
-                onChange: handleFormInput,
-                value: form.middleName,
-              }}
+              type="text"
+              name="middleName"
+              onChange={handleFormInput}
+              value={form.middleName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Surname"
+              label="Surname"
               error={errors?.surname}
-              props={{
-                type: "text",
-                name: "surname",
-                onChange: handleFormInput,
-                value: form.surname,
-              }}
+              type="text"
+              name="surname"
+              onChange={handleFormInput}
+              value={form.surname}
             />
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Add author</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton type="button" onClick={closeModal}>
               Cancel
             </LighButton>
           </div>
@@ -299,7 +279,7 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
 }) => {
   const { form, errors, clearErrors, setForm, validate, handleFormInput } =
     useForm<Author>({
-      default: AUTHOR_FORM_DEFAULT_VALUES,
+      default: EDIT_AUTHOR_DEFAULT,
       schema: CreateAuthorSchema,
     });
   useEffect(() => {
@@ -353,43 +333,37 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Given name"
+              label="Given name"
               error={errors?.givenName}
-              props={{
-                type: "text",
-                name: "givenName",
-                value: form.givenName,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="givenName"
+              onChange={handleFormInput}
+              value={form.givenName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
+              label="Middle name/initial"
               error={errors?.middleName}
-              labelText="Middle name/initial"
-              props={{
-                type: "text",
-                name: "middleName",
-                value: form.middleName,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="middleName"
+              onChange={handleFormInput}
+              value={form.middleName}
             />
           </div>
           <div className="px-2 mb-2">
             <Input
-              labelText="Surname"
+              label="Surname"
               error={errors?.surname}
-              props={{
-                type: "text",
-                name: "surname",
-                value: form.surname,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="surname"
+              onChange={handleFormInput}
+              value={form.surname}
             />
           </div>
           <div className="flex gap-1 p-2">
             <PrimaryButton>Update author</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>
@@ -399,4 +373,4 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   );
 };
 
-export default Author;
+export default AuthorPage;

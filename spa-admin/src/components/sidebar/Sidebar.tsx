@@ -30,7 +30,8 @@ const NavigationItems = () => {
             key={item.text}
           >
             <div className="ml-5 flex items-center h-11 gap-1">
-              {item.icon} <span className="font-medium">{item.text}</span>
+              {item.icon}
+              <span className="font-medium text-sm ">{item.text}</span>
             </div>
           </NavLink>
         );
@@ -66,9 +67,9 @@ const NavigationDrawer = (item: SidebarNavItem) => {
 
 const isNavActive = (active: boolean): string => {
   if (active) {
-    return "w-full h-8 flex items-center rounded-sm font-semibold bg-blue-100 text-blue-600 rounded";
+    return "w-full h-8 flex items-center rounded-sm font-semibold bg-blue-500 text-white rounded";
   } else {
-    return "w-full h-8 flex items-center";
+    return "w-full h-8 flex items-center text-gray-600";
   }
 };
 

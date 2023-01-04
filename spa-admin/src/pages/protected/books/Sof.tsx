@@ -6,12 +6,10 @@ import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
 import {
   DangerButton,
-  DANGER_BTN_DEFAULT_CLASS,
   Input,
   LighButton,
   PrimaryButton,
   SecondaryButton,
-  SECONDARY_BTN_DEFAULT_CLASS,
 } from "../../../components/forms/Forms";
 import {
   Table,
@@ -19,20 +17,17 @@ import {
   Td,
   Th,
   Thead,
-  TrBody,
-  TrHead,
+  BodyRow,
+  HeadingRow,
 } from "../../../components/table/Table";
 import axiosClient from "../../../definitions/configs/axios";
 import { EditModalProps, ModalProps } from "../../../definitions/types";
 import { ErrorMsg } from "../../../definitions/var";
 import { useForm } from "../../../hooks/useForm";
-import { useSwitch, useToggleManual } from "../../../hooks/useToggle";
+import { useSwitch } from "../../../hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
+import { SourceType } from "../../../definitions/types";
 
-type Source = {
-  id?: number;
-  name: string;
-};
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const Sof = () => {
   const {
@@ -52,7 +47,7 @@ const Sof = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Source>(
+  const [selectedRow, setSelectedRow] = useState<SourceType>(
     SOURCE_FORM_DEFAULT_VALUES
   );
 
@@ -84,7 +79,7 @@ const Sof = () => {
     }
   };
 
-  const { data: sources } = useQuery<Source[]>({
+  const { data: sources } = useQuery<SourceType[]>({
     queryFn: fetchSources,
     queryKey: ["sources"],
   });
@@ -95,51 +90,39 @@ const Sof = () => {
           <h1 className="text-3xl font-bold ">Source of Funds</h1>
         </div>
         <div className="mb-4">
-          <PrimaryButton
-            buttonText="Add Source"
-            props={{ onClick: openAddModal }}
-          ></PrimaryButton>
+          <PrimaryButton onClick={openAddModal}>Add Source</PrimaryButton>
         </div>
         {/* <LoadingBoundary isLoading={isLoading} isError={isError}> */}
         <div className="w-full">
           <Table>
             <Thead>
-              <TrHead>
+              <HeadingRow>
                 <Th>Source of fund</Th>
                 <Th></Th>
-              </TrHead>
+              </HeadingRow>
             </Thead>
             <Tbody>
               {sources?.map((source) => {
                 return (
-                  <TrBody key={source.id}>
+                  <BodyRow key={source.id}>
                     <Td>{source.name}</Td>
-                    <Td props={{ className: "p-2 flex gap-2 items-center" }}>
-                      <SecondaryButton
-                        props={{
-                          className: `${SECONDARY_BTN_DEFAULT_CLASS} flex items-center gap-1 text-sm`,
-                          onClick: () => {
-                            setSelectedRow({ ...source });
-                            openEditModal();
-                          },
+                    <Td className="p-2 flex gap-2 items-center">
+                      <AiOutlineEdit
+                        className="cursor-pointer text-yellow-400 text-xl"
+                        onClick={() => {
+                          setSelectedRow({ ...source });
+                          openEditModal();
                         }}
-                      >
-                        <AiOutlineEdit />
-                      </SecondaryButton>
-                      <DangerButton
-                        props={{
-                          className: `${DANGER_BTN_DEFAULT_CLASS} bg-red-500 flex items-center gap-1 text-sm`,
-                          onClick: () => {
-                            openConfirmDialog();
-                            setSelectedRow({ ...source });
-                          },
+                      />
+                      <AiOutlineDelete
+                        className="cursor-pointer text-orange-600  text-xl"
+                        onClick={() => {
+                          openConfirmDialog();
+                          setSelectedRow({ ...source });
                         }}
-                      >
-                        {" "}
-                        <AiOutlineDelete />
-                      </DangerButton>
+                      />
                     </Td>
-                  </TrBody>
+                  </BodyRow>
                 );
               })}
             </Tbody>
@@ -166,7 +149,7 @@ const Sof = () => {
 };
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput } = useForm<Source>({
+  const { errors, form, validate, handleFormInput } = useForm<SourceType>({
     default: SOURCE_FORM_DEFAULT_VALUES,
     schema: SourceofFundSchema,
   });
@@ -211,19 +194,17 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="px-2">
             <Input
-              labelText="Fund Source"
+              label="Fund Source"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Add Source</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>
@@ -232,15 +213,16 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditSourceModal: React.FC<EditModalProps<Source>> = ({
+const EditSourceModal: React.FC<EditModalProps<SourceType>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, handleFormInput } = useForm<Source>({
-    default: SOURCE_FORM_DEFAULT_VALUES,
-    schema: SourceofFundSchema,
-  });
+  const { errors, form, setForm, validate, handleFormInput } =
+    useForm<SourceType>({
+      default: SOURCE_FORM_DEFAULT_VALUES,
+      schema: SourceofFundSchema,
+    });
 
   useEffect(() => {
     setForm({ ...formData });
@@ -286,19 +268,17 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
           </div>
           <div className="px-2">
             <Input
-              labelText="Fund Source"
+              label="Fund Source"
               error={errors?.name}
-              props={{
-                type: "text",
-                name: "name",
-                value: form.name,
-                onChange: handleFormInput,
-              }}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
             />
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Update source</PrimaryButton>
-            <LighButton props={{ onClick: closeModal, type: "button" }}>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>

@@ -7,7 +7,7 @@ import (
 	"slim-app/server/app/db"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/app/repository"
-	"slim-app/server/app/src/v1"
+	"slim-app/server/app/services/v1"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -42,9 +42,10 @@ func main() {
 		})
 	})
 
-	db := db.Connect()
-	repos := repository.NewRepositories(db)
-	src.RegisterRoutesV1(r, &repos)
+	dbConnection := db.Connect()
+	db.RunSeed(dbConnection)
+	repos := repository.NewRepositories(dbConnection)
+	services.RegisterServicesV1(r, &repos)
 	logger.Info("Server starting")
 	r.Run(":5200")
 

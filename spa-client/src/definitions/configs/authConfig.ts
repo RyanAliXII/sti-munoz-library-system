@@ -1,3 +1,4 @@
+
 import { PopupRequest, Configuration} from "@azure/msal-browser"
 
 const msalConfig:Configuration  = {
