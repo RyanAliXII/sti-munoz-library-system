@@ -1,4 +1,3 @@
-import React from "react";
 import { createRoutesFromChildren, Route } from "react-router-dom";
 import ProtectedRoutes from "../components/auth/ProtectedRoutes";
 import PublicRoutes from "../components/auth/PublicRoutes";

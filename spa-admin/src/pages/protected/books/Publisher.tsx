@@ -3,13 +3,9 @@ import React, { BaseSyntheticEvent, useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
-import {
-  Input,
-  LighButton,
-  PrimaryButton,
-} from "../../../components/forms/Forms";
-import LoadingBoundary from "../../../components/loader/LoadingBoundary";
+import { DangerConfirmDialog } from "@components/dialog/Dialog";
+import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import {
   Table,
@@ -19,14 +15,14 @@ import {
   Thead,
   HeadingRow,
   BodyRow,
-} from "../../../components/table/Table";
-import axiosClient from "../../../definitions/configs/axios";
-import { EditModalProps, ModalProps } from "../../../definitions/types";
-import { ErrorMsg } from "../../../definitions/var";
-import { useForm } from "../../../hooks/useForm";
-import { useSwitch } from "../../../hooks/useToggle";
+} from "@components/table/Table";
+import axiosClient from "@definitions/configs/axios";
+import { EditModalProps, ModalProps } from "@definitions/types";
+import { ErrorMsg } from "@definitions/var";
+import { useForm } from "@hooks/useForm";
+import { useSwitch } from "@hooks/useToggle";
 import { PublisherSchema } from "./schema";
-import { PublisherType } from "../../../definitions/types";
+import { PublisherType } from "@definitions/types";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const Publisher = () => {
   const {

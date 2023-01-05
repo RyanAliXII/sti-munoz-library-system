@@ -35,8 +35,8 @@ export const DangerConfirmDialog = ({
       onClose={close}
     >
       <div className="w-96  rounded">
-        <div className="header w-full h-10 px-2 py-1 text-lg font-medium border-b text-gray-600">
-          {title}
+        <div className="header w-full h-10 px-2 py-2 text-lg font-medium border-b text-gray-600">
+          <span>{title}</span>
         </div>
         <div className="px-2 h-20 border-b flex items-center">
           <small className="text-gray-500">{text}</small>

@@ -1,16 +1,17 @@
 import axios from "axios";
 import React, { BaseSyntheticEvent, useId, useState } from "react";
-import Autocomplete from "../../../components/autocomplete-input/Autocomplete";
-import { BaseProps } from "../../../definitions/props.definition";
-import { constructQuery } from "../../../helpers/helper";
-import useDebounce from "../../../hooks/useDebounce";
+import Autocomplete from "@components/autocomplete-input/Autocomplete";
+import { BaseProps } from "@definitions/props.definition";
+// import { constructQuery } from "../../../helpers/helper";
+import useDebounce from "@hooks/useDebounce";
+import { v4 as uuidV4 } from "uuid";
 import {
   Input,
   InputClasses,
   PrimaryButton,
   SecondaryButton,
-} from "../../../components/forms/Forms";
-import { useForm } from "../../../hooks/useForm";
+} from "@components/forms/Forms";
+import { useForm } from "@hooks/useForm";
 import { BookSchema } from "./schema";
 import { Editor } from "@tinymce/tinymce-react";
 
@@ -19,7 +20,7 @@ import {
   CategoryType,
   PublisherType,
   SourceType,
-} from "../../../definitions/types";
+} from "@definitions/types";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   BodyRow,
@@ -29,12 +30,12 @@ import {
   Td,
   Th,
   Thead,
-} from "../../../components/table/Table";
-import { useSwitch } from "../../../hooks/useToggle";
+} from "@components/table/Table";
+import { useSwitch } from "@hooks/useToggle";
 import Modal from "react-responsive-modal";
-import { ModalProps } from "../../../definitions/types";
+import { ModalProps } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
-import axiosClient from "../../../definitions/configs/axios";
+import axiosClient from "@definitions/configs/axios";
 import {
   AiOutlineDelete,
   AiOutlineEdit,
@@ -43,8 +44,8 @@ import {
 import { RiAddLine } from "react-icons/ri";
 import { toast } from "react-toastify";
 import { SingleValue } from "react-select";
-import CustomSelect from "../../../components/forms/CustomSelect";
-import CustomDatePicker from "../../../components/forms/CustomDatePicker";
+import CustomSelect from "@components/forms/CustomSelect";
+import CustomDatePicker from "@components/forms/CustomDatePicker";
 
 interface BookAddFormProps extends BaseProps {
   selectedBookSuggestion: BookSuggestion;
@@ -87,25 +88,26 @@ const BookAdd = () => {
       ddc: [],
     });
 
-  const searchBookByTitle = async (value: any) => {
-    if (value.length === 0) {
-      setBookSuggestions(() => []);
-      return;
-    }
-    const query = constructQuery(value);
-    const { data } = await axios.get(
-      `http://openlibrary.org/search.json?title=${query}`
-    );
-    setBookSuggestions(() => data.docs);
-  };
+  // const searchBookByTitle = async (value: any) => {
+  //   if (value.length === 0) {
+  //     setBookSuggestions(() => []);
+  //     return;
+  //   }
+  //   const query = constructQuery(value);
+  //   const { data } = await axios.get(
+  //     `http://openlibrary.org/search.json?title=${query}`
+  //   );
+  //   setBookSuggestions(() => data.docs);
+  // };
 
-  const handleSearchOnChange = (event: BaseSyntheticEvent) => {
-    const value = event.target.value;
-    typingDebounce(searchBookByTitle, value, ONE_SECOND);
-  };
+  // const handleSearchOnChange = (event: BaseSyntheticEvent) => {
+  //   const value = event.target.value;
+  //   typingDebounce(searchBookByTitle, value, ONE_SECOND);
+  // };
   const handleSearchResultClick = (bookSuggestion: BookSuggestion) => {
     setSelectedBookSuggestion({ ...bookSuggestion });
   };
+
   return (
     <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
       <h1 className="text-3xl font-bold">New Book</h1>
@@ -272,6 +274,7 @@ const BookAddForm: React.FC<BookAddFormProps> = ({}) => {
       await validate();
     } catch {}
   };
+
   return (
     <div>
       <h2 className="text-2xl">General Information</h2>

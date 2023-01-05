@@ -1,14 +1,10 @@
 import React, { BaseSyntheticEvent } from "react";
-import {
-  PrimaryButton,
-  LighButton,
-  Input,
-} from "../../../components/forms/Forms";
+import { PrimaryButton, LighButton, Input } from "@components/forms/Forms";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import { useSwitch } from "../../../hooks/useToggle";
+import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
-import { useForm } from "../../../hooks/useForm";
+import { useForm } from "@hooks/useForm";
 import { CategorySchema } from "./schema";
 import {
   Table,
@@ -18,12 +14,12 @@ import {
   Thead,
   BodyRow,
   HeadingRow,
-} from "../../../components/table/Table";
+} from "@components/table/Table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "../../../definitions/configs/axios";
+import axiosClient from "@definitions/configs/axios";
 import { toast } from "react-toastify";
-import LoadingBoundary from "../../../components/loader/LoadingBoundary";
-import { CategoryType } from "../../../definitions/types";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { CategoryType } from "@definitions/types";
 const Category = () => {
   const {
     isOpen: isAddModalOpen,

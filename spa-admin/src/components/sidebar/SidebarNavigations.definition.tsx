@@ -6,6 +6,7 @@ import { AiOutlineBook } from "react-icons/ai";
 import { BsBookshelf, BsListCheck } from "react-icons/bs";
 import { ImBooks } from "react-icons/im";
 import { ReactNode } from "react";
+import { CgArrowsExchange } from "react-icons/cg";
 
 export type SidebarNavItem = {
   to: string;
@@ -24,7 +25,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Books",
     to: "",
-    icon: <ImBooks className="text-xl" />,
+    icon: <AiOutlineBook className="text-xl" />,
     items: [
       {
         text: "Add book",
@@ -65,21 +66,21 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     icon: <BsListCheck className="text-xl" />,
     items: [],
   },
-  //   {
-  //     text: "Transaction",
-  //     to: "",
-  //     icon: <CgArrowsExchange className="text-xl" />,
-  //     items: [
-  //       {
-  //         text: "Transact",
-  //         to: "",
-  //         items: [],
-  //       },
-  //       {
-  //         text: "View Transaction",
-  //         to: "",
-  //         items: [],
-  //       },
-  //     ],
-  //   },
+  // {
+  //   text: "Transaction",
+  //   to: "",
+  //   icon: <CgArrowsExchange className="text-xl" />,
+  //   items: [
+  //     {
+  //       text: "Transact",
+  //       to: "",
+  //       items: [],
+  //     },
+  //     {
+  //       text: "View Transaction",
+  //       to: "",
+  //       items: [],
+  //     },
+  //   ],
+  // },
 ];
