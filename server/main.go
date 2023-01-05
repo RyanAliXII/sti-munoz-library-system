@@ -24,12 +24,12 @@ func main() {
 		panic(envErr.Error())
 	}
 
-	SPA_ADMIN := os.Getenv("SPA_ADMIN_URL")
+	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{SPA_ADMIN},
+		AllowOrigins:     []string{ADMIN_APP},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
