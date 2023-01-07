@@ -43,6 +43,8 @@ export const AuthProvider = ({ children }: BaseProps) => {
       }
     } catch (error) {
       console.debug("ERROR: " + error);
+      localStorage.clear();
+
       setAuthenticated(false);
     }
   };

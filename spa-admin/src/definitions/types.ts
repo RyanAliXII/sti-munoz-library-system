@@ -31,3 +31,22 @@ export type User = {
   export type CategoryType = {
     name: string;
   };
+
+  export type BookType = {
+    id: string;
+    title: string;
+    copies: number;
+    edition: number;
+    costPrice: number;
+    fundSource: number;
+    publisher: number;
+    pages: number;
+    year: number;
+    dateReceived: string;
+    category: string;
+    authorNumber: string;
+    ddc: string;
+    authors: Author[];
+    description: string;
+  };
+  

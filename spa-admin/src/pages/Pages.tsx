@@ -4,7 +4,7 @@ import PublicRoutes from "../components/auth/PublicRoutes";
 import Login from "./Login";
 import Accession from "./protected/books/Accession";
 import Author from "./protected/books/Author";
-import BookAdd from "./protected/books/BookAdd";
+import BookAdd from "./protected/books/book-add/BookAdd";
 import Dashboard from "./protected/Dashboard";
 import Category from "./protected/books/Category";
 import Publisher from "./protected/books/Publisher";

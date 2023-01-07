@@ -1,5 +1,4 @@
-import { HTMLAttributes, TableHTMLAttributes, TdHTMLAttributes } from "react";
-import { BaseProps } from "../../definitions/props.definition";
+import { HTMLAttributes, TableHTMLAttributes } from "react";
 
 export enum TableElementClasses {
   TableClasslist = "w-full",
