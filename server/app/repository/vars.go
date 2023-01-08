@@ -42,3 +42,9 @@ var (
 func FORMAT_FUNC(repo string, function string) string {
 	return fmt.Sprintf("%s.%s", repo, function)
 }
+
+type Filter struct {
+	Offset  int
+	Limit   int
+	Keyword string
+}

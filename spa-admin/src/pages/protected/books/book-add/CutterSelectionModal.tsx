@@ -1,13 +1,17 @@
 import CustomSelect from "@components/forms/CustomSelect";
 import { Author, ModalProps } from "@definitions/types";
-import React, { RefObject, useState } from "react";
+import React, { BaseSyntheticEvent, RefObject, useState } from "react";
 import { useContext } from "react";
 import Modal from "react-responsive-modal";
 import { Nav } from "rsuite";
 import "rsuite/dist/rsuite.css";
 import { BookAddContext } from "./BookAddContext";
 import { PrimaryButton, Input } from "@components/forms/Forms";
-import { useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import axiosClient from "@definitions/configs/axios";
 
@@ -22,6 +26,8 @@ import {
 } from "@components/table/Table";
 import { useRef } from "react";
 import { useEffect } from "react";
+import { MdLastPage } from "react-icons/md";
+import { AiOutlineSearch } from "react-icons/ai";
 interface CutterSelectionModalProps extends ModalProps {
   selectedAuthors: Author[];
 }
@@ -129,56 +135,95 @@ const AuthorTab = () => {
 };
 
 type AuthorNumber = {
+  id: number;
   number: number;
   surname: string;
 };
+
 const BrowseTab = () => {
-  useEffect(() => {
-    const modal = document.querySelector(".react-responsive-modal-modal");
-    const listenScroll = () => {
-      console.log("SCROLLING");
-    };
-
-    modal?.addEventListener("scroll", listenScroll);
-
-    return () => {
-      modal?.removeEventListener("scroll", listenScroll);
-    };
-  }, []);
-  const fetchCuttersTable = async () => {
+  const OFFSET_INCREMENT = 50;
+  const LIMIT = 50;
+  const [searchKeyword, setKeyword] = useState("");
+  const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
-      const { data: response } = await axiosClient.get(
-        "/author-numbers/?format=array"
-      );
+      const { data: response } = await axiosClient.get(`/author-numbers/`, {
+        params: {
+          limit: LIMIT,
+          offset: pageParam,
+          keyword: searchKeyword,
+        },
+      });
       return response.data.table ?? [];
     } catch (error) {
       return [];
     }
   };
-  const { data: authorNumbers } = useQuery<AuthorNumber[]>({
+
+  const search = () => {
+    if (searchKeyword.length === 0) return;
+    refetch();
+  };
+  const { data, fetchNextPage, refetch } = useInfiniteQuery<AuthorNumber[]>({
     queryFn: fetchCuttersTable,
-    queryKey: ["cuttersTable"],
+    queryKey: ["authorNumbers"],
+    getNextPageParam: (_, allPages) => {
+      return allPages.length * OFFSET_INCREMENT;
+    },
   });
+
+  useEffect(() => {
+    const MODAL_CLASS = ".react-responsive-modal-modal";
+    const modal = document.querySelector(MODAL_CLASS);
+
+    const listenScroll = (event: Event) => {
+      const target = event.target as HTMLDivElement;
+      if (target.scrollTop === target.scrollHeight - target.offsetHeight) {
+        fetchNextPage();
+      }
+    };
+
+    modal?.addEventListener("scroll", listenScroll);
+    return () => {
+      modal?.removeEventListener("scroll", listenScroll);
+    };
+  }, []);
 
   return (
     <div>
-      <Input type="text" placeholder="Search..."></Input>
+      <div className="flex gap-2 items-center h-42 mb-3">
+        <Input
+          onChange={(event) => {
+            setKeyword(event.target.value);
+          }}
+          type="text"
+          placeholder="Search..."
+          wrapperclass="flex items-center w-96"
+        ></Input>
+        <PrimaryButton type="button" onClick={search}>
+          <AiOutlineSearch />
+        </PrimaryButton>
+      </div>
+
       <Table>
         <Thead>
           <HeadingRow>
+            <Th></Th>
             <Th>Surname</Th>
             <Th>Number</Th>
           </HeadingRow>
         </Thead>
 
         <Tbody>
-          {authorNumbers?.map((authorNumber) => {
-            return (
-              <BodyRow key={authorNumber.surname}>
-                <Td>{authorNumber.surname}</Td>
-                <Td>{authorNumber.number}</Td>
-              </BodyRow>
-            );
+          {data?.pages.map((authorNumbers) => {
+            return authorNumbers?.map((authorNumber) => {
+              return (
+                <BodyRow key={authorNumber.surname}>
+                  <Td>{authorNumber.id}</Td>
+                  <Td>{authorNumber.surname}</Td>
+                  <Td>{authorNumber.number}</Td>
+                </BodyRow>
+              );
+            });
           })}
         </Tbody>
       </Table>

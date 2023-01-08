@@ -20,6 +20,6 @@ func NewRepositories(db *sqlx.DB) Repositories {
 		PublisherRepository:    NewPublisherRepository(db),
 		SOFRepository:          NewSOFRepository(db),
 		CategoryRepository:     NewCategoryRepository(db),
-		AuthorNumberRepository: NewAuthorNumberRepository(cutters.NewCuttersTable()),
+		AuthorNumberRepository: NewAuthorNumberRepository(cutters.NewCuttersTable(), db),
 	}
 }
