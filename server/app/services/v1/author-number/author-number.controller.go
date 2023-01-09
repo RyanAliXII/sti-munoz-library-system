@@ -3,6 +3,7 @@ package authornum
 import (
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/app/model"
+	"slim-app/server/app/pkg/cutters"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/app/repository"
 	"strconv"
@@ -25,7 +26,7 @@ func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 		return
 	}
 	logger.Info("NAME", zap.String("given", givenName), zap.String("surname", surname))
-	var number string = ctrler.repos.AuthorNumberRepository.Generate(givenName, surname)
+	var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.Generate(givenName, surname)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"authorNumber": number,
 	}, "Author number generated"))

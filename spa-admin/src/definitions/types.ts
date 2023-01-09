@@ -33,7 +33,7 @@ export type User = {
   };
 
   export type BookType = {
-    id: string;
+    id?: string;
     title: string;
     copies: number;
     edition: number;
@@ -44,9 +44,15 @@ export type User = {
     year: number;
     dateReceived: string;
     category: string;
-    authorNumber: string;
+    authorNumber: Omit<AuthorNumber, "id">;
     ddc: string;
     authors: Author[];
     description: string;
   };
+
+  type AuthorNumber = {
+    id?: number
+    surname : string
+    number: number
+  }
   

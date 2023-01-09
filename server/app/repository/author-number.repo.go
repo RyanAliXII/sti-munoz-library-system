@@ -51,7 +51,7 @@ func (repo *AuthorNumberRepository) GetDefaultArray() []map[string]interface{} {
 func (repo *AuthorNumberRepository) GetByInitial(ch string) {
 
 }
-func (repo *AuthorNumberRepository) Generate(firstname string, lastname string) string {
+func (repo *AuthorNumberRepository) Generate(firstname string, lastname string) cutters.AuthorNumber {
 	return repo.cutters.GenerateCutter(firstname, lastname)
 }
 
@@ -66,7 +66,7 @@ type AuthorNumberRepositoryInterface interface {
 	Get(filter Filter) []model.AuthorNumber
 	Search(filter Filter) []model.AuthorNumber
 	GetByInitial(ch string)
-	Generate(firstname string, lastname string) string
+	Generate(firstname string, lastname string) cutters.AuthorNumber
 	GetGroupedArray() map[string][]map[string]interface{}
 	GetGroupedObjects() map[string]map[string]int
 	GetDefaultArray() []map[string]interface{}

@@ -1,16 +1,7 @@
-import {
-  Input,
-  InputClasses,
-  PrimaryButton,
-  SecondaryButton,
-} from "@components/forms/Forms";
+import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import { useSwitch } from "@hooks/useToggle";
-import React, { BaseSyntheticEvent, useId } from "react";
-import {
-  AiOutlineDelete,
-  AiOutlineEdit,
-  AiOutlineSearch,
-} from "react-icons/ai";
+import { BaseSyntheticEvent } from "react";
+
 import { BookSchema } from "../schema";
 import {
   Author,
@@ -26,19 +17,11 @@ import { SingleValue } from "react-select";
 import CustomSelect from "@components/forms/CustomSelect";
 import CustomDatePicker from "@components/forms/CustomDatePicker";
 import { Editor } from "@tinymce/tinymce-react";
-import {
-  Table,
-  BodyRow,
-  HeadingRow,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/table/Table";
+
 import AuthorSelectionModal from "./AuthorSelectionModal";
 import SelectedAuthorsTable from "./SelectedAuthorsTable";
 import CutterSelectionModal from "./CutterSelectionModal";
-import { BookAddContext, BookAddProvider } from "./BookAddContext";
+import { BookAddProvider } from "./BookAddContext";
 
 const BookAddForm = () => {
   const {
@@ -65,7 +48,10 @@ const BookAddForm = () => {
       category: "",
       copies: 1,
       dateReceived: new Date().toISOString(),
-      authorNumber: "",
+      authorNumber: {
+        number: 0,
+        surname: "",
+      },
       ddc: "",
       costPrice: 0,
       description: "",
@@ -166,13 +152,12 @@ const BookAddForm = () => {
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
-      console.log("SUBMITTED");
       await validate();
     } catch {}
   };
 
   return (
-    <BookAddProvider form={form}>
+    <BookAddProvider form={form} setForm={setForm}>
       <form onSubmit={submit}>
         <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto mb-10">
           <h2 className="text-2xl">General Information</h2>
@@ -536,7 +521,7 @@ const BookAddForm = () => {
 
           <div className="lg:grid lg:grid-cols-9 gap-2 lg:mb-6">
             <div className="flex justify-end mb-3 flex-col h-14 lg:mb-0 lg:col-span-2 lg:justify-center">
-              <div className="h-7 flex items-center">
+              <div className="h-7 flex items-center gap-2">
                 <label className="font-semibold text-sm text-gray-600 ">
                   Author number
                 </label>
@@ -556,7 +541,7 @@ const BookAddForm = () => {
               <Input
                 wrapperclass="flex flex-col "
                 error={errors?.authorNumber}
-                value={form.authorNumber}
+                value={form.authorNumber.number}
                 onChange={handleFormInput}
                 placeholder="Author number"
                 name="authorNumber"

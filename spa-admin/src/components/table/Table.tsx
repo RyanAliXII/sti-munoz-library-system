@@ -6,7 +6,7 @@ export enum TableElementClasses {
   HeadingRowClasslist = "border border-l-0 border-r-0 border-t-0",
   ThClasslist = "py-3 text-left px-2 text-sm font-semibold",
   BodyRowClasslist = "border border-l-0 border-r-0 border-t-0 text-gray-500 font-medium hover:bg-gray-50",
-  TdClasslist = "p-3",
+  TdClasslist = "p-3 text-md",
 }
 
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {}

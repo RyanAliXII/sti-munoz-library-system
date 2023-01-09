@@ -17,7 +17,6 @@ import { BookAddContext } from "./BookAddContext";
 interface AuthorSelectionModalProps extends ModalProps {
   selectAuthor?: (a: Author) => void;
   removeAuthor?: (a: Author) => void;
-  //   selectedAuthors: Author[];
 }
 const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
   closeModal,
@@ -97,7 +96,7 @@ const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
                     <Td>
                       <input
                         type="checkbox"
-                        onChange={() => {}}
+                        readOnly
                         checked={isChecked ? true : false}
                         className="h-4 w-4 border"
                       />
