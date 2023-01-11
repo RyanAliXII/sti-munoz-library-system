@@ -56,7 +56,6 @@ func (cutters *Cutters) GenerateCutter(firstname string, lastname string) Author
 
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
-		fmt.Println(key)
 		number := cutters.Default[key]
 		if number != 0 {
 			authorNumber.Number = number
@@ -70,6 +69,23 @@ func (cutters *Cutters) GenerateCutter(firstname string, lastname string) Author
 
 }
 
+func (cutters *Cutters) GenerateCutterByTitle(title string) AuthorNumber {
+	caser := cases.Title(language.English)
+	var authorNumber AuthorNumber = AuthorNumber{}
+	var key string = caser.String(title)
+
+	for len(key) != 0 {
+		number := cutters.Default[key]
+		if number != 0 {
+			authorNumber.Number = number
+			authorNumber.Surname = key
+			return authorNumber
+		}
+		key = key[0 : len(key)-1]
+	}
+
+	return authorNumber
+}
 func NewCuttersTable() *Cutters {
 	return &Cutters{
 		Default:        data.CUTTERS_TABLE,
@@ -158,7 +174,6 @@ func GenerateCutter(firstname string, lastname string) string {
 
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
-		fmt.Println(key)
 		number := data.CUTTERS_TABLE[key]
 		if number != 0 {
 			return fmt.Sprint(caser.String(lastnameInitialChar), number)

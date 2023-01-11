@@ -21,11 +21,23 @@ var logger *zap.Logger = slimlog.GetInstance()
 func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 	var givenName string = ctx.Query("givenName")
 	var surname string = ctx.Query("surname")
+
+	var title string = ctx.Query("title")
+
+	if len(title) > 0 {
+		var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.GenerateByTitle(title)
+		ctx.JSON(httpresp.Success200(gin.H{
+			"authorNumber": number,
+		}, "Author number generated"))
+		logger.Info("Generate by title.", zap.String("title", title))
+		return
+	}
 	if len(givenName) == 0 || len(surname) == 0 {
 		ctx.JSON(httpresp.Fail400(nil, "Missing required query params."))
 		return
 	}
-	logger.Info("NAME", zap.String("given", givenName), zap.String("surname", surname))
+
+	logger.Info("Generate by author.", zap.String("given", givenName), zap.String("surname", surname))
 	var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.Generate(givenName, surname)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"authorNumber": number,

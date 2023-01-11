@@ -6,7 +6,7 @@ import useDebounce from "@hooks/useDebounce";
 
 import {} from "@components/forms/Forms";
 
-import { Author } from "@definitions/types";
+import { Author, Book } from "@definitions/types";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   BodyRow,
@@ -20,10 +20,10 @@ import {
 
 import Modal from "react-responsive-modal";
 import { ModalProps } from "@definitions/types";
-import { useQuery } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
-
+import { BookAddProvider } from "./BookAddContext";
 import BookAddForm from "./BookAddForm";
+import { BookSchema } from "../schema";
+import { useForm } from "@hooks/useForm";
 
 interface BookAddFormProps extends BaseProps {
   selectedBookSuggestion: BookSuggestion;
@@ -70,7 +70,7 @@ const BookAdd = () => {
   };
 
   return (
-    <>
+    <BookAddProvider>
       {/* <h1 className="text-3xl font-bold">New Book</h1> */}
       <div className="w-9/12 ml-9 mt-6 flex items-center gap-2">
         {/* <select className="w-44 border rounded border-gray-300 h-11">
@@ -104,7 +104,7 @@ const BookAdd = () => {
         </button> */}
       </div>
       <BookAddForm></BookAddForm>
-    </>
+    </BookAddProvider>
   );
 };
 

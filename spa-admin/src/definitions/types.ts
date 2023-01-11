@@ -20,19 +20,19 @@ export type User = {
     surname: string;
   };
 
-  export type PublisherType = {
+  export type Publisher = {
     id?: number;
     name: string;
   };
-  export type SourceType = {
+  export type Source = {
     id?: number;
     name: string;
   };
-  export type CategoryType = {
+  export type Category = {
     name: string;
   };
 
-  export type BookType = {
+  export type Book= {
     id?: string;
     title: string;
     copies: number;
@@ -44,15 +44,18 @@ export type User = {
     year: number;
     dateReceived: string;
     category: string;
-    authorNumber: Omit<AuthorNumber, "id">;
+    authorNumber: Omit<AuthorNumberForm, "id">;
     ddc: string;
     authors: Author[];
     description: string;
   };
 
-  type AuthorNumber = {
-    id?: number
-    surname : string
-    number: number
+  export type AuthorNumber = {
+    id?: number;
+    number: number;
+    surname: string;
+  };
+  export interface AuthorNumberForm extends AuthorNumber{
+    value: string
   }
   

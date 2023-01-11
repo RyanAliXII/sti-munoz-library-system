@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useState } from "react";
+import React, { BaseSyntheticEvent, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import { ObjectShape } from "yup/lib/object";
 
@@ -6,7 +6,17 @@ type useFormProps<T> = {
   default: T;
   schema: ObjectSchema<ObjectShape>;
 };
-export const useForm = <T>(props: useFormProps<T>) => {
+
+export type useFormReturnType<T> = {
+  validate:()=>Promise<void>;
+  clearErrorWithKey:(key: string)=>void;
+  setForm:React.Dispatch<React.SetStateAction<T>>
+  clearErrors:()=>void;
+  handleFormInput:(event: BaseSyntheticEvent)=>void
+  form: T
+  errors:any
+}
+export const useForm = <T>(props: useFormProps<T>): useFormReturnType<T> => {
   const [form, setForm] = useState<T>(props.default);
   const [errors, setErrors] = useState<any>();
   const clearErrors = () => {
@@ -65,5 +75,5 @@ export const useForm = <T>(props: useFormProps<T>) => {
     clearErrors,
     clearErrorWithKey,
     handleFormInput
-  };
+  } 
 };

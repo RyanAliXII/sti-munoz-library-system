@@ -1,12 +1,9 @@
-import CustomSelect from "@components/forms/CustomSelect";
-import { Author, ModalProps } from "@definitions/types";
+import { Author, AuthorNumber, ModalProps } from "@definitions/types";
 import React, { useId, useState } from "react";
 import { useContext } from "react";
 import Modal from "react-responsive-modal";
-import { Nav } from "rsuite";
-
 import { BookAddContext } from "./BookAddContext";
-import { Input } from "@components/forms/Forms";
+import { Input, PrimaryButton } from "@components/forms/Forms";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 import axiosClient from "@definitions/configs/axios";
@@ -26,18 +23,33 @@ import { useEffect } from "react";
 import useDebounce from "@hooks/useDebounce";
 
 import { SingleValue } from "react-select";
+
 interface CutterSelectionModalProps extends ModalProps {
   selectedAuthors: Author[];
 }
 
-type Tabs = "AUTHORS" | "TITLE" | "BROWSE";
+enum Tabs {
+  Generate = "GENERATE",
+  Browse = "BROWSE",
+}
+enum Classes {
+  Active = "inline-block p-4 text-blue-400 bg-gray-100 rounded-t-lg active cursor-pointer",
+  Default = "inline-block p-4 text-gray-400  rounded-t-lg cursor-pointer",
+}
+
+const checkActive = (key: string, state: string) => {
+  if (key === state) {
+    return Classes.Active;
+  }
+  return Classes.Default;
+};
 
 const CutterSelectionModal: React.FC<CutterSelectionModalProps> = ({
   closeModal,
   isOpen,
   selectedAuthors,
 }) => {
-  const [activeTab, setActiveTab] = useState<Tabs>("AUTHORS");
+  const [activeTab, setActiveTab] = useState<string>("GENERATE");
   const modalRef = useRef<HTMLDivElement>(null);
 
   const { form } = useContext(BookAddContext);
@@ -52,70 +64,68 @@ const CutterSelectionModal: React.FC<CutterSelectionModalProps> = ({
       styles={{
         modal: {
           maxWidth: "none",
-          height: "600px",
         },
       }}
       classNames={{
-        modal: "w-full lg:w-9/12 rounded ",
+        modalContainer: "",
+        modal: "w-11/12 lg:w-9/12 rounded h-[600px]",
       }}
     >
       <div>
-        <div className="mb-5">
-          <span className="text-lg font-semibold mr-2">Author number :</span>
-          <span className="text-lg text-gray-500">{`${form.authorNumber.surname} ${form.authorNumber.number}`}</span>
-        </div>
-        <Nav appearance="tabs" className="flex gap-2 ">
-          <Nav.Item
-            active={activeTab === "AUTHORS"}
-            className="text-sm flex items-center px-2   text-blue-400 "
-            onClick={() => {
-              setActiveTab("AUTHORS");
-            }}
-          >
-            Generate base on selected authors
-          </Nav.Item>
-          <Nav.Item
-            className="p-5"
-            active={activeTab === "TITLE"}
-            onClick={() => {
-              setActiveTab("TITLE");
-            }}
-          >
-            Generate base on title
-          </Nav.Item>
-          <Nav.Item
-            className="p-5"
-            active={activeTab === "BROWSE"}
-            onClick={() => {
-              setActiveTab("BROWSE");
-            }}
-          >
-            Browse
-          </Nav.Item>
-        </Nav>
-        <br />
+        <nav className="mb-6">
+          <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 ">
+            <li className="mr-2">
+              <a
+                aria-current="page"
+                className={checkActive(Tabs.Generate, activeTab)}
+                onClick={() => {
+                  setActiveTab(Tabs.Generate);
+                }}
+              >
+                GENERATE
+              </a>
+            </li>
+            <li className="mr-2">
+              <a
+                aria-current="page"
+                className={checkActive(Tabs.Browse, activeTab)}
+                onClick={() => {
+                  setActiveTab(Tabs.Browse);
+                }}
+              >
+                BROWSE
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
-      <CutterTabs activeTab={activeTab}></CutterTabs>
+      <TabContent activeTab={activeTab}></TabContent>
     </Modal>
   );
 };
 
-interface TabsProps {
-  activeTab: Tabs;
+interface TabsContentProps {
+  activeTab: string;
 }
-const CutterTabs = ({ activeTab }: TabsProps) => {
+const TabContent = ({ activeTab }: TabsContentProps) => {
   switch (activeTab) {
-    case "AUTHORS":
-      return <AuthorTab />;
-    case "BROWSE":
+    case Tabs.Generate:
+      return <GenerateTab />;
+    case Tabs.Browse:
       return <BrowseTab />;
     default:
       return <></>;
   }
 };
 
-const AuthorTab = () => {
-  const { form, setForm } = useContext(BookAddContext);
+const GenerateTab = () => {
+  const {
+    form,
+    setForm,
+    authorGeneratedFrom,
+    setGeneratedFrom,
+    resetGeneratedFrom,
+  } = useContext(BookAddContext);
   const handleSelect = async (
     select: SingleValue<{ label: string; value: Author }>
   ) => {
@@ -134,18 +144,115 @@ const AuthorTab = () => {
         return;
       }
     }
-    setForm((prevForm) => ({ ...prevForm, authorNumber: authorNumber }));
+    setForm((prevForm) => ({
+      ...prevForm,
+      authorNumber: {
+        number: authorNumber.number,
+        surname: authorNumber.surname,
+        value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
+      },
+    }));
   };
+  const generateByTitle = async () => {
+    resetGeneratedFrom();
+    const { data: response } = await axiosClient.get(
+      "/author-numbers/generator",
+      {
+        params: {
+          title: form.title,
+        },
+      }
+    );
+
+    const authorNumber: AuthorNumber = response.data.authorNumber;
+    if (authorNumber) {
+      if (!authorNumber?.number || !authorNumber?.surname) {
+        return;
+      }
+    }
+    setForm((prevForm) => ({
+      ...prevForm,
+      authorNumber: {
+        number: authorNumber.number,
+        surname: authorNumber.surname,
+        value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
+      },
+    }));
+  };
+  const selectAuthor = async (author: Author) => {
+    setGeneratedFrom(author);
+    const { data: response } = await axiosClient.get(
+      "/author-numbers/generator",
+      {
+        params: {
+          givenName: author.givenName,
+          surname: author.surname,
+        },
+      }
+    );
+    const authorNumber: AuthorNumber = response.data.authorNumber;
+    if (authorNumber) {
+      if (!authorNumber?.number || !authorNumber?.surname) {
+        return;
+      }
+    }
+    setForm((prevForm) => ({
+      ...prevForm,
+      authorNumber: {
+        number: authorNumber.number,
+        surname: authorNumber.surname,
+        value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
+      },
+    }));
+  };
+  const TITLE_CHARACTER_LIMIT = 25;
+  const title =
+    form.title.length > 25
+      ? `${form.title.substring(0, TITLE_CHARACTER_LIMIT)}...`
+      : form.title;
   return (
     <>
-      <CustomSelect
-        onChange={handleSelect}
-        options={form.authors.map((author) => ({
-          label: `${author.givenName} ${author.surname}`,
-          value: author,
-        }))}
-      ></CustomSelect>
+      <div>
+        <div className="w-full mb-3">
+          <Input
+            label="Author Number"
+            wrapperclass="flex items-center"
+            className="disabled:bg-gray-100"
+            type="text"
+            readOnly
+            disabled
+            value={form.authorNumber.value}
+          />
+        </div>
+        <div className="lg:grid lg:grid-cols-9 lg:gap-2 ">
+          <div className="flex justify-end mb-3 flex-col h-20 lg:h-24 lg:mb-0 lg:col-span-2 lg:justify-center">
+            <div className="h-7 flex items-center gap-2">
+              <label className=" text-sm font-semibold text-gray-600 ml-1 ">
+                <span className="font-semi">
+                  {title.length > 0 ? title : "NO TITLE"}
+                </span>
+              </label>
+            </div>
+            <div>
+              <small className="text-gray-500 pr-5 ml-1">
+                Generate author number based on the book title.
+              </small>
+            </div>
+          </div>
 
+          <div className="flex items-center h-20 lg:h-24 col-span-7 gap-2">
+            <PrimaryButton
+              type="button"
+              onClick={generateByTitle}
+              className="w-28 lg:w-36 disabled:bg-blue-200"
+              disabled={title.length === 0}
+            >
+              Generate
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
+      <hr></hr>
       {form.authors.length === 0 ? (
         <div className="h-80 w-full flex items-center justify-center flex-col">
           <small className="text-sm text-gray-400 ">
@@ -157,10 +264,13 @@ const AuthorTab = () => {
         </div>
       ) : (
         <>
-          <h2 className="text-lg mb-2">Selected Authors</h2>
+          <div className="mt-5 mb-4">
+            <span className="text-md ml-1 text-gray-500 text-sm"></span>
+          </div>
           <Table className="w-full">
             <Thead className=" sticky top-0">
               <HeadingRow>
+                <Th></Th>
                 <Th>Given name</Th>
                 <Th>Middle name/initial</Th>
                 <Th>Surname</Th>
@@ -169,7 +279,21 @@ const AuthorTab = () => {
             <Tbody>
               {form.authors.map((author) => {
                 return (
-                  <BodyRow key={author.id ?? useId()}>
+                  <BodyRow
+                    className="cursor-pointer"
+                    key={author.id ?? useId()}
+                    onClick={() => {
+                      selectAuthor(author);
+                    }}
+                  >
+                    <Td>
+                      <Input
+                        wrapperclass="flex items-center h-4"
+                        type="checkbox"
+                        readOnly
+                        checked={authorGeneratedFrom?.id === author.id}
+                      ></Input>
+                    </Td>
                     <Td>{author.givenName}</Td>
                     <Td>{author.middleName}</Td>
                     <Td>{author.surname}</Td>
@@ -182,12 +306,6 @@ const AuthorTab = () => {
       )}
     </>
   );
-};
-
-type AuthorNumber = {
-  id: number;
-  number: number;
-  surname: string;
 };
 
 const BrowseTab = () => {
@@ -247,13 +365,26 @@ const BrowseTab = () => {
       authorNumber: {
         number: cutter.number,
         surname: cutter.surname,
+        value: `${cutter.surname.charAt(0)}${cutter.number}`,
       },
     }));
   };
   return (
     <div>
       <div className="flex gap-2 items-center mb-3">
+        <div>
+          <Input
+            label="Author Number"
+            wrapperclass="flex items-center"
+            className="disabled:bg-gray-100"
+            type="text"
+            readOnly
+            disabled
+            value={form.authorNumber.value}
+          />
+        </div>
         <Input
+          wrapperclass="flex items-end h-14 mt-1"
           onChange={(event) => {
             setKeyword(event.target.value);
             debounceSearch(search, {}, 300);

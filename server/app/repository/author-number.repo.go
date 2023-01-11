@@ -16,9 +16,6 @@ type AuthorNumberRepository struct {
 	db      *sqlx.DB
 }
 
-//	func (repo *AuthorNumberRepository) Get() map[string]int {
-//		return repo.cutters.Default
-//	}
 func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
 	fmt.Println(filter)
@@ -31,7 +28,7 @@ func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
 }
 func (repo *AuthorNumberRepository) Search(filter Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
-	selectErr := repo.db.Select(&table, "SELECT id,surname, number from book.cutters WHERE surname ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&table, "SELECT id,surname, number from book.cutters WHERE LOWER(surname) LIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(FORMAT_FUNC(RepoName, "Get")))
@@ -54,6 +51,9 @@ func (repo *AuthorNumberRepository) GetByInitial(ch string) {
 func (repo *AuthorNumberRepository) Generate(firstname string, lastname string) cutters.AuthorNumber {
 	return repo.cutters.GenerateCutter(firstname, lastname)
 }
+func (repo *AuthorNumberRepository) GenerateByTitle(title string) cutters.AuthorNumber {
+	return repo.cutters.GenerateCutterByTitle(title)
+}
 
 func NewAuthorNumberRepository(cutters *cutters.Cutters, db *sqlx.DB) AuthorNumberRepositoryInterface {
 	return &AuthorNumberRepository{
@@ -67,6 +67,7 @@ type AuthorNumberRepositoryInterface interface {
 	Search(filter Filter) []model.AuthorNumber
 	GetByInitial(ch string)
 	Generate(firstname string, lastname string) cutters.AuthorNumber
+	GenerateByTitle(title string) cutters.AuthorNumber
 	GetGroupedArray() map[string][]map[string]interface{}
 	GetGroupedObjects() map[string]map[string]int
 	GetDefaultArray() []map[string]interface{}
