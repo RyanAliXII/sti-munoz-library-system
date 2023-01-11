@@ -10,7 +10,7 @@ import {
   LighButton,
   PrimaryButton,
   SecondaryButton,
-} from "../../../components/forms/Forms";
+} from "@components/forms/Forms";
 import {
   Table,
   Tbody,
@@ -19,17 +19,16 @@ import {
   Thead,
   BodyRow,
   HeadingRow,
-} from "../../../components/table/Table";
-import axiosClient from "../../../definitions/configs/axios";
-import { EditModalProps, ModalProps } from "../../../definitions/types";
-import { ErrorMsg } from "../../../definitions/var";
-import { useForm } from "../../../hooks/useForm";
-import { useSwitch } from "../../../hooks/useToggle";
+} from "@components/table/Table";
+import axiosClient from "@definitions/configs/axios";
+import { EditModalProps, ModalProps, Source } from "@definitions/types";
+import { ErrorMsg } from "@definitions/var";
+import { useForm } from "@hooks/useForm";
+import { useSwitch } from "@hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
-import { SourceType } from "../../../definitions/types";
 
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
-const Sof = () => {
+const SofPage = () => {
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -47,7 +46,7 @@ const Sof = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<SourceType>(
+  const [selectedRow, setSelectedRow] = useState<Source>(
     SOURCE_FORM_DEFAULT_VALUES
   );
 
@@ -79,7 +78,7 @@ const Sof = () => {
     }
   };
 
-  const { data: sources } = useQuery<SourceType[]>({
+  const { data: sources } = useQuery<Source[]>({
     queryFn: fetchSources,
     queryKey: ["sources"],
   });
@@ -149,7 +148,7 @@ const Sof = () => {
 };
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput } = useForm<SourceType>({
+  const { errors, form, validate, handleFormInput } = useForm<Source>({
     default: SOURCE_FORM_DEFAULT_VALUES,
     schema: SourceofFundSchema,
   });
@@ -213,16 +212,15 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditSourceModal: React.FC<EditModalProps<SourceType>> = ({
+const EditSourceModal: React.FC<EditModalProps<Source>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, handleFormInput } =
-    useForm<SourceType>({
-      default: SOURCE_FORM_DEFAULT_VALUES,
-      schema: SourceofFundSchema,
-    });
+  const { errors, form, setForm, validate, handleFormInput } = useForm<Source>({
+    default: SOURCE_FORM_DEFAULT_VALUES,
+    schema: SourceofFundSchema,
+  });
 
   useEffect(() => {
     setForm({ ...formData });
@@ -288,4 +286,4 @@ const EditSourceModal: React.FC<EditModalProps<SourceType>> = ({
   );
 };
 
-export default Sof;
+export default SofPage;

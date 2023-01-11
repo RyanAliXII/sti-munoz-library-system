@@ -20,7 +20,7 @@ import axiosClient from "@definitions/configs/axios";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { Category } from "@definitions/types";
-const Category = () => {
+const CategoryPage = () => {
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -197,4 +197,4 @@ const EditCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   );
 };
 
-export default Category;
+export default CategoryPage;

@@ -24,7 +24,7 @@ import { useSwitch } from "@hooks/useToggle";
 import { PublisherSchema } from "./schema";
 import { Publisher } from "@definitions/types";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
-const Publisher = () => {
+const PublisherPage = () => {
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -42,7 +42,7 @@ const Publisher = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<PublisherType>(
+  const [selectedRow, setSelectedRow] = useState<Publisher>(
     PUBLISHER_FORM_DEFAULT_VALUES
   );
 
@@ -79,7 +79,7 @@ const Publisher = () => {
     data: publishers,
     isLoading,
     isError,
-  } = useQuery<PublisherType[]>({
+  } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
     queryKey: ["publishers"],
   });
@@ -150,7 +150,7 @@ const Publisher = () => {
 };
 
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput } = useForm<PublisherType>({
+  const { errors, form, validate, handleFormInput } = useForm<Publisher>({
     default: PUBLISHER_FORM_DEFAULT_VALUES,
     schema: PublisherSchema,
   });
@@ -214,13 +214,13 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-const EditPublisherModal: React.FC<EditModalProps<PublisherType>> = ({
+const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
   const { errors, form, setForm, validate, handleFormInput } =
-    useForm<PublisherType>({
+    useForm<Publisher>({
       default: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
     });
@@ -290,4 +290,4 @@ const EditPublisherModal: React.FC<EditModalProps<PublisherType>> = ({
   );
 };
 
-export default Publisher;
+export default PublisherPage;
