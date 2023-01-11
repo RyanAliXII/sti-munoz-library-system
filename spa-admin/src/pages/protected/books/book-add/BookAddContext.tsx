@@ -1,7 +1,12 @@
 import { BaseProps } from "@definitions/props.definition";
 import { Book, Author } from "@definitions/types";
-import { useForm, useFormReturnType } from "@hooks/useForm";
-import React, { SetStateAction, createContext, useState } from "react";
+import { useForm, useFormType } from "@hooks/useForm";
+import React, {
+  SetStateAction,
+  createContext,
+  useContext,
+  useState,
+} from "react";
 import { BookSchema } from "../schema";
 
 export const BookAddContext = createContext({} as BookAddContextType);
@@ -11,10 +16,12 @@ type BookAddContextType = {
   setForm: React.Dispatch<SetStateAction<Omit<Book, "id">>>;
   authorGeneratedFrom: Author | null;
   resetGeneratedFrom: () => void;
-  formClient: useFormReturnType<Omit<Book, "id">>;
+  formClient: useFormType<Omit<Book, "id">>;
   setGeneratedFrom: (author: Author) => void;
 };
-
+export const useBookAddContext = () => {
+  return useContext(BookAddContext);
+};
 export const BookAddProvider: React.FC<BaseProps> = ({ children }) => {
   const [authorGeneratedFrom, setAuthorGeneratedFrom] = useState<Author | null>(
     null

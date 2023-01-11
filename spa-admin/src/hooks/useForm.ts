@@ -7,7 +7,7 @@ type useFormProps<T> = {
   schema: ObjectSchema<ObjectShape>;
 };
 
-export type useFormReturnType<T> = {
+export type useFormType<T> = {
   validate:()=>Promise<void>;
   clearErrorWithKey:(key: string)=>void;
   setForm:React.Dispatch<React.SetStateAction<T>>
@@ -16,7 +16,7 @@ export type useFormReturnType<T> = {
   form: T
   errors:any
 }
-export const useForm = <T>(props: useFormProps<T>): useFormReturnType<T> => {
+export const useForm = <T>(props: useFormProps<T>): useFormType<T> => {
   const [form, setForm] = useState<T>(props.default);
   const [errors, setErrors] = useState<any>();
   const clearErrors = () => {

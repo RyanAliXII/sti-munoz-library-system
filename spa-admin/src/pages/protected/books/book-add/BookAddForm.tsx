@@ -1,10 +1,9 @@
 import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useContext } from "react";
+import { BaseSyntheticEvent } from "react";
 
-import { BookSchema } from "../schema";
-import { Author, Book, Category, Publisher, Source } from "@definitions/types";
-import { useForm } from "@hooks/useForm";
+import { Author, Category, Publisher, Source } from "@definitions/types";
+
 import axiosClient from "@definitions/configs/axios";
 import { useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
@@ -15,7 +14,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import AuthorSelectionModal from "./AuthorSelectionModal";
 import SelectedAuthorsTable from "./SelectedAuthorsTable";
 import CutterSelectionModal from "./CutterSelectionModal";
-import { BookAddContext, BookAddProvider } from "./BookAddContext";
+import { BookAddContext, useBookAddContext } from "./BookAddContext";
 
 const BookAddForm = () => {
   const {
@@ -29,7 +28,7 @@ const BookAddForm = () => {
     open: openCutterSelection,
   } = useSwitch();
 
-  const { formClient } = useContext(BookAddContext);
+  const { formClient } = useBookAddContext();
   const {
     clearErrorWithKey,
     errors,

@@ -1,9 +1,8 @@
-import { useContext } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "@contexts/AuthContext";
+import { useAuthContext } from "@contexts/AuthContext";
 import AdminBaseLayout from "@layouts/AdminBaseLayout";
 const ProtectedRoutes = () => {
-  const { authenticated } = useContext(AuthContext);
+  const { authenticated } = useAuthContext();
   if (authenticated)
     return (
       <AdminBaseLayout>

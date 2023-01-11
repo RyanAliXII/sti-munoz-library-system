@@ -10,9 +10,9 @@ import axiosClient from "@definitions/configs/axios";
 import { Author, ModalProps } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { useContext } from "react";
+
 import Modal from "react-responsive-modal";
-import { BookAddContext } from "./BookAddContext";
+import { BookAddContext, useBookAddContext } from "./BookAddContext";
 
 interface AuthorSelectionModalProps extends ModalProps {
   selectAuthor?: (a: Author) => void;
@@ -33,7 +33,7 @@ const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
       return [];
     }
   };
-  const { form } = useContext(BookAddContext);
+  const { form } = useBookAddContext();
   const { data: authors } = useQuery<Author[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors"],

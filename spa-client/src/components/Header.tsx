@@ -1,10 +1,10 @@
-import { useContext, useState } from "react";
-import { AuthContext } from "../contexts/AuthContext";
+import { useState } from "react";
 import { BaseProps } from "../definitions/interfaces/Props";
 import LogoutButton from "./LogoutButton";
+import { useAuthContext } from "../contexts/AuthContext";
 
 const Header = ({ children }: BaseProps) => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuthContext();
   const [visible, setVisibility] = useState(false);
   const toggleDropdown = () => {
     setVisibility((visible) => !visible);

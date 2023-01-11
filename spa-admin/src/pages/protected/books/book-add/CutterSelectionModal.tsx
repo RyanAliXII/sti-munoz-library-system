@@ -1,8 +1,7 @@
 import { Author, AuthorNumber, ModalProps } from "@definitions/types";
 import React, { useId, useState } from "react";
-import { useContext } from "react";
 import Modal from "react-responsive-modal";
-import { BookAddContext } from "./BookAddContext";
+import { useBookAddContext } from "./BookAddContext";
 import { Input, PrimaryButton } from "@components/forms/Forms";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -52,7 +51,7 @@ const CutterSelectionModal: React.FC<CutterSelectionModalProps> = ({
   const [activeTab, setActiveTab] = useState<string>("GENERATE");
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const { form } = useContext(BookAddContext);
+  const { form } = useBookAddContext();
   if (!isOpen) return null;
   return (
     <Modal
@@ -125,34 +124,7 @@ const GenerateTab = () => {
     authorGeneratedFrom,
     setGeneratedFrom,
     resetGeneratedFrom,
-  } = useContext(BookAddContext);
-  const handleSelect = async (
-    select: SingleValue<{ label: string; value: Author }>
-  ) => {
-    const { data: response } = await axiosClient.get(
-      "/author-numbers/generator",
-      {
-        params: {
-          givenName: select?.value.givenName,
-          surname: select?.value.surname,
-        },
-      }
-    );
-    const authorNumber: AuthorNumber = response.data.authorNumber;
-    if (authorNumber) {
-      if (!authorNumber?.number || !authorNumber?.surname) {
-        return;
-      }
-    }
-    setForm((prevForm) => ({
-      ...prevForm,
-      authorNumber: {
-        number: authorNumber.number,
-        surname: authorNumber.surname,
-        value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
-      },
-    }));
-  };
+  } = useBookAddContext();
   const generateByTitle = async () => {
     resetGeneratedFrom();
     const { data: response } = await axiosClient.get(
@@ -311,7 +283,7 @@ const GenerateTab = () => {
 const BrowseTab = () => {
   const OFFSET_INCREMENT = 50;
 
-  const { form, setForm } = useContext(BookAddContext);
+  const { form, setForm } = useBookAddContext();
   const [searchKeyword, setKeyword] = useState("");
   const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
