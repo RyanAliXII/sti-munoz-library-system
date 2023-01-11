@@ -331,7 +331,7 @@ const BookAddForm = () => {
               type="number"
               value={form.costPrice}
               onChange={handleFormInput}
-              placeholder="Book copies"
+              placeholder="Book price"
               name="costPrice"
             />
           </div>
@@ -513,11 +513,11 @@ const BookAddForm = () => {
           <div className="flex h-14 items-center col-span-7">
             <Input
               wrapperclass="flex flex-col "
-              error={errors?.authorNumber}
+              error={errors?.authorNumber?.value}
               value={form.authorNumber.value}
               onChange={handleFormInput}
               placeholder="Author number"
-              name="authorNumber"
+              name="authorNumber.value"
             />
             <SecondaryButton
               type="button"

@@ -1,7 +1,7 @@
 import React, { BaseSyntheticEvent, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import { ObjectShape } from "yup/lib/object";
-
+import {set} from 'lodash'
 type useFormProps<T> = {
   default: T;
   schema: ObjectSchema<ObjectShape>;
@@ -16,7 +16,7 @@ export type useFormType<T> = {
   form: T
   errors:any
 }
-export const useForm = <T>(props: useFormProps<T>): useFormType<T> => {
+export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T> => {
   const [form, setForm] = useState<T>(props.default);
   const [errors, setErrors] = useState<any>();
   const clearErrors = () => {
@@ -39,12 +39,9 @@ export const useForm = <T>(props: useFormProps<T>): useFormType<T> => {
   const handleFormInput = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
     const value = event.target.value;
-    clearErrorWithKey(name);
-    setForm((prevForm) => {
-      return {
-        ...prevForm,
-        [name]: value,
-      };
+    const update = set(form, name, value) as T
+    setForm(() => {
+      return {...update}
     });
   };
   const validate = async () => {
@@ -53,16 +50,16 @@ export const useForm = <T>(props: useFormProps<T>): useFormType<T> => {
     } catch (error) {
       if (error instanceof ValidationError) {
         const errorObject = processSchemaError(error);
+        
         setErrors({ ...errorObject });
         throw new Error("Validation failed");
       }
     }
   };
   const processSchemaError = (error: ValidationError) => {
-    const errorObject: any = {};
+    let errorObject: any = {};
     error.inner.forEach((err) => {
-      const key: string = err.path ?? "";
-      errorObject[key] = err.message;
+      errorObject = set(errorObject,err?.path ?? '', err.message )
     });
     return errorObject;
   };
