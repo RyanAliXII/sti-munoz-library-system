@@ -14,7 +14,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import AuthorSelectionModal from "./AuthorSelectionModal";
 import SelectedAuthorsTable from "./SelectedAuthorsTable";
 import CutterSelectionModal from "./CutterSelectionModal";
-import { BookAddContext, useBookAddContext } from "./BookAddContext";
+import { useBookAddContext } from "./BookAddContext";
 
 const BookAddForm = () => {
   const {

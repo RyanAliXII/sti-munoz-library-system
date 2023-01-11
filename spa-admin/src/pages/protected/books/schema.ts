@@ -50,7 +50,7 @@ export const BookFormSchema = object().shape({
     copies: number().integer("Value should not be decimal.").test("check-if-greater-than-0","Value should be greater than 0" ,(value)=> (value ?? 0) > 0).required("Number of copies is required."),
     dateReceived: date().notRequired(),
     authorNumber: object().shape({
-        value: string().max(150, "Character should not exceed 150").required("Author number is required"),
+        value: string().max(150, "Character should not exceed 150").required("Author number is required."),
         surname: string().notRequired(),
         number: number().notRequired(),
     }),

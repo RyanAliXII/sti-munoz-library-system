@@ -22,7 +22,7 @@ import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
 import { PublisherSchema } from "./schema";
-import { PublisherType } from "@definitions/types";
+import { Publisher } from "@definitions/types";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const Publisher = () => {
   const {

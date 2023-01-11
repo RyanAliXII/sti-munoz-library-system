@@ -1,6 +1,5 @@
 import Select, { GroupBase, Props } from "react-select";
 import { InputClasses } from "./Forms";
-import { string } from "yup";
 
 interface CustomSelectProps<
   Option,

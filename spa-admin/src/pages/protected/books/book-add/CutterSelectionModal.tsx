@@ -21,8 +21,6 @@ import { useEffect } from "react";
 
 import useDebounce from "@hooks/useDebounce";
 
-import { SingleValue } from "react-select";
-
 interface CutterSelectionModalProps extends ModalProps {
   selectedAuthors: Author[];
 }

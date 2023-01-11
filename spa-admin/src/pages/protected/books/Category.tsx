@@ -19,7 +19,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "@definitions/configs/axios";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { CategoryType } from "@definitions/types";
+import { Category } from "@definitions/types";
 const Category = () => {
   const {
     isOpen: isAddModalOpen,
@@ -46,7 +46,7 @@ const Category = () => {
     data: categories,
     isLoading,
     isError,
-  } = useQuery<CategoryType[]>({
+  } = useQuery<Category[]>({
     queryFn: fetchCategories,
     queryKey: ["categories"],
   });
@@ -101,10 +101,10 @@ interface ModalProps {
 }
 
 const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const FORM_DEFAULT_VALUES: CategoryType = {
+  const FORM_DEFAULT_VALUES: Category = {
     name: "",
   };
-  const { form, errors, handleFormInput, validate } = useForm<CategoryType>({
+  const { form, errors, handleFormInput, validate } = useForm<Category>({
     default: FORM_DEFAULT_VALUES,
     schema: CategorySchema,
   });

@@ -1,4 +1,3 @@
-import React from "react";
 import DatePicker, { ReactDatePickerProps } from "react-datepicker";
 import { InputClasses } from "./Forms";
 

@@ -1,5 +1,5 @@
 import { useAuthContext } from "@contexts/AuthContext";
-import useToggle from "../hooks/useToggle";
+import useToggle from "@/hooks/useToggle";
 import LogoutButton from "./LogoutButton";
 
 const Header = () => {

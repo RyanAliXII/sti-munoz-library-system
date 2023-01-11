@@ -1,6 +1,6 @@
-import Header from "../components/Header";
-import Sidebar from "../components/sidebar/Sidebar";
-import { BaseProps } from "../definitions/props.definition";
+import Header from "@components/Header";
+import Sidebar from "@components/sidebar/Sidebar";
+import { BaseProps } from "@definitions/props.definition";
 
 const AdminBaseLayout = ({ children }: BaseProps) => {
   return (

@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 
 import Modal from "react-responsive-modal";
-import { BookAddContext, useBookAddContext } from "./BookAddContext";
+import { useBookAddContext } from "./BookAddContext";
 
 interface AuthorSelectionModalProps extends ModalProps {
   selectAuthor?: (a: Author) => void;

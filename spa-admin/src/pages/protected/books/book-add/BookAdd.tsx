@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Autocomplete from "@components/autocomplete-input/Autocomplete";
 import { BaseProps } from "@definitions/props.definition";
 // import { constructQuery } from "../../../helpers/helper";
@@ -22,9 +22,6 @@ import Modal from "react-responsive-modal";
 import { ModalProps } from "@definitions/types";
 import { BookAddProvider } from "./BookAddContext";
 import BookAddForm from "./BookAddForm";
-import { BookSchema } from "../schema";
-import { useForm } from "@hooks/useForm";
-
 interface BookAddFormProps extends BaseProps {
   selectedBookSuggestion: BookSuggestion;
 }
