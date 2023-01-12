@@ -2,6 +2,7 @@ package db
 
 import (
 	"slim-app/server/app/pkg/cutters"
+	"slim-app/server/app/pkg/dewey"
 	"slim-app/server/app/pkg/slimlog"
 
 	"github.com/doug-martin/goqu/v9"
@@ -53,6 +54,7 @@ func RunSeed(db *sqlx.DB) {
 		},
 	}
 	SeedCuttersTable(&seedDB)
+	SeedDDC(&seedDB)
 }
 func SeedCuttersTable(DB *DB) {
 	const FN = "db.SeedCuttersTable"
@@ -78,5 +80,36 @@ func SeedCuttersTable(DB *DB) {
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(FN))
 	}
-	logger.Info("Author number seeded")
+	logger.Info("Author number seeded", slimlog.Function(FN))
+}
+
+func SeedDDC(DB *DB) {
+	const FN = "db.SeedDDC"
+	const CREATE_TABLE_QUERY = `
+		CREATE TABLE  book.ddc(
+		id integer primary key generated always as identity,
+		name varchar(200),
+		number varchar(30),
+		main_class_number int
+		 )
+	`
+
+	_, err := DB.Connection.Exec(CREATE_TABLE_QUERY)
+	if err != nil {
+		logger.Warn(err.Error(), slimlog.Function(FN))
+		return
+	}
+
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Insert("book.ddc").Cols("number", "name", "main_class_number")
+	for _, ddc := range dewey.LoadFromJSON() {
+		ds = ds.Vals(goqu.Vals{ddc.Number, ddc.Name, ddc.Number})
+	}
+	insertQuery, _, _ := ds.ToSQL()
+	_, insertErr := DB.Connection.Exec(insertQuery)
+
+	if insertErr != nil {
+		logger.Error(insertErr.Error(), slimlog.Function(FN))
+	}
+	logger.Info("DDC seeded", slimlog.Function(FN))
 }

@@ -1,12 +1,11 @@
 import { useState } from "react";
 import Autocomplete from "@components/autocomplete-input/Autocomplete";
 import { BaseProps } from "@definitions/props.definition";
-// import { constructQuery } from "../../../helpers/helper";
+
 import useDebounce from "@hooks/useDebounce";
 
 import {} from "@components/forms/Forms";
 
-import { Author, Book } from "@definitions/types";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   BodyRow,
