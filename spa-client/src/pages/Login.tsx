@@ -1,14 +1,11 @@
 import { loginRequest } from "../definitions/configs/authConfig";
 import { useMsal } from "@azure/msal-react";
-// import { useContext } from "react";
-// import { AuthContext } from "../contexts/AuthContext";
-
 
 const Login = () => {
   const { instance: msalClient } = useMsal();
   const handleLogin = async () => {
     try {
-     await msalClient.loginRedirect(loginRequest);
+      await msalClient.loginRedirect(loginRequest);
     } catch (err) {
       console.log(err);
     }

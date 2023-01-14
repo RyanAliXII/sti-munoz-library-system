@@ -1,10 +1,9 @@
-import { useContext, useState } from "react";
-import { AuthContext } from "../contexts/AuthContext";
-import useToggle from "../hooks/useToggle";
+import { useAuthContext } from "@contexts/AuthContext";
+import useToggle from "@hooks/useToggle";
 import LogoutButton from "./LogoutButton";
 
 const Header = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuthContext();
   const { toggle, value: visible } = useToggle(false);
   return (
     <header className="fixed top-0 w-full bg-white z-10 drop-shadow-sm">

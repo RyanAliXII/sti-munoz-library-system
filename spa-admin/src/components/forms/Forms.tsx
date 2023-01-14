@@ -3,6 +3,7 @@ import React, { ButtonHTMLAttributes } from "react";
 interface InputProps extends HTMLInputProps {
   label?: string;
   error?: any;
+  wrapperclass?: string;
   // props?: HTMLInputProps;
 }
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
@@ -32,21 +33,24 @@ export enum SelectClasses {
 export const Input: React.FC<InputProps> = (props: InputProps) => {
   return (
     <>
-      <label className="text-gray-500" htmlFor={props?.name}>
+      <label className="text-gray-500 text-sm" htmlFor={props?.name}>
         {props.label}
       </label>
-      <input
-        name={props?.name}
-        placeholder={props?.placeholder}
-        {...{
-          ...props,
-          className: `${InputClasses.InputDefaultClasslist} ${
-            props?.className
-          } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
-        }}
-      />
-      <div className="h-2 flex items-center mt-2">
-        <small className="text-red-500">{props.error}</small>
+
+      <div className={`w-full ${props.wrapperclass ?? ""}`}>
+        <input
+          name={props?.name}
+          placeholder={props?.placeholder}
+          {...{
+            ...props,
+            className: `${InputClasses.InputDefaultClasslist} ${
+              props?.className ?? ""
+            } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
+          }}
+        />
+        <div className="h-2 flex items-center mt-2">
+          <small className="text-red-500">{props.error}</small>
+        </div>
       </div>
     </>
   );

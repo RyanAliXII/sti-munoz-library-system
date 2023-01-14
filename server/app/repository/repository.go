@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"fmt"
 	"slim-app/server/app/pkg/cutters"
+	"slim-app/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -12,6 +14,7 @@ type Repositories struct {
 	SOFRepository          SOFInterface
 	CategoryRepository     CategoryRepositoryInterface
 	AuthorNumberRepository AuthorNumberRepositoryInterface
+	DDCRepository          DDCRepositoryInterface
 }
 
 func NewRepositories(db *sqlx.DB) Repositories {
@@ -20,6 +23,26 @@ func NewRepositories(db *sqlx.DB) Repositories {
 		PublisherRepository:    NewPublisherRepository(db),
 		SOFRepository:          NewSOFRepository(db),
 		CategoryRepository:     NewCategoryRepository(db),
-		AuthorNumberRepository: NewAuthorNumberRepository(cutters.NewCuttersTable()),
+		AuthorNumberRepository: NewAuthorNumberRepository(cutters.NewCuttersTable(), db),
+		DDCRepository:          NewDDCRepository(db),
 	}
+}
+
+type Repository[model any] struct {
+	db    *sqlx.DB
+	table string
+}
+
+func (repo *Repository[model]) Get() []model {
+
+	var data []model = make([]model, 0)
+	selectErr := repo.db.Select(&data, fmt.Sprintf("SELECT * FROM %s where deleted_at IS NULL", repo.table))
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS))
+	}
+	return data
+}
+
+type RepositoryInterface[model any] interface {
+	Get() []model
 }

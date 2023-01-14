@@ -1,6 +1,6 @@
-import React, {ChangeEventHandler, useEffect, useRef } from "react";
-import { BaseProps } from "../../definitions/props.definition";
-import  { useToggleManual } from "../../hooks/useToggle";
+import React, { ChangeEventHandler, useEffect, useRef } from "react";
+import { BaseProps } from "@definitions/props.definition";
+import { useToggleManual } from "@hooks/useToggle";
 
 interface AutocompleteProps extends BaseProps {
   className?: string;
@@ -13,18 +13,18 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
   onInput,
   children,
 }) => {
-  const { value: open, set:setOpen } = useToggleManual(false);
+  const { value: open, set: setOpen } = useToggleManual(false);
   const searchInput = useRef<HTMLInputElement>(null);
   const resultParent = useRef<HTMLUListElement>(null);
   useEffect(() => {
     const handleWindowClick = (event: MouseEvent) => {
       if (event.target != searchInput.current) {
-        setOpen(false)
-      } 
+        setOpen(false);
+      }
     };
-    const handleFocus = ()=>{
-      setOpen(true)
-    }
+    const handleFocus = () => {
+      setOpen(true);
+    };
     searchInput.current?.addEventListener("focus", handleFocus);
 
     window.addEventListener("click", handleWindowClick);
@@ -46,7 +46,10 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
       ></input>
       <div className="w-full relative top-4">
         {open ? (
-          <ul className="list-none absolute bg-white w-full max-h-40 overflow-y-scroll" ref={resultParent}>
+          <ul
+            className="list-none absolute bg-white w-full max-h-40 overflow-y-scroll"
+            ref={resultParent}
+          >
             {children}
           </ul>
         ) : null}

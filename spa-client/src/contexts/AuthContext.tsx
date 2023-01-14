@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { BaseProps } from "../definitions/interfaces/Props";
 import { useMsal } from "@azure/msal-react";
 import { AuthContextState } from "../definitions/interfaces/Contexts";
@@ -13,6 +13,9 @@ import {
 } from "@azure/msal-browser";
 
 export const AuthContext = createContext({} as AuthContextState);
+export const useAuthContext = () => {
+  return useContext(AuthContext);
+};
 export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
   const [authenticated, setAuthenticated] = useState(false);
