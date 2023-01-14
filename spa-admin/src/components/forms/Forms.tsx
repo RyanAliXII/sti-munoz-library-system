@@ -37,14 +37,14 @@ export const Input: React.FC<InputProps> = (props: InputProps) => {
         {props.label}
       </label>
 
-      <div className={`w-full ${props.wrapperclass}`}>
+      <div className={`w-full ${props.wrapperclass ?? ""}`}>
         <input
           name={props?.name}
           placeholder={props?.placeholder}
           {...{
             ...props,
             className: `${InputClasses.InputDefaultClasslist} ${
-              props?.className
+              props?.className ?? ""
             } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
           }}
         />

@@ -44,7 +44,9 @@ func FORMAT_FUNC(repo string, function string) string {
 }
 
 type Filter struct {
-	Offset  int
-	Limit   int
-	Keyword string
+	Offset   int
+	Limit    int
+	Keyword  string
+	FindBy   string
+	SearchBy string
 }

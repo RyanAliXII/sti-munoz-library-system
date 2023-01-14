@@ -45,7 +45,7 @@ export type User = {
     dateReceived: string;
     category: string;
     authorNumber: Omit<AuthorNumberForm, "id">;
-    ddc: string;
+    ddc: number;
     authors: Author[];
     description: string;
   };
@@ -58,4 +58,5 @@ export type User = {
   export interface AuthorNumberForm extends AuthorNumber{
     value: string
   }
+  
   

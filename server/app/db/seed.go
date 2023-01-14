@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"slim-app/server/app/pkg/cutters"
 	"slim-app/server/app/pkg/dewey"
 	"slim-app/server/app/pkg/slimlog"
@@ -89,8 +90,7 @@ func SeedDDC(DB *DB) {
 		CREATE TABLE  book.ddc(
 		id integer primary key generated always as identity,
 		name varchar(200),
-		number varchar(30),
-		main_class_number int
+		number numeric
 		 )
 	`
 
@@ -101,11 +101,14 @@ func SeedDDC(DB *DB) {
 	}
 
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Insert("book.ddc").Cols("number", "name", "main_class_number")
+	ds := dialect.Insert("book.ddc").Cols("number", "name")
 	for _, ddc := range dewey.LoadFromJSON() {
-		ds = ds.Vals(goqu.Vals{ddc.Number, ddc.Name, ddc.Number})
+		fmt.Println(ddc.Number)
+		ds = ds.Vals(goqu.Vals{ddc.Number, ddc.Name})
 	}
+
 	insertQuery, _, _ := ds.ToSQL()
+
 	_, insertErr := DB.Connection.Exec(insertQuery)
 
 	if insertErr != nil {

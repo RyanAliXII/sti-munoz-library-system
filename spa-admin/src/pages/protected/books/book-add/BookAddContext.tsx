@@ -38,7 +38,7 @@ export const BookAddProvider: React.FC<BaseProps> = ({ children }) => {
         surname: "",
         value: "",
       },
-      ddc: "",
+      ddc: 0,
       costPrice: 0,
       description: "",
       fundSource: 0,

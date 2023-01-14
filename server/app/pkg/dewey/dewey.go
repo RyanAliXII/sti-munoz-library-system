@@ -12,8 +12,8 @@ const (
 )
 
 type DeweyDecimal struct {
-	Name   string `json:"name"`
-	Number string `json:"number"`
+	Name   string  `json:"name"`
+	Number float64 `json:"number"`
 }
 
 func LoadFromJSON() []DeweyDecimal {
@@ -27,8 +27,7 @@ func LoadFromJSON() []DeweyDecimal {
 	jsonByte, _ := ioutil.ReadAll(jsonFile)
 
 	ddc := make([]DeweyDecimal, 0)
-
 	json.Unmarshal(jsonByte, &ddc)
-	fmt.Println(ddc)
+
 	return ddc
 }

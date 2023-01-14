@@ -1,6 +1,6 @@
 import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent } from "react";
+import { BaseSyntheticEvent, useEffect } from "react";
 
 import { Author, Category, Publisher, Source } from "@definitions/types";
 
@@ -15,6 +15,7 @@ import AuthorSelectionModal from "./AuthorSelectionModal";
 import SelectedAuthorsTable from "./SelectedAuthorsTable";
 import CutterSelectionModal from "./CutterSelectionModal";
 import { useBookAddContext } from "./BookAddContext";
+import DDCSelectionModal from "./DDCSelectionModal";
 
 const BookAddForm = () => {
   const {
@@ -27,7 +28,11 @@ const BookAddForm = () => {
     close: closeCutterSelection,
     open: openCutterSelection,
   } = useSwitch();
-
+  const {
+    isOpen: isDDCSelectionOpen,
+    close: closeDDCSelection,
+    open: openDDCSelection,
+  } = useSwitch();
   const { formClient } = useBookAddContext();
   const {
     clearErrorWithKey,
@@ -122,7 +127,11 @@ const BookAddForm = () => {
       publisher: option?.value as number,
     }));
   };
-
+  useEffect(() => {
+    const fetch = async () => {
+      const { data: response } = await axiosClient.get("/ddc");
+    };
+  }, []);
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -479,6 +488,7 @@ const BookAddForm = () => {
 
           <div className="flex h-14 items-center  col-span-7">
             <Input
+              type="number"
               wrapperclass="flex flex-col "
               error={errors?.ddc}
               value={form.ddc}
@@ -486,7 +496,11 @@ const BookAddForm = () => {
               placeholder="DDC"
               name="ddc"
             />
-            <SecondaryButton type="button" className="self-start ml-2">
+            <SecondaryButton
+              type="button"
+              className="self-start ml-2"
+              onClick={openDDCSelection}
+            >
               Browse
             </SecondaryButton>
           </div>
@@ -538,9 +552,11 @@ const BookAddForm = () => {
           removeAuthor={removeAuthorFromTable}
           // selectedAuthors={form.authors?.filter((a) => a.id) ?? []}
         />
-
+        <DDCSelectionModal
+          closeModal={closeDDCSelection}
+          isOpen={isDDCSelectionOpen}
+        />
         <CutterSelectionModal
-          selectedAuthors={form.authors}
           closeModal={closeCutterSelection}
           isOpen={isCutterSelectionOpen}
         />

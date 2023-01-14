@@ -21,10 +21,6 @@ import { useEffect } from "react";
 
 import useDebounce from "@hooks/useDebounce";
 
-interface CutterSelectionModalProps extends ModalProps {
-  selectedAuthors: Author[];
-}
-
 enum Tabs {
   Generate = "GENERATE",
   Browse = "BROWSE",
@@ -41,11 +37,7 @@ const checkActive = (key: string, state: string) => {
   return Classes.Default;
 };
 
-const CutterSelectionModal: React.FC<CutterSelectionModalProps> = ({
-  closeModal,
-  isOpen,
-  selectedAuthors,
-}) => {
+const CutterSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const [activeTab, setActiveTab] = useState<string>("GENERATE");
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -320,6 +312,12 @@ const BrowseTab = () => {
     const modal = document.querySelector(MODAL_CLASS);
     const listenScroll = (event: Event) => {
       const target = event.target as HTMLDivElement;
+      console.log("scroll top " + target.scrollTop);
+      console.log("scroll height " + target.scrollHeight);
+      console.log(
+        "scroll height and offset height ",
+        +target.scrollHeight + " " + target.offsetHeight
+      );
       if (target.scrollTop === target.scrollHeight - target.offsetHeight) {
         fetchNextPage();
       }
