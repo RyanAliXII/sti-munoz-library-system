@@ -1,5 +1,8 @@
 /database
-/pg-admin
+/pgadmin
 *.log
 .env
 *.Identifier
+.exe
+*
+!*.*
