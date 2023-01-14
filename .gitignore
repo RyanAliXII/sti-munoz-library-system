@@ -3,6 +3,3 @@
 *.log
 .env
 *.Identifier
-.exe
-*.o
-!*.*
