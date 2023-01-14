@@ -1,21 +1,17 @@
-import {
-  PrimaryButton,
-  Input,
-  LighButton,
-} from "../../../components/forms/Forms";
+import { PrimaryButton, Input, LighButton } from "@components/forms/Forms";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
-import { useSwitch } from "../../../hooks/useToggle";
+import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "../../../definitions/configs/axios";
-import LoadingBoundary from "../../../components/loader/LoadingBoundary";
+import axiosClient from "@definitions/configs/axios";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { CreateAuthorSchema } from "./schema";
-import { useForm } from "../../../hooks/useForm";
+import { useForm } from "@hooks/useForm";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
-import { Author } from "../../../definitions/types";
+import { DangerConfirmDialog } from "@components/dialog/Dialog";
+import { Author } from "@definitions/types";
 import {
   Table,
   Tbody,
@@ -24,9 +20,9 @@ import {
   Thead,
   HeadingRow,
   BodyRow,
-} from "../../../components/table/Table";
-import { EditModalProps, ModalProps } from "../../../definitions/types";
-import { ErrorMsg } from "../../../definitions/var";
+} from "@components/table/Table";
+import { EditModalProps, ModalProps } from "@definitions/types";
+import { ErrorMsg } from "@definitions/var";
 
 const ADD_AUTHOR_DEFAULT: Omit<Author, "id"> = {
   givenName: "",

@@ -1,6 +1,6 @@
-import Header from "../components/Header";
-import Sidebar from "../components/sidebar/Sidebar";
-import { BaseProps } from "../definitions/props.definition";
+import Header from "@components/Header";
+import Sidebar from "@components/sidebar/Sidebar";
+import { BaseProps } from "@definitions/props.definition";
 
 const AdminBaseLayout = ({ children }: BaseProps) => {
   return (
@@ -8,7 +8,10 @@ const AdminBaseLayout = ({ children }: BaseProps) => {
       <Header />
 
       <div className="w-full h-full flex">
-        <div className="w-56 drop-shadow-sm bg-white hidden lg:block z-20">
+        <div
+          className="w-56  drop-shadow-sm bg-white hidden lg:block z-20"
+          style={{ minWidth: "220px" }}
+        >
           <Sidebar />
         </div>
         <div className="flex-grow h-full overflow-y-scroll">

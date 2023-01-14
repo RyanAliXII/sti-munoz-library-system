@@ -29,7 +29,7 @@ const NavigationItems = () => {
             to={item.to}
             key={item.text}
           >
-            <div className="ml-5 flex items-center h-11 gap-1">
+            <div className="ml-5 flex items-center h-10 gap-1">
               {item.icon}
               <span className="font-medium text-sm ">{item.text}</span>
             </div>
@@ -67,9 +67,9 @@ const NavigationDrawer = (item: SidebarNavItem) => {
 
 const isNavActive = (active: boolean): string => {
   if (active) {
-    return "w-full h-8 flex items-center rounded-sm font-semibold bg-blue-500 text-white rounded";
+    return "w-full h-10 flex items-center rounded-sm font-semibold bg-blue-500 text-white rounded";
   } else {
-    return "w-full h-8 flex items-center text-gray-600";
+    return "w-full h-10 flex items-center text-gray-600";
   }
 };
 

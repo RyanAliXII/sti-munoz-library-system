@@ -26,40 +26,66 @@ type Cutters struct {
 	DefaultArray   []map[string]interface{}
 }
 
-func (cutters *Cutters) GenerateCutter(firstname string, lastname string) string {
+type AuthorNumber struct {
+	Surname string `json:"surname"`
+	Number  int    `json:"number"`
+}
+
+func (cutters *Cutters) GenerateCutter(firstname string, lastname string) AuthorNumber {
 	caser := cases.Title(language.English)
 	firstname = strings.ToLower(firstname)
 	lastname = strings.ToLower(lastname)
 	firstnameInitialChar := firstname[0:1]
-	lastnameInitialChar := lastname[0:1]
+	// lastnameInitialChar := lastname[0:1]
 	endIndex := strings.Index(ALPHABET_STRING, firstnameInitialChar)
 	concatenatedAlphabet := ALPHABET_ARR[0 : endIndex+1]
 	alphabetLength := len(concatenatedAlphabet)
+	var authorNumber AuthorNumber = AuthorNumber{}
 	for alphabetLength > 0 {
 		alphabetLength--
 		letter := concatenatedAlphabet[alphabetLength]
 		var key string = fmt.Sprintf("%s, %s.", caser.String(lastname), caser.String(letter))
 		number := cutters.Default[key]
 		if number != 0 {
-			return fmt.Sprint(caser.String(lastnameInitialChar), number)
+			authorNumber.Number = number
+			authorNumber.Surname = key
+			return authorNumber
 		}
 
 	}
 
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
-		fmt.Println(key)
 		number := cutters.Default[key]
 		if number != 0 {
-			return fmt.Sprint(caser.String(lastnameInitialChar), number)
+			authorNumber.Number = number
+			authorNumber.Surname = key
+			return authorNumber
 		}
 		key = key[0 : len(key)-1]
 	}
 
-	return ""
+	return authorNumber
 
 }
 
+func (cutters *Cutters) GenerateCutterByTitle(title string) AuthorNumber {
+	caser := cases.Title(language.English)
+	var authorNumber AuthorNumber = AuthorNumber{}
+	var key string = caser.String(title)
+
+	for len(key) != 0 {
+		number := cutters.Default[key]
+		if number != 0 {
+			authorNumber.Number = number
+			authorNumber.Surname = key
+			return authorNumber
+		}
+		key = key[0 : len(key)-1]
+	}
+
+	return authorNumber
+}
 func NewCuttersTable() *Cutters {
 	return &Cutters{
 		Default:        data.CUTTERS_TABLE,
@@ -148,7 +174,6 @@ func GenerateCutter(firstname string, lastname string) string {
 
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
-		fmt.Println(key)
 		number := data.CUTTERS_TABLE[key]
 		if number != 0 {
 			return fmt.Sprint(caser.String(lastnameInitialChar), number)

@@ -2,8 +2,11 @@ package authornum
 
 import (
 	"slim-app/server/app/http/httpresp"
+	"slim-app/server/app/model"
+	"slim-app/server/app/pkg/cutters"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/app/repository"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -18,12 +21,24 @@ var logger *zap.Logger = slimlog.GetInstance()
 func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 	var givenName string = ctx.Query("givenName")
 	var surname string = ctx.Query("surname")
+
+	var title string = ctx.Query("title")
+
+	if len(title) > 0 {
+		var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.GenerateByTitle(title)
+		ctx.JSON(httpresp.Success200(gin.H{
+			"authorNumber": number,
+		}, "Author number generated"))
+		logger.Info("Generate by title.", zap.String("title", title))
+		return
+	}
 	if len(givenName) == 0 || len(surname) == 0 {
 		ctx.JSON(httpresp.Fail400(nil, "Missing required query params."))
 		return
 	}
-	logger.Info("NAME", zap.String("given", givenName), zap.String("surname", surname))
-	var number string = ctrler.repos.AuthorNumberRepository.Generate(givenName, surname)
+
+	logger.Info("Generate by author.", zap.String("given", givenName), zap.String("surname", surname))
+	var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.Generate(givenName, surname)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"authorNumber": number,
 	}, "Author number generated"))
@@ -31,29 +46,36 @@ func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
 
 	const (
-		OBJECT  string = "object"
-		ARRAY   string = "array"
-		GROUPED string = "grouped"
+		DEFAULT_OFFSET = 0
+		DEFAULT_LIMIT  = 50
 	)
 
-	format := ctx.Query("format")         // expected value is "array" and "object"
-	collection := ctx.Query("collection") //expected value is grouped
+	var filter repository.Filter = repository.Filter{}
+	offset := ctx.Query("offset")
+	limit := ctx.Query("limit")
+	keyword := ctx.Query("keyword")
+	parsedOffset, offsetConvErr := strconv.Atoi(offset)
+	if offsetConvErr != nil {
+		filter.Offset = DEFAULT_OFFSET
+	} else {
+		filter.Offset = parsedOffset
+	}
 
-	if format == OBJECT {
-		if collection == GROUPED {
-			ctx.JSON(httpresp.Success200(gin.H{"table": ctrler.repos.AuthorNumberRepository.GetGroupedObjects()}, "Returned in object format, grouped by first initial letter of surname."))
-			return
-		}
+	parsedLimit, limitConvErr := strconv.Atoi(limit)
+	if limitConvErr != nil {
+		filter.Limit = DEFAULT_LIMIT
+	} else {
+		filter.Limit = parsedLimit
 	}
-	if format == ARRAY {
-		if collection == GROUPED {
-			ctx.JSON(httpresp.Success200(gin.H{"table": ctrler.repos.AuthorNumberRepository.GetGroupedArray()}, "Returned in array format, grouped by first initial letter of surname."))
-			return
-		}
-		ctx.JSON(httpresp.Success200(gin.H{"table": ctrler.repos.AuthorNumberRepository.GetDefaultArray()}, "Returned in array format, ungrouped."))
-		return
+
+	var table []model.AuthorNumber
+	if len(keyword) > 0 {
+		filter.Keyword = keyword
+		table = ctrler.repos.AuthorNumberRepository.Search(filter)
+	} else {
+		table = ctrler.repos.AuthorNumberRepository.Get(filter)
 	}
-	ctx.JSON(httpresp.Success200(gin.H{"table": ctrler.repos.AuthorNumberRepository.Get()}, "Returned in object format, ungrouped."))
+	ctx.JSON(httpresp.Success200(gin.H{"table": table}, "Author numbers returned."))
 
 }
 func (ctrler *AuthorNumberController) GetAuthorNumbersByInitial(ctx *gin.Context) {}

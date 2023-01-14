@@ -11,6 +11,9 @@ const msalConfig: Configuration = {
   cache: {
     cacheLocation: "localStorage",
   },
+  system: {
+    iframeHashTimeout: 10000,
+  },
 };
 export const loginRequest: PopupRequest = {
   scopes: ["User.Read"],

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { boolean } from "yup";
+
 const useToggle = (initial?: boolean) => {
     const [bool, setBool] = useState<boolean>(initial ?? false) 
     return {

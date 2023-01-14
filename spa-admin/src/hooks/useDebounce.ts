@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import {  useState } from 'react'
 
 
 const  useDebounce =()=>{
@@ -6,7 +6,7 @@ const  useDebounce =()=>{
 
   const debounce = (func:Function,value:any,wait:number)=>{
     clearTimeout(timeout)
-    const t = setTimeout(()=> func(value), wait)
+    const t = window.setTimeout(()=> func(value), wait)
     setTO(t)
   }
   

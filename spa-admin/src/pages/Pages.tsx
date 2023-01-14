@@ -1,25 +1,24 @@
-import React from "react";
 import { createRoutesFromChildren, Route } from "react-router-dom";
 import ProtectedRoutes from "../components/auth/ProtectedRoutes";
 import PublicRoutes from "../components/auth/PublicRoutes";
 import Login from "./Login";
 import Accession from "./protected/books/Accession";
-import Author from "./protected/books/Author";
-import BookAdd from "./protected/books/BookAdd";
+import AuthorPage from "./protected/books/Author";
+import BookAddPage from "./protected/books/book-add/BookAddPage";
 import Dashboard from "./protected/Dashboard";
-import Category from "./protected/books/Category";
-import Publisher from "./protected/books/Publisher";
-import Sof from "./protected/books/Sof";
+import CategoryPage from "./protected/books/CategoryPage";
+import PublisherPage from "./protected/books/PublisherPage";
+import SofPage from "./protected/books/SofPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/books/create" element={<BookAdd />} />
+      <Route path="/books/create" element={<BookAddPage />} />
       <Route path="/books/accession" element={<Accession />} />
-      <Route path="/books/authors" element={<Author />} />
-      <Route path="/books/categories" element={<Category />} />
-      <Route path="/books/publishers" element={<Publisher />} />
-      <Route path="/books/source-of-funds" element={<Sof />} />
+      <Route path="/books/authors" element={<AuthorPage />} />
+      <Route path="/books/categories" element={<CategoryPage />} />
+      <Route path="/books/publishers" element={<PublisherPage />} />
+      <Route path="/books/source-of-funds" element={<SofPage />} />
     </Route>
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />
