@@ -19,7 +19,7 @@ type AuthorNumberRepository struct {
 func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
 	fmt.Println(filter)
-	selectErr := repo.db.Select(&table, "SELECT id,surname, number from book.cutters LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutters LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(FORMAT_FUNC(RepoName, "Get")))
@@ -28,7 +28,7 @@ func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
 }
 func (repo *AuthorNumberRepository) Search(filter Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
-	selectErr := repo.db.Select(&table, "SELECT id,surname, number from book.cutters WHERE surname ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutters WHERE surname ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(FORMAT_FUNC(RepoName, "Get")))

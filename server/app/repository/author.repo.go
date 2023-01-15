@@ -13,7 +13,7 @@ type AuthorRepository struct {
 }
 
 func (repo *AuthorRepository) New(author model.Author) error {
-	_, insertErr := repo.db.NamedExec("INSERT INTO book.authors(given_name, middle_name, surname)VALUES(:given_name, :middle_name, :surname )", author)
+	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.author(given_name, middle_name, surname)VALUES(:given_name, :middle_name, :surname )", author)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_AUTHOR))
 	}
@@ -22,14 +22,14 @@ func (repo *AuthorRepository) New(author model.Author) error {
 func (repo *AuthorRepository) Get() []model.Author {
 
 	var authors []model.Author = make([]model.Author, 0)
-	selectErr := repo.db.Select(&authors, "SELECT * FROM book.authors where deleted_at IS NULL")
+	selectErr := repo.db.Select(&authors, "SELECT * FROM catalog.author where deleted_at IS NULL")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS))
 	}
 	return authors
 }
 func (repo *AuthorRepository) Delete(id int) error {
-	deleteStmt, prepareErr := repo.db.Preparex("UPDATE book.authors SET deleted_at = now() where id=$1")
+	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.author SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.Int("authorId", id), slimlog.Function(DELETE_AUTHOR))
 		return prepareErr
@@ -45,7 +45,7 @@ func (repo *AuthorRepository) Delete(id int) error {
 
 func (repo *AuthorRepository) Update(id int, author model.Author) error {
 
-	updateStmt, prepareErr := repo.db.Preparex("Update book.authors SET given_name = $1, middle_name = $2, surname = $3 where id = $4")
+	updateStmt, prepareErr := repo.db.Preparex("Update catalog.author SET given_name = $1, middle_name = $2, surname = $3 where id = $4")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.Int("authorId", id), slimlog.Function(UPDATE_AUTHOR))
 		return prepareErr

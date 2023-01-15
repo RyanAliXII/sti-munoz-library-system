@@ -28,22 +28,25 @@ export type User = {
     id?: number;
     name: string;
   };
-  export type Category = {
+  export type Section = {
+    id?: number
     name: string;
+    hasOwnAccession: boolean
   };
 
-  export type Book= {
+  export type Book = {
     id?: string;
     title: string;
+    isbn: string
     copies: number;
     edition: number;
     costPrice: number;
-    fundSource: number;
-    publisher: number;
+    sectionId:number,
+    fundSourceId: number;
+    publisherId: number;
     pages: number;
-    year: number;
-    dateReceived: string;
-    category: string;
+    yearPublished: number;
+    receivedAt: string;
     authorNumber: Omit<AuthorNumberForm, "id">;
     ddc: number;
     authors: Author[];

@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS book.source_of_funds
+DROP TABLE IF EXISTS catalog.source_of_fund

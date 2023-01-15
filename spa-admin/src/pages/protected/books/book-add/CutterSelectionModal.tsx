@@ -111,6 +111,7 @@ const GenerateTab = () => {
   const {
     form,
     setForm,
+    formClient,
     authorGeneratedFrom,
     setGeneratedFrom,
     resetGeneratedFrom,
@@ -140,6 +141,7 @@ const GenerateTab = () => {
         value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
       },
     }));
+    formClient.clearErrorWithKey("authorNumber.value");
   };
   const selectAuthor = async (author: Author) => {
     setGeneratedFrom(author);
@@ -273,7 +275,7 @@ const GenerateTab = () => {
 const BrowseTab = () => {
   const OFFSET_INCREMENT = 50;
 
-  const { form, setForm } = useBookAddContext();
+  const { form, setForm, formClient } = useBookAddContext();
   const [searchKeyword, setKeyword] = useState("");
   const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
@@ -336,6 +338,7 @@ const BrowseTab = () => {
         value: `${cutter.surname.charAt(0)}${cutter.number}`,
       },
     }));
+    formClient.clearErrorWithKey("authorNumber.value");
   };
   return (
     <div>

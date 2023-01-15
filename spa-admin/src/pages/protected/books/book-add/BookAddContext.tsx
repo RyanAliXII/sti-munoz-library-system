@@ -29,28 +29,29 @@ export const BookAddProvider: React.FC<BaseProps> = ({ children }) => {
   const client = useForm<Omit<Book, "id">>({
     default: {
       title: "",
+      isbn: "",
       authors: [],
-      category: "",
       copies: 1,
-      dateReceived: new Date().toISOString(),
+      receivedAt: new Date().toISOString(),
       authorNumber: {
         number: 0,
         surname: "",
         value: "",
       },
+      sectionId: 0,
       ddc: 0,
       costPrice: 0,
       description: "",
-      fundSource: 0,
+      fundSourceId: 0,
       edition: 0,
       pages: 1,
-      publisher: 0,
-      year: new Date().getFullYear(),
+      publisherId: 0,
+      yearPublished: new Date().getFullYear(),
     },
     schema: BookSchema,
   });
-  const { form, setForm } = client;
 
+  const { form, setForm } = client;
   const resetGeneratedFrom = () => {
     setAuthorGeneratedFrom(() => null);
   };

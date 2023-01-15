@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"slim-app/server/app/pkg/cutters"
 	"slim-app/server/app/pkg/dewey"
 	"slim-app/server/app/pkg/slimlog"
@@ -60,7 +59,7 @@ func RunSeed(db *sqlx.DB) {
 func SeedCuttersTable(DB *DB) {
 	const FN = "db.SeedCuttersTable"
 	const CREATE_TABLE_QUERY = `
-		CREATE TABLE  book.cutters(
+		CREATE TABLE  catalog.cutters(
 		id integer primary key generated always as identity,
 		surname varchar(100),
 		number int
@@ -72,7 +71,7 @@ func SeedCuttersTable(DB *DB) {
 		return
 	}
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Insert("book.cutters").Cols("number", "surname")
+	ds := dialect.Insert("catalog.cutters").Cols("number", "surname")
 	for _, cutter := range cutters.LoadWholeArray() {
 		ds = ds.Vals(goqu.Vals{cutter["number"], cutter["surname"]})
 	}
@@ -87,7 +86,7 @@ func SeedCuttersTable(DB *DB) {
 func SeedDDC(DB *DB) {
 	const FN = "db.SeedDDC"
 	const CREATE_TABLE_QUERY = `
-		CREATE TABLE  book.ddc(
+		CREATE TABLE  catalog.ddc(
 		id integer primary key generated always as identity,
 		name varchar(200),
 		number numeric
@@ -101,9 +100,9 @@ func SeedDDC(DB *DB) {
 	}
 
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Insert("book.ddc").Cols("number", "name")
+	ds := dialect.Insert("catalog.ddc").Cols("number", "name")
 	for _, ddc := range dewey.LoadFromJSON() {
-		fmt.Println(ddc.Number)
+
 		ds = ds.Vals(goqu.Vals{ddc.Number, ddc.Name})
 	}
 

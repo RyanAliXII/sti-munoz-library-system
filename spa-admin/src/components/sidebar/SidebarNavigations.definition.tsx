@@ -7,7 +7,7 @@ import { BsBookshelf, BsListCheck } from "react-icons/bs";
 import { ImBooks } from "react-icons/im";
 import { ReactNode } from "react";
 import { CgArrowsExchange } from "react-icons/cg";
-
+import { FiBookOpen } from "react-icons/fi";
 export type SidebarNavItem = {
   to: string;
   text?: string;
@@ -25,10 +25,10 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Books",
     to: "",
-    icon: <AiOutlineBook className="text-xl" />,
+    icon: <FiBookOpen className="text-xl" />,
     items: [
       {
-        text: "Add book",
+        text: "Catalog",
         to: "/books/create",
         items: [],
       },
@@ -38,8 +38,8 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        text: "Categories",
-        to: "/books/categories",
+        text: "Sections",
+        to: "/books/sections",
         items: [],
       },
       {
@@ -54,18 +54,18 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       },
     ],
   },
-  {
-    text: "Inventory",
-    to: "/",
-    icon: <MdOutlineInventory className="text-xl" />,
-    items: [],
-  },
-  {
-    text: "Reservation",
-    to: "/",
-    icon: <BsListCheck className="text-xl" />,
-    items: [],
-  },
+  // {
+  //   text: "Inventory",
+  //   to: "/",
+  //   icon: <MdOutlineInventory className="text-xl" />,
+  //   items: [],
+  // },
+  // {
+  //   text: "Reservation",
+  //   to: "/",
+  //   icon: <BsListCheck className="text-xl" />,
+  //   items: [],
+  // },
   // {
   //   text: "Transaction",
   //   to: "",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Autocomplete from "@components/autocomplete-input/Autocomplete";
 import { BaseProps } from "@definitions/props.definition";
 
@@ -68,7 +68,7 @@ const BookAdd = () => {
   return (
     <BookAddProvider>
       {/* <h1 className="text-3xl font-bold">New Book</h1> */}
-      <div className="w-9/12 ml-9 mt-6 flex items-center gap-2">
+      <div>
         {/* <select className="w-44 border rounded border-gray-300 h-11">
           <option value={"title"}>Title</option>
           <option value={"author"}>Author</option>

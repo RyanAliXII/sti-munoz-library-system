@@ -11,14 +11,14 @@ export const NavigationDropdown = ({
   return (
     <div className="w-full">
       <div
-        className="w-full cursor-pointer flex items-center justify-between"
+        className="w-full cursor-pointer flex items-center justify-between text-gray-600"
         onClick={toggle}
       >
         {drawerButton}
         {visible ? (
-          <MdKeyboardArrowUp className="mr-3" />
+          <MdKeyboardArrowUp className="mr-3 " />
         ) : (
-          <MdKeyboardArrowDown className="mr-3" />
+          <MdKeyboardArrowDown className="mr-3 " />
         )}
       </div>
       <div className={visible ? "flex flex-col " : "hidden"}>{children}</div>

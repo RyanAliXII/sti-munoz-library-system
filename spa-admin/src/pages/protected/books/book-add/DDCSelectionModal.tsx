@@ -53,7 +53,7 @@ enum SearchBy {
 }
 const DDCTable = () => {
   const PAGE_OFFSET_INCREMENT = 50;
-  const { form, setForm } = useBookAddContext();
+  const { form, setForm, formClient } = useBookAddContext();
   const searchDebounce = useDebounce();
   const [filters, setFilters] = useState({
     keyword: "",
@@ -119,6 +119,7 @@ const DDCTable = () => {
 
   const selectDDC = (ddc: DDC) => {
     setForm((prevForm) => ({ ...prevForm, ddc: ddc.number }));
+    formClient.clearErrorWithKey("ddc");
   };
   return (
     <>

@@ -4,19 +4,18 @@ import { BaseProps } from "@definitions/props.definition";
 
 const AdminBaseLayout = ({ children }: BaseProps) => {
   return (
-    <div className="font-OS bg-gray-50 h-screen">
+    <div className="font-OS">
       <Header />
-
-      <div className="w-full h-full flex">
+      <div className="w-full">
         <div
-          className="w-56  drop-shadow-sm bg-white hidden lg:block z-20"
-          style={{ minWidth: "220px" }}
+          className="w-56 drop-shadow-sm bg-white hidden lg:block z-10 fixed  top-0 h-full"
+          style={{ minWidth: "240px" }}
         >
           <Sidebar />
         </div>
-        <div className="flex-grow h-full overflow-y-scroll">
-          <div className="mt-28 w-full h-full">{children}</div>
-        </div>
+
+        <div className="flex-grow mt-28 lg:ml-56">{children}</div>
+
         {/* <*/}
       </div>
     </div>

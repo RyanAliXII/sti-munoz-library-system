@@ -6,7 +6,7 @@ const Header = () => {
   const { user } = useAuthContext();
   const { toggle, value: visible } = useToggle(false);
   return (
-    <header className="fixed top-0 w-full bg-white z-10 drop-shadow-sm">
+    <header className="fixed top-0 w-full bg-white z-20 drop-shadow-sm">
       <div className="px-4 h-20 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
           <div className="flex items-center">

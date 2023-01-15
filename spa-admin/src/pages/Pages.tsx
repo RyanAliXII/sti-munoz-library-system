@@ -6,7 +6,7 @@ import Accession from "./protected/books/Accession";
 import AuthorPage from "./protected/books/Author";
 import BookAddPage from "./protected/books/book-add/BookAddPage";
 import Dashboard from "./protected/Dashboard";
-import CategoryPage from "./protected/books/CategoryPage";
+import SectionPage from "./protected/books/SectionPage";
 import PublisherPage from "./protected/books/PublisherPage";
 import SofPage from "./protected/books/SofPage";
 const pages = createRoutesFromChildren(
@@ -16,7 +16,7 @@ const pages = createRoutesFromChildren(
       <Route path="/books/create" element={<BookAddPage />} />
       <Route path="/books/accession" element={<Accession />} />
       <Route path="/books/authors" element={<AuthorPage />} />
-      <Route path="/books/categories" element={<CategoryPage />} />
+      <Route path="/books/sections" element={<SectionPage />} />
       <Route path="/books/publishers" element={<PublisherPage />} />
       <Route path="/books/source-of-funds" element={<SofPage />} />
     </Route>

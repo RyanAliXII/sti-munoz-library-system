@@ -15,7 +15,7 @@ type DDCRepository struct {
 func (repo *DDCRepository) Get(filter Filter) []dewey.DeweyDecimal {
 	var deweys []dewey.DeweyDecimal = make([]dewey.DeweyDecimal, 0)
 
-	selectErr := repo.db.Select(&deweys, "SELECT name, number from book.ddc LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, "SELECT name, number from catalog.ddc LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Get"))
 	}
@@ -23,7 +23,7 @@ func (repo *DDCRepository) Get(filter Filter) []dewey.DeweyDecimal {
 }
 func (repo *DDCRepository) SearchByName(filter Filter) []dewey.DeweyDecimal {
 	var deweys []dewey.DeweyDecimal = make([]dewey.DeweyDecimal, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT name, number from book.ddc WHERE name ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, "SELECT name, number from catalog.ddc WHERE name ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Search"))
 	}
@@ -31,7 +31,7 @@ func (repo *DDCRepository) SearchByName(filter Filter) []dewey.DeweyDecimal {
 }
 func (repo *DDCRepository) SearchByNumber(filter Filter) []dewey.DeweyDecimal {
 	var deweys []dewey.DeweyDecimal = make([]dewey.DeweyDecimal, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT name, number from book.ddc WHERE CAST( FLOOR(number) as INT) = $1  LIMIT $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, "SELECT name, number from catalog.ddc WHERE CAST( FLOOR(number) as INT) = $1  LIMIT $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Search"))
 	}
