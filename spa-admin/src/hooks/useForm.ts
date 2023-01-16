@@ -75,8 +75,6 @@ export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T
       console.log(err?.path)
       errorObject = set(errorObject, err?.path ?? '', err.message )
     });
-  
- 
     return errorObject;
   };
 
