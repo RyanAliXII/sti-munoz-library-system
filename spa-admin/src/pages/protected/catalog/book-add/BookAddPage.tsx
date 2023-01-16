@@ -19,7 +19,7 @@ import {
 
 import Modal from "react-responsive-modal";
 import { ModalProps } from "@definitions/types";
-import { BookAddProvider } from "./BookAddContext";
+import { BookAddFormProvider } from "./BookAddFormContext";
 import BookAddForm from "./BookAddForm";
 interface BookAddFormProps extends BaseProps {
   selectedBookSuggestion: BookSuggestion;
@@ -66,7 +66,7 @@ const BookAdd = () => {
   };
 
   return (
-    <BookAddProvider>
+    <BookAddFormProvider>
       {/* <h1 className="text-3xl font-bold">New Book</h1> */}
       <div>
         {/* <select className="w-44 border rounded border-gray-300 h-11">
@@ -100,7 +100,7 @@ const BookAdd = () => {
         </button> */}
       </div>
       <BookAddForm></BookAddForm>
-    </BookAddProvider>
+    </BookAddFormProvider>
   );
 };
 

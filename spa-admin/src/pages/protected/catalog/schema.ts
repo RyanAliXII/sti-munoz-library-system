@@ -1,4 +1,4 @@
-import {array, date, DateSchema, number, object, string} from 'yup'
+import {array, number, object, string} from 'yup'
 import validator from 'validator';
 export const CreateAuthorSchema = object().shape({
     givenName : string().max(100, "Input should not exceed 100 characters.").required("Given name cannot be empty."),

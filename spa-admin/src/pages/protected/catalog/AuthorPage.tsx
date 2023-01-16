@@ -183,7 +183,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { form, errors, setForm, validate, handleFormInput } = useForm<
     Omit<Author, "id">
   >({
-    default: ADD_AUTHOR_DEFAULT,
+    initialFormData: ADD_AUTHOR_DEFAULT,
     schema: CreateAuthorSchema,
   });
   const queryClient = useQueryClient();
@@ -273,9 +273,9 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   closeModal,
   formData,
 }) => {
-  const { form, errors, clearErrors, setForm, validate, handleFormInput } =
+  const { form, errors, removeErrors, setForm, validate, handleFormInput } =
     useForm<Author>({
-      default: EDIT_AUTHOR_DEFAULT,
+      initialFormData: EDIT_AUTHOR_DEFAULT,
       schema: CreateAuthorSchema,
     });
   useEffect(() => {
@@ -285,7 +285,7 @@ const EditAuthorModal: React.FC<EditModalProps<Author>> = ({
   }, [formData]);
   useEffect(() => {
     if (!isOpen) {
-      clearErrors();
+      removeErrors();
     }
   }, [isOpen]);
 

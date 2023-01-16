@@ -3,7 +3,7 @@ import ProtectedRoutes from "../components/auth/ProtectedRoutes";
 import PublicRoutes from "../components/auth/PublicRoutes";
 import Login from "./Login";
 import Accession from "./protected/catalog/Accession";
-import AuthorPage from "./protected/catalog/Author";
+import AuthorPage from "./protected/catalog/AuthorPage";
 import BookAddPage from "./protected/catalog/book-add/BookAddPage";
 import Dashboard from "./protected/Dashboard";
 import SectionPage from "./protected/catalog/SectionPage";

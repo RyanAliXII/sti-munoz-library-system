@@ -28,7 +28,9 @@ export const Thead = (props: TableSectionProps) => {
     <thead
       {...{
         ...props,
-        className: `${TableElementClasses.TheadClasslist} ${props.className}`,
+        className: `${TableElementClasses.TheadClasslist} ${
+          props.className ?? ""
+        }`,
       }}
     >
       {props.children}
@@ -41,7 +43,9 @@ export const HeadingRow = (props: RowProps) => {
     <tr
       {...{
         ...props,
-        className: `${TableElementClasses.HeadingRowClasslist} ${props.className}`,
+        className: `${TableElementClasses.HeadingRowClasslist} ${
+          props.className ?? ""
+        }`,
       }}
     >
       {props.children}
@@ -54,7 +58,9 @@ export const BodyRow = (props: RowProps) => {
     <tr
       {...{
         ...props,
-        className: `${TableElementClasses.BodyRowClasslist} ${props.className}`,
+        className: `${TableElementClasses.BodyRowClasslist} ${
+          props.className ?? ""
+        }`,
       }}
     >
       {props.children}
@@ -68,7 +74,9 @@ export const Td = (props: TableCellProps) => {
     <td
       {...{
         ...props,
-        className: `${TableElementClasses.TdClasslist} ${props.className}`,
+        className: `${TableElementClasses.TdClasslist} ${
+          props.className ?? ""
+        }`,
       }}
     >
       {props.children}
@@ -80,7 +88,9 @@ export const Th = (props: TableCellProps) => {
     <th
       {...{
         ...props,
-        className: `${TableElementClasses.ThClasslist} ${props.className}`,
+        className: `${TableElementClasses.ThClasslist} ${
+          props.className ?? ""
+        }`,
       }}
     >
       {props.children}
