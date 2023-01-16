@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS catalog.book(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(150) NOT NULL,
+    isbn VARCHAR(100),
+    description TEXT, 
+    copies INT DEFAULT 0,
+    pages INT DEFAULT 0,
+    section_id INT,
+    publisher_id INT,
+    fund_source_id INT,
+    cost_price MONEY, 
+    edtion INT,
+    year_published INT,
+    ddc NUMERIC,
+    author_number varchar(50),
+    received_at timestamptz,
+    deleted_at timestamptz,
+    weeded_at timestamptz,
+    created_at timestamptz DEFAULT NOW(),
+    FOREIGN KEY(section_id) REFERENCES catalog.section(id),
+    FOREIGN KEY(publisher_id) REFERENCES catalog.publisher(id),
+    FOREIGN KEY(fund_source_id) REFERENCES catalog.source_of_fund(id)
+)   
