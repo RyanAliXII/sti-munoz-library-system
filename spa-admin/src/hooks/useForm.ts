@@ -1,14 +1,18 @@
 import React, { BaseSyntheticEvent, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
-import { ObjectShape } from "yup/lib/object";
-import {set} from 'lodash'
+import { AssertsShape, ObjectShape } from "yup/lib/object";
+import {get, set} from 'lodash'
+import { name } from "@azure/msal-common/dist/packageMetadata";
 type useFormProps<T> = {
   default: T;
   schema: ObjectSchema<ObjectShape>;
 };
 
+enum InputTypes{
+  Checkbox= "checkbox"
+}
 export type useFormType<T> = {
-  validate:()=>Promise<void>;
+  validate:() => Promise< T | undefined>
   clearErrorWithKey:(key: string)=>void;
   setForm:React.Dispatch<React.SetStateAction<T>>
   clearErrors:()=>void;
@@ -24,33 +28,40 @@ export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T
   };
   const clearErrorWithKey = (key: string) => {
     try{
-    if (!errors) return;
-    if (errors[key]?.length === 0) return;
-    setErrors((prevErrors: any) => {
-      return {
-        ...prevErrors,
-        [key]: "",
-      };
-    });
+    const error = get(errors, key)
+    if(!error) return
+    console.log(errors)
+    const update = set({...errors}, key, "") as T
+    setErrors({...update})
   } catch(error){
     console.error(error)
   }
   };
   const handleFormInput = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
-    const value = event.target.value;
-    const update = set(form, name, value) as T
+    const type = event.target.type
+    let value;
+    
+    if(type === InputTypes.Checkbox ){
+      value = event.target.checked
+    }
+    else{
+      value = event.target.value
+    }
+    const update = set({...form}, name, value) as T
     setForm(() => {
       return {...update}
     });
+    clearErrorWithKey(name)
   };
   const validate = async () => {
     try {
-      await props.schema.validate(form, { abortEarly: false });
+     const data =  await props.schema.validate(form, { abortEarly: false });
+      
+     return data as T
     } catch (error) {
       if (error instanceof ValidationError) {
         const errorObject = processSchemaError(error);
-        
         setErrors({ ...errorObject });
         throw new Error("Validation failed");
       }
@@ -58,9 +69,14 @@ export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T
   };
   const processSchemaError = (error: ValidationError) => {
     let errorObject: any = {};
-    error.inner.forEach((err) => {
-      errorObject = set(errorObject,err?.path ?? '', err.message )
+    let firstInputWithError;
+    error.inner.forEach((err, index) => {
+      if(index === 0) firstInputWithError = err?.path
+      console.log(err?.path)
+      errorObject = set(errorObject, err?.path ?? '', err.message )
     });
+  
+ 
     return errorObject;
   };
 

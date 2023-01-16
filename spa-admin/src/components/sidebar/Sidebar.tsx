@@ -9,7 +9,7 @@ import {
 } from "./NavigationDropdown";
 const Sidebar = () => {
   return (
-    <div className="flex flex-col gap-3 mt-20 w-full">
+    <div className="flex flex-col gap-3 w-full mt-32 ">
       <div className="w-full h-5"></div>
       <NavigationItems />
     </div>
@@ -67,7 +67,7 @@ const NavigationDrawer = (item: SidebarNavItem) => {
 
 const isNavActive = (active: boolean): string => {
   if (active) {
-    return "w-full h-10 flex items-center rounded-sm font-semibold bg-blue-500 text-white rounded";
+    return "w-full h-10 flex items-center rounded-sm  text-gray-100 rounded bg-blue-500 rounded-r";
   } else {
     return "w-full h-10 flex items-center text-gray-600";
   }

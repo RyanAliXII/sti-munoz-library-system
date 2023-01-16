@@ -14,21 +14,21 @@ type SOFRepository struct {
 
 func (repo *SOFRepository) Get() []model.SOF {
 	var sources []model.SOF = make([]model.SOF, 0)
-	selectErr := repo.db.Select(&sources, "SELECT id, name from book.source_of_funds where deleted_at is null")
+	selectErr := repo.db.Select(&sources, "SELECT id, name from catalog.source_of_fund where deleted_at is null")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_SOURCES))
 	}
 	return sources
 }
 func (repo *SOFRepository) New(source model.SOF) error {
-	_, insertErr := repo.db.NamedExec("INSERT INTO book.source_of_funds(name)VALUES(:name)", source)
+	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.source_of_fund(name)VALUES(:name)", source)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_SOURCE))
 	}
 	return insertErr
 }
 func (repo *SOFRepository) Delete(id int) error {
-	deleteStmt, prepareErr := repo.db.Preparex("UPDATE book.source_of_funds SET deleted_at = now() where id=$1")
+	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.source_of_fund SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.Int("sourceId", id), slimlog.Function(DELETE_SOURCE))
 		return prepareErr
@@ -42,7 +42,7 @@ func (repo *SOFRepository) Delete(id int) error {
 	return deleteErr
 }
 func (repo *SOFRepository) Update(id int, source model.SOF) error {
-	updateStmt, prepareErr := repo.db.Preparex("UPDATE book.source_of_funds SET name = $1 where id=$2")
+	updateStmt, prepareErr := repo.db.Preparex("UPDATE catalog.source_of_fund SET name = $1 where id=$2")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.Int("sourceId", id), slimlog.Function(UPDATE_SOURCE))
 		return prepareErr

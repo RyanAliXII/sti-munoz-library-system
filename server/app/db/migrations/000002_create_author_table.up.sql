@@ -1,6 +1,8 @@
-CREATE TABLE IF NOT EXISTS catalog.source_of_fund(
+CREATE TABLE IF NOT EXISTS catalog.author(
 	id integer primary key generated always as identity,
-	name varchar(100) NOT NULL,
+	given_name varchar(100),
+	middle_name varchar(100),
+	surname varchar(100),
 	deleted_at timestamptz,
 	created_at timestamptz DEFAULT NOW()
 )
