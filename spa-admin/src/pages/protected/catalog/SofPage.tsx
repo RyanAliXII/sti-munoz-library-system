@@ -4,13 +4,7 @@ import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
-import {
-  DangerButton,
-  Input,
-  LighButton,
-  PrimaryButton,
-  SecondaryButton,
-} from "@components/forms/Forms";
+import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
 import {
   Table,
   Tbody,
@@ -91,7 +85,6 @@ const SofPage = () => {
         <div className="mb-4">
           <PrimaryButton onClick={openAddModal}>Add Source</PrimaryButton>
         </div>
-        {/* <LoadingBoundary isLoading={isLoading} isError={isError}> */}
         <div className="w-full">
           <Table>
             <Thead>
@@ -149,7 +142,7 @@ const SofPage = () => {
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { errors, form, validate, handleFormInput } = useForm<Source>({
-    default: SOURCE_FORM_DEFAULT_VALUES,
+    initialFormData: SOURCE_FORM_DEFAULT_VALUES,
     schema: SourceofFundSchema,
   });
   const queryClient = useQueryClient();
@@ -218,7 +211,7 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
   formData,
 }) => {
   const { errors, form, setForm, validate, handleFormInput } = useForm<Source>({
-    default: SOURCE_FORM_DEFAULT_VALUES,
+    initialFormData: SOURCE_FORM_DEFAULT_VALUES,
     schema: SourceofFundSchema,
   });
 

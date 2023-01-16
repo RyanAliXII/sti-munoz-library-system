@@ -10,7 +10,7 @@ import {
 } from "@components/table/Table";
 import { ModalProps } from "@definitions/types";
 import Modal from "react-responsive-modal";
-import { useBookAddContext } from "./BookAddContext";
+import { useBookAddFormContext } from "./BookAddFormContext";
 import axiosClient from "@definitions/configs/axios";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
@@ -53,7 +53,7 @@ enum SearchBy {
 }
 const DDCTable = () => {
   const PAGE_OFFSET_INCREMENT = 50;
-  const { form, setForm, formClient } = useBookAddContext();
+  const { form, setForm, removeFieldError } = useBookAddFormContext();
   const searchDebounce = useDebounce();
   const [filters, setFilters] = useState({
     keyword: "",
@@ -119,7 +119,7 @@ const DDCTable = () => {
 
   const selectDDC = (ddc: DDC) => {
     setForm((prevForm) => ({ ...prevForm, ddc: ddc.number }));
-    formClient.clearErrorWithKey("ddc");
+    removeFieldError("ddc");
   };
   return (
     <>

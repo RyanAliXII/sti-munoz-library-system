@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 
 import Modal from "react-responsive-modal";
-import { useBookAddContext } from "./BookAddContext";
+import { useBookAddFormContext } from "../BookAddFormContext";
 
 interface AuthorSelectionModalProps extends ModalProps {
   selectAuthor?: (a: Author) => void;
@@ -33,7 +33,7 @@ const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
       return [];
     }
   };
-  const { form } = useBookAddContext();
+  const { form } = useBookAddFormContext();
   const { data: authors } = useQuery<Author[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors"],
@@ -68,7 +68,7 @@ const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
               {selectedAuthorsCount > 1 ? "authors" : "author"}
             </small>
           </div>
-          <Table.Table>
+          <Table.Table className="w-full border-b-0">
             <Thead>
               <HeadingRow>
                 <Th></Th>

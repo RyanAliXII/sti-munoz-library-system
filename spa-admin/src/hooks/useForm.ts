@@ -1,41 +1,49 @@
 import React, { BaseSyntheticEvent, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
-import { AssertsShape, ObjectShape } from "yup/lib/object";
+import {  ObjectShape } from "yup/lib/object";
 import {get, set} from 'lodash'
-import { name } from "@azure/msal-common/dist/packageMetadata";
+
+
 type useFormProps<T> = {
-  default: T;
+  initialFormData: T;
   schema: ObjectSchema<ObjectShape>;
 };
 
 enum InputTypes{
   Checkbox= "checkbox"
 }
-export type useFormType<T> = {
+export interface UseFormType<T>{
   validate:() => Promise< T | undefined>
-  clearErrorWithKey:(key: string)=>void;
+  removeFieldError:(fieldName: string)=>void;
+  setFieldValue:(fieldName:string, value:any)=>void
   setForm:React.Dispatch<React.SetStateAction<T>>
-  clearErrors:()=>void;
+  removeErrors:()=>void;
   handleFormInput:(event: BaseSyntheticEvent)=>void
   form: T
-  errors:any
+  errors: any
 }
-export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T> => {
-  const [form, setForm] = useState<T>(props.default);
+export const useForm = <T extends object>(props: useFormProps<T>): UseFormType<T> => {
+  const [form, setForm] = useState<T>(props.initialFormData);
   const [errors, setErrors] = useState<any>();
-  const clearErrors = () => {
+
+  const removeErrors = () => {
     setErrors(() => undefined);
   };
-  const clearErrorWithKey = (key: string) => {
+  const setFieldValue = (fieldName: string, value:any)=>{
+    const update = set(form, fieldName, value) as T
+    setForm(() => {
+      return {...update}
+    });
+  }
+  const removeFieldError = (fieldName: string) => {
     try{
-    const error = get(errors, key)
+    const error = get(errors, fieldName)
     if(!error) return
-    console.log(errors)
-    const update = set({...errors}, key, "") as T
+    const update = set(errors, fieldName, "") as T
     setErrors({...update})
   } catch(error){
     console.error(error)
-  }
+    }
   };
   const handleFormInput = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
@@ -48,11 +56,11 @@ export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T
     else{
       value = event.target.value
     }
-    const update = set({...form}, name, value) as T
+    const update = set(form, name, value) as T
     setForm(() => {
       return {...update}
     });
-    clearErrorWithKey(name)
+    removeFieldError(name)
   };
   const validate = async () => {
     try {
@@ -72,11 +80,8 @@ export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T
     let firstInputWithError;
     error.inner.forEach((err, index) => {
       if(index === 0) firstInputWithError = err?.path
-      console.log(err?.path)
       errorObject = set(errorObject, err?.path ?? '', err.message )
     });
-  
- 
     return errorObject;
   };
 
@@ -85,8 +90,10 @@ export const useForm = <T extends object>(props: useFormProps<T>): useFormType<T
     setForm,
     errors,
     validate,
-    clearErrors,
-    clearErrorWithKey,
+    setFieldValue,
+    removeErrors,
+    removeFieldError,
     handleFormInput
   } 
 };
+

@@ -45,7 +45,7 @@ export type User = {
     fundSourceId: number;
     publisherId: number;
     pages: number;
-    yearPublished: number;
+  yearPublished: number;
     receivedAt: string;
     authorNumber: Omit<AuthorNumberForm, "id">;
     ddc: number;

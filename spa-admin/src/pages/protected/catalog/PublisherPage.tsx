@@ -151,7 +151,7 @@ const PublisherPage = () => {
 
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { errors, form, validate, handleFormInput } = useForm<Publisher>({
-    default: PUBLISHER_FORM_DEFAULT_VALUES,
+    initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
     schema: PublisherSchema,
   });
   const queryClient = useQueryClient();
@@ -221,7 +221,7 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
 }) => {
   const { errors, form, setForm, validate, handleFormInput } =
     useForm<Publisher>({
-      default: PUBLISHER_FORM_DEFAULT_VALUES,
+      initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
     });
 

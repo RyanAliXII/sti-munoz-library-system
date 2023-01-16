@@ -106,7 +106,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     hasOwnAccession: false,
   };
   const { form, errors, handleFormInput, validate } = useForm<Section>({
-    default: FORM_DEFAULT_VALUES,
+    initialFormData: FORM_DEFAULT_VALUES,
     schema: SectionSchema,
   });
 

@@ -10,7 +10,7 @@ import {
 } from "@components/table/Table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { useId } from "react";
-import { useBookAddContext } from "./BookAddContext";
+import { useBookAddFormContext } from "../BookAddFormContext";
 
 interface SelectedAuthorsTableProps {
   removeAuthor: (a: Author) => void;
@@ -18,7 +18,7 @@ interface SelectedAuthorsTableProps {
 const SelectedAuthorsTable: React.FC<SelectedAuthorsTableProps> = ({
   removeAuthor,
 }) => {
-  const { form } = useBookAddContext();
+  const { form } = useBookAddFormContext();
   return (
     <>
       <Table className="w-full">
