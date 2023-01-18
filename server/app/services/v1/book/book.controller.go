@@ -1,7 +1,6 @@
 package book
 
 import (
-	"fmt"
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/app/model"
 	"slim-app/server/app/repository"
@@ -20,7 +19,8 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	parsedReceivedAt, timeParsingError := time.Parse(time.RFC3339, body.ReceivedAt)
 	if timeParsingError != nil {
-		fmt.Println("ERROR")
+		ctx.JSON(httpresp.Fail400(nil, timeParsingError.Error()))
+		return
 	}
 	var model model.Book = model.Book{
 		Id:            body.Id,
@@ -35,7 +35,7 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		CostPrice:     body.CostPrice,
 		Edition:       body.Edition,
 		YearPublished: body.YearPublished,
-		ReceivedAt: model.NullTimeCustom{
+		ReceivedAt: model.NullableTime{
 			Time:  parsedReceivedAt,
 			Valid: true,
 		},

@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"slim-app/server/app/db"
 	"slim-app/server/app/pkg/slimlog"
@@ -39,6 +40,7 @@ func main() {
 
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "Hello from server",
+			"time":    time.Now(),
 		})
 	})
 

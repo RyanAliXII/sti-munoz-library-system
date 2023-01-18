@@ -1,8 +1,8 @@
 package model
 
 type Publisher struct {
-	Id        int            `json:"id"`
-	Name      string         `json:"name" db:"name"`
-	DeletedAt NullTimeCustom `json:"deletedAt" db:"deleted_at"`
-	CreatedAt NullTimeCustom `json:"createdAt" db:"created_at"`
+	Id        int          `json:"id"`
+	Name      string       `json:"name" db:"name"`
+	DeletedAt NullableTime `json:"_" db:"deleted_at"`
+	CreatedAt NullableTime `json:"_" db:"created_at"`
 }

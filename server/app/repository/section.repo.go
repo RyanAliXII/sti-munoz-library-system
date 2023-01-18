@@ -21,7 +21,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 		t := time.Now().Unix()
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
 		var query string = fmt.Sprintf(`
-		CREATE TABLE section.%s(
+		CREATE TABLE accession.%s(
 			id integer primary key generated always as identity,
 			book_id uuid,
 			copy_number int,
@@ -35,7 +35,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 			logger.Error(createErr.Error(), slimlog.Function("SectionRepository.New"))
 			return createErr
 		}
-		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, own_accession)VALUES($1, $2)", section.Name, tableName)
+		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1, $2)", section.Name, tableName)
 		if insertErr != nil {
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
 		}
@@ -49,13 +49,17 @@ func (repo *SectionRepository) New(section model.Section) error {
 }
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
-	selectErr := repo.db.Select(&sections, "SELECT id, name, (case when own_accession is NULL then false else true end) as own_accession from catalog.section")
+	selectErr := repo.db.Select(&sections, "SELECT id, name, accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}
 	return sections
 }
+func (repo *SectionRepository) GetOne(id int) model.Section {
+	var section model.Section
 
+	return section
+}
 func NewCategoryRepository(db *sqlx.DB) SectionRepositoryInterface {
 	return &SectionRepository{
 		db: db,
@@ -65,4 +69,5 @@ func NewCategoryRepository(db *sqlx.DB) SectionRepositoryInterface {
 type SectionRepositoryInterface interface {
 	New(section model.Section) error
 	Get() []model.Section
+	GetOne(id int) model.Section
 }

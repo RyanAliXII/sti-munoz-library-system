@@ -13,10 +13,10 @@ type Book struct {
 	CostPrice     float32 `json:"costPrice" db:"cost_price"`
 	Edition       int     `json:"edition" db:"edition"`
 	YearPublished int     `json:"yearPublished" db:"year_published"`
-	ReceivedAt    NullTimeCustom
+	ReceivedAt    NullableTime
 	DDC           float64 `json:"ddc" db:"ddc"`
 	AuthorNumber  string  `json:"authorNumber" db:"author_number"`
-	DeletedAt     NullTimeCustom
-	WeededAt      NullTimeCustom
-	CreatedAt     NullTimeCustom
+	DeletedAt     NullableTime
+	WeededAt      NullableTime
+	CreatedAt     NullableTime
 }

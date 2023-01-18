@@ -22,7 +22,7 @@ func (repo *AuthorRepository) New(author model.Author) error {
 func (repo *AuthorRepository) Get() []model.Author {
 
 	var authors []model.Author = make([]model.Author, 0)
-	selectErr := repo.db.Select(&authors, "SELECT * FROM catalog.author where deleted_at IS NULL")
+	selectErr := repo.db.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS))
 	}
