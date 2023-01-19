@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS catalog.book(
     section_id INT,
     publisher_id INT,
     fund_source_id INT,
-    cost_price MONEY, 
+    cost_price NUMERIC, 
     edition INT,
     year_published INT,
     ddc NUMERIC,

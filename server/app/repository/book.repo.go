@@ -94,14 +94,33 @@ func (repo *BookRepository) New(book model.Book) error {
 func (repo *BookRepository) Get() []model.BookGet {
 	var books []model.BookGet = make([]model.BookGet, 0)
 	query := `
-		SELECT title,description, 
-		(SELECT  json_agg(json_build_object( 'id', author.id, 'given_name', author.given_name , 'middle_name', author.middle_name,  'surname', author.surname )) 
-		as authors
-		FROM catalog.book_author
-		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-		where book_id = book.id
-		group by book_id  )
-		as authors FROM catalog.book
+	SELECT book.id,title, isbn, 
+	description, 
+	copies,
+	pages,
+	section_id,  
+	section.name as section,
+	publisher.name as publisher,
+	fund_source_id,
+	source_of_fund.name as fund_source,
+	cost_price,
+	edition,
+	year_published,
+	received_at,
+	ddc,
+	author_number,
+	book.created_at,
+	(SELECT  json_agg(json_build_object( 'id', author.id, 'given_name', author.given_name , 'middle_name', author.middle_name,  'surname', author.surname )) 
+	as authors
+	FROM catalog.book_author
+	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+	where book_id = book.id
+	group by book_id  ) as authors,
+	(SELECT find_accession_json(section.accession_table,book.id)) as accessions
+	 FROM catalog.book 
+	INNER JOIN catalog.section on book.section_id = section.id
+	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	`
 	selectErr := repo.db.Select(&books, query)
 	if selectErr != nil {

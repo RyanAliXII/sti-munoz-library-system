@@ -23,12 +23,17 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     items: [],
   },
   {
-    text: "Books",
+    text: "Catalog",
     to: "",
     icon: <FiBookOpen className="text-xl" />,
     items: [
       {
-        text: "Catalog",
+        text: "Books",
+        to: "/books/",
+        items: [],
+      },
+      {
+        text: "New book",
         to: "/books/create",
         items: [],
       },

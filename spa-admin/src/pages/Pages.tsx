@@ -9,10 +9,12 @@ import Dashboard from "./protected/Dashboard";
 import SectionPage from "./protected/catalog/SectionPage";
 import PublisherPage from "./protected/catalog/PublisherPage";
 import SofPage from "./protected/catalog/SofPage";
+import BookPage from "./protected/catalog/BookPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/books" element={<BookPage />}></Route>
       <Route path="/books/create" element={<BookAddPage />} />
       <Route path="/books/accession" element={<Accession />} />
       <Route path="/books/authors" element={<AuthorPage />} />
