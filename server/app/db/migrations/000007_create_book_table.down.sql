@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS catalog.book
+DROP TABLE IF EXISTS catalog.book CASCADE

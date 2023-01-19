@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS catalog.book(
     publisher_id INT,
     fund_source_id INT,
     cost_price MONEY, 
-    edtion INT,
+    edition INT,
     year_published INT,
     ddc NUMERIC,
     author_number varchar(50),

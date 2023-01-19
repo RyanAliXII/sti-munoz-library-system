@@ -35,6 +35,7 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		CostPrice:     body.CostPrice,
 		Edition:       body.Edition,
 		YearPublished: body.YearPublished,
+		Authors:       body.Authors,
 		ReceivedAt: model.NullableTime{
 			Time:  parsedReceivedAt,
 			Valid: true,
@@ -42,10 +43,24 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		DDC:          body.DDC,
 		AuthorNumber: body.AuthorNumber,
 	}
-	ctrler.repos.BookRepository.New(model)
+	createErr := ctrler.repos.BookRepository.New(model)
+	if createErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, createErr.Error()))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "New book added."))
+}
+
+func (ctrler *BookController) GetBook(ctx *gin.Context) {
+	var books []model.BookGet = make([]model.BookGet, 0)
+
+	books = ctrler.repos.BookRepository.Get()
+	ctx.JSON(httpresp.Success200(gin.H{
+		"books": books,
+	}, "Books fetched."))
 }
 
 type BookControllerInterface interface {
 	NewBook(ctx *gin.Context)
+	GetBook(ctx *gin.Context)
 }

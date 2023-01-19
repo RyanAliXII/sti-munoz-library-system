@@ -13,4 +13,5 @@ func BookRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
 		repos: repos,
 	}
 	router.POST("/", middlewares.ValidateBody[BookBody], controller.NewBook)
+	router.GET("/", controller.GetBook)
 }
