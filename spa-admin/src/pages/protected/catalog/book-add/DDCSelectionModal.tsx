@@ -66,7 +66,6 @@ const DDCTable = () => {
     const OFFSET = 30;
     const listenScroll = (event: Event) => {
       const target = event.target as HTMLDivElement;
-      console.log(target.scrollHeight - target.offsetHeight);
 
       if (
         target.scrollTop + OFFSET >=
