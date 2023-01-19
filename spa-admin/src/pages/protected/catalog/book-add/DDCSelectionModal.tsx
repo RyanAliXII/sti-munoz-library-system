@@ -63,9 +63,14 @@ const DDCTable = () => {
   const queryClient = useQueryClient();
   useEffect(() => {
     const modal = document.querySelector(`#${MODAL_ID}`);
+    const OFFSET = 30;
     const listenScroll = (event: Event) => {
       const target = event.target as HTMLDivElement;
-      if (target.scrollTop === target.scrollHeight - target.offsetHeight) {
+
+      if (
+        target.scrollTop + OFFSET >=
+        target.scrollHeight - target.offsetHeight
+      ) {
         fetchNextPage();
       }
     };
