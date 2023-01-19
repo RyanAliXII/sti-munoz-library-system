@@ -30,21 +30,18 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const useAccountFromStorage = async () => {
     try {
-      console.debug("CHECKING IF THERE IS ACCOUNT");
       if (msalClient.getAllAccounts().length > 0) {
-        console.debug("GET SINGLE ACCOUNT");
         const account = msalClient.getAllAccounts()[0];
-        console.debug("GET ACCESS TOKEN");
+
         const response = await msalClient.acquireTokenSilent({
           scopes: ["User.Read"],
         });
-        console.debug("USING ACCOUNT");
+
         await useAccount(account, response.accessToken);
       } else {
         throw new Error("NO ACCOUNTS");
       }
     } catch (error) {
-      console.debug("ERROR: " + error);
       localStorage.clear();
 
       setAuthenticated(false);
@@ -52,9 +49,8 @@ export const AuthProvider = ({ children }: BaseProps) => {
   };
   const useAccount = async (account: AccountInfo | null, accessToken = "") => {
     if (account && accessToken.length > 0) {
-      console.debug("SET ACTIVE ACCOUNT");
       msalClient.setActiveAccount(account);
-      console.debug("FETCH USER DATA");
+
       await fetchUser(accessToken);
       setAuthenticated(true);
       return;
@@ -80,7 +76,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
     msalClient.enableAccountStorageEvents();
     const callbackId = msalClient.addEventCallback((message: EventMessage) => {
       if (message.eventType === EventType.INITIALIZE_START) {
-        console.debug("STARTED INIT");
         init();
       }
       if (message.eventType === EventType.LOGIN_SUCCESS) {
