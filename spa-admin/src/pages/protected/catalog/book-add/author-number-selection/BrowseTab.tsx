@@ -59,10 +59,14 @@ const BrowseTab = () => {
   const debounceSearch = useDebounce();
   useEffect(() => {
     const MODAL_CLASS = ".react-responsive-modal-modal";
+    const OFFSET = 30;
     const modal = document.querySelector(MODAL_CLASS);
     const listenScroll = (event: Event) => {
       const target = event.target as HTMLDivElement;
-      if (target.scrollTop === target.scrollHeight - target.offsetHeight) {
+      if (
+        target.scrollTop + OFFSET >=
+        target.scrollHeight - target.offsetHeight
+      ) {
         fetchNextPage();
       }
     };
