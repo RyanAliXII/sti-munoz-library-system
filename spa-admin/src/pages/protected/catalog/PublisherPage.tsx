@@ -88,7 +88,7 @@ const PublisherPage = () => {
     <>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
         <div className="mb-4">
-          <h1 className="text-3xl font-bold ">Publishers</h1>
+          <h1 className="text-2xl font-bold ">Publishers</h1>
         </div>
         <div className="mb-4">
           <PrimaryButton onClick={openAddModal}>Add Publisher</PrimaryButton>
