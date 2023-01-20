@@ -22,26 +22,28 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, timeParsingError.Error()))
 		return
 	}
-	var model model.Book = model.Book{
-		Id:            body.Id,
-		Title:         body.Title,
-		Description:   body.Description,
-		ISBN:          body.ISBN,
-		Copies:        body.Copies,
-		Pages:         body.Pages,
-		SectionId:     body.SectionId,
-		PublisherId:   body.PublisherId,
-		FundSourceId:  body.FundSourceId,
-		CostPrice:     body.CostPrice,
-		Edition:       body.Edition,
-		YearPublished: body.YearPublished,
-		Authors:       body.Authors,
-		ReceivedAt: model.NullableTime{
-			Time:  parsedReceivedAt,
-			Valid: true,
+	var model model.BookNew = model.BookNew{
+		Book: model.Book{
+			Id:            body.Id,
+			Title:         body.Title,
+			Description:   body.Description,
+			ISBN:          body.ISBN,
+			Copies:        body.Copies,
+			Pages:         body.Pages,
+			SectionId:     body.SectionId,
+			PublisherId:   body.PublisherId,
+			FundSourceId:  body.FundSourceId,
+			CostPrice:     body.CostPrice,
+			Edition:       body.Edition,
+			YearPublished: body.YearPublished,
+			ReceivedAt: model.NullableTime{
+				Time:  parsedReceivedAt,
+				Valid: true,
+			},
+			DDC:          body.DDC,
+			AuthorNumber: body.AuthorNumber,
 		},
-		DDC:          body.DDC,
-		AuthorNumber: body.AuthorNumber,
+		Authors: body.Authors,
 	}
 	createErr := ctrler.repos.BookRepository.New(model)
 	if createErr != nil {
@@ -60,8 +62,10 @@ func (ctrler *BookController) GetBook(ctx *gin.Context) {
 	}, "Books fetched."))
 }
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
-	ctrler.repos.BookRepository.GetAccession()
-	ctx.JSON(httpresp.Success200(nil, "Accession Fetched."))
+	accessions := ctrler.repos.BookRepository.GetAccession()
+	ctx.JSON(httpresp.Success200(gin.H{
+		"accessions": accessions,
+	}, "Accession Fetched."))
 }
 
 type BookControllerInterface interface {

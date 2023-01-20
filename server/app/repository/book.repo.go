@@ -15,8 +15,7 @@ type BookRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *BookRepository) New(book model.Book) error {
-
+func (repo *BookRepository) New(book model.BookNew) error {
 	transaction := repo.db.MustBegin()
 	id := uuid.New().String()
 	book.Id = id
@@ -121,6 +120,7 @@ func (repo *BookRepository) Get() []model.BookGet {
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	ORDER BY created_at DESC
 	`
 	selectErr := repo.db.Select(&books, query)
 	if selectErr != nil {
@@ -135,6 +135,7 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}
 	dialect := goqu.Dialect("postgres")
+
 	const DEFAULT_TABLE = "default_accession"
 	ds := dialect.From()
 	const FIRST_LOOP = 0
@@ -156,9 +157,15 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 		}
 
 	}
-	newDs := dialect.From(ds)
-	fmt.Println(newDs.ToSQL())
-	return []model.Accession{}
+
+	finalDs := dialect.From(ds).Order(goqu.I("created_at").Desc())
+	selectQuery, _, _ := finalDs.ToSQL()
+	var accessions []model.Accession = make([]model.Accession, 0)
+	selectAccessionErr := repo.db.Select(&accessions, selectQuery)
+	if selectAccessionErr != nil {
+		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession.selectAccessionErr"))
+	}
+	return accessions
 }
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
@@ -168,7 +175,7 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 }
 
 type BookRepositoryInterface interface {
-	New(model.Book) error
+	New(model.BookNew) error
 	Get() []model.BookGet
 	GetAccession() []model.Accession
 }

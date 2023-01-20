@@ -33,6 +33,11 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
+        text: "Accessions",
+        to: "/books/accessions",
+        items: [],
+      },
+      {
         text: "New book",
         to: "/books/create",
         items: [],
