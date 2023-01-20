@@ -123,7 +123,6 @@ func (repo *BookRepository) Get() []model.BookGet {
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	`
 	selectErr := repo.db.Select(&books, query)
-	fmt.Println(len(books))
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get.SelectErr"))
 	}
