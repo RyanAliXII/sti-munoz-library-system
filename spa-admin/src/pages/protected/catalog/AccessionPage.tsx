@@ -1,50 +1,35 @@
 import CustomDatePicker from "@components/forms/CustomDatePicker";
 import CustomSelect from "@components/forms/CustomSelect";
-import { ButtonClasses, Input } from "@components/forms/Forms";
+import { Input } from "@components/forms/Forms";
 import {
-  BodyRow,
   HeadingRow,
-  Table,
-  Tbody,
-  Td,
   Th,
+  Table,
   Thead,
+  Tbody,
+  BodyRow,
+  Td,
 } from "@components/table/Table";
 import axiosClient from "@definitions/configs/axios";
-import { Book } from "@definitions/types";
+import { Accession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
 
-const BookPage = () => {
-  const fetchBooks = async () => {
+const AccessionPage = () => {
+  const fetchAccessions = async () => {
     try {
-      const { data: response } = await axiosClient.get("/books/");
-      return response.data.books ?? [];
-    } catch (error) {
-      console.error(error);
+      const { data: response } = await axiosClient.get("/books/accessions");
+      return response?.data?.accessions ?? [];
+    } catch {
+      return [];
     }
   };
-
-  const { data: books } = useQuery<Book[]>({
-    queryFn: fetchBooks,
-    queryKey: ["books"],
+  const { data: accessions } = useQuery<Accession[]>({
+    queryFn: fetchAccessions,
+    queryKey: ["accessions"],
   });
   return (
     <>
-      {/* <div className="w-full lg:w-11/12  lg:rounded-md mx-auto mb-5 flex">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-400">Books</h1>
-        </div>
-        <div className="mb-4">
-          <Link
-            to="/books/create"
-            className={ButtonClasses.PrimaryButtonDefaultClasslist}
-          >
-            New Book
-          </Link>
-        </div>
-      </div> */}
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: drop-shadow-md lg:rounded-md mx-auto mb-4 flex gap-2">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
@@ -68,23 +53,24 @@ const BookPage = () => {
         <Table>
           <Thead>
             <HeadingRow>
-              <Th>Title</Th>
-              <Th>ISBN</Th>
-              <Th>Copies</Th>
+              <Th>Accession Number</Th>
+              <Th>Book Title</Th>
+              <Th>Section</Th>
               <Th>Year Published</Th>
             </HeadingRow>
           </Thead>
           <Tbody>
-            {books?.map((book) => {
+            {accessions?.map((accession) => {
               return (
                 <BodyRow>
-                  <Td>{book.title}</Td>
-                  <Td>{book.isbn}</Td>
-                  <Td>{book.copies}</Td>
-                  <Td>{book.yearPublished}</Td>
+                  <Td>{accession.number}</Td>
+                  <Td>{accession.title}</Td>
+                  <Td>{accession.section}</Td>
+                  <Td>{accession.yearPublished}</Td>
                 </BodyRow>
               );
             })}
+            r
           </Tbody>
         </Table>
       </div>
@@ -92,4 +78,4 @@ const BookPage = () => {
   );
 };
 
-export default BookPage;
+export default AccessionPage;

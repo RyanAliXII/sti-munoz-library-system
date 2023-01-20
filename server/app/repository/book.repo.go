@@ -15,16 +15,15 @@ type BookRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *BookRepository) New(book model.Book) error {
-
-	tx := repo.db.MustBegin()
+func (repo *BookRepository) New(book model.BookNew) error {
+	transaction := repo.db.MustBegin()
 	id := uuid.New().String()
 	book.Id = id
 	insertBookQuery := `INSERT INTO catalog.book(
 		title, isbn, description, copies, pages, section_id, publisher_id, fund_source_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`
 
-	insertBookResult, insertBookErr := tx.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Copies, book.Pages,
+	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Copies, book.Pages,
 		book.SectionId, book.PublisherId, book.FundSourceId, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New.insertBookErr"))
@@ -32,9 +31,9 @@ func (repo *BookRepository) New(book model.Book) error {
 	}
 
 	var section model.Section
-	selectSectionErr := tx.Get(&section, "SELECT  accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section where id = $1 ", book.SectionId)
+	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section where id = $1 ", book.SectionId)
 	if selectSectionErr != nil {
-		tx.Rollback()
+		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New.selectSectionErr"))
 		return selectSectionErr
 
@@ -55,10 +54,10 @@ func (repo *BookRepository) New(book model.Book) error {
 	}
 	accessionDs := dialect.From(table).Prepared(true).Insert().Rows(accessionRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
-	insertAccessionResult, insertAccessionErr := tx.Exec(insertAccessionQuery, accesionArgs...)
+	insertAccessionResult, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
 	fmt.Println(insertAccessionQuery)
 	if insertAccessionErr != nil {
-		tx.Rollback()
+		transaction.Rollback()
 		logger.Error(insertAccessionErr.Error(), slimlog.Function("BookRepository.New.insertAccessionErr"))
 		return insertAccessionErr
 	}
@@ -76,10 +75,10 @@ func (repo *BookRepository) New(book model.Book) error {
 		authorDs := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(authorRows)
 		insertAuthorQuery, authorArgs, _ := authorDs.ToSQL()
 
-		insertAuthorResult, insertAuthorErr := tx.Exec(insertAuthorQuery, authorArgs...)
+		insertAuthorResult, insertAuthorErr := transaction.Exec(insertAuthorQuery, authorArgs...)
 
 		if insertAuthorErr != nil {
-			tx.Rollback()
+			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New.insertAuthorErr"))
 			return insertAuthorErr
 		}
@@ -87,7 +86,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		logger.Info("Author added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAuthorRows))
 
 	}
-	tx.Commit()
+	transaction.Commit()
 	return nil
 }
 
@@ -116,11 +115,12 @@ func (repo *BookRepository) Get() []model.BookGet {
 	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
 	where book_id = book.id
 	group by book_id  ) as authors,
-	(SELECT find_accession_json(section.accession_table,book.id)) as accessions
+	(find_accession_json(case when accession_table is NULL then 'default_accession' else section.accession_table end ,book.id)) as accessions
 	 FROM catalog.book 
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	ORDER BY created_at DESC
 	`
 	selectErr := repo.db.Select(&books, query)
 	if selectErr != nil {
@@ -128,7 +128,45 @@ func (repo *BookRepository) Get() []model.BookGet {
 	}
 	return books
 }
+func (repo *BookRepository) GetAccession() []model.Accession {
+	var sections []model.Section = make([]model.Section, 0)
+	selectErr := repo.db.Select(&sections, "SELECT id, name, accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section")
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
+	}
+	dialect := goqu.Dialect("postgres")
 
+	const DEFAULT_TABLE = "default_accession"
+	ds := dialect.From()
+	const FIRST_LOOP = 0
+	for i, section := range sections {
+		var table string
+		if section.HasOwnAccession {
+			table = string(section.AccessionTable)
+		} else {
+			table = DEFAULT_TABLE
+		}
+		if i == FIRST_LOOP {
+			ds = ds.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
+				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).InnerJoin(goqu.I("catalog.book"),
+				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")})))
+		} else {
+			ds = ds.Union(goqu.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
+				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).InnerJoin(goqu.I("catalog.book"),
+				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")}))))
+		}
+
+	}
+
+	finalDs := dialect.From(ds).Order(goqu.I("created_at").Desc())
+	selectQuery, _, _ := finalDs.ToSQL()
+	var accessions []model.Accession = make([]model.Accession, 0)
+	selectAccessionErr := repo.db.Select(&accessions, selectQuery)
+	if selectAccessionErr != nil {
+		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession.selectAccessionErr"))
+	}
+	return accessions
+}
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 	return &BookRepository{
@@ -137,6 +175,7 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 }
 
 type BookRepositoryInterface interface {
-	New(model.Book) error
+	New(model.BookNew) error
 	Get() []model.BookGet
+	GetAccession() []model.Accession
 }
