@@ -128,7 +128,38 @@ func (repo *BookRepository) Get() []model.BookGet {
 	}
 	return books
 }
+func (repo *BookRepository) GetAccession() []model.Accession {
+	var sections []model.Section = make([]model.Section, 0)
+	selectErr := repo.db.Select(&sections, "SELECT id, name, accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section")
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
+	}
+	dialect := goqu.Dialect("postgres")
+	const DEFAULT_TABLE = "default_accession"
+	ds := dialect.From()
+	const FIRST_LOOP = 0
+	for i, section := range sections {
+		var table string
+		if section.HasOwnAccession {
+			table = string(section.AccessionTable)
+		} else {
+			table = DEFAULT_TABLE
+		}
+		if i == FIRST_LOOP {
+			ds = ds.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
+				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).InnerJoin(goqu.I("catalog.book"),
+				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")})))
+		} else {
+			ds = ds.Union(goqu.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
+				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).InnerJoin(goqu.I("catalog.book"),
+				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")}))))
+		}
 
+	}
+	newDs := dialect.From(ds)
+	fmt.Println(newDs.ToSQL())
+	return []model.Accession{}
+}
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 	return &BookRepository{
@@ -139,4 +170,5 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 type BookRepositoryInterface interface {
 	New(model.Book) error
 	Get() []model.BookGet
+	GetAccession() []model.Accession
 }

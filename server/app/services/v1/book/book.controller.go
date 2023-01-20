@@ -59,8 +59,13 @@ func (ctrler *BookController) GetBook(ctx *gin.Context) {
 		"books": books,
 	}, "Books fetched."))
 }
+func (ctrler *BookController) GetAccession(ctx *gin.Context) {
+	ctrler.repos.BookRepository.GetAccession()
+	ctx.JSON(httpresp.Success200(nil, "Accession Fetched."))
+}
 
 type BookControllerInterface interface {
 	NewBook(ctx *gin.Context)
 	GetBook(ctx *gin.Context)
+	GetAccession(ctx *gin.Context)
 }
