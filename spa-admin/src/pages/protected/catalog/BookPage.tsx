@@ -59,8 +59,8 @@ const BookPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12  p-6 lg:p-0 first-letter:  lg:rounded-md mx-auto mb-4 flex gap-2">
-        <h1 className="text-3xl font-bold ">Books</h1>
+      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+        <h1 className="text-3xl font-bold text-gray-700">Books</h1>
         <Link
           to="/books/new"
           className={ButtonClasses.PrimaryButtonDefaultClasslist}

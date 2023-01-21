@@ -78,13 +78,13 @@ const SofPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
-        <div className="mb-4">
-          <h1 className="text-3xl font-bold ">Source of Funds</h1>
-        </div>
-        <div className="mb-4">
+      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
+        <div className="flex gap-2">
+          <h1 className="text-3xl font-bold text-gray-700">Source of Fund</h1>
           <PrimaryButton onClick={openAddModal}>Add Source</PrimaryButton>
         </div>
+      </div>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
         <div className="w-full">
           <Table>
             <Thead>
@@ -141,10 +141,11 @@ const SofPage = () => {
 };
 
 const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput } = useForm<Source>({
-    initialFormData: SOURCE_FORM_DEFAULT_VALUES,
-    schema: SourceofFundSchema,
-  });
+  const { errors, form, validate, handleFormInput, resetForm } =
+    useForm<Source>({
+      initialFormData: SOURCE_FORM_DEFAULT_VALUES,
+      schema: SourceofFundSchema,
+    });
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => axiosClient.post("/source-of-funds/", form),
@@ -158,6 +159,7 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     },
     onSettled: () => {
       closeModal();
+      resetForm();
     },
   });
 

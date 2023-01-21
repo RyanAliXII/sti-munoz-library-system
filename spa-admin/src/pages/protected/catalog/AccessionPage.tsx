@@ -29,6 +29,9 @@ const AccessionPage = () => {
   });
   return (
     <>
+      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+        <h1 className="text-3xl font-bold text-gray-700">Accession</h1>
+      </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: drop-shadow-md lg:rounded-md mx-auto mb-4 flex gap-2">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>

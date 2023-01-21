@@ -125,11 +125,6 @@ const AuthorNumberModal = ({ isOpen, closeModal }: AuthorNumberModalProps) => {
         <div>
           <div className="mb-3">
             <h3 className="text-2xl"> Authors</h3>
-            {/* <small>
-              You have selected
-              <strong> {selectedAuthorsCount} </strong>
-              {selectedAuthorsCount > 1 ? "authors" : "author"}
-            </small> */}
           </div>
           <Table>
             <Thead>
@@ -141,36 +136,17 @@ const AuthorNumberModal = ({ isOpen, closeModal }: AuthorNumberModalProps) => {
               </HeadingRow>
             </Thead>
             <Tbody>
-              {/* {authors?.map((author) => {
-                const isChecked = selectedAuthors.find(
-                  (a) => a.id === author.id
-                ); */}
               return (
-              <BodyRow
-                // key={author.id}
-                className="cursor-pointer"
-                // onClick={() => {
-                //   if (!isChecked) {
-                //     selectAuthor?.(author);
-                //   } else {
-                //     removeAuthor?.(author);
-                //   }
-                // }}
-              >
+              <BodyRow className="cursor-pointer">
                 <Td>
                   <input
                     type="checkbox"
                     onChange={() => {}}
-                    // checked={isChecked ? true : false}
                     className="h-4 w-4 border"
                   />
                 </Td>
-                {/* <Td>{author.givenName}</Td>
-                    <Td>{author.middleName}</Td>
-                    <Td>{author.surname}</Td> */}
               </BodyRow>
               );
-              {/* })} */}
             </Tbody>
           </Table>
         </div>

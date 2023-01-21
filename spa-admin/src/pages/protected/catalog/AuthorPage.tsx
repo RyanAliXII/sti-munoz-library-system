@@ -92,14 +92,13 @@ const AuthorPage = () => {
   } = useQuery<Author[]>({ queryFn: fetchAuthors, queryKey: ["authors"] });
   return (
     <>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
-        <div className="mb-4">
-          <h1 className="text-3xl font-bold ">Authors</h1>
-        </div>
-        <div className="mb-4">
+      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
+        <div className="flex gap-2">
+          <h1 className="text-3xl font-bold text-gray-700">Authors</h1>
           <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
         </div>
-
+      </div>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
@@ -180,7 +179,7 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
 };
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, setForm, validate, handleFormInput } = useForm<
+  const { form, errors, validate, handleFormInput, resetForm } = useForm<
     Omit<Author, "id">
   >({
     initialFormData: ADD_AUTHOR_DEFAULT,
@@ -196,6 +195,7 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     }
   };
+
   const mutation = useMutation({
     mutationFn: () => axiosClient.post("/authors/", form),
     onSuccess: () => {
@@ -207,8 +207,8 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     },
     onSettled: () => {
-      setForm({ ...ADD_AUTHOR_DEFAULT });
       closeModal();
+      resetForm();
     },
   });
 

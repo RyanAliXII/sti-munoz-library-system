@@ -40,6 +40,7 @@ const BookAddForm = () => {
     handleFormInput,
     errors,
     setForm,
+    resetForm,
     validate,
     removeFieldError,
     setFieldValue,
@@ -146,6 +147,10 @@ const BookAddForm = () => {
       toast.error(ErrorMsg.New);
       console.error(error);
     },
+    onSettled: () => {
+      resetForm();
+      window.scrollTo({ behavior: "smooth", top: 0 });
+    },
   });
 
   return (
@@ -154,7 +159,7 @@ const BookAddForm = () => {
         <h2 className="text-2xl">General Information</h2>
         <hr className="mb-5"></hr>
         <FieldRow
-          fieldDetails="The title can be found in the cover of the book"
+          fieldDetails="The title can be found in the cover of the book."
           isRequired
           label="Title"
         >
@@ -168,7 +173,7 @@ const BookAddForm = () => {
           />
         </FieldRow>
         <FieldRow
-          fieldDetails="ISBN can 13 or 9 characters."
+          fieldDetails="ISBN can be 13 or 9 characters."
           isRequired={true}
           label="ISBN"
         >

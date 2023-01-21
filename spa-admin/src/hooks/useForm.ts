@@ -21,11 +21,11 @@ export interface UseFormType<T>{
   handleFormInput:(event: BaseSyntheticEvent)=>void
   form: T
   errors: any
+  resetForm: ()=>void
 }
 export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T> => {
-  const [form, setForm] = useState<T>(props.initialFormData);
+  const [form, setForm] = useState<T>({...props.initialFormData});
   const [errors, setErrors] = useState<any>();
-
   const removeErrors = () => {
     setErrors(() => undefined);
   };
@@ -85,6 +85,10 @@ export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T
     return errorObject;
   };
 
+  const resetForm = ()=>{
+    setForm({...props.initialFormData})
+  }
+
   return {
     form,
     setForm,
@@ -93,7 +97,8 @@ export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T
     setFieldValue,
     removeErrors,
     removeFieldError,
-    handleFormInput
+    handleFormInput,
+    resetForm,
   } 
 };
 
