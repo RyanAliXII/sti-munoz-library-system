@@ -54,7 +54,7 @@ const SectionPage = () => {
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
         <div className="flex gap-2">
-          <h1 className="text-3xl font-bold">Sections</h1>
+          <h1 className="text-3xl font-bold text-gray-700">Sections</h1>
           <PrimaryButton onClick={openAddModal}>New Section</PrimaryButton>
         </div>
       </div>

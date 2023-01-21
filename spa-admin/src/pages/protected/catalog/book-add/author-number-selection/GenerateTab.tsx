@@ -47,7 +47,7 @@ const GenerateTab = () => {
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
     setAuthorNumberFromSelection(authorNumber);
-    removeFieldError("authorNumber.value");
+    removeFieldError("authorNumber");
   };
   const generateAuthorNumberByAuthor = async (author: Author) => {
     selectAuthorForAuthorNumberGeneration(author);
