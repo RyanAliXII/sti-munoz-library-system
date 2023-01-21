@@ -13,7 +13,6 @@ import {
 import axiosClient from "@definitions/configs/axios";
 import { Accession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 const AccessionPage = () => {
   const fetchAccessions = async () => {
@@ -70,7 +69,6 @@ const AccessionPage = () => {
                 </BodyRow>
               );
             })}
-            r
           </Tbody>
         </Table>
       </div>

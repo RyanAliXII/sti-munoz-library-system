@@ -24,6 +24,7 @@ const GenerateTab = () => {
     selectAuthorForAuthorNumberGeneration,
     authorFromGeneratedAuthorNumber,
     removeAuthorAsBasisForAuthorNumber,
+    setAuthorNumberFromSelection,
   } = useBookAddFormContext();
   const generateByTitle = async () => {
     removeAuthorAsBasisForAuthorNumber(); // remove selected author check mark if there is any.
@@ -42,11 +43,11 @@ const GenerateTab = () => {
         return;
       }
     }
-    setFieldValue("authorNumber", {
-      number: authorNumber.number,
-      surname: authorNumber.surname,
-      value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
-    });
+    setFieldValue(
+      "authorNumber",
+      `${authorNumber.surname.charAt(0)}${authorNumber.number}`
+    );
+    setAuthorNumberFromSelection(authorNumber);
     removeFieldError("authorNumber.value");
   };
   const generateAuthorNumberByAuthor = async (author: Author) => {
@@ -66,12 +67,14 @@ const GenerateTab = () => {
         return;
       }
     }
-    setFieldValue("authorNumber", {
-      number: authorNumber.number,
-      surname: authorNumber.surname,
-      value: `${authorNumber.surname.charAt(0)}${authorNumber.number}`,
-    });
+    setFieldValue(
+      "authorNumber",
+      `${authorNumber.surname.charAt(0)}${authorNumber.number}`
+    );
+    setAuthorNumberFromSelection(authorNumber);
+    removeFieldError("authorNumber");
   };
+
   const TITLE_CHARACTER_LIMIT = 25;
   const title =
     form.title.length > 25
@@ -88,7 +91,7 @@ const GenerateTab = () => {
             type="text"
             readOnly
             disabled
-            value={form.authorNumber.value}
+            value={form.authorNumber}
           />
         </div>
         <div className="lg:grid lg:grid-cols-9 lg:gap-2 ">

@@ -11,12 +11,20 @@ import {
   Thead,
 } from "@components/table/Table";
 import axiosClient from "@definitions/configs/axios";
-import { Book } from "@definitions/types";
+import { Book, ModalProps } from "@definitions/types";
+import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { AiOutlinePrinter } from "react-icons/ai";
+import Modal from "react-responsive-modal";
 import { Link } from "react-router-dom";
 
 const BookPage = () => {
+  const {
+    close: closePrintablesModal,
+    open: openPrintablesModal,
+    isOpen: isPrintablesModalOpen,
+  } = useSwitch();
   const fetchBooks = async () => {
     try {
       const { data: response } = await axiosClient.get("/books/");
@@ -26,6 +34,14 @@ const BookPage = () => {
     }
   };
 
+  const [
+    selectedBookForPrintingPrintables,
+    setSelectedBookForPrintingPrintables,
+  ] = useState<Book>({} as Book);
+  const setBookForPrintingAndOpenModal = (book: Book) => {
+    setSelectedBookForPrintingPrintables({ ...book });
+    openPrintablesModal();
+  };
   const { data: books } = useQuery<Book[]>({
     queryFn: fetchBooks,
     queryKey: ["books"],
@@ -72,6 +88,7 @@ const BookPage = () => {
               <Th>ISBN</Th>
               <Th>Copies</Th>
               <Th>Year Published</Th>
+              <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
@@ -82,13 +99,41 @@ const BookPage = () => {
                   <Td>{book.isbn}</Td>
                   <Td>{book.copies}</Td>
                   <Td>{book.yearPublished}</Td>
+                  <Td>
+                    <AiOutlinePrinter
+                      className="text-blue-500 text-lg cursor-pointer "
+                      onClick={() => {
+                        setBookForPrintingAndOpenModal(book);
+                      }}
+                    />
+                  </Td>
                 </BodyRow>
               );
             })}
           </Tbody>
         </Table>
       </div>
+
+      <BookPrintablesModal
+        closeModal={closePrintablesModal}
+        isOpen={isPrintablesModalOpen}
+        book={selectedBookForPrintingPrintables}
+      />
     </>
+  );
+};
+interface PrintablesModalProps extends ModalProps {
+  book: Book;
+}
+export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
+  closeModal,
+  isOpen,
+}) => {
+  if (!isOpen) return null;
+  return (
+    <Modal open={isOpen} onClose={closeModal}>
+      <div></div>
+    </Modal>
   );
 };
 

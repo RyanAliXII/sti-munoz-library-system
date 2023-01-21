@@ -34,34 +34,33 @@ export type User = {
     hasOwnAccession: boolean
   };
 
-  export type Book = {
-    id?: string;
-    title: string;
-    isbn: string
-    copies: number;
-    edition: number;
-    costPrice: number;
-    sectionId:number,
-    fundSourceId: number;
-    publisherId: number;
-    pages: number;
-    yearPublished: number;
-    receivedAt: string;
-    authorNumber: Omit<AuthorNumberForm, "id">;
-    ddc: number;
-    authors: Author[];
-    description: string;
-  };
+  export interface Book {
+      id?: string;
+      title: string;
+      isbn: string
+      copies: number;
+      edition: number;
+      costPrice: number;
+      sectionId:number,
+      section: string
+      fundSourceId: number;
+      fundSource: string
+      publisherId: number;
+      publisher:string
+      pages: number;
+      yearPublished: number;
+      receivedAt: string;
+      ddc: number;
+      description: string;
+      authors: Author[];
+      authorNumber: string
+  }
 
   export type AuthorNumber = {
     id?: number;
     number: number;
     surname: string;
   };
-  export interface AuthorNumberForm extends AuthorNumber{
-    value: string
-  }
-  
   export type Accession = {
     number: number,
     copyNumber:number
