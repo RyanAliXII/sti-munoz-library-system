@@ -109,13 +109,13 @@ func (repo *BookRepository) Get() []model.BookGet {
 	ddc,
 	author_number,
 	book.created_at,
-	(SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
 	FROM catalog.book_author
 	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
 	where book_id = book.id
-	group by book_id  ) as authors,
-	(find_accession_json(case when accession_table is NULL then 'default_accession' else section.accession_table end ,book.id)) as accessions
+	group by book_id),'[]') as authors,
+	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
 	 FROM catalog.book 
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id

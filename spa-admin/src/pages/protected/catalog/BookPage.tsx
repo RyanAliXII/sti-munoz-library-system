@@ -209,9 +209,9 @@ type CardProps = {
   book: Book;
 };
 const TitleCard = ({ book }: CardProps) => {
-  const authors = book.authors.map((author) => {
-    return `${author.givenName} ${author.surname}`;
-  });
+  const authors = book?.authors?.map(
+    (author) => `${author.givenName} ${author.surname}`
+  );
   return (
     <div className=" h-80 border-gray-400 border border-dashed">
       <div className="flex h-full">
