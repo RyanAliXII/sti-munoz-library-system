@@ -1,6 +1,11 @@
 import CustomDatePicker from "@components/forms/CustomDatePicker";
 import CustomSelect from "@components/forms/CustomSelect";
-import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
+import {
+  ButtonClasses,
+  Input,
+  PrimaryButton,
+  SecondaryButton,
+} from "@components/forms/Forms";
 import {
   BodyRow,
   HeadingRow,
@@ -21,6 +26,7 @@ import QRCode from "react-qr-code";
 import jsonpack from "jsonpack";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { Link } from "react-router-dom";
 interface BookWithAccession extends Book {
   accessions: PrintableAccession[];
 }
@@ -53,6 +59,15 @@ const BookPage = () => {
   });
   return (
     <>
+      <div className="w-full lg:w-11/12  p-6 lg:p-0 first-letter:  lg:rounded-md mx-auto mb-4 flex gap-2">
+        <h1 className="text-3xl font-bold ">Books</h1>
+        <Link
+          to="/books/new"
+          className={ButtonClasses.PrimaryButtonDefaultClasslist}
+        >
+          New Book
+        </Link>
+      </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: drop-shadow-md lg:rounded-md mx-auto mb-4 flex gap-2">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
