@@ -109,7 +109,7 @@ func (repo *BookRepository) Get() []model.BookGet {
 	ddc,
 	author_number,
 	book.created_at,
-	(SELECT  json_agg(json_build_object( 'id', author.id, 'given_name', author.given_name , 'middle_name', author.middle_name,  'surname', author.surname )) 
+	(SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
 	FROM catalog.book_author
 	INNER JOIN catalog.author on book_author.author_id = catalog.author.id

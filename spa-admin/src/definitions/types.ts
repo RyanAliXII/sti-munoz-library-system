@@ -55,7 +55,6 @@ export type User = {
       authors: Author[];
       authorNumber: string
   }
-
   export type AuthorNumber = {
     id?: number;
     number: number;

@@ -14,7 +14,6 @@ import {
   Th,
   Thead,
 } from "@components/table/Table";
-import { useId } from "react";
 
 const GenerateTab = () => {
   const {
@@ -151,7 +150,7 @@ const GenerateTab = () => {
                 return (
                   <BodyRow
                     className="cursor-pointer"
-                    key={author.id ?? useId()}
+                    key={author.id}
                     onClick={() => {
                       generateAuthorNumberByAuthor(author);
                     }}
