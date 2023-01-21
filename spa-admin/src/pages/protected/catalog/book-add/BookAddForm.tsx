@@ -2,7 +2,7 @@ import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent } from "react";
 
-import { Author, Section, Publisher, Source, Book } from "@definitions/types";
+import { Author, Section, Publisher, Source } from "@definitions/types";
 
 import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
-import { useBookAddFormContext } from "./BookAddFormContext";
+import { NewBookForm, useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
@@ -134,10 +134,10 @@ const BookAddForm = () => {
   };
 
   const mutation = useMutation({
-    mutationFn: (parsedForm: Omit<Book, "id">) =>
+    mutationFn: (parsedForm: NewBookForm) =>
       axiosClient.post("/books/", {
         ...parsedForm,
-        authorNumber: parsedForm.authorNumber.value,
+        authorNumber: parsedForm.authorNumber,
       }),
     onSuccess: () => {
       toast.success("Book has been added");
@@ -361,11 +361,11 @@ const BookAddForm = () => {
           <div className="w-full h-full flex">
             <Input
               wrapperclass="flex flex-col "
-              error={errors?.authorNumber?.value}
-              value={form.authorNumber.value}
+              error={errors?.authorNumber}
+              value={form.authorNumber}
               onChange={handleFormInput}
               placeholder="Author number"
-              name="authorNumber.value"
+              name="authorNumber"
             />
             <SecondaryButton
               type="button"

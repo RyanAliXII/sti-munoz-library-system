@@ -23,7 +23,13 @@ import useDebounce from "@hooks/useDebounce";
 
 const BrowseTab = () => {
   const OFFSET_INCREMENT = 50;
-  const { form, setFieldValue, removeFieldError } = useBookAddFormContext();
+  const {
+    form,
+    setFieldValue,
+    removeFieldError,
+    selectedAuthorNumberFromSelection,
+    setAuthorNumberFromSelection,
+  } = useBookAddFormContext();
   const [searchKeyword, setKeyword] = useState("");
   const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
@@ -75,14 +81,13 @@ const BrowseTab = () => {
       modal?.removeEventListener("scroll", listenScroll);
     };
   }, []);
-  const selectAuthorNumber = (cutter: Omit<AuthorNumber, "id">) => {
-    setFieldValue("authorNumber", {
-      number: cutter.number,
-      surname: cutter.surname,
-      value: `${cutter.surname.charAt(0)}${cutter.number}`,
-    });
-
-    removeFieldError("authorNumber.value");
+  const selectAuthorNumber = (authorNumber: AuthorNumber) => {
+    setFieldValue(
+      "authorNumber",
+      `${authorNumber.surname.charAt(0)}${authorNumber.number}`
+    );
+    setAuthorNumberFromSelection(authorNumber);
+    removeFieldError("authorNumber");
   };
   return (
     <div>
@@ -95,7 +100,7 @@ const BrowseTab = () => {
             type="text"
             readOnly
             disabled
-            value={form.authorNumber.value}
+            value={form.authorNumber}
           />
         </div>
         <Input
@@ -136,7 +141,8 @@ const BrowseTab = () => {
                       className="h-4"
                       readOnly
                       checked={
-                        authorNumber.surname === form.authorNumber.surname
+                        authorNumber.surname ===
+                        selectedAuthorNumberFromSelection.surname
                           ? true
                           : false
                       }

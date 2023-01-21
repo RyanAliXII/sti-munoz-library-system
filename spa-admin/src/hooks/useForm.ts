@@ -4,7 +4,7 @@ import {  ObjectShape } from "yup/lib/object";
 import {get, set} from 'lodash'
 
 
-type useFormProps<T> = {
+type UseFormProps<T> = {
   initialFormData: T;
   schema: ObjectSchema<ObjectShape>;
 };
@@ -22,7 +22,7 @@ export interface UseFormType<T>{
   form: T
   errors: any
 }
-export const useForm = <T extends object>(props: useFormProps<T>): UseFormType<T> => {
+export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T> => {
   const [form, setForm] = useState<T>(props.initialFormData);
   const [errors, setErrors] = useState<any>();
 
@@ -71,7 +71,7 @@ export const useForm = <T extends object>(props: useFormProps<T>): UseFormType<T
       if (error instanceof ValidationError) {
         const errorObject = processSchemaError(error);
         setErrors({ ...errorObject });
-        throw new Error("Validation failed");
+        throw new Error("Validation failed: " + JSON.stringify(errorObject));
       }
     }
   };

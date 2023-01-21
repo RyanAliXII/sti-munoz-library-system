@@ -40,6 +40,9 @@ func GetInstance() *zap.Logger {
 func Function(name string) zapcore.Field {
 	return zap.String("function", name)
 }
+func Error(name string) zapcore.Field {
+	return zap.String("error", name)
+}
 func AffectedRows(affected int64) zapcore.Field {
 	return zap.Int64("affectedRows", affected)
 }

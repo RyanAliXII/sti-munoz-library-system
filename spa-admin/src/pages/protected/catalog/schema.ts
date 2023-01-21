@@ -28,11 +28,7 @@ export const BookSchema = object().shape({
     sectionId: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
     copies: number().typeError("Value must not be empty and should be numeric.").integer("Value should not be decimal.").min(1, "Value should be atleast 1").required("Number of copies is required."),
     receivedAt: string().notRequired(),
-    authorNumber: object().shape({
-        value: string().typeError("Value must be alpha-numeric.").required("Author number is required.").max(50, "Maximum Characters exceeded."),
-        surname: string().notRequired(),
-        number: number().notRequired(),
-    }),
+    authorNumber: string().required("Author number is required."),
     ddc: number().typeError("Value must not be empty and should be numeric.").required("Classification is required.").min(0, "Classfication below zero does not exist.").max(1000, "Classification above 1000 does not exist."),
     costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
     description: string().notRequired(),

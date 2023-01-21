@@ -66,6 +66,7 @@ const SectionPage = () => {
               <Thead>
                 <HeadingRow>
                   <Th>Section</Th>
+                  <Th>Different Accession</Th>
                   <Th></Th>
                 </HeadingRow>
               </Thead>
@@ -74,6 +75,13 @@ const SectionPage = () => {
                   return (
                     <BodyRow key={section.name}>
                       <Td className="p-2 capitalize">{section.name}</Td>
+                      <Td>
+                        {section.hasOwnAccession ? (
+                          <span className="text-green-500"> Yes</span>
+                        ) : (
+                          <span className="text-gray-400">No</span>
+                        )}
+                      </Td>
                       <Td className="p-2 flex gap-2 items-center">
                         <AiOutlineEdit
                           className="cursor-pointer text-yellow-400 text-xl"
