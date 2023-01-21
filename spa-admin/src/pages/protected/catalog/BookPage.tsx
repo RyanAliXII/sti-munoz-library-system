@@ -145,7 +145,7 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
   const download = async () => {
     if (!printableDiv.current) return;
     const canvas = await html2canvas(printableDiv.current, { scale: 4 });
-    var doc = new jsPDF("p", "px", "a4");
+    const doc = new jsPDF("p", "px", "a4");
 
     doc.addImage(canvas, 10, 0, 350, 450);
     doc.save(`${book.title}_${book.yearPublished}.pdf`);
@@ -278,7 +278,7 @@ const CallNumber = ({ book, copyNumber, accessionNumber }: CallNumberProps) => {
         <QRCode value={qrValue} className="w-12 h-14"></QRCode>
       </div>
       <div className="w-20 h-28 border-gray-400 border border-dashed flex flex-col px-2">
-        <span>{book.section}</span>
+        <span>{book.section?.substring(0, 3)}</span>
         <small className="tracking-wide">
           {book.title.charAt(0)}
           {book.ddc}
