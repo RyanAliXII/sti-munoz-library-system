@@ -9,7 +9,7 @@ import {
   Thead,
 } from "@components/table/Table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import { useId } from "react";
+
 import { useBookAddFormContext } from "../BookAddFormContext";
 
 interface SelectedAuthorsTableProps {
@@ -33,7 +33,7 @@ const SelectedAuthorsTable: React.FC<SelectedAuthorsTableProps> = ({
         <Tbody>
           {form.authors.map((author) => {
             return (
-              <BodyRow key={author.id ?? useId()}>
+              <BodyRow key={author.id}>
                 <Td>{author.givenName}</Td>
                 <Td>{author.middleName}</Td>
                 <Td>{author.surname}</Td>

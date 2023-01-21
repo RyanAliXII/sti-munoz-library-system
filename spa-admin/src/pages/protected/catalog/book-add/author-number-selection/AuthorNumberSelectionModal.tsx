@@ -17,7 +17,9 @@ enum Tab {
   Generate = "GENERATE",
   Browse = "BROWSE",
 }
+
 type ActiveTab = "GENERATE" | "BROWSE";
+
 interface TabContentProps {
   activeTab: ActiveTab;
 }
@@ -40,7 +42,6 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
     form,
     unSelectAuthorNumberSelection,
     unSelectAuthorFromGeneratedAuthorNumber,
-    authorFromGeneratedAuthorNumber,
   } = useBookAddFormContext();
   useEffect(() => {
     const currentSelectedAuthorNumber = `${selectedAuthorNumberFromSelection.surname.charAt(

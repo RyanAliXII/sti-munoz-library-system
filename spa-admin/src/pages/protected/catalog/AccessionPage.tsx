@@ -61,7 +61,7 @@ const AccessionPage = () => {
           <Tbody>
             {accessions?.map((accession) => {
               return (
-                <BodyRow>
+                <BodyRow key={`${accession.copyNumber}_${accession.title}`}>
                   <Td>{accession.number}</Td>
                   <Td>{accession.title}</Td>
                   <Td>{accession.section}</Td>
