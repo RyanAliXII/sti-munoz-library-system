@@ -17,7 +17,7 @@ const pages = createRoutesFromChildren(
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/books" element={<BookPage />}></Route>
       <Route path="/books/accessions" element={<AccessionPage />}></Route>
-      <Route path="/books/create" element={<BookAddPage />} />
+      <Route path="/books/new" element={<BookAddPage />} />
       <Route path="/books/accession" element={<Accession />} />
       <Route path="/books/authors" element={<AuthorPage />} />
       <Route path="/books/sections" element={<SectionPage />} />
