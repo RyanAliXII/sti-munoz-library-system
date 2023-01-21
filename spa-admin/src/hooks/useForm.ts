@@ -78,7 +78,7 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
   };
   const processSchemaError = (error: ValidationError) => {
     let errorObject: any = {};
-    error.inner.forEach((err, index) => {
+    error.inner.forEach((err) => {
       errorObject = set(errorObject, err?.path ?? '', err.message )
     });
     
