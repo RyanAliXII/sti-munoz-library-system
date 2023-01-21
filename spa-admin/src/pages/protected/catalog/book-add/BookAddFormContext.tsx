@@ -43,20 +43,23 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       title: "",
       isbn: "",
       authors: [],
+      sectionId: 0,
+      publisherId: 0,
+      fundSourceId: 0,
       copies: 1,
       receivedAt: new Date().toISOString(),
       authorNumber: "",
-      sectionId: 0,
       ddc: 0,
       costPrice: 0,
       description: "",
-      fundSourceId: 0,
+
       edition: 0,
       pages: 1,
-      publisherId: 0,
+
       yearPublished: new Date().getFullYear(),
     },
     schema: BookSchema,
+    scrollToError: true,
   });
 
   const removeAuthorAsBasisForAuthorNumber = () => {

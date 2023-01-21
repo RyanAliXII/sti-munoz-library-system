@@ -2,11 +2,12 @@ import React, { BaseSyntheticEvent, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import {  ObjectShape } from "yup/lib/object";
 import {get, set} from 'lodash'
-
+import scrollToElement from 'scroll-to-element'
 
 type UseFormProps<T> = {
   initialFormData: T;
   schema: ObjectSchema<ObjectShape>;
+  scrollToError?: boolean
 };
 
 enum InputTypes{
@@ -23,8 +24,8 @@ export interface UseFormType<T>{
   errors: any
   resetForm: ()=>void
 }
-export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T> => {
-  const [form, setForm] = useState<T>({...props.initialFormData});
+export const useForm = <T extends object>({initialFormData, schema, scrollToError=false}: UseFormProps<T>): UseFormType<T> => {
+  const [form, setForm] = useState<T>({...initialFormData});
   const [errors, setErrors] = useState<any>();
   const removeErrors = () => {
     setErrors(() => undefined);
@@ -64,7 +65,7 @@ export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T
   };
   const validate = async () => {
     try {
-     const data =  await props.schema.validate(form, { abortEarly: false });
+     const data =  await schema.validate(form, { abortEarly: false });
       
      return data as T
     } catch (error) {
@@ -77,16 +78,25 @@ export const useForm = <T extends object>(props: UseFormProps<T>): UseFormType<T
   };
   const processSchemaError = (error: ValidationError) => {
     let errorObject: any = {};
-    let firstInputWithError;
     error.inner.forEach((err, index) => {
-      if(index === 0) firstInputWithError = err?.path
       errorObject = set(errorObject, err?.path ?? '', err.message )
     });
+    
+    if(scrollToError && error.inner.length > 0){
+      const formGroup = error?.inner[0]?.path
+      const element = document.querySelector(`[form-group="${formGroup}"]`)
+      if(!element) return errorObject
+      scrollToElement(element, {
+        offset: -150,
+        duration: 700
+    });
+    }
+ 
     return errorObject;
   };
 
   const resetForm = ()=>{
-    setForm({...props.initialFormData})
+    setForm({...initialFormData})
   }
 
   return {

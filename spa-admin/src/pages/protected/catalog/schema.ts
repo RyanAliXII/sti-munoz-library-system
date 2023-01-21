@@ -24,19 +24,19 @@ const NUMBER_NO_DECIMAL = "Value should be numeric and not in decimal format."
 export const BookSchema = object().shape({
     title: string().max(150, "Character should not exceed 150").required("Book title is required."),
     isbn: string().required().test("check-isbn", "Invalid ISBN number.", (value)=> validator.isISBN(value ?? " ")),
-    author: array().notRequired(),
-    sectionId: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
     copies: number().typeError("Value must not be empty and should be numeric.").integer("Value should not be decimal.").min(1, "Value should be atleast 1").required("Number of copies is required."),
-    receivedAt: string().notRequired(),
-    authorNumber: string().required("Author number is required."),
-    ddc: number().typeError("Value must not be empty and should be numeric.").required("Classification is required.").min(0, "Classfication below zero does not exist.").max(1000, "Classification above 1000 does not exist."),
-    costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
-    description: string().notRequired(),
-    fundSourceId: number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
-    edition : number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).notRequired(),
     pages: number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).test("check-if-greater-than-0","Value should be greater than 0" ,(value)=> (value ?? 0) > 0).required("Number of pages is required."),
+    sectionId: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
     publisherId: number().integer(NUMBER_NO_DECIMAL).required("Publisher is required.").min(1, "Please select a publisher."),
-    yearPublished: number().integer(NUMBER_NO_DECIMAL).required("Year published is required.")
+    fundSourceId: number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
+    costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
+    edition : number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).notRequired(),
+    yearPublished: number().integer(NUMBER_NO_DECIMAL).required("Year published is required."),
+    receivedAt: string().notRequired(),
+    description: string().notRequired(),
+    author: array().notRequired(),
+    authorNumber: string().required("Author number is required."),
+    ddc: number().typeError("Value must not be empty and should be numeric.").required("Classification is required.").min(0, "Classfication below zero does not exist.").max(1000, "Classification above 1000 does not exist."),    
 })
 
 
