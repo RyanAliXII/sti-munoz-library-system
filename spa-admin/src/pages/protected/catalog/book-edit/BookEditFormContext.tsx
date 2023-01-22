@@ -1,14 +1,20 @@
 import { BaseProps } from "@definitions/props.definition";
 import { Book, Author, AuthorNumber } from "@definitions/types";
 import { useForm, UseFormType } from "@hooks/useForm";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { BookSchema, NewBookSchemaValidation } from "../schema";
 import { SingleValue } from "react-select";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import axiosClient from "@definitions/configs/axios";
+import { sortedIndexOf } from "lodash";
+import { AxiosError } from "axios";
+import { STATUS_CODES } from "http";
+import { StatusCodes } from "http-status-codes";
 
-export interface NewBookForm
+export interface EditBookForm
   extends Omit<
     Book,
-    | "id"
     | "section"
     | "fundSource"
     | "publisher"
@@ -21,7 +27,7 @@ export interface NewBookForm
   publisher: SingleValue<{ label: string; value: number }>;
 }
 export const BookEditFormContext = createContext({} as BookAddContextType);
-interface BookAddContextType extends UseFormType<NewBookForm> {
+interface BookAddContextType extends UseFormType<EditBookForm> {
   removeAuthorAsBasisForAuthorNumber: () => void;
   selectAuthorForAuthorNumberGeneration: (author: Author) => void;
   authorFromGeneratedAuthorNumber: Author | null;
@@ -33,14 +39,51 @@ interface BookAddContextType extends UseFormType<NewBookForm> {
 export const useBookEditFormContext = () => {
   return useContext(BookEditFormContext);
 };
+
+const INITIAL_FORM_DATA_FALLBACK = {
+  title: "",
+  isbn: "",
+  authors: [],
+  section: {
+    label: "Select section.",
+    value: 0,
+  },
+  publisher: {
+    label: "Select publisher.",
+    value: 0,
+  },
+  fundSource: {
+    label: "Select source of fund.",
+    value: 0,
+  },
+  copies: 1,
+  receivedAt: new Date().toISOString(),
+  authorNumber: "",
+  ddc: 0,
+  costPrice: 0,
+  description: "",
+
+  edition: 0,
+  pages: 1,
+
+  yearPublished: new Date().getFullYear(),
+};
+
 export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
   const [authorFromGeneratedAuthorNumber, setAuthorFromGeneratedAuthorNumber] =
     useState<Author | null>(null);
+  const navigate = useNavigate();
   const DEFAULT_AUTHOR_NUMBER = {
     id: 0,
     number: 0,
     surname: "",
   };
+  const { id: bookId } = useParams();
+  const fetchBook = async () => {
+    const { data: response } = await axiosClient.get(`/books/${bookId}`);
+    return response?.data?.book ?? {};
+  };
+
   const [selectedAuthorNumberFromSelection, setAuthorNumberFromSelection] =
     useState<AuthorNumber>(DEFAULT_AUTHOR_NUMBER);
 
@@ -50,39 +93,30 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
   const unSelectAuthorFromGeneratedAuthorNumber = () => {
     setAuthorFromGeneratedAuthorNumber(null);
   };
-  const formClient = useForm<NewBookForm>({
-    initialFormData: {
-      title: "",
-      isbn: "",
-      authors: [],
-      section: {
-        label: "Select section.",
-        value: 0,
-      },
-      publisher: {
-        label: "Select publisher.",
-        value: 0,
-      },
-      fundSource: {
-        label: "Select source of fund.",
-        value: 0,
-      },
-      copies: 1,
-      receivedAt: new Date().toISOString(),
-      authorNumber: "",
-      ddc: 0,
-      costPrice: 0,
-      description: "",
 
-      edition: 0,
-      pages: 1,
-
-      yearPublished: new Date().getFullYear(),
-    },
+  const formClient = useForm<EditBookForm>({
+    initialFormData: INITIAL_FORM_DATA_FALLBACK,
     schema: NewBookSchemaValidation,
     scrollToError: true,
   });
 
+  const { isFetchedAfterMount } = useQuery<EditBookForm>({
+    queryFn: fetchBook,
+    queryKey: ["book"],
+    staleTime: Infinity,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    retry: false,
+    onSuccess: (data) => {
+      console.log(data);
+      formClient.setForm(() => ({ ...data }));
+    },
+    onError: () => {
+      {
+        navigate("/void");
+      }
+    },
+  });
   const removeAuthorAsBasisForAuthorNumber = () => {
     setAuthorFromGeneratedAuthorNumber(() => null);
   };
@@ -105,7 +139,7 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
         unSelectAuthorNumberSelection,
       }}
     >
-      {children}
+      {isFetchedAfterMount && children}
     </BookEditFormContext.Provider>
   );
 };

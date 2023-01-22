@@ -20,7 +20,7 @@ import { Accession, Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
-import { AiOutlinePrinter } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import QRCode from "react-qr-code";
 import jsonpack from "jsonpack";
@@ -96,6 +96,7 @@ const BookPage = () => {
               <Th>Copies</Th>
               <Th>Year Published</Th>
               <Th></Th>
+              <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
@@ -113,6 +114,11 @@ const BookPage = () => {
                         setBookForPrintingAndOpenModal(book);
                       }}
                     />
+                  </Td>
+                  <Td>
+                    <Link to={`/books/edit/${book.id}`}>
+                      <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                    </Link>
                   </Td>
                 </BodyRow>
               );

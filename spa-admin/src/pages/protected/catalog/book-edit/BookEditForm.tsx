@@ -12,7 +12,7 @@ import CustomDatePicker from "@components/forms/CustomDatePicker";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
-import { useBookEditFormContext, NewBookForm } from "./BookEditFormContext";
+import { useBookEditFormContext, EditBookForm } from "./BookEditFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
@@ -132,7 +132,7 @@ const BookEditForm = () => {
   };
 
   const mutation = useMutation({
-    mutationFn: (parsedForm: NewBookForm) =>
+    mutationFn: (parsedForm: EditBookForm) =>
       axiosClient.post("/books/", {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
@@ -299,11 +299,11 @@ const BookEditForm = () => {
         </FieldRow>
         <FieldRow isRequired label="Date Received" formGroup="receivedAt">
           <CustomDatePicker
+            selected={new Date(form.receivedAt)}
             onChange={(date) => {
               if (!date) return;
               setFieldValue("receivedAt", date.toISOString());
             }}
-            selected={new Date(form.receivedAt)}
           />
         </FieldRow>
         <FieldRow

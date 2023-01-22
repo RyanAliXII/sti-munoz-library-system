@@ -10,7 +10,9 @@ import SectionPage from "./protected/catalog/SectionPage";
 import PublisherPage from "./protected/catalog/PublisherPage";
 import SofPage from "./protected/catalog/SofPage";
 import BookPage from "./protected/catalog/BookPage";
+import BookEditPage from "./protected/catalog/book-edit/BookEditPage";
 import AccessionPage from "./protected/catalog/AccessionPage";
+import Page404 from "./error/Page404";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -18,6 +20,7 @@ const pages = createRoutesFromChildren(
       <Route path="/books" element={<BookPage />}></Route>
       <Route path="/books/accessions" element={<AccessionPage />}></Route>
       <Route path="/books/new" element={<BookAddPage />} />
+      <Route path="/books/edit/:id" element={<BookEditPage />} />
       <Route path="/books/accession" element={<Accession />} />
       <Route path="/books/authors" element={<AuthorPage />} />
       <Route path="/books/sections" element={<SectionPage />} />
@@ -28,6 +31,7 @@ const pages = createRoutesFromChildren(
       <Route path="/" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
+    <Route path="*" element={<Page404 />}></Route>?
   </>
 );
 

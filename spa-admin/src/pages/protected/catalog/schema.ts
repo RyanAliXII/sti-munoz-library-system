@@ -58,7 +58,7 @@ export const NewBookSchemaValidation = object().shape({
         value:number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
     }),
     costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
-    edition : number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).notRequired(),
+    edition : number().typeError("Value must not be empty and should be numeric.").min(0, "The edition must not be less than 0." ).integer(NUMBER_NO_DECIMAL).notRequired(),
     yearPublished: number().integer(NUMBER_NO_DECIMAL).required("Year published is required."),
     receivedAt: string().notRequired(),
     description: string().notRequired(),

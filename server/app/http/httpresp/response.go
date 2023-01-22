@@ -44,3 +44,12 @@ func Fail400(data map[string]interface{}, message string) (int, HttpResponse) {
 		Message: message,
 	}
 }
+
+func Fail404(data map[string]interface{}, message string) (int, HttpResponse) {
+	return http.StatusNotFound, HttpResponse{
+		Status:  "fail",
+		Code:    http.StatusNotFound,
+		Data:    data,
+		Message: message,
+	}
+}

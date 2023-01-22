@@ -99,6 +99,7 @@ func (repo *BookRepository) Get() []model.BookGet {
 	pages,
 	section_id,  
 	section.name as section,
+	publisher.id as publisher_id,
 	publisher.name as publisher,
 	fund_source_id,
 	source_of_fund.name as fund_source,
@@ -127,6 +128,47 @@ func (repo *BookRepository) Get() []model.BookGet {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
 	}
 	return books
+}
+func (repo *BookRepository) GetOne(id string) model.BookGet {
+	var book model.BookGet = model.BookGet{}
+	query := `
+	SELECT book.id,title, isbn, 
+	description, 
+	copies,
+	pages,
+	section_id,  
+	section.name as section,
+	publisher.name as publisher,
+	publisher.id as publisher_id,
+	fund_source_id,
+	source_of_fund.name as fund_source,
+	cost_price,
+	edition,
+	year_published,
+	received_at,
+	ddc,
+	author_number,
+	book.created_at,
+	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+	as authors
+	FROM catalog.book_author
+	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+	where book_id = book.id
+	group by book_id),'[]') as authors,
+	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
+	 FROM catalog.book 
+	INNER JOIN catalog.section on book.section_id = section.id
+	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	WHERE book.id = $1
+	ORDER BY created_at DESC
+	LIMIT 1
+	`
+	selectErr := repo.db.Get(&book, query, id)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOne"), slimlog.Error("SelectErr"))
+	}
+	return book
 }
 func (repo *BookRepository) GetAccession() []model.Accession {
 	var sections []model.Section = make([]model.Section, 0)
@@ -192,5 +234,6 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 type BookRepositoryInterface interface {
 	New(model.BookNew) error
 	Get() []model.BookGet
+	GetOne(id string) model.BookGet
 	GetAccession() []model.Accession
 }

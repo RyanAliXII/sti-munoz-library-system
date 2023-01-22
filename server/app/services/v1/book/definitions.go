@@ -13,21 +13,24 @@ type BookBody struct {
 	Publisher     PublisherBody  `json:"publisher"  binding:"required"`
 	FundSource    FundSourceBody `json:"fundSource" binding:"required"`
 	CostPrice     float32        `json:"costPrice"  binding:"gte=0"`
-	Edition       int            `json:"edition" `
+	Edition       int            `json:"edition" binding:"gte=0" `
 	YearPublished int            `json:"yearPublished"  binding:"required"`
-	ReceivedAt    string         `json:"receivedAt" binding:"required"`
 	DDC           float64        `json:"ddc"  binding:"gte=0,lt=1000"`
 	AuthorNumber  string         `json:"authorNumber" binding:"required,min=1,max=50"`
+	ReceivedAt    string         `json:"receivedAt" binding:"required"`
 	Authors       []model.Author `json:"authors"`
 }
 
 type SectionBody struct {
-	Value int `json:"value" binding:"required,gte=0"`
+	Label string `json:"label"`
+	Value int    `json:"value" binding:"required,gte=0"`
 }
 type PublisherBody struct {
-	Value int `json:"value" binding:"required,gte=0"`
+	Label string `json:"label"`
+	Value int    `json:"value" binding:"required,gte=0"`
 }
 
 type FundSourceBody struct {
-	Value int `json:"value" binding:"required,gte=0"`
+	Label string `json:"label"`
+	Value int    `json:"value" binding:"required,gte=0"`
 }
