@@ -20,7 +20,7 @@ export interface NewBookForm
   fundSource: SingleValue<{ label: string; value: number }>;
   publisher: SingleValue<{ label: string; value: number }>;
 }
-export const BookAddFormContext = createContext({} as BookAddContextType);
+export const BookEditFormContext = createContext({} as BookAddContextType);
 interface BookAddContextType extends UseFormType<NewBookForm> {
   removeAuthorAsBasisForAuthorNumber: () => void;
   selectAuthorForAuthorNumberGeneration: (author: Author) => void;
@@ -30,10 +30,10 @@ interface BookAddContextType extends UseFormType<NewBookForm> {
   unSelectAuthorNumberSelection: () => void;
   unSelectAuthorFromGeneratedAuthorNumber: () => void;
 }
-export const useBookAddFormContext = () => {
-  return useContext(BookAddFormContext);
+export const useBookEditFormContext = () => {
+  return useContext(BookEditFormContext);
 };
-export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
+export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
   const [authorFromGeneratedAuthorNumber, setAuthorFromGeneratedAuthorNumber] =
     useState<Author | null>(null);
   const DEFAULT_AUTHOR_NUMBER = {
@@ -93,7 +93,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
     setAuthorNumberFromSelection({ ...authorNumber });
   };
   return (
-    <BookAddFormContext.Provider
+    <BookEditFormContext.Provider
       value={{
         ...formClient,
         removeAuthorAsBasisForAuthorNumber,
@@ -106,6 +106,6 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       }}
     >
       {children}
-    </BookAddFormContext.Provider>
+    </BookEditFormContext.Provider>
   );
 };

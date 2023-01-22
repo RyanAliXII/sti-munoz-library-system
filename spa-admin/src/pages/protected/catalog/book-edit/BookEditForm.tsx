@@ -12,13 +12,13 @@ import CustomDatePicker from "@components/forms/CustomDatePicker";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
-import { useBookAddFormContext, NewBookForm } from "./BookAddFormContext";
+import { useBookEditFormContext, NewBookForm } from "./BookEditFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
 
-const BookAddForm = () => {
+const BookEditForm = () => {
   const {
     isOpen: isAuthorSelectionOpen,
     close: closeAuthorSelection,
@@ -43,7 +43,7 @@ const BookAddForm = () => {
     validate,
     removeFieldError,
     setFieldValue,
-  } = useBookAddFormContext();
+  } = useBookEditFormContext();
 
   const fetchPublishers = async () => {
     try {
@@ -467,4 +467,4 @@ const FieldRow = ({
   );
 };
 
-export default BookAddForm;
+export default BookEditForm;
