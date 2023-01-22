@@ -9,8 +9,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
 import CustomSelect from "@components/forms/CustomSelect";
 import CustomDatePicker from "@components/forms/CustomDatePicker";
-import { Editor } from "@tinymce/tinymce-react";
-
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
@@ -18,6 +16,7 @@ import { NewBookForm, useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
+import { Editor } from "@tinymce/tinymce-react";
 
 const BookAddForm = () => {
   const {
@@ -152,6 +151,9 @@ const BookAddForm = () => {
       window.scrollTo({ behavior: "smooth", top: 0 });
     },
   });
+  const handleDescriptionInput = (content: string, editor: any) => {
+    setFieldValue("description", content);
+  };
 
   return (
     <form onSubmit={submit}>
@@ -309,7 +311,10 @@ const BookAddForm = () => {
           formGroup="description"
           fieldDetails="Brief Description of the book"
         >
-          <Editor apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei" />
+          <Editor
+            apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
+            onEditorChange={handleDescriptionInput}
+          />
         </FieldRow>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
