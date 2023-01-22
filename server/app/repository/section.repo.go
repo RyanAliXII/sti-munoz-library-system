@@ -49,7 +49,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 }
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
-	selectErr := repo.db.Select(&sections, "SELECT id, name, accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section")
+	selectErr := repo.db.Select(&sections, "SELECT id, name, accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section ORDER BY created_at DESC")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}

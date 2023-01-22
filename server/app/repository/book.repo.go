@@ -141,7 +141,7 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 	dialect := goqu.Dialect("postgres")
 
 	const DEFAULT_TABLE = "default_accession"
-	ds := dialect.From()
+	var ds *goqu.SelectDataset
 	const FIRST_LOOP = 0
 	for i, section := range sections {
 		var table string
@@ -151,20 +151,25 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 			table = DEFAULT_TABLE
 		}
 		if i == FIRST_LOOP {
-			ds = ds.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
-				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).InnerJoin(goqu.I("catalog.book"),
+			ds = dialect.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
+				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).Where(goqu.Ex{
+				"book.section_id": section.Id,
+			}).InnerJoin(goqu.I("catalog.book"),
 				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")})))
 		} else {
 			ds = ds.Union(goqu.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
-				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).InnerJoin(goqu.I("catalog.book"),
+				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).Where(goqu.Ex{
+				"book.section_id": section.Id,
+			}).InnerJoin(goqu.I("catalog.book"),
 				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")}))))
 		}
 
 	}
 
 	finalDs := dialect.From(ds).Order(goqu.I("created_at").Desc())
-	selectQuery, _, builderErr := finalDs.ToSQL()
 
+	selectQuery, _, builderErr := finalDs.ToSQL()
+	fmt.Println(selectQuery)
 	if builderErr != nil {
 		logger.Error(builderErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("builderErr"))
 		return []model.Accession{}
