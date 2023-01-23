@@ -1,20 +1,20 @@
-package services
+package api
 
 import (
+	"slim-app/server/app/api/v1/author"
+	authornum "slim-app/server/app/api/v1/author-number"
+	"slim-app/server/app/api/v1/book"
+	"slim-app/server/app/api/v1/section"
 	"slim-app/server/app/repository"
-	"slim-app/server/app/services/v1/author"
-	authornum "slim-app/server/app/services/v1/author-number"
-	"slim-app/server/app/services/v1/book"
-	"slim-app/server/app/services/v1/section"
 
-	"slim-app/server/app/services/v1/ddc"
-	"slim-app/server/app/services/v1/publisher"
-	"slim-app/server/app/services/v1/sof"
+	"slim-app/server/app/api/v1/ddc"
+	"slim-app/server/app/api/v1/publisher"
+	"slim-app/server/app/api/v1/sof"
 
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterServicesV1(router *gin.Engine, repositories *repository.Repositories) {
+func RegisterAPIV1(router *gin.Engine, repositories *repository.Repositories) {
 	grp := router.Group("/api/1")
 	author.AuthorRoutes(grp.Group("/authors"), repositories)
 	publisher.PublisherRoutes(grp.Group("/publishers"), repositories)

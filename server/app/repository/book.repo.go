@@ -55,7 +55,7 @@ func (repo *BookRepository) New(book model.BookNew) error {
 	accessionDs := dialect.From(table).Prepared(true).Insert().Rows(accessionRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
 	insertAccessionResult, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
-	fmt.Println(insertAccessionQuery)
+
 	if insertAccessionErr != nil {
 		transaction.Rollback()
 		logger.Error(insertAccessionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertAccessionErr"))
@@ -211,7 +211,7 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 	finalDs := dialect.From(ds).Order(goqu.I("created_at").Desc())
 
 	selectQuery, _, builderErr := finalDs.ToSQL()
-	fmt.Println(selectQuery)
+
 	if builderErr != nil {
 		logger.Error(builderErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("builderErr"))
 		return []model.Accession{}

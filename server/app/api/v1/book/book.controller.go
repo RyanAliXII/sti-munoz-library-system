@@ -1,7 +1,6 @@
 package book
 
 import (
-	"fmt"
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/app/model"
 	"slim-app/server/app/repository"
@@ -72,7 +71,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	}
 
 	authors := ctrler.repos.AuthorRepository.GetByBookId(id)
-	fmt.Println(book.PublisherId)
+
 	var bookBody BookBody = BookBody{
 
 		Id:          book.Id,
