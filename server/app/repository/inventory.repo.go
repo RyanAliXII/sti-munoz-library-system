@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"fmt"
 	"slim-app/server/app/model"
 	"slim-app/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type InventoryRepository struct {
@@ -68,8 +68,50 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	if selectErr != nil {
 		logger.Info(selectErr.Error(), slimlog.Function("InventoryRepository.GetAuditedAccessionById"), slimlog.Error("selectErr"))
 	}
-	fmt.Println(audited)
 	return audited
+}
+func (repo *InventoryRepository) AddToAudit(id string, bookId string, accessionId int) error {
+
+	const UNIQUE_VIOLATION_ERROR = "unique_violation"
+	insertBookToAuditQuery := `INSERT INTO inventory.audited_book(book_id, audit_id) VALUES ($1,$2)`
+	_, insertBookToAuditErr := repo.db.Exec(insertBookToAuditQuery, bookId, id)
+
+	if insertBookToAuditErr != nil {
+		err, ok := insertBookToAuditErr.(*pq.Error)
+
+		if !ok {
+
+			logger.Error(insertBookToAuditErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertBookToAuditErr"))
+			return insertBookToAuditErr
+		}
+		if err.Code.Name() != UNIQUE_VIOLATION_ERROR {
+
+			logger.Error(insertBookToAuditErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertBookToAuditErr"))
+			return insertBookToAuditErr
+		}
+
+		logger.Info("Book Already scanned, proceeding to insert accession.", slimlog.Function("InventoryRepository.AddToAudit"))
+	}
+	insertAccessionToAudit := `INSERT INTO inventory.audited_accession(book_id, audit_id, accession_id) VALUES ($1,$2,$3)`
+	_, insertAccessionToAuditErr := repo.db.Exec(insertAccessionToAudit, bookId, id, accessionId)
+
+	if insertAccessionToAuditErr != nil {
+		err, ok := insertAccessionToAuditErr.(*pq.Error)
+		if !ok {
+			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
+			return insertBookToAuditErr
+		}
+
+		if err.Code.Name() != UNIQUE_VIOLATION_ERROR {
+			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
+			return insertBookToAuditErr
+		}
+		logger.Info("Accession Already scanned.", slimlog.Function("InventoryRepository.AddToAudit"))
+
+		return nil
+	}
+
+	return nil
 }
 func NewInventoryRepository(db *sqlx.DB) InventoryRepositoryInterface {
 	return &InventoryRepository{
@@ -82,4 +124,5 @@ type InventoryRepositoryInterface interface {
 	GetAudit() []model.Audit
 	GetById(id string) model.Audit
 	GetAuditedAccessionById(id string) []model.AuditedBook
+	AddToAudit(id string, bookId string, accession int) error
 }
