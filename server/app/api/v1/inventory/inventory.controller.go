@@ -28,8 +28,13 @@ func (ctrler *InventoryController) GetAuditById(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"audit": audit}, "Audit fetched."))
 }
+func (ctrler *InventoryController) GetAuditedAccession(ctx *gin.Context) {
+	ctrler.repos.InventoryRepository.GetAuditedAccessionById("test")
+	ctx.JSON(httpresp.Success200(nil, "Accession fetched."))
+}
 
 type InventoryControllerInterface interface {
 	GetAudits(ctx *gin.Context)
 	GetAuditById(ctx *gin.Context)
+	GetAuditedAccession(ctx *gin.Context)
 }

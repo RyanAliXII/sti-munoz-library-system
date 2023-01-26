@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AuditPage from "./AuditPage";
 import { useQuery } from "@tanstack/react-query";
+import jsonpack from "jsonpack";
 import {
   Thead,
   Table,
@@ -14,6 +15,8 @@ import {
   Th,
 } from "@components/table/Table";
 import { Html5Qrcode, Html5QrcodeScanner } from "html5-qrcode";
+import { toast } from "react-toastify";
+
 const AuditScan = () => {
   const { id } = useParams();
 
@@ -22,6 +25,7 @@ const AuditScan = () => {
     return response?.data?.audit ?? {};
   };
   const navigate = useNavigate();
+  let html5QrcodeScanner: Html5QrcodeScanner;
   const { data: audit } = useQuery<Audit>({
     queryFn: fetchAudit,
     queryKey: ["audit"],
@@ -39,36 +43,33 @@ const AuditScan = () => {
 
   useEffect(() => {
     initializeScanner();
+
+    return () => {
+      html5QrcodeScanner.clear();
+    };
   }, []);
   const initializeScanner = () => {
-    const config = { fps: 60, qrbox: { width: 250, height: 250, qrbox: 2 } };
-    let html5QrcodeScanner = new Html5QrcodeScanner(
+    html5QrcodeScanner = new Html5QrcodeScanner(
       "reader",
       {
-        fps: 10,
+        fps: 30,
         rememberLastUsedCamera: true,
         aspectRatio: 4 / 3,
         showTorchButtonIfSupported: true,
         showZoomSliderIfSupported: true,
         defaultZoomValueIfSupported: 2,
+        qrbox: 75,
       },
       /* verbose= */ false
     );
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
   };
   function onScanSuccess(decodedText: any, decodedResult: any) {
-    console.log(decodedResult);
-    // handle the scanned code as you like, for example:
-    // console.log(decodedResult);
-    // console.log(`Code matched = ${decodedText}`, decodedResult);
+    const data = jsonpack.unpack(decodedText);
+    console.log(data);
   }
 
-  function onScanFailure(error: unknown) {
-    // console.log(error);
-    // handle scan failure, usually better to ignore and keep scanning.
-    // for example:
-    // console.warn(`Code scan error = ${error}`);
-  }
+  function onScanFailure(error: unknown) {}
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
@@ -77,7 +78,7 @@ const AuditScan = () => {
         </h1>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto mb-2 ">
-        <div id="reader" className="w-44"></div>
+        <div id="reader" className="w-96"></div>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto">
         <Table>

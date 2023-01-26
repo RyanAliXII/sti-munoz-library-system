@@ -13,4 +13,5 @@ func InventoryRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
 
 	router.GET("/audits", controller.GetAudits)
 	router.GET("/audits/:id", controller.GetAuditById)
+	router.GET("/audits/books/:id", controller.GetAuditedAccession)
 }
