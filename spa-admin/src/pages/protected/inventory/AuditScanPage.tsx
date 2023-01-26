@@ -1,21 +1,31 @@
 import axiosClient from "@definitions/configs/axios";
-import { Audit } from "@definitions/types";
-import React, { useEffect, useRef } from "react";
+import { Accession, Audit, Book } from "@definitions/types";
+import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AuditPage from "./AuditPage";
+
 import { useQuery } from "@tanstack/react-query";
 import jsonpack from "jsonpack";
 import {
   Thead,
   Table,
   HeadingRow,
-  BodyRow,
-  Td,
   Tbody,
   Th,
+  BodyRow,
+  Td,
 } from "@components/table/Table";
-import { Html5Qrcode, Html5QrcodeScanner } from "html5-qrcode";
-import { toast } from "react-toastify";
+import { Html5QrcodeScanner } from "html5-qrcode";
+
+export interface AuditedAccession
+  extends Omit<
+    Accession,
+    "title" | "ddc" | "authorNumber" | "yearPublished" | "section" | "bookId"
+  > {
+  isAudited: boolean;
+}
+export interface AuditedBooks extends Omit<Book, "authors"> {
+  accessions: AuditedAccession[];
+}
 
 const AuditScan = () => {
   const { id } = useParams();
@@ -68,8 +78,22 @@ const AuditScan = () => {
     const data = jsonpack.unpack(decodedText);
     console.log(data);
   }
-
   function onScanFailure(error: unknown) {}
+  const fetchAuditedBooks = async () => {
+    try {
+      const { data: response } = await axiosClient.get(
+        `inventory/audits/${id}/books`
+      );
+      return response?.data?.audits ?? [];
+    } catch {
+      return [];
+    }
+  };
+
+  const { data: auditedBooks } = useQuery<AuditedBooks[]>({
+    queryFn: fetchAuditedBooks,
+    queryKey: ["auditedBooks"],
+  });
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
@@ -84,23 +108,49 @@ const AuditScan = () => {
         <Table>
           <Thead>
             <HeadingRow>
-              <Th>Book</Th>
+              <Th>Book Title</Th>
               <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
-            {/* {audits?.map((audit) => {
-                return (
-                  <BodyRow key={audit.id}>
-                    <Td>{audit.name}</Td>
-                    <Td>
-                      <Link to={`/inventory/audits/${audit.id}`}>
-                        <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
-                      </Link>
-                    </Td>
-                  </BodyRow>
-                );
-              })} */}
+            {auditedBooks?.map((book) => {
+              return (
+                <BodyRow key={book.id}>
+                  <Td className="border-r border-l">{book.title}</Td>
+                  <Td className="border-r">
+                    <Table>
+                      <HeadingRow>
+                        <Th>Accession Number</Th>
+                        <Th>Copy Number</Th>
+                        <Th>Scanned</Th>
+                      </HeadingRow>
+                      <Tbody>
+                        {book.accessions?.map((accession) => {
+                          return (
+                            <BodyRow>
+                              <Td>{accession.number}</Td>
+                              <Td>Copy {accession.copyNumber}</Td>
+
+                              <Td>
+                                {accession.isAudited ? (
+                                  <span className="text-green-400">
+                                    Scanned.
+                                  </span>
+                                ) : (
+                                  <span className="text-yellow-500">
+                                    Unscanned.
+                                  </span>
+                                )}
+                              </Td>
+                            </BodyRow>
+                          );
+                        })}
+                      </Tbody>
+                    </Table>
+                  </Td>
+                </BodyRow>
+              );
+            })}
           </Tbody>
         </Table>
       </div>

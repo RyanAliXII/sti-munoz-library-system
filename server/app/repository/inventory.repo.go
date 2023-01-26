@@ -34,9 +34,9 @@ func (repo *InventoryRepository) GetById(id string) model.Audit {
 	return audit
 }
 
-func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audited {
+func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.AuditedBook {
 
-	var audited []model.Audited
+	var audited []model.AuditedBook
 	query := `	SELECT 
 	book.id  as id,
 	title, isbn, 
@@ -81,5 +81,5 @@ func NewInventoryRepository(db *sqlx.DB) InventoryRepositoryInterface {
 type InventoryRepositoryInterface interface {
 	GetAudit() []model.Audit
 	GetById(id string) model.Audit
-	GetAuditedAccessionById(id string) []model.Audited
+	GetAuditedAccessionById(id string) []model.AuditedBook
 }

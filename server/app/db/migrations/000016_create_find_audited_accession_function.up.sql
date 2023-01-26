@@ -12,7 +12,7 @@ as $body$
 		 WHERE book_id = %L AND audit_id = %L AND accession_id = acc.id ))
 		)) from accession.%s as acc 
 		 where book_id = %L
-		','copyNumber','id','isAudited', book_id, audit_id, table_name, book_id) into data ;
+		','copyNumber','number','isAudited', book_id, audit_id, table_name, book_id) into data ;
 		RETURN data;
 	end
 $body$

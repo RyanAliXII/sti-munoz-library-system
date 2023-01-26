@@ -10,7 +10,7 @@ type Audit struct {
 	Name string `json:"name" db:"name"`
 }
 
-type Audited struct {
+type AuditedBook struct {
 	Book
 	Accession AuditedAccesions `json:"accessions" db:"accessions"`
 }
@@ -36,6 +36,6 @@ func (aa *AuditedAccesions) Scan(value interface{}) error {
 
 }
 
-func (ba AuditedAccesions) Value(value interface{}) (driver.Value, error) {
-	return ba, nil
+func (aa AuditedAccesions) Value(value interface{}) (driver.Value, error) {
+	return aa, nil
 }
