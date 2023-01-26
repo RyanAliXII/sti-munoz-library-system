@@ -1,6 +1,9 @@
 package book
 
-import "slim-app/server/app/model"
+import (
+	"slim-app/server/app/model"
+	"time"
+)
 
 type BookBody struct {
 	Id            string         `json:"id" `
@@ -17,7 +20,7 @@ type BookBody struct {
 	YearPublished int            `json:"yearPublished"  binding:"required"`
 	DDC           float64        `json:"ddc"  binding:"gte=0,lt=1000"`
 	AuthorNumber  string         `json:"authorNumber" binding:"required,min=1,max=50"`
-	ReceivedAt    string         `json:"receivedAt" binding:"required"`
+	ReceivedAt    time.Time      `json:"receivedAt" binding:"required"`
 	Authors       []model.Author `json:"authors"`
 }
 

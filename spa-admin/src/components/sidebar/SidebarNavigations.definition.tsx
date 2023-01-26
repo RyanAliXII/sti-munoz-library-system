@@ -28,43 +28,50 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     icon: <FiBookOpen className="text-xl" />,
     items: [
       {
-        text: "Books",
+        text: "Book",
         to: "/books/",
         items: [],
       },
       {
-        text: "Accessions",
+        text: "Accession",
         to: "/books/accessions",
         items: [],
       },
       {
-        text: "Authors",
+        text: "Author",
         to: "/books/authors",
         items: [],
       },
       {
-        text: "Sections",
+        text: "Section",
         to: "/books/sections",
         items: [],
       },
       {
-        text: "Publishers",
+        text: "Publisher",
         to: "/books/publishers",
         items: [],
       },
       {
-        text: "Source of Funds",
+        text: "Source of Fund",
         to: "/books/source-of-funds",
         items: [],
       },
     ],
   },
-  // {
-  //   text: "Inventory",
-  //   to: "/",
-  //   icon: <MdOutlineInventory className="text-xl" />,
-  //   items: [],
-  // },
+
+  {
+    text: "Inventory",
+    to: "/",
+    icon: <MdOutlineInventory className="text-xl" />,
+    items: [
+      {
+        text: "Audit",
+        to: "/inventory/audits",
+        items: [],
+      },
+    ],
+  },
   // {
   //   text: "Reservation",
   //   to: "/",

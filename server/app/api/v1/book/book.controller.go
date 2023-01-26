@@ -4,7 +4,6 @@ import (
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/app/model"
 	"slim-app/server/app/repository"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -17,11 +16,6 @@ type BookController struct {
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var body BookBody
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	parsedReceivedAt, timeParsingError := time.Parse(time.RFC3339, body.ReceivedAt)
-	if timeParsingError != nil {
-		ctx.JSON(httpresp.Fail400(nil, timeParsingError.Error()))
-		return
-	}
 	var model model.BookNew = model.BookNew{
 		Book: model.Book{
 			Id:            body.Id,
@@ -37,8 +31,7 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 			Edition:       body.Edition,
 			YearPublished: body.YearPublished,
 			ReceivedAt: model.NullableTime{
-				Time:  parsedReceivedAt,
-				Valid: true,
+				Time: body.ReceivedAt,
 			},
 			DDC:          body.DDC,
 			AuthorNumber: body.AuthorNumber,
@@ -99,7 +92,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 		DDC:           book.DDC,
 		AuthorNumber:  book.AuthorNumber,
 		Authors:       authors,
-		ReceivedAt:    book.ReceivedAt.Time.String(),
+		ReceivedAt:    book.ReceivedAt.Time,
 	}
 
 	ctx.JSON(httpresp.Success200(gin.H{
@@ -112,10 +105,37 @@ func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 		"accessions": accessions,
 	}, "Accession Fetched."))
 }
+func (ctrler *BookController) UpdateBook(ctx *gin.Context) {
+	var body BookBody = BookBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	ctrler.repos.BookRepository.Update(model.BookUpdate{
+		Book: model.Book{
+			Id:            body.Id,
+			Title:         body.Title,
+			Description:   body.Description,
+			ISBN:          body.ISBN,
+			Pages:         body.Pages,
+			SectionId:     body.Section.Value,
+			PublisherId:   body.Publisher.Value,
+			FundSourceId:  body.FundSource.Value,
+			Edition:       body.Edition,
+			CostPrice:     body.CostPrice,
+			YearPublished: body.YearPublished,
+			ReceivedAt: model.NullableTime{
+				Time: body.ReceivedAt,
+			},
+			DDC:          body.DDC,
+			AuthorNumber: body.AuthorNumber,
+		},
+		Authors: body.Authors,
+	})
+	ctx.JSON(httpresp.Success200(nil, "Book updated."))
+}
 
 type BookControllerInterface interface {
 	NewBook(ctx *gin.Context)
 	GetBook(ctx *gin.Context)
 	GetAccession(ctx *gin.Context)
 	GetBookById(ctx *gin.Context)
+	UpdateBook(ctx *gin.Context)
 }

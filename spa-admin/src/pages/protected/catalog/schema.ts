@@ -69,6 +69,36 @@ export const NewBookSchemaValidation = object().shape({
 
 
 
+export const UpdateBookSchemaValidation = object().shape({
+    title: string().max(150, "Character should not exceed 150").required("Book title is required."),
+    isbn: string().required().test("check-isbn", "Invalid ISBN number.", (value)=> validator.isISBN(value ?? " ")),
+    pages: number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).test("check-if-greater-than-0","Value should be greater than 0" ,(value)=> (value ?? 0) > 0).required("Number of pages is required."),
+    section: object().shape( {
+        label: string().notRequired(),
+        value: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
+    }),
+
+    publisher: object().shape({
+        label: string().notRequired(),
+        value: number().integer(NUMBER_NO_DECIMAL).required("Publisher is required.").min(1, "Please select a publisher."),
+    }),
+    fundSource: object().shape({
+        label:  string().notRequired(),
+        value:number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
+    }),
+    costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
+    edition : number().typeError("Value must not be empty and should be numeric.").min(0, "The edition must not be less than 0." ).integer(NUMBER_NO_DECIMAL).notRequired(),
+    yearPublished: number().integer(NUMBER_NO_DECIMAL).required("Year published is required."),
+    receivedAt: string().notRequired(),
+    description: string().notRequired(),
+    author: array().notRequired(),
+    authorNumber: string().required("Author number is required."),
+    ddc: number().typeError("Value must not be empty and should be numeric.").required("Classification is required.").min(0, "Classfication below zero does not exist.").max(1000, "Classification above 1000 does not exist."),    
+})
+
+
+
+
 // export const BookFormSchema = object().shape({
 //     title: string().max(150, "Character should not exceed 150").required("Book title is required."),
 //     author: array().notRequired(),

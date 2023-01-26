@@ -1,8 +1,8 @@
 import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useRef } from "react";
+import { BaseSyntheticEvent } from "react";
 
-import { Author, Section, Publisher, Source, Book } from "@definitions/types";
+import { Author, Section, Publisher, Source } from "@definitions/types";
 
 import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -39,7 +39,6 @@ const BookEditForm = () => {
     handleFormInput,
     errors,
     setForm,
-    resetForm,
     validate,
     removeFieldError,
     setFieldValue,
@@ -59,7 +58,7 @@ const BookEditForm = () => {
       const { data: response } = await axiosClient.get("/source-of-funds/");
       return response.data?.sources ?? [];
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return [];
     }
   };
@@ -126,26 +125,24 @@ const BookEditForm = () => {
     try {
       const parsedForm = await validate();
       if (!parsedForm) return;
-      console.log(parsedForm);
       mutation.mutate(parsedForm);
     } catch {}
   };
 
   const mutation = useMutation({
     mutationFn: (parsedForm: EditBookForm) =>
-      axiosClient.post("/books/", {
+      axiosClient.put(`books/${parsedForm.id}`, {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
       }),
     onSuccess: () => {
-      toast.success("Book has been added");
+      toast.success("Book has been updated.");
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
       console.error(error);
     },
     onSettled: () => {
-      resetForm();
       window.scrollTo({ behavior: "smooth", top: 0 });
     },
   });
@@ -188,18 +185,7 @@ const BookEditForm = () => {
             name="isbn"
           />
         </FieldRow>
-        <FieldRow label="Copies" isRequired formGroup="copies">
-          <Input
-            wrapperclass="flex flex-col"
-            error={errors?.copies}
-            type="number"
-            min={1}
-            value={form.copies}
-            onChange={handleFormInput}
-            placeholder="Number of copies"
-            name="copies"
-          />
-        </FieldRow>
+
         <FieldRow label="Pages" formGroup="pages">
           <Input
             wrapperclass="flex flex-col"
@@ -314,6 +300,7 @@ const BookEditForm = () => {
           <Editor
             apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
             onEditorChange={handleDescriptionInput}
+            value={form.description}
           />
         </FieldRow>
       </div>
@@ -414,7 +401,7 @@ const BookEditForm = () => {
       <div className="w-full lg:w-11/12 mt-10 drop-shadow-md lg:rounded-md mx-auto mb-10 pb-5">
         <div>
           <PrimaryButton className="ml-2 lg:ml-0" type="submit">
-            Add to Collection
+            Update Book
           </PrimaryButton>
         </div>
       </div>

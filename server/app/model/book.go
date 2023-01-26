@@ -9,6 +9,11 @@ type BookNew struct {
 	Book
 	Authors []Author `json:"authors" db:"authors"`
 }
+
+type BookUpdate struct {
+	Book
+	Authors []Author `json:"authors" db:"authors"`
+}
 type BookGet struct {
 	Book
 	CreatedAt  NullableTime  `json:"created_at" db:"created_at"`

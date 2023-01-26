@@ -16,7 +16,11 @@ type BookRepository struct {
 }
 
 func (repo *BookRepository) New(book model.BookNew) error {
-	transaction := repo.db.MustBegin()
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
+		return transactErr
+	}
 	id := uuid.New().String()
 	book.Id = id
 	insertBookQuery := `INSERT INTO catalog.book(
@@ -224,6 +228,56 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 	}
 	return accessions
 }
+func (repo *BookRepository) Update(book model.BookUpdate) error {
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		transaction.Rollback()
+		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
+		return transactErr
+	}
+
+	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6, 
+	fund_source_id = $7, cost_price= $8, edition = $9, year_published = $10, received_at = $11, author_number = $12, ddc = $13 where id = $14 `
+
+	//update book
+	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.SectionId, book.PublisherId, book.FundSourceId,
+		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.AuthorNumber, book.DDC, book.Id)
+	if updateErr != nil {
+		transaction.Rollback()
+		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))
+		return updateErr
+	}
+	//delete inserted authors. Might change this impementation next time.
+	deleteResult, deleteErr := transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
+	if deleteErr != nil {
+		transaction.Rollback()
+		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.Delete"), slimlog.Error("deleteErr"))
+		return deleteErr
+	}
+	dialect := goqu.Dialect("postgres")
+	var authorRows []goqu.Record = make([]goqu.Record, 0)
+	for _, author := range book.Authors {
+		authorRows = append(authorRows, goqu.Record{"book_id": book.Id, "author_id": author.Id})
+	}
+	authorDs := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(authorRows)
+	insertAuthorQuery, authorArgs, _ := authorDs.ToSQL()
+	insertAuthorResult, insertAuthorErr := transaction.Exec(insertAuthorQuery, authorArgs...)
+	if insertAuthorErr != nil {
+		transaction.Rollback()
+		logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertAuthorErr"))
+		return insertAuthorErr
+	}
+
+	insertedAuthorRows, _ := insertAuthorResult.RowsAffected()
+	deleteAuthorRows, _ := deleteResult.RowsAffected()
+	updatedBookRows, _ := updateResult.RowsAffected()
+
+	logger.Info("Book updated.", slimlog.AffectedRows(updatedBookRows))
+	logger.Info("Author deleted.", slimlog.AffectedRows(deleteAuthorRows))
+	logger.Info("Author updated.", slimlog.AffectedRows(insertedAuthorRows))
+	transaction.Commit()
+	return nil
+}
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 	return &BookRepository{
@@ -236,4 +290,5 @@ type BookRepositoryInterface interface {
 	Get() []model.BookGet
 	GetOne(id string) model.BookGet
 	GetAccession() []model.Accession
+	Update(model.BookUpdate) error
 }

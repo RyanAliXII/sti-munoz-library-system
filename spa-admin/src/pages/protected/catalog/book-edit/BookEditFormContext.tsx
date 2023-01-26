@@ -2,15 +2,11 @@ import { BaseProps } from "@definitions/props.definition";
 import { Book, Author, AuthorNumber } from "@definitions/types";
 import { useForm, UseFormType } from "@hooks/useForm";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { BookSchema, NewBookSchemaValidation } from "../schema";
+import { UpdateBookSchemaValidation } from "../schema";
 import { SingleValue } from "react-select";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@definitions/configs/axios";
-import { sortedIndexOf } from "lodash";
-import { AxiosError } from "axios";
-import { STATUS_CODES } from "http";
-import { StatusCodes } from "http-status-codes";
 
 export interface EditBookForm
   extends Omit<
@@ -96,7 +92,7 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
 
   const formClient = useForm<EditBookForm>({
     initialFormData: INITIAL_FORM_DATA_FALLBACK,
-    schema: NewBookSchemaValidation,
+    schema: UpdateBookSchemaValidation,
     scrollToError: true,
   });
 
@@ -108,7 +104,6 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
     refetchOnWindowFocus: false,
     retry: false,
     onSuccess: (data) => {
-      console.log(data);
       formClient.setForm(() => ({ ...data }));
     },
     onError: () => {

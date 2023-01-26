@@ -13,6 +13,8 @@ import BookPage from "./protected/catalog/BookPage";
 import BookEditPage from "./protected/catalog/book-edit/BookEditPage";
 import AccessionPage from "./protected/catalog/AccessionPage";
 import Page404 from "./error/Page404";
+import AuditPage from "./protected/inventory/AuditPage";
+import AuditScanPage from "./protected/inventory/AuditScanPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -26,6 +28,8 @@ const pages = createRoutesFromChildren(
       <Route path="/books/sections" element={<SectionPage />} />
       <Route path="/books/publishers" element={<PublisherPage />} />
       <Route path="/books/source-of-funds" element={<SofPage />} />
+      <Route path="/inventory/audits" element={<AuditPage />} />
+      <Route path="/inventory/audits/:id" element={<AuditScanPage />} />
     </Route>
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />
