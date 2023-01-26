@@ -37,21 +37,21 @@ func (ns NullableString) Value(value interface{}) (driver.Value, error) {
 	return string(ns), nil
 }
 
-// type NullableTime time.Time
+// type TimeString time.Time
 
-// func (nt *NullableTime) Scan(value interface{}) error {
+// func (nt *TimeString) Scan(value interface{}) error {
 
 // 	parsedTime, valid := value.(time.Time)
 
 // 	if valid {
-// 		*nt = NullableTime(parsedTime)
+// 		*nt = TimeString(parsedTime)
 // 		return nil
 // 	}
-// 	*nt = NullableTime(time.Time{})
+// 	*nt = TimeString(time.Time{})
 // 	return nil
 // }
 
-// func (nt NullableTime) Value() (driver.Value, error) {
+// func (nt TimeString) Value() (driver.Value, error) {
 // 	return time.Time(nt), nil
 // }
 // func (nt NullableTime) MarshalJSON() ([]byte, error) {

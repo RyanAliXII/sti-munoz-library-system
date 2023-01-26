@@ -1,16 +1,24 @@
 package model
 
-import "github.com/jmoiron/sqlx/types"
+import (
+	"database/sql/driver"
+	"encoding/json"
+)
 
 type BookNew struct {
 	Book
 	Authors []Author `json:"authors" db:"authors"`
 }
+
+type BookUpdate struct {
+	Book
+	Authors []Author `json:"authors" db:"authors"`
+}
 type BookGet struct {
 	Book
-	CreatedAt  NullableTime   `json:"created_at" db:"created_at"`
-	Authors    types.JSONText `json:"authors" db:"authors"`
-	Accessions types.JSONText `json:"accessions" db:"accessions"`
+	CreatedAt  NullableTime  `json:"created_at" db:"created_at"`
+	Authors    BookAuthors   `json:"authors" db:"authors"`
+	Accessions BookAccesions `json:"accessions" db:"accessions"`
 }
 
 type Book struct {
@@ -35,9 +43,60 @@ type Book struct {
 }
 
 type Accession struct {
-	BookId     string       `json:"bookId" db:"book_id"`
-	Number     string       `json:"number" db:"accession_number"`
+	Number     int          `json:"number" db:"accession_number"`
 	CopyNumber int          `json:"copyNumber" db:"copy_number"`
+	BookId     string       `json:"bookId" db:"book_id"`
 	CreatedAt  NullableTime `json:"created_at" db:"created_at"`
 	Book
+}
+
+type BookAccesions []struct {
+	Number     int `json:"number" db:"number"`
+	CopyNumber int `json:"copyNumber" db:"copy_number"`
+}
+
+func (ba *BookAccesions) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+	if valid {
+		unmarshalErr := json.Unmarshal(val, ba)
+		if unmarshalErr != nil {
+			*ba = make(BookAccesions, 0)
+		}
+
+	} else {
+		*ba = make(BookAccesions, 0)
+	}
+	return nil
+
+}
+
+func (ba BookAccesions) Value(value interface{}) (driver.Value, error) {
+	return ba, nil
+}
+
+type BookAuthors []struct {
+	Id         int    `json:"id" db:"id"`
+	GivenName  string `json:"givenName" db:"given_name"`
+	MiddleName string `json:"middleName" db:"middle_name"`
+	Surname    string `json:"surname" db:"surname"`
+}
+
+func (ba *BookAuthors) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+
+	if valid {
+		unmarshalErr := json.Unmarshal(val, ba)
+		if unmarshalErr != nil {
+			*ba = make(BookAuthors, 0)
+		}
+	} else {
+		*ba = make(BookAuthors, 0)
+	}
+	return nil
+
+}
+
+func (ba BookAuthors) Value(value interface{}) (driver.Value, error) {
+
+	return ba, nil
 }

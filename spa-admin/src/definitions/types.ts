@@ -73,3 +73,7 @@ export type User = {
     yearPublished: number;
     section:string
   }
+  export type Audit = {
+    id?:string
+    name: string
+  }

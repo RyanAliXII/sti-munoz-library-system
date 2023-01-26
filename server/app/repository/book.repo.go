@@ -16,7 +16,11 @@ type BookRepository struct {
 }
 
 func (repo *BookRepository) New(book model.BookNew) error {
-	transaction := repo.db.MustBegin()
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
+		return transactErr
+	}
 	id := uuid.New().String()
 	book.Id = id
 	insertBookQuery := `INSERT INTO catalog.book(
@@ -55,7 +59,7 @@ func (repo *BookRepository) New(book model.BookNew) error {
 	accessionDs := dialect.From(table).Prepared(true).Insert().Rows(accessionRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
 	insertAccessionResult, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
-	fmt.Println(insertAccessionQuery)
+
 	if insertAccessionErr != nil {
 		transaction.Rollback()
 		logger.Error(insertAccessionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertAccessionErr"))
@@ -99,6 +103,7 @@ func (repo *BookRepository) Get() []model.BookGet {
 	pages,
 	section_id,  
 	section.name as section,
+	publisher.id as publisher_id,
 	publisher.name as publisher,
 	fund_source_id,
 	source_of_fund.name as fund_source,
@@ -127,6 +132,47 @@ func (repo *BookRepository) Get() []model.BookGet {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
 	}
 	return books
+}
+func (repo *BookRepository) GetOne(id string) model.BookGet {
+	var book model.BookGet = model.BookGet{}
+	query := `
+	SELECT book.id,title, isbn, 
+	description, 
+	copies,
+	pages,
+	section_id,  
+	section.name as section,
+	publisher.name as publisher,
+	publisher.id as publisher_id,
+	fund_source_id,
+	source_of_fund.name as fund_source,
+	cost_price,
+	edition,
+	year_published,
+	received_at,
+	ddc,
+	author_number,
+	book.created_at,
+	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+	as authors
+	FROM catalog.book_author
+	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+	where book_id = book.id
+	group by book_id),'[]') as authors,
+	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
+	 FROM catalog.book 
+	INNER JOIN catalog.section on book.section_id = section.id
+	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	WHERE book.id = $1
+	ORDER BY created_at DESC
+	LIMIT 1
+	`
+	selectErr := repo.db.Get(&book, query, id)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOne"), slimlog.Error("SelectErr"))
+	}
+	return book
 }
 func (repo *BookRepository) GetAccession() []model.Accession {
 	var sections []model.Section = make([]model.Section, 0)
@@ -169,7 +215,7 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 	finalDs := dialect.From(ds).Order(goqu.I("created_at").Desc())
 
 	selectQuery, _, builderErr := finalDs.ToSQL()
-	fmt.Println(selectQuery)
+
 	if builderErr != nil {
 		logger.Error(builderErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("builderErr"))
 		return []model.Accession{}
@@ -182,6 +228,56 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 	}
 	return accessions
 }
+func (repo *BookRepository) Update(book model.BookUpdate) error {
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		transaction.Rollback()
+		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
+		return transactErr
+	}
+
+	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6, 
+	fund_source_id = $7, cost_price= $8, edition = $9, year_published = $10, received_at = $11, author_number = $12, ddc = $13 where id = $14 `
+
+	//update book
+	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.SectionId, book.PublisherId, book.FundSourceId,
+		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.AuthorNumber, book.DDC, book.Id)
+	if updateErr != nil {
+		transaction.Rollback()
+		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))
+		return updateErr
+	}
+	//delete inserted authors. Might change this impementation next time.
+	deleteResult, deleteErr := transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
+	if deleteErr != nil {
+		transaction.Rollback()
+		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.Delete"), slimlog.Error("deleteErr"))
+		return deleteErr
+	}
+	dialect := goqu.Dialect("postgres")
+	var authorRows []goqu.Record = make([]goqu.Record, 0)
+	for _, author := range book.Authors {
+		authorRows = append(authorRows, goqu.Record{"book_id": book.Id, "author_id": author.Id})
+	}
+	authorDs := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(authorRows)
+	insertAuthorQuery, authorArgs, _ := authorDs.ToSQL()
+	insertAuthorResult, insertAuthorErr := transaction.Exec(insertAuthorQuery, authorArgs...)
+	if insertAuthorErr != nil {
+		transaction.Rollback()
+		logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertAuthorErr"))
+		return insertAuthorErr
+	}
+
+	insertedAuthorRows, _ := insertAuthorResult.RowsAffected()
+	deleteAuthorRows, _ := deleteResult.RowsAffected()
+	updatedBookRows, _ := updateResult.RowsAffected()
+
+	logger.Info("Book updated.", slimlog.AffectedRows(updatedBookRows))
+	logger.Info("Author deleted.", slimlog.AffectedRows(deleteAuthorRows))
+	logger.Info("Author updated.", slimlog.AffectedRows(insertedAuthorRows))
+	transaction.Commit()
+	return nil
+}
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 	return &BookRepository{
@@ -192,5 +288,7 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 type BookRepositoryInterface interface {
 	New(model.BookNew) error
 	Get() []model.BookGet
+	GetOne(id string) model.BookGet
 	GetAccession() []model.Accession
+	Update(model.BookUpdate) error
 }

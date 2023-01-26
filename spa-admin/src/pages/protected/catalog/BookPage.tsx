@@ -20,7 +20,7 @@ import { Accession, Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
-import { AiOutlinePrinter } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import QRCode from "react-qr-code";
 import jsonpack from "jsonpack";
@@ -96,6 +96,7 @@ const BookPage = () => {
               <Th>Copies</Th>
               <Th>Year Published</Th>
               <Th></Th>
+              <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
@@ -113,6 +114,11 @@ const BookPage = () => {
                         setBookForPrintingAndOpenModal(book);
                       }}
                     />
+                  </Td>
+                  <Td>
+                    <Link to={`/books/edit/${book.id}`}>
+                      <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                    </Link>
                   </Td>
                 </BodyRow>
               );
@@ -272,10 +278,11 @@ const CallNumber = ({ book, copyNumber, accessionNumber }: CallNumberProps) => {
   const qrValue = jsonpack.pack(
     JSON.stringify({ bookId: book.id, accessionNumber: accessionNumber })
   );
+  console.log(qrValue);
   return (
     <div className="flex gap-2 border border-dashed border-gray-400 w-36 px-2 justify-center py-3">
       <div>
-        <QRCode value={qrValue} className="w-12 h-14"></QRCode>
+        <QRCode value={book?.id ?? "hello"} className="w-12 h-14"></QRCode>
       </div>
       <div className="w-20 h-28 border-gray-400 border border-dashed flex flex-col px-2">
         <span>{book.section?.substring(0, 3)}</span>

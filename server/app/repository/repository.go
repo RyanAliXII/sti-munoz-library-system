@@ -16,6 +16,7 @@ type Repositories struct {
 	AuthorNumberRepository AuthorNumberRepositoryInterface
 	DDCRepository          DDCRepositoryInterface
 	BookRepository         BookRepositoryInterface
+	InventoryRepository    InventoryRepositoryInterface
 }
 
 func NewRepositories(db *sqlx.DB) Repositories {
@@ -27,6 +28,7 @@ func NewRepositories(db *sqlx.DB) Repositories {
 		AuthorNumberRepository: NewAuthorNumberRepository(cutters.NewCuttersTable(), db),
 		DDCRepository:          NewDDCRepository(db),
 		BookRepository:         NewBookRepository(db),
+		InventoryRepository:    NewInventoryRepository(db),
 	}
 }
 

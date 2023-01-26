@@ -42,7 +42,21 @@ func (repo *AuthorRepository) Delete(id int) error {
 	logger.Info("Author deleted", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
 	return deleteErr
 }
-
+func (repo *AuthorRepository) GetByBookId(bookId string) []model.Author {
+	var authors []model.Author = make([]model.Author, 0)
+	query := `
+	SELECT author.id,  author.given_name, author.middle_name, author.surname
+	FROM catalog.book_author
+	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+	INNER JOIN catalog.book on book_author.book_id = book.id
+	WHERE book.id = $1
+	`
+	selectErr := repo.db.Select(&authors, query, bookId)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("AuthorRepository.GetBookById"), slimlog.Error("selectErr"))
+	}
+	return authors
+}
 func (repo *AuthorRepository) Update(id int, author model.Author) error {
 
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.author SET given_name = $1, middle_name = $2, surname = $3 where id = $4")
@@ -62,6 +76,7 @@ func (repo *AuthorRepository) Update(id int, author model.Author) error {
 	logger.Info("Author updated", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_AUTHOR))
 	return updateErr
 }
+
 func NewAuthorRepository(db *sqlx.DB) AuthorRepositoryInterface {
 	return &AuthorRepository{
 		db: db,
@@ -71,6 +86,7 @@ func NewAuthorRepository(db *sqlx.DB) AuthorRepositoryInterface {
 type AuthorRepositoryInterface interface {
 	New(model.Author) error
 	Get() []model.Author
+	GetByBookId(bookId string) []model.Author
 	Delete(id int) error
 	Update(id int, author model.Author) error
 }

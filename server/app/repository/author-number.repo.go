@@ -18,7 +18,6 @@ type AuthorNumberRepository struct {
 
 func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
-	fmt.Println(filter)
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutters LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 
 	if selectErr != nil {

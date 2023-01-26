@@ -7,18 +7,7 @@ import useDebounce from "@hooks/useDebounce";
 import {} from "@components/forms/Forms";
 
 import "react-datepicker/dist/react-datepicker.css";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/table/Table";
 
-import Modal from "react-responsive-modal";
-import { ModalProps } from "@definitions/types";
 import { BookEditFormProvider } from "./BookEditFormContext";
 import BookAddForm from "./BookEditForm";
 interface BookAddFormProps extends BaseProps {
@@ -32,7 +21,7 @@ interface BookSuggestion {
   cover: string;
   ddc: string[];
 }
-const BookAdd = () => {
+const BookEditPage = () => {
   const ONE_SECOND = 1000;
   const [bookSuggestions, setBookSuggestions] = useState<BookSuggestion[]>([]);
   const typingDebounce = useDebounce();
@@ -104,55 +93,4 @@ const BookAdd = () => {
   );
 };
 
-interface AuthorNumberModalProps extends ModalProps {}
-const AuthorNumberModal = ({ isOpen, closeModal }: AuthorNumberModalProps) => {
-  return (
-    <>
-      <Modal
-        open={isOpen}
-        onClose={closeModal}
-        center
-        showCloseIcon={false}
-        styles={{
-          modal: {
-            maxWidth: "none",
-          },
-        }}
-        classNames={{
-          modal: "w-8/12 rounded ",
-        }}
-      >
-        <div>
-          <div className="mb-3">
-            <h3 className="text-2xl"> Authors</h3>
-          </div>
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th></Th>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              return (
-              <BodyRow className="cursor-pointer">
-                <Td>
-                  <input
-                    type="checkbox"
-                    onChange={() => {}}
-                    className="h-4 w-4 border"
-                  />
-                </Td>
-              </BodyRow>
-              );
-            </Tbody>
-          </Table>
-        </div>
-      </Modal>
-    </>
-  );
-};
-
-export default BookAdd;
+export default BookEditPage;

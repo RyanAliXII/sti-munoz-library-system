@@ -4,5 +4,4 @@ type Publisher struct {
 	Id        int          `json:"id"`
 	Name      string       `json:"name" db:"name"`
 	DeletedAt NullableTime `json:"_" db:"deleted_at"`
-	CreatedAt NullableTime `json:"_" db:"created_at"`
 }
