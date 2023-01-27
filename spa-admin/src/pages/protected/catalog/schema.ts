@@ -96,6 +96,10 @@ export const UpdateBookSchemaValidation = object().shape({
     ddc: number().typeError("Value must not be empty and should be numeric.").required("Classification is required.").min(0, "Classfication below zero does not exist.").max(1000, "Classification above 1000 does not exist."),    
 })
 
+export const AuditSchemaValidation = object().shape({
+    name : string().required("Name is required.").max(150, "Name should not exceed 150 characters.")
+})
+
 
 
 

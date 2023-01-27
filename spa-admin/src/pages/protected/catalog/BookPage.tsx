@@ -96,7 +96,6 @@ const BookPage = () => {
               <Th>Copies</Th>
               <Th>Year Published</Th>
               <Th></Th>
-              <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
@@ -107,15 +106,13 @@ const BookPage = () => {
                   <Td>{book.isbn}</Td>
                   <Td>{book.copies}</Td>
                   <Td>{book.yearPublished}</Td>
-                  <Td>
+                  <Td className="flex gap-5">
                     <AiOutlinePrinter
                       className="text-blue-500 text-lg cursor-pointer "
                       onClick={() => {
                         setBookForPrintingAndOpenModal(book);
                       }}
                     />
-                  </Td>
-                  <Td>
                     <Link to={`/books/edit/${book.id}`}>
                       <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
                     </Link>
