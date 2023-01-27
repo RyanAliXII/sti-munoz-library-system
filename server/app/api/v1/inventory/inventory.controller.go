@@ -3,11 +3,17 @@ package inventory
 import (
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/app/model"
+	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/app/repository"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger = slimlog.BuildLogger()
 
 type InventoryController struct {
 	repos *repository.Repositories
@@ -47,9 +53,46 @@ func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Book audited."))
 }
 
+func (ctrler *InventoryController) NewAudit(ctx *gin.Context) {
+
+	var audit model.Audit = model.Audit{}
+	ctx.ShouldBindBodyWith(&audit, binding.JSON)
+	insertErr := ctrler.repos.InventoryRepository.NewAudit(audit)
+
+	if insertErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Audit has been added."))
+}
+func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	_, err := uuid.Parse(id)
+	if err != nil {
+		logger.Warn("Invalid UUID value", slimlog.Function("InventoryController.UpdateAudit"), zap.String("uuid", id))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
+		return
+	}
+	var audit model.Audit = model.Audit{}
+
+	ctx.ShouldBindBodyWith(&audit, binding.JSON)
+	if len(audit.Id) == 0 {
+		audit.Id = id
+	}
+	updatErr := ctrler.repos.InventoryRepository.UpdateAudit(audit)
+	if updatErr != nil {
+		logger.Error(updatErr.Error(), slimlog.Function("InventoryController.UpdateAudit"), slimlog.Error("updateErr"))
+		ctx.JSON(httpresp.Fail400(nil, updatErr.Error()))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Audit updated"))
+}
+
 type InventoryControllerInterface interface {
 	GetAudits(ctx *gin.Context)
 	GetAuditById(ctx *gin.Context)
 	GetAuditedAccession(ctx *gin.Context)
 	AddBookToAudit(ctx *gin.Context)
+	NewAudit(ctx *gin.Context)
+	UpdateAudit(ctx *gin.Context)
 }

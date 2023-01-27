@@ -13,7 +13,7 @@ type InventoryRepository struct {
 }
 
 func (repo *InventoryRepository) GetAudit() []model.Audit {
-	query := "SELECT id, name FROM inventory.audit"
+	query := "SELECT id, name FROM inventory.audit ORDER BY created_at DESC"
 	var audit []model.Audit = make([]model.Audit, 0)
 
 	selectErr := repo.db.Select(&audit, query)
@@ -113,6 +113,20 @@ func (repo *InventoryRepository) AddToAudit(id string, bookId string, accessionI
 
 	return nil
 }
+func (repo *InventoryRepository) NewAudit(audit model.Audit) error {
+	_, insertErr := repo.db.NamedExec("INSERT INTO inventory.audit(name)VALUES(:name)", audit)
+	if insertErr != nil {
+		logger.Error(insertErr.Error(), slimlog.Function("InventoryRepository.NewAudit"), slimlog.Error("insertErr"))
+	}
+	return insertErr
+}
+func (repo *InventoryRepository) UpdateAudit(audit model.Audit) error {
+	_, updateErr := repo.db.Exec("UPDATE inventory.audit SET name = $1 WHERE id = $2", audit.Name, audit.Id)
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), slimlog.Function("InventoryRepository.UpdateAudit"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
 func NewInventoryRepository(db *sqlx.DB) InventoryRepositoryInterface {
 	return &InventoryRepository{
 		db: db,
@@ -125,4 +139,6 @@ type InventoryRepositoryInterface interface {
 	GetById(id string) model.Audit
 	GetAuditedAccessionById(id string) []model.AuditedBook
 	AddToAudit(id string, bookId string, accession int) error
+	NewAudit(audit model.Audit) error
+	UpdateAudit(audit model.Audit) error
 }
