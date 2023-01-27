@@ -1,19 +1,35 @@
 import axiosClient from "@definitions/configs/axios";
-import { Audit } from "@definitions/types";
-import React, { useEffect, useRef } from "react";
+import { Accession, Audit, Book } from "@definitions/types";
 import { useNavigate, useParams } from "react-router-dom";
-import AuditPage from "./AuditPage";
-import { useQuery } from "@tanstack/react-query";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import jsonpack from "jsonpack";
 import {
   Thead,
   Table,
   HeadingRow,
-  BodyRow,
-  Td,
   Tbody,
   Th,
+  BodyRow,
+  Td,
 } from "@components/table/Table";
-import { Html5Qrcode, Html5QrcodeScanner } from "html5-qrcode";
+
+import useQRScanner from "@hooks/useQRScanner";
+
+export interface AuditedAccession
+  extends Omit<
+    Accession,
+    "title" | "ddc" | "authorNumber" | "yearPublished" | "section" | "bookId"
+  > {
+  isAudited: boolean;
+}
+export interface AuditedBooks extends Omit<Book, "authors"> {
+  accessions: AuditedAccession[];
+}
+type QrResult = {
+  accessionNumber: number;
+  bookId: string;
+};
 const AuditScan = () => {
   const { id } = useParams();
 
@@ -22,6 +38,7 @@ const AuditScan = () => {
     return response?.data?.audit ?? {};
   };
   const navigate = useNavigate();
+
   const { data: audit } = useQuery<Audit>({
     queryFn: fetchAudit,
     queryKey: ["audit"],
@@ -29,7 +46,6 @@ const AuditScan = () => {
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
     retry: false,
-    onSuccess: (data) => {},
     onError: () => {
       {
         navigate("/void");
@@ -37,38 +53,40 @@ const AuditScan = () => {
     },
   });
 
-  useEffect(() => {
-    initializeScanner();
-  }, []);
-  const initializeScanner = () => {
-    const config = { fps: 60, qrbox: { width: 250, height: 250, qrbox: 2 } };
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        rememberLastUsedCamera: true,
-        aspectRatio: 4 / 3,
-        showTorchButtonIfSupported: true,
-        showZoomSliderIfSupported: true,
-        defaultZoomValueIfSupported: 2,
-      },
-      /* verbose= */ false
-    );
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+  const fetchAuditedBooks = async () => {
+    try {
+      const { data: response } = await axiosClient.get(
+        `inventory/audits/${id}/books`
+      );
+      return response?.data?.audits ?? [];
+    } catch {
+      return [];
+    }
   };
-  function onScanSuccess(decodedText: any, decodedResult: any) {
-    console.log(decodedResult);
-    // handle the scanned code as you like, for example:
-    // console.log(decodedResult);
-    // console.log(`Code matched = ${decodedText}`, decodedResult);
-  }
+  const queryClient = useQueryClient();
+  const { data: auditedBooks } = useQuery<AuditedBooks[]>({
+    queryFn: fetchAuditedBooks,
+    queryKey: ["auditedBooks"],
+  });
+  const sendBook = useMutation({
+    mutationFn: (qrResult: QrResult) =>
+      axiosClient.post(
+        `/inventory/audits/${id}/books/${qrResult.bookId}/accessions/${qrResult.accessionNumber}`
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["auditedBooks"]);
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+  const onQRScan = (decodedText: string) => {
+    let data: QrResult = jsonpack.unpack(decodedText);
+    sendBook.mutate(data);
+  };
 
-  function onScanFailure(error: unknown) {
-    // console.log(error);
-    // handle scan failure, usually better to ignore and keep scanning.
-    // for example:
-    // console.warn(`Code scan error = ${error}`);
-  }
+  useQRScanner({ elementId: "reader", onScan: onQRScan });
+
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
@@ -77,29 +95,55 @@ const AuditScan = () => {
         </h1>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto mb-2 ">
-        <div id="reader" className="w-44"></div>
+        <div id="reader" className="w-96"></div>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto">
         <Table>
           <Thead>
             <HeadingRow>
-              <Th>Book</Th>
+              <Th>Book Title</Th>
               <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
-            {/* {audits?.map((audit) => {
-                return (
-                  <BodyRow key={audit.id}>
-                    <Td>{audit.name}</Td>
-                    <Td>
-                      <Link to={`/inventory/audits/${audit.id}`}>
-                        <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
-                      </Link>
-                    </Td>
-                  </BodyRow>
-                );
-              })} */}
+            {auditedBooks?.map((book) => {
+              return (
+                <BodyRow key={book.id}>
+                  <Td className="border-r border-l">{book.title}</Td>
+                  <Td className="border-r">
+                    <Table>
+                      <HeadingRow>
+                        <Th>Accession Number</Th>
+                        <Th>Copy Number</Th>
+                        <Th>Status</Th>
+                      </HeadingRow>
+                      <Tbody>
+                        {book.accessions?.map((accession) => {
+                          return (
+                            <BodyRow>
+                              <Td>{accession.number}</Td>
+                              <Td>Copy {accession.copyNumber}</Td>
+
+                              <Td>
+                                {accession.isAudited ? (
+                                  <span className="text-green-400">
+                                    OK: Found
+                                  </span>
+                                ) : (
+                                  <span className="text-yellow-500">
+                                    Unscanned.
+                                  </span>
+                                )}
+                              </Td>
+                            </BodyRow>
+                          );
+                        })}
+                      </Tbody>
+                    </Table>
+                  </Td>
+                </BodyRow>
+              );
+            })}
           </Tbody>
         </Table>
       </div>
