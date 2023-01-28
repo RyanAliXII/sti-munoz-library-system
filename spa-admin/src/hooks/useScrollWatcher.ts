@@ -3,14 +3,15 @@ import React, { useEffect } from 'react';
 
 
 export type ScrollWatchProps = {
-    element: Element | Window | HTMLElement | Document
+    element: Element | Window | HTMLElement | Document | null
     onScrollEnd?: ()=>void
     onScroll?:(event:Event)=>void
+    onUnMounted?:()=>void
 }
-
-const useScrollWatcher = ({element, onScroll, onScrollEnd}: ScrollWatchProps) => {
+const useScrollWatcher = ({element, onScroll, onScrollEnd, onUnMounted}: ScrollWatchProps) => {
 
     useEffect(()=>{
+      if(!element) return
         const OFFSET = 30;
         if(element === window){
             const listenScrollForElement = (event: Event) => {
@@ -22,6 +23,7 @@ const useScrollWatcher = ({element, onScroll, onScrollEnd}: ScrollWatchProps) =>
               }; 
               element.addEventListener("scroll", listenScrollForElement)
               return ()=>{
+                onUnMounted?.()
                 element.removeEventListener("scroll", listenScrollForElement )
              }
         }
@@ -39,12 +41,13 @@ const useScrollWatcher = ({element, onScroll, onScrollEnd}: ScrollWatchProps) =>
               };
               element.addEventListener("scroll", listenScrollForElement)
               return ()=>{
+                onUnMounted?.()
                 element.removeEventListener("scroll", listenScrollForElement )
              }
           
         }
         
-    },[])
+    },[element])
 
 
 };

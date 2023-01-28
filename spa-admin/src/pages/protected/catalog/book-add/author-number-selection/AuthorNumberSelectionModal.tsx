@@ -22,6 +22,7 @@ type ActiveTab = "GENERATE" | "BROWSE";
 
 interface TabContentProps {
   activeTab: ActiveTab;
+  modalRef: React.RefObject<HTMLDivElement>;
 }
 
 const checkActive = (key: string, state: string) => {
@@ -99,17 +100,17 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
           </ul>
         </nav>
       </div>
-      <TabContent activeTab={activeTab}></TabContent>
+      <TabContent modalRef={modalRef} activeTab={activeTab}></TabContent>
     </Modal>
   );
 };
 
-const TabContent = ({ activeTab }: TabContentProps) => {
+const TabContent = ({ activeTab, modalRef }: TabContentProps) => {
   switch (activeTab) {
     case Tab.Generate:
       return <GenerateTab />;
     case Tab.Browse:
-      return <BrowseTab />;
+      return <BrowseTab modalRef={modalRef} />;
     default:
       return <></>;
   }
