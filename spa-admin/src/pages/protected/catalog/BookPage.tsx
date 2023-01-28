@@ -19,7 +19,7 @@ import axiosClient from "@definitions/configs/axios";
 import { Accession, Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import QRCode from "react-qr-code";
