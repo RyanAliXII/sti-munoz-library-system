@@ -78,3 +78,10 @@ export type User = {
     name: string
   }
 
+  export type Account = {
+    id?: string
+    displayName: string
+    surname: string
+    givenName:string
+    email:string
+  }

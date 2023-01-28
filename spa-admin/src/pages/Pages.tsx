@@ -15,6 +15,7 @@ import AccessionPage from "./protected/catalog/AccessionPage";
 import Page404 from "./error/Page404";
 import AuditPage from "./protected/inventory/AuditPage";
 import AuditScanPage from "./protected/inventory/AuditScanPage";
+import AccountPage from "./protected/client/AccountPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -30,6 +31,7 @@ const pages = createRoutesFromChildren(
       <Route path="/books/source-of-funds" element={<SofPage />} />
       <Route path="/inventory/audits" element={<AuditPage />} />
       <Route path="/inventory/audits/:id" element={<AuditScanPage />} />
+      <Route path="/clients/accounts" element={<AccountPage />} />
     </Route>
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />

@@ -1,6 +1,7 @@
 import { useAuthContext } from "@contexts/AuthContext";
 import useToggle from "@hooks/useToggle";
 import LogoutButton from "./LogoutButton";
+import ProfileIcon from "./ProfileIcon";
 
 const Header = () => {
   const { user } = useAuthContext();
@@ -10,11 +11,10 @@ const Header = () => {
       <div className="px-4 h-20 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
           <div className="flex items-center">
-            <img
-              className="rounded-full w-10 h-10"
-              src={`https://ui-avatars.com/api/?name=${user.firstname}${user.lastname}&background=2563EB&color=fff`}
-              alt="profile-image"
-            ></img>
+            <ProfileIcon
+              givenName={user.firstname ?? ""}
+              surname={user.lastname ?? ""}
+            ></ProfileIcon>
           </div>
           <div className="flex items-center relative text-left">
             <div className="mr-10">
