@@ -3,14 +3,12 @@ module slim-app/server
 go 1.19
 
 require (
-	github.com/docker/distribution v2.8.1+incompatible
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.7
 	go.uber.org/zap v1.24.0
 	golang.org/x/text v0.3.7
