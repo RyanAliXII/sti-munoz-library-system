@@ -9,6 +9,14 @@ services:
         - ./server:/go/dev
       environment:
           MIGRATE: ${DB_DRIVER}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@slim_postgres/${POSTGRES_DB}?sslmode=disable
+          DB_DRIVER: ${DB_DRIVER}
+          DB_HOST: ${DB_HOST}
+          DB_PORT : ${DB_PORT}
+          DB_NAME: ${POSTGRES_DB}
+          DB_USERNAME : ${POSTGRES_USER}
+          DB_PASSWORD: ${POSTGRES_PASSWORD}
+          SPA_ADMIN_URL: ${SPA_ADMIN_URL}
+          SPA_CLIENT_URL: ${SPA_ADMIN_URL}
       depends_on:
         - slim_postgres
   slim_spa_admin: 

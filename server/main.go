@@ -13,7 +13,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -21,12 +20,8 @@ import (
 var logger *zap.Logger = slimlog.GetInstance()
 
 func main() {
-	envErr := godotenv.Load()
-	if envErr != nil {
-		panic(envErr.Error())
-	}
 
-	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
+	ADMIN_APP := os.Getenv("SPA_ADMIN_URL")
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
@@ -44,7 +39,6 @@ func main() {
 			"time":    time.Now(),
 		})
 	})
-
 	dbConnection := db.Connect()
 	db.RunSeed(dbConnection)
 	repos := repository.NewRepositories(dbConnection)
