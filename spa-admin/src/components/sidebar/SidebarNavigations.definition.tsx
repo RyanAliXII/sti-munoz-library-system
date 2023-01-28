@@ -1,4 +1,4 @@
-import { MdOutlineInventory, MdOutlineDashboard } from "react-icons/md";
+import { MdOutlineInventory, MdManageAccounts } from "react-icons/md";
 import { RiReservedLine } from "react-icons/ri";
 import { GrHomeOption } from "react-icons/gr";
 import { RxDashboard } from "react-icons/rx";
@@ -68,6 +68,18 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Audit",
         to: "/inventory/audits",
+        items: [],
+      },
+    ],
+  },
+  {
+    text: "Client",
+    to: "/",
+    icon: <MdManageAccounts className="text-xl" />,
+    items: [
+      {
+        text: "Account",
+        to: "/clients/accounts",
         items: [],
       },
     ],
