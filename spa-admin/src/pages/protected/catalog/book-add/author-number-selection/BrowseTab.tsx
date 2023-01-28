@@ -20,8 +20,12 @@ import {
 import { useEffect } from "react";
 
 import useDebounce from "@hooks/useDebounce";
+import useScrollWatcher from "@hooks/useScrollWatcher";
 
-const BrowseTab = () => {
+type BrowseTabProps = {
+  modalRef: React.RefObject<HTMLDivElement>;
+};
+const BrowseTab = ({ modalRef }: BrowseTabProps) => {
   const OFFSET_INCREMENT = 50;
   const {
     form,
@@ -63,24 +67,13 @@ const BrowseTab = () => {
     },
   });
   const debounceSearch = useDebounce();
-  useEffect(() => {
-    const MODAL_CLASS = ".react-responsive-modal-modal";
-    const OFFSET = 30;
-    const modal = document.querySelector(MODAL_CLASS);
-    const listenScroll = (event: Event) => {
-      const target = event.target as HTMLDivElement;
-      if (
-        target.scrollTop + OFFSET >=
-        target.scrollHeight - target.offsetHeight
-      ) {
-        fetchNextPage();
-      }
-    };
-    modal?.addEventListener("scroll", listenScroll);
-    return () => {
-      modal?.removeEventListener("scroll", listenScroll);
-    };
-  }, []);
+
+  useScrollWatcher({
+    element: modalRef.current,
+    onScrollEnd: () => {
+      fetchNextPage();
+    },
+  });
   const selectAuthorNumber = (authorNumber: AuthorNumber) => {
     setFieldValue(
       "authorNumber",
