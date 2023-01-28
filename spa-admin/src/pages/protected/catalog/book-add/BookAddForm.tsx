@@ -1,6 +1,6 @@
 import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useRef } from "react";
+import { BaseSyntheticEvent, forwardRef } from "react";
 
 import { Author, Section, Publisher, Source, Book } from "@definitions/types";
 
@@ -43,6 +43,7 @@ const BookAddForm = () => {
     validate,
     removeFieldError,
     setFieldValue,
+    registerFormGroup,
   } = useBookAddFormContext();
 
   const fetchPublishers = async () => {
@@ -92,7 +93,6 @@ const BookAddForm = () => {
       };
     });
   };
-
   const removeAuthorFromTable = (a: Author) => {
     setForm((prevForm) => {
       const filtered =
@@ -162,7 +162,7 @@ const BookAddForm = () => {
           fieldDetails="The title can be found in the cover of the book."
           isRequired
           label="Title"
-          formGroup="title"
+          ref={registerFormGroup("title")}
         >
           <Input
             wrapperclass="flex flex-col "
@@ -177,7 +177,7 @@ const BookAddForm = () => {
           fieldDetails="ISBN can be 13 or 9 characters."
           isRequired={true}
           label="ISBN"
-          formGroup="isbn"
+          ref={registerFormGroup("isbn")}
         >
           <Input
             wrapperclass="flex flex-col "
@@ -188,7 +188,7 @@ const BookAddForm = () => {
             name="isbn"
           />
         </FieldRow>
-        <FieldRow label="Copies" isRequired formGroup="copies">
+        <FieldRow label="Copies" isRequired ref={registerFormGroup("copies")}>
           <Input
             wrapperclass="flex flex-col"
             error={errors?.copies}
@@ -200,7 +200,7 @@ const BookAddForm = () => {
             name="copies"
           />
         </FieldRow>
-        <FieldRow label="Pages" formGroup="pages">
+        <FieldRow label="Pages" ref={registerFormGroup("pages")}>
           <Input
             wrapperclass="flex flex-col"
             error={errors?.pages}
@@ -217,7 +217,7 @@ const BookAddForm = () => {
           isRequired
           fieldDetails="This refers to the book section or collection the book will be
                 added."
-          formGroup="section.value"
+          ref={registerFormGroup("section.value")}
         >
           <CustomSelect
             wrapperclass="w-full flex flex-col"
@@ -233,7 +233,11 @@ const BookAddForm = () => {
             })}
           />
         </FieldRow>
-        <FieldRow label="Publisher" formGroup="publisher.value" isRequired>
+        <FieldRow
+          label="Publisher"
+          ref={registerFormGroup("publisher.value")}
+          isRequired
+        >
           <CustomSelect
             name="publisher"
             wrapperclass="flex flex-col"
@@ -250,7 +254,7 @@ const BookAddForm = () => {
           isRequired
           label="Source of Fund"
           fieldDetails="This refers on how the book is acquired."
-          formGroup="fundSource.value"
+          ref={registerFormGroup("fundSource.value")}
         >
           <CustomSelect
             className="w-full"
@@ -264,7 +268,7 @@ const BookAddForm = () => {
             })}
           />
         </FieldRow>
-        <FieldRow label="Cost Price" formGroup="costPrice">
+        <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
           <Input
             error={errors?.costPrice}
             type="number"
@@ -274,7 +278,7 @@ const BookAddForm = () => {
             name="costPrice"
           />
         </FieldRow>
-        <FieldRow label="Edition" formGroup="edition">
+        <FieldRow label="Edition" ref={registerFormGroup("edition")}>
           <Input
             error={errors?.edition}
             type="number"
@@ -284,7 +288,11 @@ const BookAddForm = () => {
             name="edition"
           />
         </FieldRow>
-        <FieldRow isRequired label="Year Published" formGroup="yearPublished">
+        <FieldRow
+          isRequired
+          label="Year Published"
+          ref={registerFormGroup("yearPublished")}
+        >
           <CustomDatePicker
             wrapperclass="flex flex-col"
             selected={new Date(form.yearPublished, 0, 24)}
@@ -297,7 +305,11 @@ const BookAddForm = () => {
             yearItemNumber={9}
           />
         </FieldRow>
-        <FieldRow isRequired label="Date Received" formGroup="receivedAt">
+        <FieldRow
+          isRequired
+          label="Date Received"
+          ref={registerFormGroup("receivedAt")}
+        >
           <CustomDatePicker
             onChange={(date) => {
               if (!date) return;
@@ -308,7 +320,6 @@ const BookAddForm = () => {
         </FieldRow>
         <FieldRow
           label="Description"
-          formGroup="description"
           fieldDetails="Brief Description of the book"
         >
           <Editor
@@ -347,7 +358,7 @@ const BookAddForm = () => {
           fieldDetails="The book classification based on Dewey Decimal Classification"
           isRequired
           label="DDC"
-          formGroup="ddc"
+          ref={registerFormGroup("ddc")}
         >
           <div className="w-full h-full flex ">
             <Input
@@ -373,7 +384,7 @@ const BookAddForm = () => {
           isRequired
           fieldDetails="The author number based on C.A. Cutter's Three-Figure Author
                 Table"
-          formGroup="authorNumber"
+          ref={registerFormGroup("authorNumber")}
         >
           <div className="w-full h-full flex">
             <Input
@@ -429,42 +440,42 @@ type FieldRowProps = {
   fieldDetails?: string;
   formGroup?: string;
 };
-const FieldRow = ({
-  isRequired = false,
-  fieldDetails,
-  label = "",
-  children,
-  formGroup = "",
-}: FieldRowProps) => {
-  return (
-    <div
-      className="lg:grid lg:grid-cols-9 gap-2 lg:mb-8"
-      form-group={formGroup}
-    >
-      <div className="flex justify-end mb-3 flex-col h-14 lg:mb-0 lg:col-span-2 lg:justify-center">
-        <div className="h-7 flex items-center gap-2">
-          <label className="font-semibold text-sm text-gray-600 ">
-            {label}
-          </label>
+const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(
+  (
+    { isRequired = false, fieldDetails, label = "", children, formGroup = "" },
+    ref
+  ) => {
+    return (
+      <div
+        ref={ref}
+        className="lg:grid lg:grid-cols-9 gap-2 lg:mb-8"
+        form-group={formGroup}
+      >
+        <div className="flex justify-end mb-3 flex-col h-14 lg:mb-0 lg:col-span-2 lg:justify-center">
+          <div className="h-7 flex items-center gap-2">
+            <label className="font-semibold text-sm text-gray-600 ">
+              {label}
+            </label>
 
-          {isRequired && (
-            <small className="text-gray-600 p-1 rounded bg-gray-200">
-              Required
-            </small>
-          )}
+            {isRequired && (
+              <small className="text-gray-600 p-1 rounded bg-gray-200">
+                Required
+              </small>
+            )}
+          </div>
+          <div>
+            {fieldDetails && (
+              <small className="text-gray-500 hidden lg:block">
+                {fieldDetails}
+              </small>
+            )}
+          </div>
         </div>
-        <div>
-          {fieldDetails && (
-            <small className="text-gray-500 hidden lg:block">
-              {fieldDetails}
-            </small>
-          )}
-        </div>
+
+        <div className="col-span-7">{children}</div>
       </div>
-
-      <div className="col-span-7">{children}</div>
-    </div>
-  );
-};
+    );
+  }
+);
 
 export default BookAddForm;
