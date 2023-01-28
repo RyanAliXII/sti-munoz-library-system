@@ -17,6 +17,7 @@ export interface EditBookForm
     | "publisherId"
     | "sectionId"
     | "fundSourceId"
+    | "copies"
   > {
   section: SingleValue<{ label: string; value: number }>;
   fundSource: SingleValue<{ label: string; value: number }>;
@@ -52,7 +53,6 @@ const INITIAL_FORM_DATA_FALLBACK = {
     label: "Select source of fund.",
     value: 0,
   },
-  copies: 1,
   receivedAt: new Date().toISOString(),
   authorNumber: "",
   ddc: 0,
