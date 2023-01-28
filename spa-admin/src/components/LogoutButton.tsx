@@ -2,10 +2,11 @@ import { useMsal } from "@azure/msal-react";
 
 const LogoutButton = () => {
   const { instance: msalClient } = useMsal();
-
-  const logout = () => {
+  const logout = async () => {
+    const account = msalClient.getActiveAccount();
     msalClient.logoutRedirect({
-      account: msalClient.getActiveAccount(),
+      account: account,
+      logoutHint: account?.idTokenClaims?.login_hint,
     });
   };
   return (
