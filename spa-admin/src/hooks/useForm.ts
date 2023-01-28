@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, useState } from "react";
+import React, { BaseSyntheticEvent,  useRef, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import {  ObjectShape } from "yup/lib/object";
 import {get, set} from 'lodash'
@@ -22,7 +22,9 @@ export interface UseFormType<T>{
   handleFormInput:(event: BaseSyntheticEvent)=>void
   form: T
   errors: any
-  resetForm: ()=>void
+  resetForm:()=>void,
+  registerFormGroup:(el:any)=>(el:any)=>void
+
 }
 export const useForm = <T extends object>({initialFormData, schema, scrollToError=false}: UseFormProps<T>): UseFormType<T> => {
   const [form, setForm] = useState<T>({...initialFormData});
@@ -30,6 +32,7 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
   const removeErrors = () => {
     setErrors(() => undefined);
   };
+  const formGroupRefs = useRef<any>({})
   const setFieldValue = (fieldName: string, value:any)=>{
     const update = set(form, fieldName, value) as T
     setForm(() => {
@@ -83,8 +86,8 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
     });
     
     if(scrollToError && error.inner.length > 0){
-      const formGroup = error?.inner[0]?.path
-      const element = document.querySelector(`[form-group="${formGroup}"]`)
+      const inputPath = error?.inner[0]?.path
+      const element = get(formGroupRefs.current, inputPath ?? "", null )
       if(!element) return errorObject
       scrollToElement(element, {
         offset: -150,
@@ -99,6 +102,14 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
     setForm({...initialFormData})
   }
 
+  const registerFormGroup = (fieldName: string)=>{
+    return (el:any)=>{
+        formGroupRefs.current[fieldName] = el
+    }
+  }
+  
+
+ 
   return {
     form,
     setForm,
@@ -109,6 +120,7 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
     removeFieldError,
     handleFormInput,
     resetForm,
+    registerFormGroup
   } 
 };
 

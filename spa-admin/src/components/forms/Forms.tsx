@@ -30,31 +30,34 @@ export enum SelectClasses {
   focus:text-gray-700 focus:bg-white focus:outline-blue-500`,
 }
 
-export const Input: React.FC<InputProps> = (props: InputProps) => {
-  return (
-    <>
-      <label className="text-gray-500 text-sm" htmlFor={props?.name}>
-        {props.label}
-      </label>
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  (props, ref) => {
+    return (
+      <>
+        <label className="text-gray-500 text-sm" htmlFor={props?.name}>
+          {props.label}
+        </label>
 
-      <div className={`w-full ${props.wrapperclass ?? ""}`}>
-        <input
-          name={props?.name}
-          placeholder={props?.placeholder}
-          {...{
-            ...props,
-            className: `${InputClasses.InputDefaultClasslist} ${
-              props?.className ?? ""
-            } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
-          }}
-        />
-        <div className="h-2 flex items-center mt-2">
-          <small className="text-red-500">{props.error}</small>
+        <div className={`w-full ${props.wrapperclass ?? ""}`}>
+          <input
+            ref={ref}
+            name={props?.name}
+            placeholder={props?.placeholder}
+            {...{
+              ...props,
+              className: `${InputClasses.InputDefaultClasslist} ${
+                props?.className ?? ""
+              } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
+            }}
+          />
+          <div className="h-2 flex items-center mt-2">
+            <small className="text-red-500">{props.error}</small>
+          </div>
         </div>
-      </div>
-    </>
-  );
-};
+      </>
+    );
+  }
+);
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
 
