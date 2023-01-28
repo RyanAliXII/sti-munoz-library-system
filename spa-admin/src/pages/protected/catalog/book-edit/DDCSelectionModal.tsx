@@ -16,18 +16,19 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
+import useScrollWatcher from "@hooks/useScrollWatcher";
 
 type DDC = {
   name: string;
   number: number;
 };
-const MODAL_ID = "DDCSelection";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
   if (!isOpen) return null;
   return (
     <Modal
-      modalId={MODAL_ID}
+      ref={modalRef}
       onClose={closeModal}
       open={isOpen}
       closeIcon
@@ -42,7 +43,7 @@ const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
         modal: "w-11/12 lg:w-9/12 rounded h-[600px]",
       }}
     >
-      <DDCTable />
+      <DDCTable modalRef={modalRef} />
     </Modal>
   );
 };
@@ -51,7 +52,10 @@ enum SearchBy {
   Name = "name",
   Number = "number",
 }
-const DDCTable = () => {
+type DDCTableProps = {
+  modalRef: React.RefObject<HTMLDivElement>;
+};
+const DDCTable = ({ modalRef }: DDCTableProps) => {
   const PAGE_OFFSET_INCREMENT = 50;
   const { form, setForm, removeFieldError } = useBookEditFormContext();
   const searchDebounce = useDebounce();
@@ -61,24 +65,6 @@ const DDCTable = () => {
   });
 
   const queryClient = useQueryClient();
-  useEffect(() => {
-    const modal = document.querySelector(`#${MODAL_ID}`);
-    const OFFSET = 30;
-    const listenScroll = (event: Event) => {
-      const target = event.target as HTMLDivElement;
-
-      if (
-        target.scrollTop + OFFSET >=
-        target.scrollHeight - target.offsetHeight
-      ) {
-        fetchNextPage();
-      }
-    };
-    modal?.addEventListener("scroll", listenScroll);
-    return () => {
-      modal?.removeEventListener("scroll", listenScroll);
-    };
-  }, []);
   const handleFilters = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -121,7 +107,12 @@ const DDCTable = () => {
       return allPages.length * PAGE_OFFSET_INCREMENT;
     },
   });
-
+  useScrollWatcher({
+    element: modalRef.current,
+    onScrollEnd: () => {
+      fetchNextPage();
+    },
+  });
   const selectDDC = (ddc: DDC) => {
     setForm((prevForm) => ({ ...prevForm, ddc: ddc.number }));
     removeFieldError("ddc");
