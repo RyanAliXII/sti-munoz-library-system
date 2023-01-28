@@ -112,15 +112,17 @@ const AuditScan = () => {
                   <Td className="border-r border-l">{book.title}</Td>
                   <Td className="border-r">
                     <Table>
-                      <HeadingRow>
-                        <Th>Accession Number</Th>
-                        <Th>Copy Number</Th>
-                        <Th>Status</Th>
-                      </HeadingRow>
+                      <Thead>
+                        <HeadingRow>
+                          <Th>Accession Number</Th>
+                          <Th>Copy Number</Th>
+                          <Th>Status</Th>
+                        </HeadingRow>
+                      </Thead>
                       <Tbody>
                         {book.accessions?.map((accession) => {
                           return (
-                            <BodyRow>
+                            <BodyRow key={`${book.id}_${accession.copyNumber}`}>
                               <Td>{accession.number}</Td>
                               <Td>Copy {accession.copyNumber}</Td>
 
