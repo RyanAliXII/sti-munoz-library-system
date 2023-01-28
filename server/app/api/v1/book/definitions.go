@@ -10,7 +10,6 @@ type BookBody struct {
 	Title         string         `json:"title" binding:"required,min=1,max=150"`
 	Description   string         `json:"description" `
 	ISBN          string         `json:"isbn"  binding:"required,min=1,max=150,isbn"`
-	Copies        int            `json:"copies" binding:"required,gte=1"`
 	Pages         int            `json:"pages" binding:"required,gte=1"`
 	Section       SectionBody    `json:"section"  binding:"required"`
 	Publisher     PublisherBody  `json:"publisher"  binding:"required"`
@@ -22,6 +21,13 @@ type BookBody struct {
 	AuthorNumber  string         `json:"authorNumber" binding:"required,min=1,max=50"`
 	ReceivedAt    time.Time      `json:"receivedAt" binding:"required"`
 	Authors       []model.Author `json:"authors"`
+}
+type NewBookBody struct {
+	BookBody
+	Copies int `json:"copies" binding:"required,gte=1"`
+}
+type UpdateBookBody struct {
+	BookBody
 }
 
 type SectionBody struct {

@@ -14,7 +14,7 @@ type BookController struct {
 }
 
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
-	var body BookBody
+	var body NewBookBody
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	var model model.BookNew = model.BookNew{
 		Book: model.Book{
@@ -71,7 +71,6 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 		Title:       book.Title,
 		ISBN:        book.ISBN,
 		Description: book.Description,
-		Copies:      book.Copies,
 		Pages:       book.Pages,
 		Section: SectionBody{
 			Label: book.Section,
