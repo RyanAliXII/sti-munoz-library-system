@@ -69,7 +69,7 @@ func (repo *BookRepository) New(book model.BookNew) error {
 	insertedBookRows, _ := insertBookResult.RowsAffected()
 	insertedAccessionRows, _ := insertAccessionResult.RowsAffected()
 	logger.Info("Added new book.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedBookRows))
-	logger.Info("Accession added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAccessionRows))
+	logger.Info("model.Accession added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAccessionRows))
 	//insert authors.
 	if len(book.Authors) > 0 {
 		var authorRows []goqu.Record = make([]goqu.Record, 0)

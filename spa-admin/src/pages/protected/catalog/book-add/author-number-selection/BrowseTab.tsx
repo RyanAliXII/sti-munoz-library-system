@@ -17,8 +17,6 @@ import {
   Thead,
 } from "@components/table/Table";
 
-import { useEffect } from "react";
-
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
 

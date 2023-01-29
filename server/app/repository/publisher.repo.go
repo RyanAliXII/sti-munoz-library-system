@@ -8,6 +8,13 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	GET_PUBLISHERS   = "PublisherRepository.Get"
+	NEW_PUBLISHER    = "PublisherRepository.New"
+	DELETE_PUBLISHER = "PublisherRepository.Delete"
+	UPDATE_PUBLISHER = "PublisherRepository.Update"
+)
+
 type PublisherRepository struct {
 	db *sqlx.DB
 }
@@ -35,10 +42,11 @@ func (repo *PublisherRepository) Delete(id int) error {
 	}
 	deleteResult, deleteErr := deleteStmt.Exec(id)
 	affected, getAffectedErr := deleteResult.RowsAffected()
+	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
 		logger.Warn(getAffectedErr.Error(), zap.Int("publisherId", id), slimlog.Function(DELETE_PUBLISHER))
 	}
-	logger.Info("Publisher Deleted", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_PUBLISHER))
+	logger.Info("model.Publisher Deleted", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_PUBLISHER))
 	return deleteErr
 }
 func (repo *PublisherRepository) Update(id int, publisher model.Publisher) error {
@@ -53,10 +61,11 @@ func (repo *PublisherRepository) Update(id int, publisher model.Publisher) error
 		return updateErr
 	}
 	affected, getAffectedErr := updateResult.RowsAffected()
+	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
 		logger.Warn(getAffectedErr.Error(), zap.Int("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
 	}
-	logger.Info("Publisher Updated", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
+	logger.Info("model.Publisher Updated", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
 	return updateErr
 }
 func NewPublisherRepository(db *sqlx.DB) PublisherRepositoryInterface {

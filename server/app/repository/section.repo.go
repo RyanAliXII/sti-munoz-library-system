@@ -60,7 +60,7 @@ func (repo *SectionRepository) GetOne(id int) model.Section {
 
 	return section
 }
-func NewCategoryRepository(db *sqlx.DB) SectionRepositoryInterface {
+func NewSectionRepository(db *sqlx.DB) SectionRepositoryInterface {
 	return &SectionRepository{
 		db: db,
 	}

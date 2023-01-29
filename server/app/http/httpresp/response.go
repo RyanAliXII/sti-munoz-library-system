@@ -35,6 +35,14 @@ func Success200(data map[string]interface{}, message string) (int, HttpResponse)
 		Message: message,
 	}
 }
+func Success201(data map[string]interface{}, message string) (int, HttpResponse) {
+	return http.StatusCreated, HttpResponse{
+		Status:  "success",
+		Code:    http.StatusOK,
+		Data:    data,
+		Message: message,
+	}
+}
 
 func Fail400(data map[string]interface{}, message string) (int, HttpResponse) {
 	return http.StatusBadRequest, HttpResponse{
