@@ -1,5 +1,5 @@
 *.log
 .env
 
-app/cmd/main
-app/cmd/main.exe
+app/bin/main
+app/bin/main.exe
