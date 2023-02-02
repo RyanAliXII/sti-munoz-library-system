@@ -59,6 +59,12 @@ func (ctler *DDCController) GetDDC(ctx *gin.Context) {
 		"ddc": ddc,
 	}, "DDC fetched."))
 }
+func NewDDCController(repos *repository.Repositories) DDCControllerInterface {
+	return &DDCController{
+		repos: repos,
+	}
+
+}
 
 type DDCControllerInterface interface {
 	GetDDC(ctx *gin.Context)

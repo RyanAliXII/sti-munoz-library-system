@@ -63,6 +63,12 @@ func (ctrler *FundSourceController) UpdateSource(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "Sources updated."))
 }
+func NewFundSourceController(repos *repository.Repositories) FundSourceControllerInterface {
+	return &FundSourceController{
+		repos: repos,
+	}
+
+}
 
 type FundSourceControllerInterface interface {
 	NewSource(ctx *gin.Context)

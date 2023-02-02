@@ -1,4 +1,3 @@
-import { SingleValue } from "react-select";
 
 export type User = {
     firstname?: string;
@@ -51,7 +50,7 @@ export type User = {
       publisher:string
       pages: number;
       yearPublished: number;
-      receivedAt: string;
+      receivedAt: string 
       ddc: number;
       description: string;
       authors: Author[];
@@ -85,3 +84,13 @@ export type User = {
     givenName:string
     email:string
   }
+
+  export type BorrowingTransaction = {
+    id?:string,
+    displayName :string,
+    accountId : string
+    createdAt: Date
+  }
+
+
+

@@ -76,6 +76,12 @@ func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
 
 }
 func (ctrler *AuthorNumberController) GetAuthorNumbersByInitial(ctx *gin.Context) {}
+func NewAuthorNumberController(repos *repository.Repositories) AuthorNumberControllerInterface {
+	return &AuthorNumberController{
+		repos: repos,
+	}
+
+}
 
 type AuthorNumberControllerInterface interface {
 	GenerateAuthorNumber(ctx *gin.Context)

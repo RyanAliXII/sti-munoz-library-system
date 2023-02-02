@@ -241,7 +241,7 @@ func (repo *BookRepository) Update(book model.BookUpdate) error {
 
 	//update book
 	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.SectionId, book.PublisherId, book.FundSourceId,
-		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.AuthorNumber, book.DDC, book.Id)
+		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Id)
 	if updateErr != nil {
 		transaction.Rollback()
 		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))

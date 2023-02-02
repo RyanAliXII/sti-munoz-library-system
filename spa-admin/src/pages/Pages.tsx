@@ -16,6 +16,7 @@ import Page404 from "./error/Page404";
 import AuditPage from "./protected/inventory/AuditPage";
 import AuditScanPage from "./protected/inventory/AuditScanPage";
 import AccountPage from "./protected/client/AccountPage";
+import BorrowingTransactionPage from "./protected/circulation/BorrowingTransactionPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -32,6 +33,10 @@ const pages = createRoutesFromChildren(
       <Route path="/inventory/audits" element={<AuditPage />} />
       <Route path="/inventory/audits/:id" element={<AuditScanPage />} />
       <Route path="/clients/accounts" element={<AccountPage />} />
+      <Route
+        path="/circulation/transactions"
+        element={<BorrowingTransactionPage />}
+      />
     </Route>
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />

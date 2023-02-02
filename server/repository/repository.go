@@ -13,10 +13,11 @@ type Repositories struct {
 	SOFRepository          FundSourceRepositoryInterface
 	SectionRepository      SectionRepositoryInterface
 
-	DDCRepository       DDCRepositoryInterface
-	BookRepository      BookRepositoryInterface
-	InventoryRepository InventoryRepositoryInterface
-	ClientRepository    ClientRepositoryInterface
+	DDCRepository         DDCRepositoryInterface
+	BookRepository        BookRepositoryInterface
+	InventoryRepository   InventoryRepositoryInterface
+	ClientRepository      ClientRepositoryInterface
+	CirculationRepository CirculationRepositoryInterface
 }
 
 func NewRepositories(db *sqlx.DB) Repositories {
@@ -30,5 +31,6 @@ func NewRepositories(db *sqlx.DB) Repositories {
 		BookRepository:         NewBookRepository(db),
 		InventoryRepository:    NewInventoryRepository(db),
 		ClientRepository:       NewClientRepository(db),
+		CirculationRepository:  NewCirculationRepository(db),
 	}
 }

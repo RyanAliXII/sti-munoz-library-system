@@ -33,7 +33,7 @@ func (ctrler *InventoryController) GetAuditById(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"audit": audit}, "model.Audit fetched."))
 }
-func (ctrler *InventoryController) GetAuditedAccession(ctx *gin.Context) {
+func (ctrler InventoryController) GetAuditedAccession(ctx *gin.Context) {
 	id := ctx.Param("id")
 	audited := ctrler.repos.InventoryRepository.GetAuditedAccessionById(id)
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audited}, "Accession fetched."))
@@ -84,6 +84,12 @@ func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "model.Audit updated"))
+}
+func NewInventoryController(repos *repository.Repositories) InventoryControllerInterface {
+	return &InventoryController{
+		repos: repos,
+	}
+
 }
 
 type InventoryControllerInterface interface {

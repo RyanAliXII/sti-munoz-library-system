@@ -8,10 +8,7 @@ import (
 )
 
 func InventoryRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
-	var controller InventoryControllerInterface = &InventoryController{
-		repos: repos,
-	}
-
+	var controller InventoryControllerInterface = NewInventoryController(repos)
 	router.GET("/audits", controller.GetAudits)
 	router.POST("/audits", middlewares.ValidateBody[InventoryBody], controller.NewAudit)
 	router.PUT("/audits/:id", middlewares.ValidateBody[InventoryBody], controller.UpdateAudit)

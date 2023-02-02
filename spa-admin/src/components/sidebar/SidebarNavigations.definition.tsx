@@ -1,6 +1,6 @@
 import { MdOutlineInventory, MdManageAccounts } from "react-icons/md";
 import { RiReservedLine } from "react-icons/ri";
-import { GrHomeOption } from "react-icons/gr";
+import { GrHomeOption, GrTransaction } from "react-icons/gr";
 import { RxDashboard } from "react-icons/rx";
 import { AiOutlineBook } from "react-icons/ai";
 import { BsBookshelf, BsListCheck } from "react-icons/bs";
@@ -80,6 +80,19 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Account",
         to: "/clients/accounts",
+        items: [],
+      },
+    ],
+  },
+
+  {
+    text: "Transaction",
+    to: "/",
+    icon: <GrTransaction className="text-xl" />,
+    items: [
+      {
+        text: "Transaction",
+        to: "/circulation/transactions",
         items: [],
       },
     ],

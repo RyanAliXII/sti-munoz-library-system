@@ -63,6 +63,12 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author Updated"))
 }
+func NewAuthorController(repos *repository.Repositories) AuthorControllerInterface {
+	return &AuthorController{
+		repos: repos,
+	}
+
+}
 
 type AuthorControllerInterface interface {
 	NewAuthor(ctx *gin.Context)

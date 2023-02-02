@@ -28,6 +28,12 @@ func (ctrler *SectionController) GetCategories(ctx *gin.Context) {
 	var sections = ctrler.repos.SectionRepository.Get()
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Sections fetched."))
 }
+func NewSectionController(repos *repository.Repositories) SectionControllerInterface {
+	return &SectionController{
+		repos: repos,
+	}
+
+}
 
 type SectionControllerInterface interface {
 	NewCategory(ctx *gin.Context)
