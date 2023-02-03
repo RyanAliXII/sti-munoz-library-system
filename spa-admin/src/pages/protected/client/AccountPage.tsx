@@ -77,7 +77,7 @@ const AccountPage = () => {
           New Book
         </Link> */}
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: drop-shadow-md lg:rounded-md mx-auto mb-4 flex gap-2">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: -md lg:rounded-md mx-auto mb-4 flex gap-2">
         <div className="w-5/12">
           <Input
             type="text"
@@ -87,7 +87,7 @@ const AccountPage = () => {
           ></Input>
         </div>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
         <Table>
           <Thead>
             <HeadingRow>

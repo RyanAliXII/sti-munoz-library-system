@@ -49,9 +49,7 @@ func (repo *AuthorNumberRepository) GetGroupedObjects() map[string]map[string]in
 func (repo *AuthorNumberRepository) GetDefaultArray() []map[string]interface{} {
 	return repo.cutters.DefaultArray
 }
-func (repo *AuthorNumberRepository) GetByInitial(ch string) {
 
-}
 func (repo *AuthorNumberRepository) Generate(firstname string, lastname string) cutters.AuthorNumber {
 	return repo.cutters.GenerateCutter(firstname, lastname)
 }
@@ -69,7 +67,6 @@ func NewAuthorNumberRepository(cutters *cutters.Cutters, db *sqlx.DB) AuthorNumb
 type AuthorNumberRepositoryInterface interface {
 	Get(filter Filter) []model.AuthorNumber
 	Search(filter Filter) []model.AuthorNumber
-	GetByInitial(ch string)
 	Generate(firstname string, lastname string) cutters.AuthorNumber
 	GenerateByTitle(title string) cutters.AuthorNumber
 	GetGroupedArray() map[string][]map[string]interface{}

@@ -61,7 +61,7 @@ const AuditPage = () => {
         </PrimaryButton>
       </div>
 
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
         <Table>
           <Thead>
             <HeadingRow>

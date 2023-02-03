@@ -85,12 +85,15 @@ export type User = {
     email:string
   }
 
+
+  export interface BorrowedAccession extends Omit<Accession, 'ddc | authorNumber | yearPublished | section'>{}
+
   export type BorrowingTransaction = {
     id?:string,
-    displayName :string,
-    accountId : string
+    accountDisplayName :string,
+    accountId : string,
+    accountEmail: string,
+    borrowedAccessions: BorrowedAccession[]
     createdAt: Date
   }
-
-
-
+ 

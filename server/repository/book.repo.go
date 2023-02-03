@@ -176,26 +176,23 @@ func (repo *BookRepository) GetOne(id string) model.BookGet {
 }
 func (repo *BookRepository) GetAccession() []model.Accession {
 	var sections []model.Section = make([]model.Section, 0)
-	selectSectionErr := repo.db.Select(&sections, "SELECT id, name, accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section")
+	var accessions []model.Accession = make([]model.Accession, 0)
+	selectSectionErr := repo.db.Select(&sections, "SELECT id, name, COALESCE(accession_table, 'default_accession') as accession_table from catalog.section")
 	if selectSectionErr != nil {
-		logger.Error(selectSectionErr.Error(), slimlog.Function("SectionRepository.Get"), slimlog.Error("selectSectionErr"))
+		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.Get"), slimlog.Error("selectSectionErr"))
+		return accessions
 	}
 
 	if len(sections) == 0 {
 		return []model.Accession{}
 	}
 	dialect := goqu.Dialect("postgres")
-
-	const DEFAULT_TABLE = "default_accession"
 	var ds *goqu.SelectDataset
 	const FIRST_LOOP = 0
 	for i, section := range sections {
-		var table string
-		if section.HasOwnAccession {
-			table = string(section.AccessionTable)
-		} else {
-			table = DEFAULT_TABLE
-		}
+
+		table := section.AccessionTable
+
 		if i == FIRST_LOOP {
 			ds = dialect.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
 				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).Where(goqu.Ex{
@@ -220,7 +217,7 @@ func (repo *BookRepository) GetAccession() []model.Accession {
 		logger.Error(builderErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("builderErr"))
 		return []model.Accession{}
 	}
-	var accessions []model.Accession = make([]model.Accession, 0)
+
 	selectAccessionErr := repo.db.Select(&accessions, selectQuery)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("selectAccessionErr"))

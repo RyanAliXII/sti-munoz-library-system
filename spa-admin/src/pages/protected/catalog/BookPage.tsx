@@ -27,6 +27,7 @@ import jsonpack from "jsonpack";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
+import TimeAgo from "timeago-react";
 interface BookWithAccession extends Book {
   accessions: PrintableAccession[];
 }
@@ -68,7 +69,7 @@ const BookPage = () => {
           New Book
         </Link>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: drop-shadow-md lg:rounded-md mx-auto mb-4 flex gap-2">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 flex gap-2 ">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
@@ -87,15 +88,15 @@ const BookPage = () => {
           <CustomSelect label="Section" />
         </div>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 lg:rounded-md mx-auto ">
         <Table>
           <Thead>
             <HeadingRow>
               <Th>Title</Th>
-              <Th>ISBN</Th>
+              {/* <Th className="hidden lg:block">ISBN</Th> */}
               <Th>Copies</Th>
               <Th>Year Published</Th>
-              <Th></Th>
+              <Th>Date Received</Th>
             </HeadingRow>
           </Thead>
           <Tbody>
@@ -103,9 +104,13 @@ const BookPage = () => {
               return (
                 <BodyRow key={book.id}>
                   <Td>{book.title}</Td>
-                  <Td>{book.isbn}</Td>
+                  {/* <Td className="hidden lg:block">{book.isbn}</Td> */}
                   <Td>{book.copies}</Td>
                   <Td>{book.yearPublished}</Td>
+                  <Td>
+                    {" "}
+                    <TimeAgo datetime={book.receivedAt}></TimeAgo>
+                  </Td>
                   <Td className="flex gap-5">
                     <AiOutlinePrinter
                       className="text-blue-500 text-lg cursor-pointer "

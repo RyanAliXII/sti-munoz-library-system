@@ -95,6 +95,16 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/circulation/transactions",
         items: [],
       },
+      {
+        text: "Checkout",
+        to: "/circulation/checkout",
+        items: [],
+      },
+      {
+        text: "Return",
+        to: "/circulation/return",
+        items: [],
+      },
     ],
   },
   // {

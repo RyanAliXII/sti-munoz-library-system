@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/google/uuid"
 )
 
 type BookController struct {
@@ -56,11 +57,15 @@ func (ctrler *BookController) GetBook(ctx *gin.Context) {
 }
 func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	id := ctx.Param("id")
+
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
+		return
+	}
 	var book model.BookGet = ctrler.repos.BookRepository.GetOne(id)
 	if len(book.Id) == 0 {
-		ctx.JSON(httpresp.Fail404(gin.H{
-			"book": gin.H{},
-		}, "model.Book does not exist."))
+		ctx.JSON(httpresp.Fail404(nil, "Book not found."))
 		return
 	}
 

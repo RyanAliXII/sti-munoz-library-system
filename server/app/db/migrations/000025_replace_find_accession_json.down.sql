@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS find_accession_json
