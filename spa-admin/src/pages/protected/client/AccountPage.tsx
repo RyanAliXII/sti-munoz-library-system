@@ -66,6 +66,7 @@ const AccountPage = () => {
     setSearchKeyWord(event.target.value);
     debounceSearch(search, "", 500);
   };
+
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">

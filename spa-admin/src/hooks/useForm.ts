@@ -6,7 +6,7 @@ import scrollToElement from 'scroll-to-element'
 
 type UseFormProps<T> = {
   initialFormData: T;
-  schema: ObjectSchema<ObjectShape>;
+  schema?: ObjectSchema<ObjectShape>;
   scrollToError?: boolean
 };
 
@@ -68,7 +68,8 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
   };
   const validate = async () => {
     try {
-     const data =  await schema.validate(form, { abortEarly: false });
+    if(!schema) return 
+     const data =  await schema?.validate(form, { abortEarly: false });
       
      return data as T
     } catch (error) {
