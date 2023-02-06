@@ -18,20 +18,28 @@ import Downshift from "downshift";
 import { BaseSyntheticEvent, useState } from "react";
 import axiosClient from "@definitions/configs/axios";
 import { useQuery } from "@tanstack/react-query";
-import { Account, Book } from "@definitions/types";
+import {
+  Accession,
+  Account,
+  Book,
+  DetailedAccession,
+  ModalProps,
+} from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 import { ClipLoader } from "react-spinners";
 import { useForm } from "@hooks/useForm";
 import ProfileIcon from "@components/ProfileIcon";
+import Modal from "react-responsive-modal";
+import { useSwitch } from "@hooks/useToggle";
 
 type CheckoutForm = {
   client: Account;
-  books: Book[];
+  accessions: DetailedAccession[];
 };
 const CheckoutPage = () => {
   const { setForm, form: checkout } = useForm<CheckoutForm>({
     initialFormData: {
-      books: [],
+      accessions: [],
       client: {
         displayName: "",
         email: "",
@@ -42,8 +50,49 @@ const CheckoutPage = () => {
     },
     scrollToError: false,
   });
+  const [addedBooksCache, setAddedBookCache] = useState<Object>({});
   const setClient = (account: Account) => {
     setForm((prevForm) => ({ ...prevForm, client: account }));
+  };
+  const addAccessions = (accessions: DetailedAccession[]) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      accessions: [...prevForm.accessions, ...accessions],
+    }));
+  };
+  const [selectedBook, setSelectedBook] = useState<Book>({
+    accessions: [],
+    authorNumber: "",
+    authors: [],
+    copies: 0,
+    costPrice: 0,
+    createdAt: "",
+    ddc: 0,
+    description: "",
+    edition: 0,
+    fundSource: "",
+    fundSourceId: 0,
+    isbn: "",
+    pages: 0,
+    publisher: "",
+    publisherId: 0,
+    receivedAt: "",
+    section: "",
+    sectionId: 0,
+    title: "",
+    yearPublished: 0,
+    id: "",
+  });
+
+  const {
+    close: closeCopySelection,
+    isOpen: isCopySelectionOpen,
+    open: openCopySelection,
+  } = useSwitch();
+
+  const selectBookCopy = (book: Book) => {
+    setSelectedBook({ ...book });
+    openCopySelection();
   };
   return (
     <>
@@ -51,6 +100,7 @@ const CheckoutPage = () => {
         <h1 className="text-3xl font-bold text-gray-700">Borrow Book</h1>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 gap-2 border border-gray-100">
+        <h2 className="text-xl mb-2"> Borrower</h2>
         <div className="w-full flex items-center gap-2">
           <ClientSearchBox setClient={setClient} />
           <SecondaryButton className="h-9 mt-6 flex justify-center">
@@ -90,8 +140,9 @@ const CheckoutPage = () => {
         </div>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
+        <h2 className="text-xl mb-2"> Books to borrow</h2>
         <div className="w-full flex items-center gap-2">
-          <BookSearchBox setClient={setClient} />
+          <BookSearchBox selectBook={selectBookCopy} />
           <SecondaryButton className="h-9 mt-6 flex justify-center">
             <AiOutlineScan className="text-white inline text-lg " />
           </SecondaryButton>
@@ -105,21 +156,37 @@ const CheckoutPage = () => {
                 <Th>Accession number</Th>
               </HeadingRow>
             </Thead>
-            <Tbody></Tbody>
+            <Tbody>
+              {checkout.accessions?.map((accession) => {
+                return (
+                  <BodyRow key={`${accession.bookId}_${accession.copyNumber}`}>
+                    <Td>{accession.title}</Td>
+                    <Td>{accession.copyNumber}</Td>
+                    <Td>{accession.number}</Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
           </Table>
         </div>
       </div>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
         <PrimaryButton>Proceed to checkout</PrimaryButton>
       </div>
+      <BookCopySelectionModal
+        book={selectedBook}
+        closeModal={closeCopySelection}
+        isOpen={isCopySelectionOpen}
+        addAccessions={addAccessions}
+      />
     </>
   );
 };
 
-type CheckoutSearchBoxProps = {
+type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
 };
-const ClientSearchBox = ({ setClient }: CheckoutSearchBoxProps) => {
+const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
   const DELAY_IN_MILLISECOND = 500;
@@ -201,32 +268,34 @@ const ClientSearchBox = ({ setClient }: CheckoutSearchBoxProps) => {
     </>
   );
 };
-
-const BookSearchBox = ({ setClient }: CheckoutSearchBoxProps) => {
+type BookSearchBoxProps = {
+  selectBook: (book: Book) => void;
+};
+const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
   const DELAY_IN_MILLISECOND = 500;
   const handleSearchBoxChange = (event: BaseSyntheticEvent) => {
     debounce(() => setKeyword(event.target.value), null, DELAY_IN_MILLISECOND);
   };
-  const fetchAccounts = async () => {
+  const fetchBooks = async () => {
     try {
-      const { data: response } = await axiosClient.get("/clients/accounts", {
+      const { data: response } = await axiosClient.get("/books/", {
         params: {
           offset: 0,
           keyword: searchKeyword,
         },
       });
-      return response?.data?.accounts ?? [];
+      return response?.data?.books ?? [];
     } catch {
       return [];
     }
   };
-  const { data: accounts, isRefetching } = useQuery<Account[]>({
+  const { data: books, isRefetching } = useQuery<Book[]>({
     refetchOnMount: false,
     initialData: [],
-    queryKey: ["accounts", searchKeyword],
-    queryFn: fetchAccounts,
+    queryKey: ["books", searchKeyword],
+    queryFn: fetchBooks,
   });
   return (
     <>
@@ -236,30 +305,34 @@ const BookSearchBox = ({ setClient }: CheckoutSearchBoxProps) => {
             <label className={InputClasses.LabelClasslist}>Search book</label>
             <input
               {...getInputProps({
-                placeholder: "Enter book's title",
+                placeholder: "Enter book's title or description",
                 onChange: handleSearchBoxChange,
                 className: InputClasses.InputDefaultClasslist,
               })}
             />
 
-            {isOpen && accounts.length > 0 ? (
+            {isOpen && books.length > 0 ? (
               !isRefetching ? (
                 <ul className="w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded">
-                  {accounts?.map((account) => {
+                  {books?.map((book) => {
+                    const authors = book.authors?.map((author) => {
+                      return `${author.givenName} ${author.surname}`;
+                    });
+
                     return (
                       <li
-                        key={account.id}
+                        key={book.id}
                         className="p-3 border flex flex-col"
                         onClick={() => {
                           closeMenu(() => {
-                            setClient(account);
+                            selectBook(book);
                           });
                         }}
                       >
-                        <span className="text-gray-600">
-                          {account.displayName}
-                        </span>
-                        <small className="text-gray-400">{account.email}</small>
+                        <span className="text-gray-600">{book.title}</span>
+                        <small className="text-gray-400">
+                          ISBN: {book.isbn} | Authors: {authors.join(", ")}
+                        </small>
                       </li>
                     );
                   })}
@@ -271,7 +344,7 @@ const BookSearchBox = ({ setClient }: CheckoutSearchBoxProps) => {
               )
             ) : null}
 
-            {isOpen && accounts.length === 0 ? (
+            {isOpen && books.length === 0 ? (
               <div className="w-full absolute list-none h-52 bg-white overflow-y-auto cursor-pointer border mt-2 rounded flex items-center justify-center">
                 <span className="text-gray-400 text-sm">
                   No result found for {searchKeyword}
@@ -282,6 +355,88 @@ const BookSearchBox = ({ setClient }: CheckoutSearchBoxProps) => {
         )}
       </Downshift>
     </>
+  );
+};
+
+interface BookCopySelectionProps extends ModalProps {
+  book: Book;
+  addAccessions: (accesions: DetailedAccession[]) => void;
+}
+const BookCopySelectionModal = ({
+  closeModal,
+  isOpen,
+  book,
+  addAccessions,
+}: BookCopySelectionProps) => {
+  const [selectedAccessions, setSelectedAccessions] = useState<
+    DetailedAccession[]
+  >([]);
+
+  const handleCheck = (accession: Accession) => {
+    setSelectedAccessions((prevSelected) => [
+      ...prevSelected,
+      {
+        authorNumber: book.authorNumber,
+        bookId: book.id ?? "",
+        copyNumber: accession.copyNumber,
+        number: accession.number,
+        ddc: book.ddc,
+        section: book.section,
+        title: book.title,
+        yearPublished: book.yearPublished,
+      },
+    ]);
+  };
+  const proceedToAdd = () => {
+    addAccessions(selectedAccessions);
+    closeModal();
+  };
+  if (!isOpen) return null;
+  return (
+    <Modal
+      center
+      onClose={closeModal}
+      open={isOpen}
+      showCloseIcon={false}
+      classNames={{
+        modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded",
+      }}
+    >
+      <div>
+        <h1 className="mb-3">{book.title}</h1>
+        <Table>
+          <Thead>
+            <HeadingRow>
+              <Th></Th>
+              <Th>Accession number</Th>
+              <Th>Copy number</Th>
+            </HeadingRow>
+          </Thead>
+          <Tbody>
+            {book.accessions.map((accession) => {
+              return (
+                <BodyRow key={accession.number}>
+                  <Td>
+                    <Input
+                      type="checkbox"
+                      onChange={() => {
+                        handleCheck(accession);
+                      }}
+                    />
+                  </Td>
+                  <Td>{accession.number}</Td>
+                  <Td>Copy {accession.copyNumber}</Td>
+                </BodyRow>
+              );
+            })}
+            <BodyRow></BodyRow>
+          </Tbody>
+        </Table>
+      </div>
+      <PrimaryButton className="mt-5" onClick={proceedToAdd}>
+        Add accession
+      </PrimaryButton>
+    </Modal>
   );
 };
 export default CheckoutPage;

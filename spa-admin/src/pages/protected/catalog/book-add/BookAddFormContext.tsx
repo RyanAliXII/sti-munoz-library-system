@@ -2,7 +2,7 @@ import { BaseProps } from "@definitions/props.definition";
 import { Book, Author, AuthorNumber } from "@definitions/types";
 import { useForm, UseFormType } from "@hooks/useForm";
 import React, { createContext, useContext, useState } from "react";
-import { BookSchema, NewBookSchemaValidation } from "../schema";
+import { NewBookSchemaValidation } from "../schema";
 import { SingleValue } from "react-select";
 
 export interface NewBookForm
@@ -78,6 +78,8 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       pages: 1,
 
       yearPublished: new Date().getFullYear(),
+      accessions: [],
+      createdAt: "",
     },
     schema: NewBookSchemaValidation,
     scrollToError: true,

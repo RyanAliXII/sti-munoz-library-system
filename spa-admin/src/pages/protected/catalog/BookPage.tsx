@@ -28,9 +28,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
 import TimeAgo from "timeago-react";
-interface BookWithAccession extends Book {
-  accessions: PrintableAccession[];
-}
+
 const BookPage = () => {
   const {
     close: closePrintablesModal,
@@ -40,6 +38,7 @@ const BookPage = () => {
   const fetchBooks = async () => {
     try {
       const { data: response } = await axiosClient.get("/books/");
+      console.log(response.data.books);
       return response.data.books ?? [];
     } catch (error) {
       console.error(error);
@@ -49,12 +48,12 @@ const BookPage = () => {
   const [
     selectedBookForPrintingPrintables,
     setSelectedBookForPrintingPrintables,
-  ] = useState<BookWithAccession>({} as BookWithAccession);
-  const setBookForPrintingAndOpenModal = (book: BookWithAccession) => {
+  ] = useState<Book>({} as Book);
+  const setBookForPrintingAndOpenModal = (book: Book) => {
     setSelectedBookForPrintingPrintables({ ...book });
     openPrintablesModal();
   };
-  const { data: books } = useQuery<BookWithAccession[]>({
+  const { data: books } = useQuery<Book[]>({
     queryFn: fetchBooks,
     queryKey: ["books"],
   });
@@ -138,7 +137,7 @@ const BookPage = () => {
   );
 };
 interface PrintablesModalProps extends ModalProps {
-  book: BookWithAccession;
+  book: Book;
 }
 type PrintableAccession = Omit<
   Accession,

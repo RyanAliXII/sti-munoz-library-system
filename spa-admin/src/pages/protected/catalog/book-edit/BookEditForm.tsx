@@ -311,6 +311,7 @@ const BookEditForm = () => {
           <Editor
             apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
             onEditorChange={handleDescriptionInput}
+            value={form.description}
           />
         </FieldRow>
       </div>

@@ -94,7 +94,7 @@ const AccountPage = () => {
             <HeadingRow>
               <Td></Td>
               <Th>Email</Th>
-              <Th>User</Th>
+              <Th>Client</Th>
             </HeadingRow>
           </Thead>
           <Tbody>

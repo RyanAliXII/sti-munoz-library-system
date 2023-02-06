@@ -50,11 +50,13 @@ export type User = {
       publisher:string
       pages: number;
       yearPublished: number;
-      receivedAt: string 
+      receivedAt: string //iso-string  date
       ddc: number;
       description: string;
       authors: Author[];
       authorNumber: string
+      accessions: Accession[]
+      createdAt: string //iso-string date
   }
 
   export type AuthorNumber = {
@@ -65,6 +67,10 @@ export type User = {
   export type Accession = {
     number: number,
     copyNumber:number
+  }
+
+  export interface DetailedAccession extends Accession{
+
     bookId: string
     title: string
     ddc: number;
@@ -72,6 +78,9 @@ export type User = {
     yearPublished: number;
     section:string
   }
+
+
+
   export type Audit = {
     id?:string
     name: string
