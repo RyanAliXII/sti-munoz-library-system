@@ -18,7 +18,7 @@ import AuditScanPage from "./protected/inventory/AuditScanPage";
 import AccountPage from "./protected/client/AccountPage";
 import BorrowingTransactionPage from "./protected/circulation/BorrowingTransactionPage";
 import TransactionByIdPage from "./protected/circulation/TransactionByIdPage";
-import CheckoutPage from "./protected/circulation/CheckoutPage";
+import CheckoutPage from "./protected/circulation/checkout/CheckoutPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
