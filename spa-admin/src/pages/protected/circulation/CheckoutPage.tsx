@@ -15,9 +15,9 @@ import {
 } from "@components/table/Table";
 import { AiOutlineScan } from "react-icons/ai";
 import Downshift from "downshift";
-import { BaseSyntheticEvent, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 import axiosClient from "@definitions/configs/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Accession,
   Account,
@@ -31,13 +31,31 @@ import { useForm } from "@hooks/useForm";
 import ProfileIcon from "@components/ProfileIcon";
 import Modal from "react-responsive-modal";
 import { useSwitch } from "@hooks/useToggle";
+import { toast } from "react-toastify";
+import { CheckoutSchemaValidation } from "../catalog/schema";
+import { ErrorMsg } from "@definitions/var";
 
 type CheckoutForm = {
   client: Account;
   accessions: DetailedAccession[];
 };
 const CheckoutPage = () => {
-  const { setForm, form: checkout } = useForm<CheckoutForm>({
+  const initialFormData = {
+    accessions: [],
+    client: {
+      displayName: "",
+      email: "",
+      givenName: "",
+      surname: "",
+      id: "",
+    },
+  };
+  const {
+    setForm,
+    form: checkout,
+    validate,
+    resetForm,
+  } = useForm<CheckoutForm>({
     initialFormData: {
       accessions: [],
       client: {
@@ -49,17 +67,18 @@ const CheckoutPage = () => {
       },
     },
     scrollToError: false,
+    schema: CheckoutSchemaValidation,
   });
-  const [addedBooksCache, setAddedBookCache] = useState<Object>({});
   const setClient = (account: Account) => {
     setForm((prevForm) => ({ ...prevForm, client: account }));
   };
-  const addAccessions = (accessions: DetailedAccession[]) => {
+  const updateAccessionsToBorrow = (accessions: DetailedAccession[]) => {
     setForm((prevForm) => ({
       ...prevForm,
-      accessions: [...prevForm.accessions, ...accessions],
+      accessions: [...accessions],
     }));
   };
+
   const [selectedBook, setSelectedBook] = useState<Book>({
     accessions: [],
     authorNumber: "",
@@ -94,6 +113,35 @@ const CheckoutPage = () => {
     setSelectedBook({ ...book });
     openCopySelection();
   };
+
+  const proceedCheckout = async () => {
+    try {
+      const data = await validate();
+      if (!data) return;
+      submitCheckout.mutate(data);
+    } catch (err) {
+      toast.error(
+        "Checkout cannot proceed. Information might be invalid or not provided. Please select a client and books to borrow."
+      );
+    }
+  };
+
+  const submitCheckout = useMutation({
+    mutationFn: (formData: CheckoutForm) =>
+      axiosClient.post("/circulation/checkout", {
+        clientId: formData.client.id,
+        accessions: formData.accessions,
+      }),
+    onSuccess: () => {
+      toast.success("Books has been checkout successfully.");
+    },
+    onError: () => {
+      toast.error(ErrorMsg.New);
+    },
+    onSettled: () => {
+      resetForm();
+    },
+  });
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
@@ -171,13 +219,16 @@ const CheckoutPage = () => {
         </div>
       </div>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <PrimaryButton>Proceed to checkout</PrimaryButton>
+        <PrimaryButton onClick={proceedCheckout}>
+          Proceed to checkout
+        </PrimaryButton>
       </div>
       <BookCopySelectionModal
         book={selectedBook}
         closeModal={closeCopySelection}
         isOpen={isCopySelectionOpen}
-        addAccessions={addAccessions}
+        updateAccessionsToBorrow={updateAccessionsToBorrow}
+        form={checkout}
       />
     </>
   );
@@ -360,18 +411,37 @@ const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
-  addAccessions: (accesions: DetailedAccession[]) => void;
+  updateAccessionsToBorrow: (accesions: DetailedAccession[]) => void;
+  form: CheckoutForm;
 }
 const BookCopySelectionModal = ({
   closeModal,
   isOpen,
   book,
-  addAccessions,
+  updateAccessionsToBorrow,
+  form,
 }: BookCopySelectionProps) => {
   const [selectedAccessions, setSelectedAccessions] = useState<
     DetailedAccession[]
   >([]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedAccessions([...form.accessions]);
+    }
+  }, [isOpen]);
+
+  const removeAccession = (
+    bookId: string | undefined,
+    accessionNumber: number
+  ) => {
+    if (!bookId) return;
+    setSelectedAccessions((prevSelected) => [
+      ...prevSelected.filter(
+        (a) => a.bookId != bookId && a.number != accessionNumber
+      ),
+    ]);
+  };
   const handleCheck = (accession: Accession) => {
     setSelectedAccessions((prevSelected) => [
       ...prevSelected,
@@ -388,7 +458,7 @@ const BookCopySelectionModal = ({
     ]);
   };
   const proceedToAdd = () => {
-    addAccessions(selectedAccessions);
+    updateAccessionsToBorrow(selectedAccessions);
     closeModal();
   };
   if (!isOpen) return null;
@@ -414,13 +484,22 @@ const BookCopySelectionModal = ({
           </Thead>
           <Tbody>
             {book.accessions.map((accession) => {
+              const isAdded = selectedAccessions.some(
+                (a) => a.bookId === book.id && a.number === accession.number
+              );
+
               return (
                 <BodyRow key={accession.number}>
                   <Td>
                     <Input
                       type="checkbox"
-                      onChange={() => {
-                        handleCheck(accession);
+                      checked={isAdded}
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          handleCheck(accession);
+                        } else {
+                          removeAccession(book.id, accession.number);
+                        }
                       }}
                     />
                   </Td>
@@ -434,7 +513,7 @@ const BookCopySelectionModal = ({
         </Table>
       </div>
       <PrimaryButton className="mt-5" onClick={proceedToAdd}>
-        Add accession
+        Add changes
       </PrimaryButton>
     </Modal>
   );

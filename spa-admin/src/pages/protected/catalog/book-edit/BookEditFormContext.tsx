@@ -63,6 +63,8 @@ const INITIAL_FORM_DATA_FALLBACK = {
   pages: 1,
 
   yearPublished: new Date().getFullYear(),
+  createdAt: "",
+  accessions: [],
 };
 
 export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {

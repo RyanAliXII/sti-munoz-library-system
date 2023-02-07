@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -13,7 +12,7 @@ type ClientRepository struct {
 }
 
 func (repo *ClientRepository) GetAccounts(filter Filter) []model.Account {
-	query := `SELECT * FROM client.account LIMIT $1 OFFSET $2`
+	query := `SELECT id, email, display_name, given_name, surname FROM client.account LIMIT $1 OFFSET $2`
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -24,12 +23,22 @@ func (repo *ClientRepository) GetAccounts(filter Filter) []model.Account {
 }
 
 func (repo *ClientRepository) SearchAccounts(filter Filter) []model.Account {
-	query := `SELECT * FROM client.account WHERE (given_name ILIKE $1 OR surname ILIKE $2 OR email ILIKE $3 OR display_name ILIKE $4 ) LIMIT $5 OFFSET $6`
+	query := `
+			SELECT id, email, 
+			display_name, 
+			given_name, surname, 
+			(  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
+			) as search_rank
+			FROM client.account where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
+			ORDER BY search_rank DESC
+			LIMIT $2
+			OFFSET $3
+		`
 	var accounts []model.Account = make([]model.Account, 0)
-	keyword := fmt.Sprint("%", filter.Keyword, "%")
-	selectErr := repo.db.Select(&accounts, query, keyword, keyword, keyword, keyword, filter.Limit, filter.Offset)
+
+	selectErr := repo.db.Select(&accounts, query, filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("ClientRepository.GetAccounts"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("ClientRepository.SearchAccounts"), slimlog.Error("selectErr"))
 	}
 	return accounts
 }

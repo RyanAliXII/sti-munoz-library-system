@@ -123,3 +123,13 @@ export const AuditSchemaValidation = object().shape({
 //     publisher: number().integer(NUMBER_NO_DECIMAL).test("check-if-greater-than-0","Please select a publisher." ,(value)=> (value ?? 0) > 0).required("Publisher is required."),
 //     year: number().integer(NUMBER_NO_DECIMAL).required("Year published is required.")
 // })
+
+export const CheckoutSchemaValidation = object().shape({
+    client: object().shape({
+        id: string().typeError("Invalid client id.").uuid("Invalid client id.")
+    }),
+    accessions: array().of(object().shape({
+            bookId: string().typeError("Invalid book id.").uuid("Invalid book.id"),
+            number: number().integer("Invalid accession number.").min(1, "Invalid accession number.")
+    })).min(1)
+})

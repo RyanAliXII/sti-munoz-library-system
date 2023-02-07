@@ -3,10 +3,13 @@ package circulation
 import (
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/app/pkg/slimlog"
+	"slim-app/server/model"
 	"slim-app/server/repository"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +42,19 @@ func (ctrler *CirculationController) GetTransactionById(ctx *gin.Context) {
 		"transaction": transaction,
 	}, "Transaction fetched."))
 }
+func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
+	body := CheckoutBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	var accessions []model.Accession = make([]model.Accession, 0)
+	copyErr := copier.Copy(&accessions, &body.Accessions)
+	if copyErr != nil {
+		logger.Error(copyErr.Error(), slimlog.Function("CirculationController.Checkout"))
+		ctx.JSON(httpresp.Fail400(nil, "Checkout failed."))
+		return
+	}
+	ctrler.repos.CirculationRepository.NewTransaction(body.ClientId, accessions)
+	ctx.JSON(httpresp.Success200(nil, "Checkout success."))
+}
 func NewCirculationController(repos *repository.Repositories) CirculationControllerInterface {
 	return &CirculationController{
 		repos: repos,
@@ -49,4 +65,5 @@ type CirculationControllerInterface interface {
 	GetTransactions(ctx *gin.Context)
 	GetTransactionBooks(ctx *gin.Context)
 	GetTransactionById(ctx *gin.Context)
+	Checkout(ctx *gin.Context)
 }

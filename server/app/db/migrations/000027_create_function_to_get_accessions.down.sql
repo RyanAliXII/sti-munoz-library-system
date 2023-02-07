@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS get_accession_table();

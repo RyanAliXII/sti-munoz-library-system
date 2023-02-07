@@ -15,12 +15,6 @@ type BookUpdate struct {
 	Book
 	Authors []Author `json:"authors" db:"authors"`
 }
-type BookGet struct {
-	Book
-	CreatedAt  db.NullableTime `json:"created_at" db:"created_at"`
-	Authors    BookAuthors     `json:"authors" db:"authors"`
-	Accessions BookAccesions   `json:"accessions" db:"accessions"`
-}
 
 type Book struct {
 	Id            string          `json:"id" db:"id"`
@@ -41,12 +35,16 @@ type Book struct {
 	ReceivedAt    db.NullableTime `json:"receivedAt" db:"received_at"`
 	DDC           float64         `json:"ddc" db:"ddc"`
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
+
+	Authors    BookAuthors     `json:"authors" db:"authors"`
+	Accessions BookAccesions   `json:"accessions" db:"accessions"`
+	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
 type Accession struct {
-	Number     int             `json:"number" db:"accession_number"`
+	Number     int             `json:"number" db:"accession_number" copier:"Number"`
 	CopyNumber int             `json:"copyNumber" db:"copy_number"`
-	BookId     string          `json:"bookId" db:"book_id"`
+	BookId     string          `json:"bookId" db:"book_id" copier:"BookId"`
 	CreatedAt  db.NullableTime `json:"created_at" db:"created_at"`
 	Book
 }

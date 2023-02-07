@@ -94,8 +94,8 @@ func (repo *BookRepository) New(book model.BookNew) error {
 	return nil
 }
 
-func (repo *BookRepository) Get() []model.BookGet {
-	var books []model.BookGet = make([]model.BookGet, 0)
+func (repo *BookRepository) Get() []model.Book {
+	var books []model.Book = make([]model.Book, 0)
 	query := `
 	SELECT book.id,title, isbn, 
 	description, 
@@ -133,8 +133,8 @@ func (repo *BookRepository) Get() []model.BookGet {
 	}
 	return books
 }
-func (repo *BookRepository) GetOne(id string) model.BookGet {
-	var book model.BookGet = model.BookGet{}
+func (repo *BookRepository) GetOne(id string) model.Book {
+	var book model.Book = model.Book{}
 	query := `
 	SELECT book.id,title, isbn, 
 	description, 
@@ -175,50 +175,23 @@ func (repo *BookRepository) GetOne(id string) model.BookGet {
 	return book
 }
 func (repo *BookRepository) GetAccession() []model.Accession {
-	var sections []model.Section = make([]model.Section, 0)
 	var accessions []model.Accession = make([]model.Accession, 0)
-	selectSectionErr := repo.db.Select(&sections, "SELECT id, name, COALESCE(accession_table, 'default_accession') as accession_table from catalog.section")
-	if selectSectionErr != nil {
-		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.Get"), slimlog.Error("selectSectionErr"))
-		return accessions
-	}
 
-	if len(sections) == 0 {
-		return []model.Accession{}
-	}
-	dialect := goqu.Dialect("postgres")
-	var ds *goqu.SelectDataset
-	const FIRST_LOOP = 0
-	for i, section := range sections {
+	query := `
+		SELECT accession.id as accession_number, copy_number, 
+		book_id, book.title, book.ddc, book.author_number, 
+		book.year_published, 
+		section.name as section,
+		book.section_id,
+		book.created_at 
+		FROM get_accession_table() 
+		as accession 
+		INNER JOIN catalog.book on accession.book_id = book.id 
+		INNER JOIN catalog.section on book.section_id = section.id
+		ORDER BY book.created_at DESC
+	`
 
-		table := section.AccessionTable
-
-		if i == FIRST_LOOP {
-			ds = dialect.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
-				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).Where(goqu.Ex{
-				"book.section_id": section.Id,
-			}).InnerJoin(goqu.I("catalog.book"),
-				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")})))
-		} else {
-			ds = ds.Union(goqu.Select(goqu.C("id").Table(table).As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"), goqu.C("title"),
-				goqu.C("ddc"), goqu.C("author_number"), goqu.C("year_published"), goqu.C("created_at").Table("book"), goqu.L("?", section.Name).As("section"), goqu.L("?", section.Id).As("section_id")).From(goqu.T(table).Schema("accession")).Where(goqu.Ex{
-				"book.section_id": section.Id,
-			}).InnerJoin(goqu.I("catalog.book"),
-				goqu.On((goqu.Ex{"book_id": goqu.I("book.id")}))))
-		}
-
-	}
-
-	finalDs := dialect.From(ds).Order(goqu.I("created_at").Desc())
-
-	selectQuery, _, builderErr := finalDs.ToSQL()
-
-	if builderErr != nil {
-		logger.Error(builderErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("builderErr"))
-		return []model.Accession{}
-	}
-
-	selectAccessionErr := repo.db.Select(&accessions, selectQuery)
+	selectAccessionErr := repo.db.Select(&accessions, query)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("selectAccessionErr"))
 		return accessions
@@ -275,6 +248,46 @@ func (repo *BookRepository) Update(book model.BookUpdate) error {
 	transaction.Commit()
 	return nil
 }
+func (repo *BookRepository) Search(filter Filter) []model.Book {
+	var books []model.Book = make([]model.Book, 0)
+	query := `
+	SELECT book.id,title, isbn, 
+	description, 
+	copies,
+	pages,
+	section_id,  
+	section.name as section,
+	publisher.id as publisher_id,
+	publisher.name as publisher,
+	fund_source_id,
+	source_of_fund.name as fund_source,
+	cost_price,
+	edition,
+	year_published,
+	received_at,
+	ddc,
+	author_number,
+	book.created_at,
+	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+	as authors
+	FROM catalog.book_author
+	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+	where book_id = book.id
+	group by book_id),'[]') as authors,
+	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
+	 FROM catalog.book 
+	INNER JOIN catalog.section on book.section_id = section.id
+	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	WHERE search_vector @@ websearch_to_tsquery('english', $1)
+	LIMIT $2 OFFSET $3
+	`
+	selectErr := repo.db.Select(&books, query, filter.Keyword, filter.Limit, filter.Offset)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepository.Search"), slimlog.Error("selectErr"))
+	}
+	return books
+}
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 	return &BookRepository{
@@ -284,8 +297,9 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 type BookRepositoryInterface interface {
 	New(model.BookNew) error
-	Get() []model.BookGet
-	GetOne(id string) model.BookGet
+	Get() []model.Book
+	GetOne(id string) model.Book
 	GetAccession() []model.Accession
 	Update(model.BookUpdate) error
+	Search(Filter) []model.Book
 }

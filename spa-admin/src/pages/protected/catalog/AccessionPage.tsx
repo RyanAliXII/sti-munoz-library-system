@@ -11,7 +11,7 @@ import {
   Td,
 } from "@components/table/Table";
 import axiosClient from "@definitions/configs/axios";
-import { Accession } from "@definitions/types";
+import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 
 const AccessionPage = () => {
@@ -23,7 +23,7 @@ const AccessionPage = () => {
       return [];
     }
   };
-  const { data: accessions } = useQuery<Accession[]>({
+  const { data: accessions } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessions,
     queryKey: ["accessions"],
   });
