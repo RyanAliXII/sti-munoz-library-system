@@ -20,6 +20,7 @@ const (
 )
 
 func (repo *AuthorRepository) New(author model.Author) error {
+
 	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.author(given_name, middle_name, surname)VALUES(:given_name, :middle_name, :surname )", author)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_AUTHOR))

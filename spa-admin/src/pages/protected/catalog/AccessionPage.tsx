@@ -11,7 +11,7 @@ import {
   Td,
 } from "@components/table/Table";
 import axiosClient from "@definitions/configs/axios";
-import { Accession } from "@definitions/types";
+import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 
 const AccessionPage = () => {
@@ -23,7 +23,7 @@ const AccessionPage = () => {
       return [];
     }
   };
-  const { data: accessions } = useQuery<Accession[]>({
+  const { data: accessions } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessions,
     queryKey: ["accessions"],
   });
@@ -32,7 +32,7 @@ const AccessionPage = () => {
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
         <h1 className="text-3xl font-bold text-gray-700">Accession</h1>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: drop-shadow-md lg:rounded-md mx-auto mb-4 flex gap-2">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: -md lg:rounded-md mx-auto mb-4 flex gap-2">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
@@ -51,7 +51,7 @@ const AccessionPage = () => {
           <CustomSelect label="Section" />
         </div>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 drop-shadow-md lg:rounded-md mx-auto">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
         <Table>
           <Thead>
             <HeadingRow>

@@ -7,8 +7,6 @@ import (
 )
 
 func DDCRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
-	var controller DDCControllerInterface = &DDCController{
-		repos: repos,
-	}
+	var controller DDCControllerInterface = NewDDCController(repos)
 	router.GET("/", controller.GetDDC)
 }

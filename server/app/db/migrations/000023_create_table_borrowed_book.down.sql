@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS circulation.borrowed_book

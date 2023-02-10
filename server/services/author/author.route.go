@@ -8,7 +8,7 @@ import (
 )
 
 func AuthorRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
-	var controller AuthorControllerInterface = &AuthorController{repos: repos}
+	var controller AuthorControllerInterface = NewAuthorController(repos)
 	router.GET("/", controller.GetAuthors)
 	router.POST("/", middlewares.ValidateBody[AuthorBody], controller.NewAuthor)
 	router.PUT("/:id/", middlewares.ValidateBody[AuthorBody], controller.UpdateAuthor)

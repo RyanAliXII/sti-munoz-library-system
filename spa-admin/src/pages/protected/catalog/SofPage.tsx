@@ -84,7 +84,7 @@ const SofPage = () => {
           <PrimaryButton onClick={openAddModal}>Add Source</PrimaryButton>
         </div>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
         <div className="w-full">
           <Table>
             <Thead>

@@ -155,8 +155,8 @@ const BookAddForm = () => {
 
   return (
     <form onSubmit={submit}>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto mb-10">
-        <h2 className="text-2xl">General Information</h2>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
+        <h1 className="text-2xl">General Information</h1>
         <hr className="mb-5"></hr>
         <FieldRow
           fieldDetails="The title can be found in the cover of the book."
@@ -328,8 +328,8 @@ const BookAddForm = () => {
           />
         </FieldRow>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 drop-shadow-md lg:rounded-md mx-auto">
-        <h2 className="mt-10 text-2xl">Authors and Classification</h2>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+        <h1 className="mt-10 text-2xl">Authors and Classification</h1>
         <hr className="mb-5"></hr>
         <div className="flex gap-3 mb-5 ">
           <span
@@ -422,7 +422,7 @@ const BookAddForm = () => {
         />
       </div>
 
-      <div className="w-full lg:w-11/12 mt-10 drop-shadow-md lg:rounded-md mx-auto mb-10 pb-5">
+      <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
         <div>
           <PrimaryButton className="ml-2 lg:ml-0" type="submit">
             Add to Collection

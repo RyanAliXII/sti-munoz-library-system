@@ -16,7 +16,7 @@ const CustomDatePicker = (props: CustomDatePickerProps) => {
         <DatePicker
           {...{
             ...props,
-            className: `${InputClasses.InputDefaultClasslist} ${props.className}`,
+            className: `${InputClasses.InputDefaultClasslist} ${props.className} `,
           }}
         ></DatePicker>
         <div className="h-2 flex items-center mt-2">

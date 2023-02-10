@@ -1,0 +1,1 @@
+alter table catalog.book DROP IF EXISTS search_vector;

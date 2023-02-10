@@ -9,7 +9,7 @@ const AdminBaseLayout = ({ children }: BaseProps) => {
       <div className="font-OS">
         <div className="w-full">
           <div
-            className="w-56 drop-shadow-sm bg-white hidden lg:block z-10 fixed  top-0 h-full"
+            className="w-56 -sm bg-white hidden lg:block z-10 fixed  top-0 h-full"
             style={{ minWidth: "240px" }}
           >
             <Sidebar />

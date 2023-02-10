@@ -5,6 +5,7 @@ import (
 	"slim-app/server/services/author"
 	authornum "slim-app/server/services/author_number"
 	"slim-app/server/services/book"
+	"slim-app/server/services/circulation"
 	"slim-app/server/services/client"
 	"slim-app/server/services/ddc"
 	fundsrc "slim-app/server/services/fund_source"
@@ -26,4 +27,5 @@ func RegisterAPIV1(router *gin.Engine, repositories *repository.Repositories) {
 	book.BookRoutes(grp.Group("/books"), repositories)
 	inventory.InventoryRoutes(grp.Group("/inventory"), repositories)
 	client.ClientRoutes(grp.Group("/clients"), repositories)
+	circulation.CirculationRoutes(grp.Group("/circulation"), repositories)
 }

@@ -21,7 +21,7 @@ export enum InputClasses {
   focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
   InputErrorClasslist = "border-red-500 focus:border-red-500",
   LabelWrapperClasslist = "h-2 flex items-center mt-2",
-  LabelClasslist = "text-red-500",
+  LabelClasslist = "text-gray-500 text-sm ml-1",
   InputBorderClasslist = "border-solid border-gray-300",
 }
 export enum SelectClasses {
@@ -34,7 +34,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (props, ref) => {
     return (
       <>
-        <label className="text-gray-500 text-sm" htmlFor={props?.name}>
+        <label className={InputClasses.LabelClasslist} htmlFor={props?.name}>
           {props.label}
         </label>
 

@@ -49,6 +49,13 @@ func (ctrler *ClientController) GetAccounts(ctx *gin.Context) {
 	))
 }
 
+func NewClientController(repos *repository.Repositories) ClientControllerInterface {
+	return &ClientController{
+		repos: repos,
+	}
+
+}
+
 type ClientControllerInterface interface {
 	GetAccounts(ctx *gin.Context)
 }

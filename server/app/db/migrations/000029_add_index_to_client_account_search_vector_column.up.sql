@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_account_search on client.account using GIN(search_vector);

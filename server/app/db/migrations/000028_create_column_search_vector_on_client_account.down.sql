@@ -1,0 +1,1 @@
+alter table client.account DROP  IF EXISTS search_vector;

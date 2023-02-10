@@ -62,6 +62,12 @@ func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Publisher deleted."))
 }
+func NewPublisherController(repos *repository.Repositories) PublisherControllerInterface {
+	return &PublisherController{
+		repos: repos,
+	}
+
+}
 
 type PublisherControllerInterface interface {
 	NewPublisher(ctx *gin.Context)

@@ -1,4 +1,3 @@
-import { SingleValue } from "react-select";
 
 export type User = {
     firstname?: string;
@@ -51,11 +50,13 @@ export type User = {
       publisher:string
       pages: number;
       yearPublished: number;
-      receivedAt: string;
+      receivedAt: string //iso-string  date
       ddc: number;
       description: string;
       authors: Author[];
       authorNumber: string
+      accessions: Accession[]
+      createdAt: string //iso-string date
   }
 
   export type AuthorNumber = {
@@ -66,13 +67,19 @@ export type User = {
   export type Accession = {
     number: number,
     copyNumber:number
+  }
+
+  export interface DetailedAccession extends Accession{
+
     bookId: string
     title: string
     ddc: number;
     authorNumber: string
     yearPublished: number;
     section:string
+    isCheckedOut: boolean,
   }
+
   export type Audit = {
     id?:string
     name: string
@@ -84,4 +91,28 @@ export type User = {
     surname: string
     givenName:string
     email:string
+  }
+
+
+  export interface BorrowedAccession extends Omit<DetailedAccession, 'ddc | authorNumber | yearPublished | section'>{}
+
+  export type BorrowingTransaction = {
+    id?:string,
+    accountDisplayName :string,
+    accountId : string,
+    accountEmail: string,
+    borrowedAccessions: BorrowedAccession[]
+    dueDate: string //iso-time-string
+    createdAt: string //iso-time-string
+    returnedAt: string//iso-time-string
+
+  }
+ 
+  export type BorrowStatus = "Returned" | "Overdue" | "Checked Out";
+
+  export enum BorrowStatuses {
+    Returned = "Returned",
+    Overdue = "Overdue",
+    CheckedOut = "Checked Out",
+    Available = "Available",
   }
