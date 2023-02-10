@@ -138,7 +138,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	}, "model.Book fetched."))
 }
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
-	accessions := ctrler.repos.BookRepository.GetAccession()
+	accessions := ctrler.repos.BookRepository.GetAccessions()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accession Fetched."))
@@ -170,10 +170,24 @@ func (ctrler *BookController) UpdateBook(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "model.Book updated."))
 }
 
+func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
+	id := ctx.Param("id")
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
+		return
+	}
+	accessions := ctrler.repos.BookRepository.GetAccessionsByBookId(id)
+	ctx.JSON(httpresp.Success200(gin.H{
+		"accessions": accessions,
+	}, "Accessions successfully fetched for specific book."))
+}
+
 type BookControllerInterface interface {
 	NewBook(ctx *gin.Context)
 	GetBooks(ctx *gin.Context)
 	GetAccession(ctx *gin.Context)
 	GetBookById(ctx *gin.Context)
 	UpdateBook(ctx *gin.Context)
+	GetAccessionByBookId(ctx *gin.Context)
 }

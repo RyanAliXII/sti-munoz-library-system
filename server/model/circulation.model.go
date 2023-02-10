@@ -12,6 +12,8 @@ type BorrowingTransaction struct {
 	AccountId          string             `json:"accountId" db:"account_id"`
 	AccountEmail       string             `json:"accountEmail" db:"email"`
 	BorrowedAccessions BorrowedAccessions `json:"borrowedAccessions" db:"borrowed_accessions"`
+	DueDate            db.NullableTime    `json:"dueDate" db:"due_date"`
+	ReturnedAt         db.NullableTime    `json:"returnedAt" db:"returned_at"`
 	CreatedAt          db.NullableTime    `json:"createdAt" db:"created_at"`
 }
 

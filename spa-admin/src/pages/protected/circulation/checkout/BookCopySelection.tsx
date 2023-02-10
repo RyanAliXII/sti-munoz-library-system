@@ -12,12 +12,15 @@ import {
 import {
   Accession,
   Book,
+  BorrowStatuses,
   DetailedAccession,
   ModalProps,
 } from "@definitions/types";
 import { useEffect, useState } from "react";
 import Modal from "react-responsive-modal";
 import { CheckoutForm } from "./CheckoutPage";
+import axiosClient from "@definitions/configs/axios";
+import { useQuery } from "@tanstack/react-query";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -35,9 +38,28 @@ const BookCopySelectionModal = ({
     DetailedAccession[]
   >([]);
 
+  const fetchAccessionById = async () => {
+    try {
+      const { data: response } = await axiosClient.get(
+        `/books/${book.id}/accessions`
+      );
+      return response?.data?.accessions ?? [];
+    } catch {
+      return [];
+    }
+  };
+
+  const { data: accessions, refetch } = useQuery<DetailedAccession[]>({
+    queryFn: fetchAccessionById,
+    queryKey: ["accessions"],
+    initialData: [],
+    enabled: false,
+  });
+
   useEffect(() => {
     if (isOpen) {
       setSelectedAccessions([...form.accessions]);
+      refetch();
     }
   }, [isOpen]);
 
@@ -46,11 +68,11 @@ const BookCopySelectionModal = ({
     accessionNumber: number
   ) => {
     if (!bookId) return;
-    setSelectedAccessions((prevSelected) => [
-      ...prevSelected.filter(
-        (a) => a.bookId != bookId && a.number != accessionNumber
-      ),
-    ]);
+    setSelectedAccessions((prevSelected) =>
+      prevSelected.filter(
+        (a) => a.bookId === book.id && a.number != accessionNumber
+      )
+    );
   };
   const handleCheck = (accession: Accession) => {
     setSelectedAccessions((prevSelected) => [
@@ -64,6 +86,7 @@ const BookCopySelectionModal = ({
         section: book.section,
         title: book.title,
         yearPublished: book.yearPublished,
+        isCheckedOut: false,
       },
     ]);
   };
@@ -79,31 +102,39 @@ const BookCopySelectionModal = ({
       open={isOpen}
       showCloseIcon={false}
       classNames={{
-        modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded",
+        modal: "w-11/12 md:w-7/12 lg:w-9/12 rounded",
       }}
     >
       <div>
-        <h1 className="mb-3">{book.title}</h1>
+        <h1 className="mb-5 text-xl">{book.title}</h1>
         <Table>
           <Thead>
             <HeadingRow>
               <Th></Th>
               <Th>Accession number</Th>
               <Th>Copy number</Th>
+              <Th>Status</Th>
             </HeadingRow>
           </Thead>
           <Tbody>
-            {book.accessions.map((accession) => {
+            {accessions.map((accession) => {
               const isAdded = selectedAccessions.some(
                 (a) => a.bookId === book.id && a.number === accession.number
               );
-
               return (
-                <BodyRow key={accession.number}>
+                <BodyRow
+                  key={accession.number}
+                  className={
+                    accession.isCheckedOut
+                      ? "bg-gray-100 hover:bg-gray-100"
+                      : ""
+                  }
+                >
                   <Td>
                     <Input
                       type="checkbox"
                       checked={isAdded}
+                      disabled={accession.isCheckedOut}
                       onChange={(event) => {
                         if (event.target.checked) {
                           handleCheck(accession);
@@ -115,6 +146,11 @@ const BookCopySelectionModal = ({
                   </Td>
                   <Td>{accession.number}</Td>
                   <Td>Copy {accession.copyNumber}</Td>
+                  <Td>
+                    {accession.isCheckedOut
+                      ? BorrowStatuses.CheckedOut
+                      : BorrowStatuses.Available}
+                  </Td>
                 </BodyRow>
               );
             })}

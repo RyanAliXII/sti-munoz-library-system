@@ -1,4 +1,8 @@
-import { MdOutlineInventory, MdManageAccounts } from "react-icons/md";
+import {
+  MdOutlineInventory,
+  MdManageAccounts,
+  MdRotate90DegreesCcw,
+} from "react-icons/md";
 import { RiReservedLine } from "react-icons/ri";
 import { GrHomeOption, GrTransaction } from "react-icons/gr";
 import { RxDashboard } from "react-icons/rx";
@@ -86,9 +90,9 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
 
   {
-    text: "Transaction",
+    text: "Circulation",
     to: "/",
-    icon: <GrTransaction className="text-xl" />,
+    icon: <MdRotate90DegreesCcw className="text-xl" />,
     items: [
       {
         text: "Transaction",

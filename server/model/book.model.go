@@ -42,10 +42,10 @@ type Book struct {
 }
 
 type Accession struct {
-	Number     int             `json:"number" db:"accession_number" copier:"Number"`
-	CopyNumber int             `json:"copyNumber" db:"copy_number"`
-	BookId     string          `json:"bookId" db:"book_id" copier:"BookId"`
-	CreatedAt  db.NullableTime `json:"created_at" db:"created_at"`
+	Number       int    `json:"number" db:"accession_number" copier:"Number"`
+	CopyNumber   int    `json:"copyNumber" db:"copy_number"`
+	BookId       string `json:"bookId" db:"book_id" copier:"BookId"`
+	IsCheckedOut bool   `json:"isCheckedOut" db:"is_checked_out"`
 	Book
 }
 

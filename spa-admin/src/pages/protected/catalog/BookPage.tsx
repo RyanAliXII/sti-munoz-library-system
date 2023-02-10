@@ -41,6 +41,7 @@ const BookPage = () => {
       console.log(response.data.books);
       return response.data.books ?? [];
     } catch (error) {
+      return [];
       console.error(error);
     }
   };

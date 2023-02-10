@@ -1,9 +1,4 @@
-import {
-  Input,
-  InputClasses,
-  PrimaryButton,
-  SecondaryButton,
-} from "@components/forms/Forms";
+import { PrimaryButton, SecondaryButton } from "@components/forms/Forms";
 import {
   BodyRow,
   HeadingRow,
@@ -14,38 +9,41 @@ import {
   Thead,
 } from "@components/table/Table";
 import { AiOutlineScan } from "react-icons/ai";
-import Downshift from "downshift";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
+
+import { useState } from "react";
 import axiosClient from "@definitions/configs/axios";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  Accession,
-  Account,
-  Book,
-  DetailedAccession,
-} from "@definitions/types";
+import { useMutation } from "@tanstack/react-query";
+import { Account, Book, DetailedAccession } from "@definitions/types";
 
 import { useForm } from "@hooks/useForm";
 import ProfileIcon from "@components/ProfileIcon";
 
 import { useSwitch } from "@hooks/useToggle";
 import { toast } from "react-toastify";
-import { CheckoutSchemaValidation } from "../../catalog/schema";
+import { CheckoutSchemaValidation } from "../schema";
 import { ErrorMsg } from "@definitions/var";
 import ClientSearchBox from "./ClientSearchBox";
 import BookCopySelectionModal from "./BookCopySelection";
 import BookSearchBox from "./BookSearchBox";
+import CustomDatePicker from "@components/forms/CustomDatePicker";
 
 export type CheckoutForm = {
   client: Account;
   accessions: DetailedAccession[];
+  dueDate: string;
 };
 const CheckoutPage = () => {
+  const getDate5DaysFromNow = (): Date => {
+    let date = new Date();
+    date.setDate(date.getDate() + 5);
+    return date;
+  };
   const {
     setForm,
     form: checkout,
     validate,
     resetForm,
+    errors,
   } = useForm<CheckoutForm>({
     initialFormData: {
       accessions: [],
@@ -56,6 +54,7 @@ const CheckoutPage = () => {
         surname: "",
         id: "",
       },
+      dueDate: getDate5DaysFromNow().toISOString(),
     },
     scrollToError: false,
     schema: CheckoutSchemaValidation,
@@ -100,7 +99,7 @@ const CheckoutPage = () => {
     open: openCopySelection,
   } = useSwitch();
 
-  const selectBookCopy = (book: Book) => {
+  const selectBook = (book: Book) => {
     setSelectedBook({ ...book });
     openCopySelection();
   };
@@ -122,6 +121,7 @@ const CheckoutPage = () => {
       axiosClient.post("/circulation/checkout", {
         clientId: formData.client.id,
         accessions: formData.accessions,
+        dueDate: formData.dueDate,
       }),
     onSuccess: () => {
       toast.success("Books has been checkout successfully.");
@@ -181,7 +181,7 @@ const CheckoutPage = () => {
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
         <h2 className="text-xl mb-2"> Books to borrow</h2>
         <div className="w-full flex items-center gap-2">
-          <BookSearchBox selectBook={selectBookCopy} />
+          <BookSearchBox selectBook={selectBook} />
           <SecondaryButton className="h-9 mt-6 flex justify-center">
             <AiOutlineScan className="text-white inline text-lg " />
           </SecondaryButton>
@@ -207,6 +207,25 @@ const CheckoutPage = () => {
               })}
             </Tbody>
           </Table>
+        </div>
+      </div>
+
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
+        <h2 className="text-xl mb-2"> Due date</h2>
+        <div>
+          <CustomDatePicker
+            name="dueDate"
+            error={errors?.dueDate}
+            minDate={new Date()}
+            onChange={(date) => {
+              if (!date) return;
+              setForm((prevForm) => ({
+                ...prevForm,
+                dueDate: date.toISOString(),
+              }));
+            }}
+            selected={new Date(checkout.dueDate)}
+          />
         </div>
       </div>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">

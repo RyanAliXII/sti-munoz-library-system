@@ -174,20 +174,23 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	}
 	return book
 }
-func (repo *BookRepository) GetAccession() []model.Accession {
+func (repo *BookRepository) GetAccessions() []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 
 	query := `
 		SELECT accession.id as accession_number, copy_number, 
-		book_id, book.title, book.ddc, book.author_number, 
+		accession.book_id, book.title, book.ddc, book.author_number, 
 		book.year_published, 
 		section.name as section,
 		book.section_id,
+		(CASE WHEN accession_number is null then false else true END) as is_checked_out,
 		book.created_at 
 		FROM get_accession_table() 
 		as accession 
 		INNER JOIN catalog.book on accession.book_id = book.id 
 		INNER JOIN catalog.section on book.section_id = section.id
+		LEFT JOIN circulation.borrowed_book 
+		as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
 		ORDER BY book.created_at DESC
 	`
 
@@ -288,6 +291,35 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	}
 	return books
 }
+
+func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
+	var accessions []model.Accession = make([]model.Accession, 0)
+
+	query := `
+		SELECT accession.id as accession_number, copy_number, 
+		accession.book_id, book.title, book.ddc, book.author_number, 
+		book.year_published, 
+		section.name as section,
+		book.section_id,
+		(CASE WHEN accession_number is null then false else true END) as is_checked_out,
+		book.created_at 
+		FROM get_accession_table() 
+		as accession 
+		INNER JOIN catalog.book on accession.book_id = book.id 
+		INNER JOIN catalog.section on book.section_id = section.id
+		LEFT JOIN circulation.borrowed_book 
+		as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
+		WHERE book.id = $1
+		ORDER BY book.created_at DESC
+	`
+
+	selectAccessionErr := repo.db.Select(&accessions, query, id)
+	if selectAccessionErr != nil {
+		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionByBookId"), slimlog.Error("selectAccessionErr"))
+		return accessions
+	}
+	return accessions
+}
 func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 
 	return &BookRepository{
@@ -299,7 +331,8 @@ type BookRepositoryInterface interface {
 	New(model.BookNew) error
 	Get() []model.Book
 	GetOne(id string) model.Book
-	GetAccession() []model.Accession
+	GetAccessions() []model.Accession
 	Update(model.BookUpdate) error
 	Search(Filter) []model.Book
+	GetAccessionsByBookId(id string) []model.Accession
 }

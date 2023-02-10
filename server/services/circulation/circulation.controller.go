@@ -52,7 +52,11 @@ func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Checkout failed."))
 		return
 	}
-	ctrler.repos.CirculationRepository.NewTransaction(body.ClientId, accessions)
+	newTransactionErr := ctrler.repos.CirculationRepository.NewTransaction(body.ClientId, body.DueDate, accessions)
+	if newTransactionErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Something went wrong."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "Checkout success."))
 }
 func NewCirculationController(repos *repository.Repositories) CirculationControllerInterface {
