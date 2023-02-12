@@ -1,4 +1,6 @@
 import ProfileIcon from "@components/ProfileIcon";
+import { PromptTextAreaDialog } from "@components/dialog/Dialog";
+import { PrimaryButton, TextAreaClasses } from "@components/forms/Forms";
 import {
   Thead,
   BodyRow,
@@ -14,11 +16,20 @@ import {
   BorrowStatuses,
   BorrowingTransaction,
 } from "@definitions/types";
-import { useQuery } from "@tanstack/react-query";
+import { ErrorMsg } from "@definitions/var";
+import { useSwitch } from "@hooks/useToggle";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
+  const {
+    close: closePrompt,
+    open: openPrompt,
+    isOpen: isPromptOpen,
+  } = useSwitch();
   const { id } = useParams();
   const fetchTransaction = async () => {
     const { data: response } = await axiosClient.get(
@@ -34,11 +45,12 @@ const TransactionByIdPage = () => {
         createdAt: "",
         dueDate: "",
         returnedAt: "",
+        remarks: "",
       } as BorrowingTransaction)
     );
   };
 
-  const { data: transaction } = useQuery<BorrowingTransaction>({
+  const { data: transaction, refetch } = useQuery<BorrowingTransaction>({
     queryFn: fetchTransaction,
     queryKey: ["transaction"],
     retry: false,
@@ -46,7 +58,19 @@ const TransactionByIdPage = () => {
       navigate("/void");
     },
   });
-
+  const returnBooks = useMutation({
+    mutationFn: (remarks: string) =>
+      axiosClient.patch(`/circulation/transactions/${id}`, {
+        remarks: remarks,
+      }),
+    onError: () => {
+      toast.error(ErrorMsg.Update);
+    },
+    onSuccess: () => {
+      toast.success("Book successfully returned.");
+      refetch();
+    },
+  });
   const checkStatus = (): BorrowStatus => {
     const returnedDate = new Date(transaction?.returnedAt ?? "");
     const INVALID_YEAR = 1;
@@ -65,6 +89,7 @@ const TransactionByIdPage = () => {
       return BorrowStatuses.CheckedOut;
     }
   };
+  const status = checkStatus();
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
@@ -97,7 +122,7 @@ const TransactionByIdPage = () => {
         </div>
         <div className="flex flex-col w-3/12">
           <span className="font-bold text-gray-600">Status</span>
-          <span className="text-gray-500 text-sm">{checkStatus()}</span>
+          <span className="text-gray-500 text-sm">{status}</span>
         </div>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
@@ -123,6 +148,50 @@ const TransactionByIdPage = () => {
           </Tbody>
         </Table>
       </div>
+
+      {status == BorrowStatuses.Returned ? (
+        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mt-5">
+          <h2>Remarks</h2>
+          <div className="mt-2">
+            <textarea
+              defaultValue={
+                transaction?.remarks.length ?? 0 > 0
+                  ? transaction?.remarks
+                  : "No remarks"
+              }
+              className={TextAreaClasses.DefaultClasslist}
+              disabled={true}
+            ></textarea>
+          </div>
+        </div>
+      ) : null}
+
+      {status != BorrowStatuses.Returned ? (
+        <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
+          <div>
+            <PrimaryButton
+              className="ml-2 lg:ml-0"
+              type="submit"
+              onClick={() => {
+                openPrompt();
+              }}
+            >
+              Return Books
+            </PrimaryButton>
+          </div>
+        </div>
+      ) : null}
+      <PromptTextAreaDialog
+        close={closePrompt}
+        isOpen={isPromptOpen}
+        title="Return Remarks"
+        proceedBtnText="Proceed"
+        placeholder="Add remarks e.g. Missing or Returned with damage etc."
+        onProceed={(text: string) => {
+          returnBooks.mutate(text);
+          closePrompt();
+        }}
+      ></PromptTextAreaDialog>
     </>
   );
 };

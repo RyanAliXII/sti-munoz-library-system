@@ -12,3 +12,7 @@ type CheckoutAccessions struct {
 	Number int    `json:"number" binding:"required,gte=1" copier:"Number"`
 	BookId string `json:"bookId" binding:"required,uuid" copier:"BookId"`
 }
+
+type ReturnBookBody struct {
+	Remarks string `json:"remarks"`
+}

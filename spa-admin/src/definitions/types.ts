@@ -102,6 +102,7 @@ export type User = {
     accountId : string,
     accountEmail: string,
     borrowedAccessions: BorrowedAccession[]
+    remarks: string,
     dueDate: string //iso-time-string
     createdAt: string //iso-time-string
     returnedAt: string//iso-time-string

@@ -95,7 +95,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     icon: <MdRotate90DegreesCcw className="text-xl" />,
     items: [
       {
-        text: "Transaction",
+        text: "Return",
         to: "/circulation/transactions",
         items: [],
       },
@@ -104,11 +104,11 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/circulation/checkout",
         items: [],
       },
-      {
-        text: "Return",
-        to: "/circulation/return",
-        items: [],
-      },
+      // {
+      //   text: "Return",
+      //   to: "/circulation/return",
+      //   items: [],
+      // },
     ],
   },
   // {

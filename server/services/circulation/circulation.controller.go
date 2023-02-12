@@ -59,6 +59,30 @@ func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Checkout success."))
 }
+
+func (ctrler *CirculationController) ReturnBooksById(ctx *gin.Context) {
+
+	id := ctx.Param("id")
+	_, idParseErr := uuid.Parse(id)
+	body := ReturnBookBody{
+		Remarks: "",
+	}
+
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if idParseErr != nil {
+		logger.Error(idParseErr.Error(), slimlog.Function("CirculationController.ReturnBooksById"), zap.String("id", id))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
+		return
+	}
+
+	returnErr := ctrler.repos.CirculationRepository.ReturnBooksByTransactionId(id, body.Remarks)
+	if returnErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, returnErr.Error()))
+		return
+	}
+
+	ctx.JSON(httpresp.Success200(nil, "Books returned successfully."))
+}
 func NewCirculationController(repos *repository.Repositories) CirculationControllerInterface {
 	return &CirculationController{
 		repos: repos,
@@ -70,4 +94,5 @@ type CirculationControllerInterface interface {
 	GetTransactionBooks(ctx *gin.Context)
 	GetTransactionById(ctx *gin.Context)
 	Checkout(ctx *gin.Context)
+	ReturnBooksById(ctx *gin.Context)
 }
