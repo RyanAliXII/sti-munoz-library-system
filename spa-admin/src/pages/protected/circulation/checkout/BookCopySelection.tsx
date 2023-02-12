@@ -1,4 +1,4 @@
-import { Input, PrimaryButton } from "@components/forms/Forms";
+import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
 import {
   BodyRow,
   HeadingRow,
@@ -60,6 +60,8 @@ const BookCopySelectionModal = ({
     if (isOpen) {
       setSelectedAccessions([...form.accessions]);
       refetch();
+    } else {
+      setSelectedAccessions([]);
     }
   }, [isOpen]);
 
@@ -161,6 +163,9 @@ const BookCopySelectionModal = ({
       <PrimaryButton className="mt-5" onClick={proceedToAdd}>
         Add changes
       </PrimaryButton>
+      <LighButton className="ml-2" onClick={closeModal}>
+        Cancel
+      </LighButton>
     </Modal>
   );
 };

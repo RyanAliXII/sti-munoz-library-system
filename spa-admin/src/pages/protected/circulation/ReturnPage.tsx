@@ -1,141 +1,10 @@
-import { PrimaryButton, SecondaryButton } from "@components/forms/Forms";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/table/Table";
-import { AiOutlineScan } from "react-icons/ai";
+import React from "react";
 
-import { useState } from "react";
-import axiosClient from "@definitions/configs/axios";
-import { useMutation } from "@tanstack/react-query";
-import { Account, Book, DetailedAccession } from "@definitions/types";
-
-import { useForm } from "@hooks/useForm";
-import ProfileIcon from "@components/ProfileIcon";
-
-import { useSwitch } from "@hooks/useToggle";
-import { toast } from "react-toastify";
-import { CheckoutSchemaValidation } from "../schema";
-import { ErrorMsg } from "@definitions/var";
-import ClientSearchBox from "./ClientSearchBox";
-import BookCopySelectionModal from "./BookCopySelection";
-import BookSearchBox from "./BookSearchBox";
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-
-export type CheckoutForm = {
-  client: Account;
-  accessions: DetailedAccession[];
-  dueDate: string;
-};
-const CheckoutPage = () => {
-  const getDate5DaysFromNow = (): Date => {
-    let date = new Date();
-    date.setDate(date.getDate() + 5);
-    return date;
-  };
-  const {
-    setForm,
-    form: checkout,
-    validate,
-    resetForm,
-    errors,
-  } = useForm<CheckoutForm>({
-    initialFormData: {
-      accessions: [],
-      client: {
-        displayName: "",
-        email: "",
-        givenName: "",
-        surname: "",
-        id: "",
-      },
-      dueDate: getDate5DaysFromNow().toISOString(),
-    },
-    scrollToError: false,
-    schema: CheckoutSchemaValidation,
-  });
-  const setClient = (account: Account) => {
-    setForm((prevForm) => ({ ...prevForm, client: account }));
-  };
-  const updateAccessionsToBorrow = (accessions: DetailedAccession[]) => {
-    setForm((prevForm) => ({
-      ...prevForm,
-      accessions: [...accessions],
-    }));
-  };
-
-  const [selectedBook, setSelectedBook] = useState<Book>({
-    accessions: [],
-    authorNumber: "",
-    authors: [],
-    copies: 0,
-    costPrice: 0,
-    createdAt: "",
-    ddc: 0,
-    description: "",
-    edition: 0,
-    fundSource: "",
-    fundSourceId: 0,
-    isbn: "",
-    pages: 0,
-    publisher: "",
-    publisherId: 0,
-    receivedAt: "",
-    section: "",
-    sectionId: 0,
-    title: "",
-    yearPublished: 0,
-    id: "",
-  });
-
-  const {
-    close: closeCopySelection,
-    isOpen: isCopySelectionOpen,
-    open: openCopySelection,
-  } = useSwitch();
-
-  const selectBook = (book: Book) => {
-    setSelectedBook({ ...book });
-    openCopySelection();
-  };
-
-  const proceedCheckout = async () => {
-    try {
-      const data = await validate();
-      if (!data) return;
-      submitCheckout.mutate(data);
-    } catch (err) {
-      toast.error(
-        "Checkout cannot proceed. Information might be invalid or not provided. Please select a client and books to borrow."
-      );
-    }
-  };
-
-  const submitCheckout = useMutation({
-    mutationFn: (formData: CheckoutForm) =>
-      axiosClient.post("/circulation/checkout", {
-        clientId: formData.client.id,
-        accessions: formData.accessions,
-        dueDate: formData.dueDate,
-      }),
-    onSuccess: () => {
-      toast.success("Books has been checkout successfully.");
-    },
-    onError: () => {
-      toast.error(ErrorMsg.New);
-    },
-    onSettled: () => {
-      resetForm();
-    },
-  });
+const ReturnPage = () => {
   return (
+
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
+    <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
         <h1 className="text-3xl font-bold text-gray-700">Borrow Book</h1>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 gap-2 border border-gray-100">
@@ -241,7 +110,9 @@ const CheckoutPage = () => {
         form={checkout}
       />
     </>
-  );
+    
+    </>
+  )
 };
 
-export default CheckoutPage;
+export default ReturnPage;
