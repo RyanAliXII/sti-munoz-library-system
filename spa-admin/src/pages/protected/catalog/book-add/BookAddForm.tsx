@@ -17,6 +17,9 @@ import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 
 const BookAddForm = () => {
   const {
@@ -155,9 +158,11 @@ const BookAddForm = () => {
 
   return (
     <form onSubmit={submit}>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
-        <h1 className="text-2xl">General Information</h1>
-        <hr className="mb-5"></hr>
+      <ContainerNoBackground>
+        <div className="mb-5">
+          <h1 className="text-2xl">General Information</h1>
+          <hr className="mb-5"></hr>
+        </div>
         <FieldRow
           fieldDetails="The title can be found in the cover of the book."
           isRequired
@@ -327,8 +332,8 @@ const BookAddForm = () => {
             onEditorChange={handleDescriptionInput}
           />
         </FieldRow>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <ContainerNoBackground>
         <h1 className="mt-10 text-2xl">Authors and Classification</h1>
         <hr className="mb-5"></hr>
         <div className="flex gap-3 mb-5 ">
@@ -420,7 +425,7 @@ const BookAddForm = () => {
           closeModal={closeAuthorNumberSelection}
           isOpen={isAuthorNumberSelectionOpen}
         />
-      </div>
+      </ContainerNoBackground>
 
       <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
         <div>

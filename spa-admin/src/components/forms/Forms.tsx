@@ -9,11 +9,11 @@ interface InputProps extends HTMLInputProps {
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 export enum ButtonClasses {
-  PrimaryButtonDefaultClasslist = "bg-blue-500 p-2 rounded text-sm text-white",
-  DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-sm text-white",
-  SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 text-sm rounded text-white",
-  LightButtonDefaultClasslist = "bg-gray-500 p-2 rounded text-sm text-white",
-  WarningButtonDefaultClasslist = "bg-orange-500 p-2  text-sm rounded text-white",
+  PrimaryButtonDefaultClasslist = "bg-blue-500 p-2 rounded text-sm text-white font-semibold",
+  DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-sm text-white font-semibold",
+  SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 text-sm rounded text-white font-semibold",
+  LightButtonDefaultClasslist = "bg-white border p-2 rounded text-sm text-gray-700 font-semibold",
+  WarningButtonDefaultClasslist = "bg-orange-500 p-2  text-sm rounded text-white font-semibold",
 }
 export enum InputClasses {
   InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 

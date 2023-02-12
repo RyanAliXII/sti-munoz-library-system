@@ -23,6 +23,9 @@ import {
 } from "@components/table/Table";
 import { EditModalProps, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 
 const ADD_AUTHOR_DEFAULT: Omit<Author, "id"> = {
   givenName: "",
@@ -92,13 +95,13 @@ const AuthorPage = () => {
   } = useQuery<Author[]>({ queryFn: fetchAuthors, queryKey: ["authors"] });
   return (
     <>
-      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
-        <div className="flex gap-2">
+      <ContainerNoBackground className="flex gap-2">
+        <div className="w-full flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Authors</h1>
           <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
@@ -130,7 +133,7 @@ const AuthorPage = () => {
             </Table>
           </div>
         </LoadingBoundary>
-      </div>
+      </Container>
       <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditAuthorModal
         isOpen={isEditModalOpen}

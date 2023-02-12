@@ -1,7 +1,7 @@
 import ProfileIcon from "@components/ProfileIcon";
 import CustomDatePicker from "@components/forms/CustomDatePicker";
 import CustomSelect from "@components/forms/CustomSelect";
-import { ButtonClasses, Input } from "@components/forms/Forms";
+import { ButtonClasses, Input, PrimaryButton } from "@components/forms/Forms";
 import {
   Table,
   BodyRow,
@@ -11,6 +11,7 @@ import {
   Tbody,
   Thead,
 } from "@components/table/Table";
+import Container from "@components/ui/Container/Container";
 import axiosClient from "@definitions/configs/axios";
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
@@ -65,20 +66,18 @@ const AccountPage = () => {
 
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex items-center gap-5">
         <h1 className="text-3xl font-bold text-gray-700">Accounts</h1>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: -md lg:rounded-md mx-auto mb-4 flex gap-2">
-        <div className="w-5/12">
+        <div className="w-8/12 ">
           <Input
             type="text"
-            label="Search"
-            placeholder="Search.."
+            placeholder="Search account by email or name"
             onChange={handleSearch}
           ></Input>
         </div>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
+
+      <Container>
         <Table>
           <Thead>
             <HeadingRow>
@@ -108,7 +107,7 @@ const AccountPage = () => {
             )}
           </Tbody>
         </Table>
-      </div>
+      </Container>
     </>
   );
 };

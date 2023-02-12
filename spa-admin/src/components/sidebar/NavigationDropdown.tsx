@@ -11,7 +11,7 @@ export const NavigationDropdown = ({
   return (
     <div className="w-full">
       <div
-        className="w-full cursor-pointer flex items-center justify-between text-gray-600"
+        className="w-full cursor-pointer flex items-center justify-between text-gray-500"
         onClick={toggle}
       >
         {drawerButton}
@@ -30,7 +30,7 @@ export const NavigationDropdownButton = ({
   text,
 }: NavigationDropdownButtonProps) => {
   return (
-    <div className="ml-5 flex items-center h-11 gap-1 text-gray-600">
+    <div className="ml-5 flex items-center h-11 gap-1 text-gray-500">
       {icon}
       <span className="font-medium text-sm">{text}</span>
     </div>

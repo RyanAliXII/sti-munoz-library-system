@@ -22,6 +22,9 @@ import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 
 const AuditPage = () => {
   const {
@@ -53,15 +56,15 @@ const AuditPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <ContainerNoBackground className="flex gap-2">
         <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
 
         <PrimaryButton type="button" onClick={openNewAuditModal}>
           New Audit
         </PrimaryButton>
-      </div>
+      </ContainerNoBackground>
 
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
+      <Container>
         <Table>
           <Thead>
             <HeadingRow>
@@ -91,7 +94,7 @@ const AuditPage = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
       <NewAuditModal
         closeModal={closeNewAuditModal}
         isOpen={isNewAuditModalOpen}

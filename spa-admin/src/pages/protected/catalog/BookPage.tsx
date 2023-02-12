@@ -28,6 +28,9 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
 import TimeAgo from "timeago-react";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 
 const BookPage = () => {
   const {
@@ -38,11 +41,10 @@ const BookPage = () => {
   const fetchBooks = async () => {
     try {
       const { data: response } = await axiosClient.get("/books/");
-      console.log(response.data.books);
-      return response.data.books ?? [];
+      return response?.data?.books ?? [];
     } catch (error) {
-      return [];
       console.error(error);
+      return [];
     }
   };
 
@@ -60,16 +62,39 @@ const BookPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
-        <h1 className="text-3xl font-bold text-gray-700">Books</h1>
-        <Link
-          to="/books/new"
-          className={ButtonClasses.PrimaryButtonDefaultClasslist}
-        >
-          New Book
-        </Link>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 flex gap-2 ">
+      <ContainerNoBackground className="flex gap-2 justify-between">
+        <div className="flex items-center">
+          <h1 className="text-3xl font-bold text-gray-700">Books</h1>
+        </div>
+        <div className="gap-2 items-center lg:basis-9/12 lg:flex">
+          <div className="w-5/12 hidden lg:block">
+            <Input type="text" label="Search" placeholder="Search..."></Input>
+          </div>
+          <div className="hidden lg:block">
+            <CustomDatePicker
+              label="Year Published"
+              wrapperclass="flex flex-col"
+              selected={new Date()}
+              onChange={() => {}}
+              showYearPicker
+              dateFormat="yyyy"
+              yearItemNumber={9}
+            />
+          </div>
+          <div className="w-3/12 hidden lg:block">
+            <CustomSelect label="Section" />
+          </div>
+          <div className="w-32 mt-1">
+            <Link
+              to="/books/new"
+              className={`${ButtonClasses.PrimaryButtonDefaultClasslist} py-2.5`}
+            >
+              New Book
+            </Link>
+          </div>
+        </div>
+      </ContainerNoBackground>
+      <ContainerNoBackground className="flex gap-2 lg:hidden">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
@@ -87,8 +112,8 @@ const BookPage = () => {
         <div className="w-3/12">
           <CustomSelect label="Section" />
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 lg:rounded-md mx-auto ">
+      </ContainerNoBackground>
+      <Container className="lg:p-0">
         <Table>
           <Thead>
             <HeadingRow>
@@ -97,6 +122,7 @@ const BookPage = () => {
               <Th>Copies</Th>
               <Th>Year Published</Th>
               <Th>Date Received</Th>
+              <Th></Th>
             </HeadingRow>
           </Thead>
           <Tbody>
@@ -127,7 +153,7 @@ const BookPage = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
 
       <BookPrintablesModal
         closeModal={closePrintablesModal}

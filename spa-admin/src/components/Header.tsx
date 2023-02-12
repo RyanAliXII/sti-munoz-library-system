@@ -54,9 +54,9 @@ const Header = () => {
             >
               <div className="py-1" role="none">
                 <div className="flex flex-col px-4 py-2 gap-1">
-                  <small className="font-medium">
+                  <strong className="font-medium">
                     {user.firstname + " " + user.lastname}
-                  </small>
+                  </strong>
                   <small>{user.email}</small>
                 </div>
                 <LogoutButton />

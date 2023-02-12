@@ -26,6 +26,9 @@ import ClientSearchBox from "./ClientSearchBox";
 import BookCopySelectionModal from "./BookCopySelection";
 import BookSearchBox from "./BookSearchBox";
 import CustomDatePicker from "@components/forms/CustomDatePicker";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 
 export type CheckoutForm = {
   client: Account;
@@ -135,10 +138,10 @@ const CheckoutPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
+      <ContainerNoBackground>
         <h1 className="text-3xl font-bold text-gray-700">Borrow Book</h1>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 gap-2 border border-gray-100">
+      </ContainerNoBackground>
+      <Container className="px-4 py-6">
         <h2 className="text-xl mb-2"> Borrower</h2>
         <div className="w-full flex items-center gap-2">
           <ClientSearchBox setClient={setClient} form={checkout} />
@@ -177,8 +180,8 @@ const CheckoutPage = () => {
             </Tbody>
           </Table>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
+      </Container>
+      <Container className="p-4">
         <h2 className="text-xl mb-2"> Books to borrow</h2>
         <div className="w-full flex items-center gap-2">
           <BookSearchBox selectBook={selectBook} />
@@ -208,9 +211,9 @@ const CheckoutPage = () => {
             </Tbody>
           </Table>
         </div>
-      </div>
+      </Container>
 
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
+      <ContainerNoBackground className="px-4 py-6">
         <h2 className="text-xl mb-2"> Due date</h2>
         <div>
           <CustomDatePicker
@@ -227,7 +230,7 @@ const CheckoutPage = () => {
             selected={new Date(checkout.dueDate)}
           />
         </div>
-      </div>
+      </ContainerNoBackground>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
         <PrimaryButton onClick={proceedCheckout}>
           Proceed to checkout

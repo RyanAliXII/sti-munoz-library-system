@@ -52,10 +52,9 @@ const BookCopySelectionModal = ({
   const { data: accessions, refetch } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessionById,
     queryKey: ["accessions"],
+    refetchOnMount: false,
     initialData: [],
-    enabled: false,
   });
-
   useEffect(() => {
     if (isOpen) {
       setSelectedAccessions([...form.accessions]);

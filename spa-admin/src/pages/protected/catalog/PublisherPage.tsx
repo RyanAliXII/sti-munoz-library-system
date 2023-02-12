@@ -23,6 +23,9 @@ import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
 import { PublisherSchema } from "./schema";
 import { Publisher } from "@definitions/types";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {
@@ -86,13 +89,13 @@ const PublisherPage = () => {
 
   return (
     <>
-      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
-        <div className="flex gap-2">
+      <ContainerNoBackground>
+        <div className="flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Publishers</h1>
           <PrimaryButton onClick={openAddModal}>New Publisher</PrimaryButton>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container className="lg:px-0">
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
@@ -130,7 +133,7 @@ const PublisherPage = () => {
             </Table>
           </div>
         </LoadingBoundary>
-      </div>
+      </Container>
       <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       <EditPublisherModal
         closeModal={closeEditModal}

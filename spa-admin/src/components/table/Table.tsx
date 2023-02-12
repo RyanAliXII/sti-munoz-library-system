@@ -2,10 +2,10 @@ import { HTMLAttributes, TableHTMLAttributes } from "react";
 
 export enum TableElementClasses {
   TableClasslist = "w-full",
-  TheadClasslist = "bg-gray-50 text-gray-400",
+  TheadClasslist = "text-gray-600",
   HeadingRowClasslist = "border border-l-0 border-r-0 border-t-0",
-  ThClasslist = "py-3 text-left px-2 text-sm font-semibold",
-  BodyRowClasslist = "border border-l-0 border-r-0 border-t-0 text-gray-500 font-medium hover:bg-gray-50",
+  ThClasslist = "py-4 text-left px-2 text-sm",
+  BodyRowClasslist = "border border-l-0 border-r-0 border-t-0 text-gray-500 font-medium hover:bg-gray-50 last:border-b-0",
   TdClasslist = "p-3 text-sm",
 }
 

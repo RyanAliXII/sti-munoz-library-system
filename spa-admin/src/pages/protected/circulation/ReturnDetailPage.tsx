@@ -10,6 +10,9 @@ import {
   Tbody,
   Th,
 } from "@components/table/Table";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/Container/Container";
 import axiosClient from "@definitions/configs/axios";
 import {
   BorrowStatus,
@@ -19,7 +22,6 @@ import {
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -92,10 +94,10 @@ const TransactionByIdPage = () => {
   const status = checkStatus();
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <ContainerNoBackground>
         <h1 className="text-3xl font-bold text-gray-700">Transaction: {id}</h1>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 flex gap-2 justify-between">
+      </ContainerNoBackground>
+      <Container className="flex justify-between px-4 py-6">
         <div>
           <div className="flex gap-5">
             <div>
@@ -124,8 +126,8 @@ const TransactionByIdPage = () => {
           <span className="font-bold text-gray-600">Status</span>
           <span className="text-gray-500 text-sm">{status}</span>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
+      </Container>
+      <Container className="px-4 py-6">
         <h4 className="mb-2">Borrowed Books</h4>
         <Table>
           <Thead>
@@ -147,10 +149,10 @@ const TransactionByIdPage = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
 
       {status == BorrowStatuses.Returned ? (
-        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mt-5">
+        <Container className="px-4 py-6">
           <h2>Remarks</h2>
           <div className="mt-2">
             <textarea
@@ -163,11 +165,11 @@ const TransactionByIdPage = () => {
               disabled={true}
             ></textarea>
           </div>
-        </div>
+        </Container>
       ) : null}
 
       {status != BorrowStatuses.Returned ? (
-        <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
+        <Container className="px-4 py-6">
           <div>
             <PrimaryButton
               className="ml-2 lg:ml-0"
@@ -179,7 +181,7 @@ const TransactionByIdPage = () => {
               Return Books
             </PrimaryButton>
           </div>
-        </div>
+        </Container>
       ) : null}
       <PromptTextAreaDialog
         close={closePrompt}
