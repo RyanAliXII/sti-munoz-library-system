@@ -1,118 +1,78 @@
-import React from "react";
+import {
+  Thead,
+  Table,
+  BodyRow,
+  HeadingRow,
+  Tbody,
+  Td,
+  Th,
+} from "@components/table/Table";
 
-const ReturnPage = () => {
+import { Input } from "@components/forms/Forms";
+import { useQuery } from "@tanstack/react-query";
+import axiosClient from "@definitions/configs/axios";
+import { BorrowingTransaction } from "@definitions/types";
+import TimeAgo from "timeago-react";
+import { useNavigate } from "react-router-dom";
+
+const BorrowingTransactionPage = () => {
+  const fetchTransactions = async () => {
+    try {
+      const { data: response } = await axiosClient.get(
+        "/circulation/transactions"
+      );
+      return response?.data?.transactions ?? [];
+    } catch {
+      return [];
+    }
+  };
+  const { data: transactions } = useQuery<BorrowingTransaction[]>({
+    queryFn: fetchTransactions,
+    queryKey: ["transactions"],
+  });
+  const navigate = useNavigate();
   return (
-
     <>
-    <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <h1 className="text-3xl font-bold text-gray-700">Borrow Book</h1>
+      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+        <h1 className="text-3xl font-bold text-gray-700">Return Book</h1>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4 gap-2 border border-gray-100">
-        <h2 className="text-xl mb-2"> Borrower</h2>
-        <div className="w-full flex items-center gap-2">
-          <ClientSearchBox setClient={setClient} form={checkout} />
-          <SecondaryButton className="h-9 mt-6 flex justify-center">
-            <AiOutlineScan className="text-white inline text-lg " />
-          </SecondaryButton>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: -md lg:rounded-md mx-auto mb-4 flex gap-2 border border-gray-100">
+        <div className="w-5/12">
+          <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
-        <div className="mt-5">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th></Th>
-                <Th>Client</Th>
-                <Th>Email</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {checkout.client?.id?.length ?? 0 > 0 ? (
-                <BodyRow>
+      </div>
+      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto border border-gray-100">
+        <Table>
+          <Thead>
+            <HeadingRow>
+              <Th>Transaction Id</Th>
+              <Th>Client</Th>
+              <Th></Th>
+            </HeadingRow>
+          </Thead>
+          <Tbody>
+            {transactions?.map((transaction) => {
+              return (
+                <BodyRow
+                  key={transaction.id}
+                  className="cursor-pointer"
+                  onClick={() =>
+                    navigate(`/circulation/transactions/${transaction.id}`)
+                  }
+                >
+                  <Td>{transaction.id}</Td>
+                  <Td>{transaction.accountDisplayName}</Td>
                   <Td>
-                    <ProfileIcon
-                      givenName={checkout.client.givenName}
-                      surname={checkout.client.surname}
-                    />
-                  </Td>
-                  <Td>{checkout.client.displayName}</Td>
-                  <Td>{checkout.client.email}</Td>
-                </BodyRow>
-              ) : (
-                <BodyRow>
-                  <Td>
-                    <span>No client selected.</span>
+                    <TimeAgo datetime={transaction.createdAt} />
                   </Td>
                 </BodyRow>
-              )}
-            </Tbody>
-          </Table>
-        </div>
+              );
+            })}
+          </Tbody>
+        </Table>
       </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
-        <h2 className="text-xl mb-2"> Books to borrow</h2>
-        <div className="w-full flex items-center gap-2">
-          <BookSearchBox selectBook={selectBook} />
-          <SecondaryButton className="h-9 mt-6 flex justify-center">
-            <AiOutlineScan className="text-white inline text-lg " />
-          </SecondaryButton>
-        </div>
-        <div className="mt-5">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Book title</Th>
-                <Th>Copy number</Th>
-                <Th>Accession number</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {checkout.accessions?.map((accession) => {
-                return (
-                  <BodyRow key={`${accession.bookId}_${accession.copyNumber}`}>
-                    <Td>{accession.title}</Td>
-                    <Td>{accession.copyNumber}</Td>
-                    <Td>{accession.number}</Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </div>
-      </div>
-
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5  lg:rounded-md mx-auto mb-4  gap-2 border border-gray-100">
-        <h2 className="text-xl mb-2"> Due date</h2>
-        <div>
-          <CustomDatePicker
-            name="dueDate"
-            error={errors?.dueDate}
-            minDate={new Date()}
-            onChange={(date) => {
-              if (!date) return;
-              setForm((prevForm) => ({
-                ...prevForm,
-                dueDate: date.toISOString(),
-              }));
-            }}
-            selected={new Date(checkout.dueDate)}
-          />
-        </div>
-      </div>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <PrimaryButton onClick={proceedCheckout}>
-          Proceed to checkout
-        </PrimaryButton>
-      </div>
-      <BookCopySelectionModal
-        book={selectedBook}
-        closeModal={closeCopySelection}
-        isOpen={isCopySelectionOpen}
-        updateAccessionsToBorrow={updateAccessionsToBorrow}
-        form={checkout}
-      />
     </>
-    
-    </>
-  )
+  );
 };
 
-export default ReturnPage;
+export default BorrowingTransactionPage;

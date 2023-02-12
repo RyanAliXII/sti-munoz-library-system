@@ -1,5 +1,12 @@
 import Modal from "react-responsive-modal";
-import { DangerButton, LighButton } from "../forms/Forms";
+import {
+  DangerButton,
+  Input,
+  LighButton,
+  PrimaryButton,
+  TextAreaClasses,
+} from "../forms/Forms";
+import { useState } from "react";
 
 type DialogProps = {
   title?: string;
@@ -44,6 +51,74 @@ export const DangerConfirmDialog = ({
         <div className="flex gap-2 h-30 p-2 w-full justify-end">
           <LighButton onClick={close}>Cancel</LighButton>
           <DangerButton onClick={onConfirm}>Confirm</DangerButton>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+type PromptDialogProps = {
+  title?: string;
+  label?: string;
+  placeholder?: string;
+  isOpen: boolean;
+  proceedBtnText?: string;
+  close: () => void;
+  onProceed?: (text: string) => void;
+};
+export const PromptTextAreaDialog = ({
+  title,
+  close,
+  isOpen,
+  onProceed,
+  placeholder,
+  proceedBtnText,
+}: PromptDialogProps) => {
+  const [text, setText] = useState<string>("");
+  if (!isOpen) return null;
+  return (
+    <Modal
+      showCloseIcon={false}
+      open={isOpen}
+      center
+      styles={{
+        modalContainer: {
+          boxShadow: "none",
+        },
+        modal: {
+          padding: 0,
+          borderRadius: "3px",
+          border: "none",
+          boxShadow: "none",
+        },
+      }}
+      onClose={close}
+    >
+      <div className="w-96 rounded">
+        <div className="header w-full h-10 px-2 py-2 text-lg font-medium border-b text-gray-600">
+          <span>{title}</span>
+        </div>
+        <div className="px-2 h-36 border-b flex items-center">
+          <div className="w-full ">
+            <textarea
+              className={TextAreaClasses.DefaultClasslist}
+              placeholder={placeholder}
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+            ></textarea>
+          </div>
+          {/* <Input label={label} placeholder={placeholder}></Input> */}
+        </div>
+        <div className="flex gap-2 h-30 p-2 w-full justify-end">
+          <LighButton onClick={close}>Cancel</LighButton>
+          <PrimaryButton
+            onClick={() => {
+              onProceed?.(text);
+            }}
+          >
+            {proceedBtnText}
+          </PrimaryButton>
         </div>
       </div>
     </Modal>
