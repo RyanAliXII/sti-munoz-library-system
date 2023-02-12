@@ -19,6 +19,7 @@ import AccountPage from "./protected/client/AccountPage";
 import BorrowingTransactionPage from "./protected/circulation/BorrowingTransactionPage";
 import TransactionByIdPage from "./protected/circulation/TransactionByIdPage";
 import CheckoutPage from "./protected/circulation/checkout/CheckoutPage";
+import ReturnPage from "./protected/circulation/ReturnPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -36,6 +37,7 @@ const pages = createRoutesFromChildren(
       <Route path="/inventory/audits/:id" element={<AuditScanPage />} />
       <Route path="/clients/accounts" element={<AccountPage />} />\
       <Route path="/circulation/checkout" element={<CheckoutPage />} />
+      <Route path="/circulation/return" element={<ReturnPage />} />
       <Route
         path="/circulation/transactions"
         element={<BorrowingTransactionPage />}
