@@ -6,11 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import Downshift from "downshift";
 import { BaseSyntheticEvent, useState } from "react";
 import { ClipLoader } from "react-spinners";
-
+import { CheckoutForm } from "./CheckoutPage";
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
+  form: CheckoutForm;
 };
-const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
+const HIGHLIGHTED_CLASS = "bg-gray-100";
+const ClientSearchBox = ({ setClient, form }: ClientSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
   const DELAY_IN_MILLISECOND = 500;
@@ -36,10 +38,22 @@ const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
     queryKey: ["accounts", searchKeyword],
     queryFn: fetchAccounts,
   });
+
   return (
     <>
-      <Downshift>
-        {({ getInputProps, isOpen, closeMenu }) => (
+      <Downshift
+        itemToString={(account) => (account ? account.displayName : "")}
+        onChange={(account) => {
+          setClient(account);
+        }}
+      >
+        {({
+          getInputProps,
+          isOpen,
+          getItemProps,
+          getMenuProps,
+          highlightedIndex,
+        }) => (
           <div className="w-10/12  relative">
             <label className={InputClasses.LabelClasslist}>Search client</label>
             <input
@@ -52,17 +66,22 @@ const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
 
             {isOpen && accounts.length > 0 ? (
               !isRefetching ? (
-                <ul className="w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded z-10">
-                  {accounts?.map((account) => {
+                <ul
+                  {...getMenuProps({
+                    className:
+                      "w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded z-10",
+                  })}
+                >
+                  {accounts?.map((account, index) => {
                     return (
                       <li
-                        key={account.id}
-                        className="p-3 border flex flex-col"
-                        onClick={() => {
-                          closeMenu(() => {
-                            setClient(account);
-                          });
-                        }}
+                        {...getItemProps({
+                          key: account.id,
+                          item: account,
+                          className: `p-3 border flex flex-col ${
+                            index === highlightedIndex ? HIGHLIGHTED_CLASS : ""
+                          }`,
+                        })}
                       >
                         <span className="text-gray-600">
                           {account.displayName}

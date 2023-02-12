@@ -10,6 +10,8 @@ import { ClipLoader } from "react-spinners";
 type BookSearchBoxProps = {
   selectBook: (book: Book) => void;
 };
+
+const HIGHLIGHTED_CLASS = "bg-gray-100";
 const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
@@ -38,8 +40,19 @@ const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
   });
   return (
     <>
-      <Downshift>
-        {({ getInputProps, isOpen, closeMenu }) => (
+      <Downshift
+        itemToString={(book) => (book ? book.title : "")}
+        onChange={(book) => {
+          selectBook(book);
+        }}
+      >
+        {({
+          getInputProps,
+          isOpen,
+          getMenuProps,
+          getItemProps,
+          highlightedIndex,
+        }) => (
           <div className="w-10/12  relative ">
             <label className={InputClasses.LabelClasslist}>Search book</label>
             <input
@@ -52,21 +65,26 @@ const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
 
             {isOpen && books.length > 0 ? (
               !isRefetching ? (
-                <ul className="w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded">
-                  {books?.map((book) => {
+                <ul
+                  {...getMenuProps({
+                    className:
+                      "w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded z-10",
+                  })}
+                >
+                  {books?.map((book, index) => {
                     const authors = book.authors?.map((author) => {
                       return `${author.givenName} ${author.surname}`;
                     });
 
                     return (
                       <li
-                        key={book.id}
-                        className="p-3 border flex flex-col"
-                        onClick={() => {
-                          closeMenu(() => {
-                            selectBook(book);
-                          });
-                        }}
+                        {...getItemProps({
+                          key: book.id,
+                          item: book,
+                          className: `p-3 border flex flex-col ${
+                            index === highlightedIndex ? HIGHLIGHTED_CLASS : ""
+                          }`,
+                        })}
                       >
                         <span className="text-gray-600">{book.title}</span>
                         <small className="text-gray-400">
