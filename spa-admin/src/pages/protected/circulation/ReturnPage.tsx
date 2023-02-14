@@ -6,14 +6,17 @@ import {
   Tbody,
   Td,
   Th,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 
-import { Input } from "@components/forms/Forms";
+import { Input } from "@components/ui/form/Input";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@definitions/configs/axios";
 import { BorrowingTransaction } from "@definitions/types";
 import TimeAgo from "timeago-react";
 import { useNavigate } from "react-router-dom";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 
 const BorrowingTransactionPage = () => {
   const fetchTransactions = async () => {
@@ -33,15 +36,15 @@ const BorrowingTransactionPage = () => {
   const navigate = useNavigate();
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <ContainerNoBackground>
         <h1 className="text-3xl font-bold text-gray-700">Return Book</h1>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: -md lg:rounded-md mx-auto mb-4 flex gap-2 border border-gray-100">
+      </ContainerNoBackground>
+      {/* <Container>
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto border border-gray-100">
+      </Container> */}
+      <Container>
         <Table>
           <Thead>
             <HeadingRow>
@@ -70,7 +73,7 @@ const BorrowingTransactionPage = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
     </>
   );
 };

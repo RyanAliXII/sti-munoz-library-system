@@ -1,5 +1,5 @@
 import React, { BaseSyntheticEvent } from "react";
-import { PrimaryButton, LighButton, Input } from "@components/forms/Forms";
+import { PrimaryButton, LighButton } from "@components/ui/button/Button";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
@@ -14,12 +14,16 @@ import {
   Thead,
   BodyRow,
   HeadingRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "@definitions/configs/axios";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { Section } from "@definitions/types";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
+import { Input } from "@components/ui/form/Input";
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,
@@ -52,13 +56,13 @@ const SectionPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <div className="flex gap-2">
+      <ContainerNoBackground className="flex gap-2">
+        <div className="w-full flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Sections</h1>
           <PrimaryButton onClick={openAddModal}>New Section</PrimaryButton>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
@@ -95,7 +99,7 @@ const SectionPage = () => {
             </Table>
           </div>
         </LoadingBoundary>
-      </div>
+      </Container>
       <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditSectionModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
     </>

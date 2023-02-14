@@ -1,11 +1,11 @@
 import Modal from "react-responsive-modal";
 import {
   DangerButton,
-  Input,
   LighButton,
+  LightOutlineButton,
   PrimaryButton,
-  TextAreaClasses,
-} from "../forms/Forms";
+  SecondaryOutlineButton,
+} from "../button/Button";
 import { useState } from "react";
 
 type DialogProps = {
@@ -41,16 +41,18 @@ export const DangerConfirmDialog = ({
       }}
       onClose={close}
     >
-      <div className="w-96  rounded">
-        <div className="header w-full h-10 px-2 py-2 text-lg font-medium border-b text-gray-600">
-          <span>{title}</span>
+      <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
+        <div className="w-11/12 mx-auto px-3 flex flex-col justify-center">
+          <span className="text-xl font-semibold">{title}</span>
+          <small className="text-sm text-gray-500">{text}</small>
         </div>
-        <div className="px-2 h-20 border-b flex items-center">
-          <small className="text-gray-500">{text}</small>
-        </div>
-        <div className="flex gap-2 h-30 p-2 w-full justify-end">
-          <LighButton onClick={close}>Cancel</LighButton>
-          <DangerButton onClick={onConfirm}>Confirm</DangerButton>
+        <div className="flex w-11/12 mx-auto justify-center gap-5">
+          <LightOutlineButton onClick={close} className="px-14">
+            Cancel
+          </LightOutlineButton>
+          <DangerButton onClick={onConfirm} className="px-14">
+            Confirm
+          </DangerButton>
         </div>
       </div>
     </Modal>
@@ -101,7 +103,23 @@ export const PromptTextAreaDialog = ({
         <div className="px-2 h-36 border-b flex items-center">
           <div className="w-full ">
             <textarea
-              className={TextAreaClasses.DefaultClasslist}
+              className="
+              block
+              w-full
+              px-3
+              py-1.5
+              text-base
+              font-normal
+              text-gray-700
+              bg-white bg-clip-padding
+              border border-solid border-gray-300
+              rounded
+              transition
+              ease-in-out
+              m-0
+              h-28
+              focus:text-gray-700 focus:bg-white focus:border-yellow-400 focus:outline-none
+              resize-none`,"
               placeholder={placeholder}
               onChange={(event) => {
                 setText(event.target.value);

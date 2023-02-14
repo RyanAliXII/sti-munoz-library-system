@@ -7,11 +7,28 @@ import {
   NavigationDropdownButton,
   NavigationDropdown,
 } from "./NavigationDropdown";
+import { useAuthContext } from "@contexts/AuthContext";
+import ProfileIcon from "@components/ProfileIcon";
 const Sidebar = () => {
+  const { user } = useAuthContext();
   return (
-    <div className="flex flex-col gap-3 w-full mt-32 ">
-      <div className="w-full h-5"></div>
-      <NavigationItems />
+    <div className="flex flex-col gap-3 w-full mt-20  ">
+      <div className="w-full flex px-2 gap-2">
+        <ProfileIcon
+          givenName={user.firstname ?? ""}
+          surname={user.lastname ?? ""}
+        ></ProfileIcon>
+
+        <div className="flex flex-col">
+          <strong className="font-medium">
+            {user.firstname + " " + user.lastname}
+          </strong>
+          <small className="text-xs">{user.email}</small>
+        </div>
+      </div>
+      <div className="mt-11">
+        <NavigationItems />
+      </div>
     </div>
   );
 };

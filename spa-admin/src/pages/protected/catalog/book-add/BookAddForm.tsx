@@ -1,14 +1,17 @@
-import { Input, PrimaryButton, SecondaryButton } from "@components/forms/Forms";
+import { Input } from "@components/ui/form/Input";
+
+import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
+
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, forwardRef } from "react";
 
-import { Author, Section, Publisher, Source, Book } from "@definitions/types";
+import { Author, Section, Publisher, Source } from "@definitions/types";
 
 import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
-import CustomSelect from "@components/forms/CustomSelect";
-import CustomDatePicker from "@components/forms/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
@@ -17,6 +20,10 @@ import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
+import { FieldRow } from "@components/ui/form/FieldRow";
 
 const BookAddForm = () => {
   const {
@@ -155,9 +162,11 @@ const BookAddForm = () => {
 
   return (
     <form onSubmit={submit}>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
-        <h1 className="text-2xl">General Information</h1>
-        <hr className="mb-5"></hr>
+      <ContainerNoBackground>
+        <div className="mb-5">
+          <h1 className="text-2xl">General Information</h1>
+          <hr className="mb-5"></hr>
+        </div>
         <FieldRow
           fieldDetails="The title can be found in the cover of the book."
           isRequired
@@ -327,8 +336,8 @@ const BookAddForm = () => {
             onEditorChange={handleDescriptionInput}
           />
         </FieldRow>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <ContainerNoBackground>
         <h1 className="mt-10 text-2xl">Authors and Classification</h1>
         <hr className="mb-5"></hr>
         <div className="flex gap-3 mb-5 ">
@@ -420,7 +429,7 @@ const BookAddForm = () => {
           closeModal={closeAuthorNumberSelection}
           isOpen={isAuthorNumberSelectionOpen}
         />
-      </div>
+      </ContainerNoBackground>
 
       <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
         <div>
@@ -432,50 +441,5 @@ const BookAddForm = () => {
     </form>
   );
 };
-
-type FieldRowProps = {
-  isRequired?: boolean;
-  label?: string;
-  children?: React.ReactNode;
-  fieldDetails?: string;
-  formGroup?: string;
-};
-const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(
-  (
-    { isRequired = false, fieldDetails, label = "", children, formGroup = "" },
-    ref
-  ) => {
-    return (
-      <div
-        ref={ref}
-        className="lg:grid lg:grid-cols-9 gap-2 lg:mb-8"
-        form-group={formGroup}
-      >
-        <div className="flex justify-end mb-3 flex-col h-14 lg:mb-0 lg:col-span-2 lg:justify-center">
-          <div className="h-7 flex items-center gap-2">
-            <label className="font-semibold text-sm text-gray-600 ">
-              {label}
-            </label>
-
-            {isRequired && (
-              <small className="text-gray-600 p-1 rounded bg-gray-200">
-                Required
-              </small>
-            )}
-          </div>
-          <div>
-            {fieldDetails && (
-              <small className="text-gray-500 hidden lg:block">
-                {fieldDetails}
-              </small>
-            )}
-          </div>
-        </div>
-
-        <div className="col-span-7">{children}</div>
-      </div>
-    );
-  }
-);
 
 export default BookAddForm;

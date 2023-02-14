@@ -1,6 +1,6 @@
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-import CustomSelect from "@components/forms/CustomSelect";
-import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import {
   BodyRow,
   HeadingRow,
@@ -9,7 +9,7 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { Audit, EditModalProps, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
@@ -22,6 +22,10 @@ import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
+import { Input } from "@components/ui/form/Input";
 
 const AuditPage = () => {
   const {
@@ -53,15 +57,15 @@ const AuditPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <ContainerNoBackground className="flex gap-2">
         <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
 
         <PrimaryButton type="button" onClick={openNewAuditModal}>
           New Audit
         </PrimaryButton>
-      </div>
+      </ContainerNoBackground>
 
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
+      <Container>
         <Table>
           <Thead>
             <HeadingRow>
@@ -91,7 +95,7 @@ const AuditPage = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
       <NewAuditModal
         closeModal={closeNewAuditModal}
         isOpen={isNewAuditModalOpen}

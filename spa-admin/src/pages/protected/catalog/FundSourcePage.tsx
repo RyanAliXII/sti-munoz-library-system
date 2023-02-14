@@ -3,8 +3,8 @@ import React, { BaseSyntheticEvent, useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "../../../components/dialog/Dialog";
-import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+
+import { Input } from "@components/ui/form/Input";
 import {
   Table,
   Tbody,
@@ -13,7 +13,7 @@ import {
   Thead,
   BodyRow,
   HeadingRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { EditModalProps, ModalProps, Source } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
@@ -21,8 +21,14 @@ import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
 
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
+
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
-const SofPage = () => {
+const FundSourcePage = () => {
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -78,13 +84,13 @@ const SofPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
-        <div className="flex gap-2">
+      <ContainerNoBackground>
+        <div className="w-full flex gap-2 justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Source of Fund</h1>
-          <PrimaryButton onClick={openAddModal}>Add Source</PrimaryButton>
+          <PrimaryButton onClick={openAddModal}>New Source</PrimaryButton>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container className="lg:px-0">
         <div className="w-full">
           <Table>
             <Thead>
@@ -122,7 +128,7 @@ const SofPage = () => {
         </div>
 
         {/* </LoadingBoundar> */}
-      </div>
+      </Container>
       <AddSourceModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditSourceModal
         isOpen={isEditModalOpen}
@@ -281,4 +287,4 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
   );
 };
 
-export default SofPage;
+export default FundSourcePage;

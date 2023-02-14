@@ -7,14 +7,6 @@ interface InputProps extends HTMLInputProps {
   // props?: HTMLInputProps;
 }
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
-
-export enum ButtonClasses {
-  PrimaryButtonDefaultClasslist = "bg-blue-500 p-2 rounded text-sm text-white",
-  DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-sm text-white",
-  SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 text-sm rounded text-white",
-  LightButtonDefaultClasslist = "bg-gray-500 p-2 rounded text-sm text-white",
-  WarningButtonDefaultClasslist = "bg-orange-500 p-2  text-sm rounded text-white",
-}
 export enum InputClasses {
   InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 
   rounded transition ease-in-out
@@ -52,10 +44,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (props, ref) => {
     return (
       <>
-        <label className={InputClasses.LabelClasslist} htmlFor={props?.name}>
-          {props.label}
-        </label>
-
+        {props.label && (
+          <label className={InputClasses.LabelClasslist} htmlFor={props?.name}>
+            {props.label}
+          </label>
+        )}
         <div className={`w-full ${props.wrapperclass ?? ""}`}>
           <input
             ref={ref}
@@ -76,62 +69,3 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
-
-export const PrimaryButton: React.FC<ButtonProps> = (props: ButtonProps) => {
-  return (
-    <button
-      {...{
-        ...props,
-        className: `${ButtonClasses.PrimaryButtonDefaultClasslist} ${props?.className}`,
-      }}
-    >
-      {props.children}
-    </button>
-  );
-};
-export const SecondaryButton: React.FC<ButtonProps> = (props) => {
-  return (
-    <button
-      {...{
-        ...props,
-        className: `${ButtonClasses.SecondaryButtonDefaultClasslist} ${props?.className}`,
-      }}
-    >
-      {props.children}
-    </button>
-  );
-};
-export const DangerButton: React.FC<ButtonProps> = (props: ButtonProps) => {
-  return (
-    <button
-      {...{
-        ...props,
-        className: `${ButtonClasses.DangerButtonDefaultClasslist} ${props?.className}`,
-      }}
-    ></button>
-  );
-};
-export const WarningButton: React.FC<ButtonProps> = (props: ButtonProps) => {
-  return (
-    <button
-      {...{
-        ...props,
-        className: `${ButtonClasses.WarningButtonDefaultClasslist} ${props?.className}`,
-      }}
-    ></button>
-  );
-};
-export const LighButton: React.FC<ButtonProps> = (props: ButtonProps) => {
-  return (
-    <button
-      {...{
-        ...props,
-        className: `${ButtonClasses.LightButtonDefaultClasslist} ${props?.className}`,
-      }}
-    >
-      {props.children}
-    </button>
-  );
-};

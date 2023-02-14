@@ -1,5 +1,5 @@
 import DatePicker, { ReactDatePickerProps } from "react-datepicker";
-import { InputClasses } from "./Forms";
+import { InputClasses } from "./Input";
 
 interface CustomDatePickerProps extends ReactDatePickerProps {
   label?: string;
@@ -9,7 +9,7 @@ interface CustomDatePickerProps extends ReactDatePickerProps {
 const CustomDatePicker = (props: CustomDatePickerProps) => {
   return (
     <>
-      <label className="text-gray-500 text-sm" htmlFor={props?.name}>
+      <label className="text-gray-600 text-sm" htmlFor={props?.name}>
         {props.label}
       </label>
       <div className={`w-full ${props.wrapperClassName}`}>

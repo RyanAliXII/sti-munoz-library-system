@@ -3,8 +3,9 @@ import React, { BaseSyntheticEvent, useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "@components/dialog/Dialog";
-import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { Input } from "@components/ui/form/Input";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import {
@@ -15,7 +16,7 @@ import {
   Thead,
   HeadingRow,
   BodyRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { EditModalProps, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
@@ -23,6 +24,9 @@ import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
 import { PublisherSchema } from "./schema";
 import { Publisher } from "@definitions/types";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {
@@ -86,13 +90,13 @@ const PublisherPage = () => {
 
   return (
     <>
-      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
-        <div className="flex gap-2">
+      <ContainerNoBackground>
+        <div className="flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Publishers</h1>
           <PrimaryButton onClick={openAddModal}>New Publisher</PrimaryButton>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container className="lg:px-0">
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
@@ -130,7 +134,7 @@ const PublisherPage = () => {
             </Table>
           </div>
         </LoadingBoundary>
-      </div>
+      </Container>
       <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       <EditPublisherModal
         closeModal={closeEditModal}

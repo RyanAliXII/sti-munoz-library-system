@@ -12,9 +12,12 @@ import {
   Th,
   BodyRow,
   Td,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 
 import useQRScanner from "@hooks/useQRScanner";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 
 export interface AuditedAccession
   extends Omit<
@@ -89,15 +92,15 @@ const AuditScan = () => {
 
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <ContainerNoBackground>
         <h1 className="text-3xl font-bold text-gray-700">
           Inventory: {audit?.name}
         </h1>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto mb-2 ">
+      </ContainerNoBackground>
+      <Container>
         <div id="reader" className="w-96"></div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
+      </Container>
+      <Container>
         <Table>
           <Thead>
             <HeadingRow>
@@ -148,7 +151,7 @@ const AuditScan = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
     </>
   );
 };

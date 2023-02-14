@@ -1,5 +1,5 @@
 import Select, { GroupBase, Props } from "react-select";
-import { InputClasses } from "./Forms";
+import { InputClasses } from "./Input";
 
 interface CustomSelectProps<
   Option,
@@ -19,7 +19,7 @@ const CustomSelect = <
 ) => {
   return (
     <>
-      <label className="text-gray-500 text-sm">{props.label}</label>
+      <label className="text-gray-600 text-sm">{props.label}</label>
       <div className={`w-full ${props.wrapperclass}`}>
         <Select
           classNames={{

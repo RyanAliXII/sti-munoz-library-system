@@ -1,4 +1,5 @@
-import { PrimaryButton, Input, LighButton } from "@components/forms/Forms";
+import { PrimaryButton, LighButton } from "@components/ui/button/Button";
+import { Input } from "@components/ui/form/Input";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
@@ -10,7 +11,7 @@ import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { CreateAuthorSchema } from "./schema";
 import { useForm } from "@hooks/useForm";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "@components/dialog/Dialog";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { Author } from "@definitions/types";
 import {
   Table,
@@ -20,9 +21,12 @@ import {
   Thead,
   HeadingRow,
   BodyRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { EditModalProps, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 
 const ADD_AUTHOR_DEFAULT: Omit<Author, "id"> = {
   givenName: "",
@@ -92,13 +96,13 @@ const AuthorPage = () => {
   } = useQuery<Author[]>({ queryFn: fetchAuthors, queryKey: ["authors"] });
   return (
     <>
-      <div className="w-full lg:w-11/12  p-6 lg:p-2  mx-auto mb-5  flex gap-2">
-        <div className="flex gap-2">
+      <ContainerNoBackground className="flex gap-2">
+        <div className="w-full flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Authors</h1>
           <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <div className="w-full">
             <Table>
@@ -130,7 +134,7 @@ const AuthorPage = () => {
             </Table>
           </div>
         </LoadingBoundary>
-      </div>
+      </Container>
       <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditAuthorModal
         isOpen={isEditModalOpen}

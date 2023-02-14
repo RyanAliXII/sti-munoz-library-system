@@ -1,4 +1,4 @@
-import { InputClasses } from "@components/forms/Forms";
+import { InputClasses } from "@components/ui/form/Input";
 import axiosClient from "@definitions/configs/axios";
 import { Book } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";

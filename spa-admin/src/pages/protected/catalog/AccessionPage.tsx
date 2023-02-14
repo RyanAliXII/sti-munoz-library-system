@@ -1,6 +1,6 @@
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-import CustomSelect from "@components/forms/CustomSelect";
-import { Input } from "@components/forms/Forms";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { Input } from "@components/ui/form/Input";
 import {
   HeadingRow,
   Th,
@@ -9,7 +9,10 @@ import {
   Tbody,
   BodyRow,
   Td,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 import axiosClient from "@definitions/configs/axios";
 import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
@@ -29,10 +32,10 @@ const AccessionPage = () => {
   });
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex gap-2">
+      <ContainerNoBackground>
         <h1 className="text-3xl font-bold text-gray-700">Accession</h1>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 first-letter: -md lg:rounded-md mx-auto mb-4 flex gap-2">
+      </ContainerNoBackground>
+      <ContainerNoBackground className="flex gap-2">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
@@ -50,8 +53,8 @@ const AccessionPage = () => {
         <div className="w-3/12">
           <CustomSelect label="Section" />
         </div>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-5 -md lg:rounded-md mx-auto">
+      </ContainerNoBackground>
+      <Container className="p-0 lg:p-0">
         <Table>
           <Thead>
             <HeadingRow>
@@ -74,7 +77,7 @@ const AccessionPage = () => {
             })}
           </Tbody>
         </Table>
-      </div>
+      </Container>
     </>
   );
 };

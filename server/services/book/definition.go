@@ -11,9 +11,9 @@ type BookBody struct {
 	Description   string         `json:"description" `
 	ISBN          string         `json:"isbn"  binding:"required,min=1,max=150,isbn"`
 	Pages         int            `json:"pages" binding:"required,gte=1"`
-	Section       SectionBody    `json:"section"  binding:"required"`
-	Publisher     PublisherBody  `json:"publisher"  binding:"required"`
-	FundSource    FundSourceBody `json:"fundSource" binding:"required"`
+	Section       SectionBody    `json:"section"  binding:"required,gte=1,dive"`
+	Publisher     PublisherBody  `json:"publisher"  binding:"required,dive"`
+	FundSource    FundSourceBody `json:"fundSource" binding:"required,dive"`
 	CostPrice     float32        `json:"costPrice"  binding:"gte=0"`
 	Edition       int            `json:"edition" binding:"gte=0" `
 	YearPublished int            `json:"yearPublished"  binding:"required"`

@@ -10,6 +10,7 @@ module.exports = {
       fontFamily:{
         // DM:['DM Sans', 'san-serif'],
         OS:['Open Sans', 'san-serif'],
+        INTER: ['Inter', 'san-serif'],
         // MS: ['Montserrat', 'san-serif'],
         // RW:['Raleway', 'sans-serif'],
         // LT:['Lato', 'sans-serif'],
