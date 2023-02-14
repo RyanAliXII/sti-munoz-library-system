@@ -42,7 +42,7 @@ export const DangerConfirmDialog = ({
       onClose={close}
     >
       <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
-        <div className="w-11/12 mx-auto px-3 flex flex-col justify-center">
+        <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
           <span className="text-xl font-semibold">{title}</span>
           <small className="text-sm text-gray-500">{text}</small>
         </div>
@@ -53,6 +53,50 @@ export const DangerConfirmDialog = ({
           <DangerButton onClick={onConfirm} className="px-14">
             Confirm
           </DangerButton>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export const ConfirmDialog = ({
+  title,
+  text,
+  close,
+  isOpen,
+  onConfirm,
+}: DialogProps) => {
+  if (!isOpen) return null;
+  return (
+    <Modal
+      showCloseIcon={false}
+      open={isOpen}
+      center
+      styles={{
+        modalContainer: {
+          boxShadow: "none",
+        },
+        modal: {
+          padding: 0,
+          borderRadius: "3px",
+          border: "none",
+          boxShadow: "none",
+        },
+      }}
+      onClose={close}
+    >
+      <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
+        <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
+          <span className="text-xl font-semibold">{title}</span>
+          <small className="text-sm text-gray-500">{text}</small>
+        </div>
+        <div className="flex w-11/12 mx-auto justify-center gap-5">
+          <LightOutlineButton onClick={close} className="px-14">
+            Cancel
+          </LightOutlineButton>
+          <PrimaryButton onClick={onConfirm} className="px-14">
+            Confirm
+          </PrimaryButton>
         </div>
       </div>
     </Modal>

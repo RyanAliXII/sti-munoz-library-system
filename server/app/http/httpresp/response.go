@@ -61,3 +61,12 @@ func Fail404(data map[string]interface{}, message string) (int, HttpResponse) {
 		Message: message,
 	}
 }
+
+func Fail500(data map[string]interface{}, message string) (int, HttpResponse) {
+	return http.StatusInternalServerError, HttpResponse{
+		Status:  "fail",
+		Code:    http.StatusInternalServerError,
+		Data:    data,
+		Message: message,
+	}
+}

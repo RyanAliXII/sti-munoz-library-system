@@ -116,6 +116,15 @@ func (repo *CirculationRepository) ReturnBooksByTransactionId(id string, remarks
 	logger.Info("Borrowed books update.", slimlog.AffectedRows(updateBookBorrowedAffected))
 	return nil
 }
+func (repo *CirculationRepository) ReturnBookCopy(transactionId string, bookId string, accessionNumber int) error {
+	query := `UPDATE circulation.borrowed_book SET returned_at = now() where transaction_id = $1 AND book_id = $2 AND accession_number = $3`
+	_, updateErr := repo.db.Exec(query, transactionId, bookId, accessionNumber)
+
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.ReturnBookCopy"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
 func NewCirculationRepository(db *sqlx.DB) CirculationRepositoryInterface {
 	return &CirculationRepository{
 		db: db,
@@ -127,4 +136,5 @@ type CirculationRepositoryInterface interface {
 	GetBorrowingTransactionById(id string) model.BorrowingTransaction
 	NewTransaction(clientId string, dueDate time.Time, accession []model.Accession) error
 	ReturnBooksByTransactionId(id string, remarks string) error
+	ReturnBookCopy(transactionId string, bookId string, accessionNumber int) error
 }

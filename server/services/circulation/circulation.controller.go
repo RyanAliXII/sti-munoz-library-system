@@ -5,6 +5,7 @@ import (
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 	"slim-app/server/repository"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -54,7 +55,7 @@ func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 	}
 	newTransactionErr := ctrler.repos.CirculationRepository.NewTransaction(body.ClientId, body.DueDate, accessions)
 	if newTransactionErr != nil {
-		ctx.JSON(httpresp.Fail400(nil, "Something went wrong."))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Checkout success."))
@@ -77,11 +78,36 @@ func (ctrler *CirculationController) ReturnBooksById(ctx *gin.Context) {
 
 	returnErr := ctrler.repos.CirculationRepository.ReturnBooksByTransactionId(id, body.Remarks)
 	if returnErr != nil {
-		ctx.JSON(httpresp.Fail400(nil, returnErr.Error()))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 
 	ctx.JSON(httpresp.Success200(nil, "Books returned successfully."))
+}
+func (ctrler *CirculationController) ReturnBookCopy(ctx *gin.Context) {
+	transactionId := ctx.Param("id")
+	_, transactionIdParseErr := uuid.Parse(transactionId)
+	bookId := ctx.Param("bookId")
+	_, bookIdParseErr := uuid.Parse(bookId)
+	accessionNumberParam := ctx.Param("accessionNumber")
+	accessionNumber, numberConvErr := strconv.Atoi(accessionNumberParam)
+
+	if numberConvErr != nil {
+		ctx.JSON(httpresp.Fail404(nil, "Invalid url params."))
+		return
+	}
+	if transactionIdParseErr != nil || bookIdParseErr != nil {
+		logger.Warn("Invalid url params.", slimlog.Function("CirculationController.ReturnBookCopy"))
+		ctx.JSON(httpresp.Fail500(nil, "Invalid url params."))
+		return
+	}
+	returnCopyErr := ctrler.repos.CirculationRepository.ReturnBookCopy(transactionId, bookId, accessionNumber)
+	if returnCopyErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+
+	ctx.JSON(httpresp.Success200(nil, "Book copy has been returned."))
 }
 func NewCirculationController(repos *repository.Repositories) CirculationControllerInterface {
 	return &CirculationController{
@@ -95,4 +121,5 @@ type CirculationControllerInterface interface {
 	GetTransactionById(ctx *gin.Context)
 	Checkout(ctx *gin.Context)
 	ReturnBooksById(ctx *gin.Context)
+	ReturnBookCopy(ctx *gin.Context)
 }
