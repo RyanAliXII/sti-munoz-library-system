@@ -1,7 +1,7 @@
 import { Author, AuthorNumber } from "@definitions/types";
 
 import { useBookEditFormContext } from "../BookEditFormContext";
-import { Input, PrimaryButton } from "@components/forms/Forms";
+import { PrimaryButton } from "@components/ui/button/Button";
 
 import axiosClient from "@definitions/configs/axios";
 
@@ -13,7 +13,8 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
+import { Input } from "@components/ui/form/Input";
 
 const GenerateTab = () => {
   const {

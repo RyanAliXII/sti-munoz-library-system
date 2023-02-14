@@ -3,8 +3,9 @@ import React, { BaseSyntheticEvent, useEffect, useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "@components/dialog/Dialog";
-import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { Input } from "@components/ui/form/Input";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import {
@@ -15,7 +16,7 @@ import {
   Thead,
   HeadingRow,
   BodyRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { EditModalProps, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
@@ -25,7 +26,7 @@ import { PublisherSchema } from "./schema";
 import { Publisher } from "@definitions/types";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {

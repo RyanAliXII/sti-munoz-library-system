@@ -1,5 +1,5 @@
 import React, { BaseSyntheticEvent } from "react";
-import { PrimaryButton, LighButton, Input } from "@components/forms/Forms";
+import { PrimaryButton, LighButton } from "@components/ui/button/Button";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
@@ -14,7 +14,7 @@ import {
   Thead,
   BodyRow,
   HeadingRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosClient from "@definitions/configs/axios";
 import { toast } from "react-toastify";
@@ -22,7 +22,8 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { Section } from "@definitions/types";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
+import { Input } from "@components/ui/form/Input";
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,

@@ -7,7 +7,7 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 
 import { useBookEditFormContext } from "../BookEditFormContext";

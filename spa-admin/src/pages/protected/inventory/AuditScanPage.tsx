@@ -12,12 +12,12 @@ import {
   Th,
   BodyRow,
   Td,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 
 import useQRScanner from "@hooks/useQRScanner";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
 
 export interface AuditedAccession
   extends Omit<

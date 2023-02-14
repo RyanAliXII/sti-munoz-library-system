@@ -2,7 +2,7 @@ import { AuthorNumber } from "@definitions/types";
 import { useState } from "react";
 
 import { useBookAddFormContext } from "../BookAddFormContext";
-import { Input } from "@components/forms/Forms";
+import { Input } from "@components/ui/form/Input";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 import axiosClient from "@definitions/configs/axios";
@@ -15,7 +15,7 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";

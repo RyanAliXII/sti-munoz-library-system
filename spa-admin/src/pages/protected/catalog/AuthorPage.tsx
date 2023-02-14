@@ -1,4 +1,5 @@
-import { PrimaryButton, Input, LighButton } from "@components/forms/Forms";
+import { PrimaryButton, LighButton } from "@components/ui/button/Button";
+import { Input } from "@components/ui/form/Input";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
@@ -10,7 +11,7 @@ import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { CreateAuthorSchema } from "./schema";
 import { useForm } from "@hooks/useForm";
 import { toast } from "react-toastify";
-import { DangerConfirmDialog } from "@components/dialog/Dialog";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { Author } from "@definitions/types";
 import {
   Table,
@@ -20,12 +21,12 @@ import {
   Thead,
   HeadingRow,
   BodyRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { EditModalProps, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
 
 const ADD_AUTHOR_DEFAULT: Omit<Author, "id"> = {
   givenName: "",

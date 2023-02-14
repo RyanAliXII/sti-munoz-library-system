@@ -1,11 +1,11 @@
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-import CustomSelect from "@components/forms/CustomSelect";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { Input } from "@components/ui/form/Input";
 import {
-  ButtonClasses,
-  Input,
   PrimaryButton,
   SecondaryButton,
-} from "@components/forms/Forms";
+  ButtonClasses,
+} from "@components/ui/button/Button";
 import {
   BodyRow,
   HeadingRow,
@@ -14,7 +14,7 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { Accession, Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
@@ -30,7 +30,7 @@ import { Link } from "react-router-dom";
 import TimeAgo from "timeago-react";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
 
 const BookPage = () => {
   const {

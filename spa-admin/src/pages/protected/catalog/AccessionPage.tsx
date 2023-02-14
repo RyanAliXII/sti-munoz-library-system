@@ -1,6 +1,6 @@
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-import CustomSelect from "@components/forms/CustomSelect";
-import { Input } from "@components/forms/Forms";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { Input } from "@components/ui/form/Input";
 import {
   HeadingRow,
   Th,
@@ -9,10 +9,10 @@ import {
   Tbody,
   BodyRow,
   Td,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
 import axiosClient from "@definitions/configs/axios";
 import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";

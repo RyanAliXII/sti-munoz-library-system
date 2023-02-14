@@ -1,7 +1,5 @@
 import ProfileIcon from "@components/ProfileIcon";
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-import CustomSelect from "@components/forms/CustomSelect";
-import { ButtonClasses, Input, PrimaryButton } from "@components/forms/Forms";
+
 import {
   Table,
   BodyRow,
@@ -10,14 +8,15 @@ import {
   Th,
   Tbody,
   Thead,
-} from "@components/table/Table";
-import Container from "@components/ui/Container/Container";
+} from "@components/ui/table/Table";
+import Container from "@components/ui/container/Container";
 import axiosClient from "@definitions/configs/axios";
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useState } from "react";
+import { Input } from "@components/ui/form/Input";
 
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");

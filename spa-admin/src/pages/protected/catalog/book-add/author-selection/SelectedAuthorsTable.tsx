@@ -7,10 +7,11 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 
 import { useBookAddFormContext } from "../BookAddFormContext";
+import { IoIosRemoveCircleOutline } from "react-icons/io";
 
 interface SelectedAuthorsTableProps {
   removeAuthor: (a: Author) => void;
@@ -41,7 +42,7 @@ const SelectedAuthorsTable: React.FC<SelectedAuthorsTableProps> = ({
                   {!author.id && (
                     <AiOutlineEdit className="cursor-pointer text-yellow-400 text-xl" />
                   )}
-                  <AiOutlineDelete
+                  <IoIosRemoveCircleOutline
                     className="cursor-pointer text-orange-600  text-xl"
                     onClick={() => {
                       removeAuthor(author);

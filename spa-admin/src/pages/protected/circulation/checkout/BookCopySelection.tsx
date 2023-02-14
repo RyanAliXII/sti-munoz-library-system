@@ -1,4 +1,4 @@
-import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import {
   BodyRow,
   HeadingRow,
@@ -7,7 +7,7 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 
 import {
   Accession,
@@ -16,11 +16,11 @@ import {
   DetailedAccession,
   ModalProps,
 } from "@definitions/types";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import Modal from "react-responsive-modal";
 import { CheckoutForm } from "./CheckoutPage";
 import axiosClient from "@definitions/configs/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -51,23 +51,23 @@ const BookCopySelectionModal = ({
 
   const { data: accessions, refetch } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessionById,
-    queryKey: ["accessions"],
-    refetchOnMount: false,
+    queryKey: ["bookAccessions"],
     initialData: [],
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (isOpen) {
       setSelectedAccessions([...form.accessions]);
       refetch();
     } else {
       setSelectedAccessions([]);
+      queryClient.setQueryData(["bookAccessions"], []); //clear data
     }
   }, [isOpen]);
 
-  const removeAccession = (
-    bookId: string | undefined,
-    accessionNumber: number
-  ) => {
+  const removeCopy = (bookId: string | undefined, accessionNumber: number) => {
     if (!bookId) return;
     setSelectedAccessions((prevSelected) =>
       prevSelected.filter(
@@ -75,26 +75,70 @@ const BookCopySelectionModal = ({
       )
     );
   };
-  const handleCheck = (accession: Accession) => {
-    setSelectedAccessions((prevSelected) => [
-      ...prevSelected,
-      {
-        authorNumber: book.authorNumber,
-        bookId: book.id ?? "",
-        copyNumber: accession.copyNumber,
-        number: accession.number,
-        ddc: book.ddc,
-        section: book.section,
-        title: book.title,
-        yearPublished: book.yearPublished,
-        isCheckedOut: false,
-      },
-    ]);
-  };
+
   const proceedToAdd = () => {
     updateAccessionsToBorrow(selectedAccessions);
     closeModal();
   };
+  const selectedAccessionCopiesCache = useMemo(
+    () =>
+      selectedAccessions.reduce<Object>(
+        (ac, accession) => ({
+          ...ac,
+          [`${accession.bookId}_${accession.number}`]: accession,
+        }),
+        {}
+      ),
+    [selectedAccessions]
+  );
+  const handleCheck = (
+    event: ChangeEvent<HTMLInputElement>,
+    accession: Accession
+  ) => {
+    if (event.target.checked) {
+      setSelectedAccessions((prevSelected) => [
+        ...prevSelected,
+        {
+          authorNumber: book.authorNumber,
+          bookId: book.id ?? "",
+          copyNumber: accession.copyNumber,
+          number: accession.number,
+          ddc: book.ddc,
+          section: book.section,
+          title: book.title,
+          yearPublished: book.yearPublished,
+          isCheckedOut: false,
+        },
+      ]);
+    } else {
+      removeCopy(book.id, accession.number);
+    }
+  };
+  const handleCheckonRowClick = (accession: Accession) => {
+    if (
+      !selectedAccessionCopiesCache.hasOwnProperty(
+        `${book.id}_${accession.number}`
+      )
+    ) {
+      setSelectedAccessions((prevSelected) => [
+        ...prevSelected,
+        {
+          authorNumber: book.authorNumber,
+          bookId: book.id ?? "",
+          copyNumber: accession.copyNumber,
+          number: accession.number,
+          ddc: book.ddc,
+          section: book.section,
+          title: book.title,
+          yearPublished: book.yearPublished,
+          isCheckedOut: false,
+        },
+      ]);
+    } else {
+      removeCopy(book.id, accession.number);
+    }
+  };
+
   if (!isOpen) return null;
   return (
     <Modal
@@ -119,29 +163,28 @@ const BookCopySelectionModal = ({
           </Thead>
           <Tbody>
             {accessions.map((accession) => {
-              const isAdded = selectedAccessions.some(
-                (a) => a.bookId === book.id && a.number === accession.number
+              const isAdded = selectedAccessionCopiesCache.hasOwnProperty(
+                `${accession.bookId}_${accession.number}`
               );
               return (
                 <BodyRow
                   key={accession.number}
                   className={
                     accession.isCheckedOut
-                      ? "bg-gray-100 hover:bg-gray-100"
-                      : ""
+                      ? "bg-gray-100 hover:bg-gray-100 cursor-pointer"
+                      : "cursor-pointer"
                   }
+                  onClick={() => {
+                    handleCheckonRowClick(accession);
+                  }}
                 >
                   <Td>
-                    <Input
+                    <input
                       type="checkbox"
                       checked={isAdded}
                       disabled={accession.isCheckedOut}
                       onChange={(event) => {
-                        if (event.target.checked) {
-                          handleCheck(accession);
-                        } else {
-                          removeAccession(book.id, accession.number);
-                        }
+                        handleCheck(event, accession);
                       }}
                     />
                   </Td>

@@ -5,7 +5,7 @@ import Table, {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { Author, ModalProps } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";

@@ -1,4 +1,4 @@
-import { Input, InputClasses } from "@components/forms/Forms";
+import { Input, InputClasses } from "@components/ui/form/Input";
 import {
   Th,
   Thead,
@@ -7,7 +7,7 @@ import {
   Tbody,
   Td,
   BodyRow,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import { ModalProps } from "@definitions/types";
 import Modal from "react-responsive-modal";
 import { useBookAddFormContext } from "./BookAddFormContext";

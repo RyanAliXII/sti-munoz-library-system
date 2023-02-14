@@ -1,6 +1,6 @@
-import CustomDatePicker from "@components/forms/CustomDatePicker";
-import CustomSelect from "@components/forms/CustomSelect";
-import { Input, LighButton, PrimaryButton } from "@components/forms/Forms";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import {
   BodyRow,
   HeadingRow,
@@ -9,7 +9,7 @@ import {
   Td,
   Th,
   Thead,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import axiosClient from "@definitions/configs/axios";
 import { Audit, EditModalProps, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
@@ -24,7 +24,8 @@ import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
+import { Input } from "@components/ui/form/Input";
 
 const AuditPage = () => {
   const {

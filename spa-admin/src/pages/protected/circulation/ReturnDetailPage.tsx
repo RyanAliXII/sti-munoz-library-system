@@ -1,6 +1,6 @@
 import ProfileIcon from "@components/ProfileIcon";
-import { PromptTextAreaDialog } from "@components/dialog/Dialog";
-import { PrimaryButton, TextAreaClasses } from "@components/forms/Forms";
+import { PromptTextAreaDialog } from "@components/ui/dialog/Dialog";
+import { TextAreaClasses } from "@components/ui/form/Input";
 import {
   Thead,
   BodyRow,
@@ -9,10 +9,10 @@ import {
   Td,
   Tbody,
   Th,
-} from "@components/table/Table";
+} from "@components/ui/table/Table";
 import Container, {
   ContainerNoBackground,
-} from "@components/ui/Container/Container";
+} from "@components/ui/container/Container";
 import axiosClient from "@definitions/configs/axios";
 import {
   BorrowStatus,
@@ -24,6 +24,8 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { PrimaryButton } from "@components/ui/button/Button";
+import Divider from "@components/ui/divider/Divider";
 
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
@@ -127,33 +129,55 @@ const TransactionByIdPage = () => {
           <span className="text-gray-500 text-sm">{status}</span>
         </div>
       </Container>
-      <Container className="px-4 py-6">
-        <h4 className="mb-2">Borrowed Books</h4>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Title</Th>
-              <Th>Copy number</Th>
-              <Th>Accession number</Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {transaction?.borrowedAccessions?.map((accession) => {
-              return (
-                <BodyRow key={`${accession.number}_${accession.bookId}`}>
-                  <Td>{accession.title}</Td>
-                  <Td>{accession.copyNumber}</Td>
-                  <Td>{accession.number}</Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Container>
+      <ContainerNoBackground className="px-4 py-6">
+        <Divider
+          heading="h2"
+          headingProps={{
+            className: "text-xl",
+          }}
+          hrProps={{
+            className: "mb-5",
+          }}
+        >
+          Borrowed Books{" "}
+        </Divider>
+        <Container className="mx-0 lg:w-full">
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th>Title</Th>
+                <Th>Copy number</Th>
+                <Th>Accession number</Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {transaction?.borrowedAccessions?.map((accession) => {
+                return (
+                  <BodyRow key={`${accession.number}_${accession.bookId}`}>
+                    <Td>{accession.title}</Td>
+                    <Td>{accession.copyNumber}</Td>
+                    <Td>{accession.number}</Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+      </ContainerNoBackground>
 
       {status == BorrowStatuses.Returned ? (
-        <Container className="px-4 py-6">
-          <h2>Remarks</h2>
+        <ContainerNoBackground className="px-4 py-6">
+          <Divider
+            heading="h2"
+            headingProps={{
+              className: "text-xl",
+            }}
+            hrProps={{
+              className: "mb-5",
+            }}
+          >
+            Remarks
+          </Divider>
           <div className="mt-2">
             <textarea
               defaultValue={
@@ -165,11 +189,11 @@ const TransactionByIdPage = () => {
               disabled={true}
             ></textarea>
           </div>
-        </Container>
+        </ContainerNoBackground>
       ) : null}
 
       {status != BorrowStatuses.Returned ? (
-        <Container className="px-4 py-6">
+        <ContainerNoBackground className="px-4 py-6">
           <div>
             <PrimaryButton
               className="ml-2 lg:ml-0"
@@ -181,7 +205,7 @@ const TransactionByIdPage = () => {
               Return Books
             </PrimaryButton>
           </div>
-        </Container>
+        </ContainerNoBackground>
       ) : null}
       <PromptTextAreaDialog
         close={closePrompt}
