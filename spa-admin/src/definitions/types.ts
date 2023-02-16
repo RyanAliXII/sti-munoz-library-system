@@ -85,18 +85,16 @@ export type User = {
     email:string
   }
 
-
-  export interface BorrowedCopies extends DetailedAccession{}
+  export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut">{}
 
   export type BorrowingTransaction = {
     id?:string,
     client: Account
-    borrowedCopies: BorrowedCopies[]
+    borrowedCopies: BorrowedCopy[]
     remarks: string,
     dueDate: string //iso-time-string
     createdAt: string //iso-time-string
     returnedAt: string//iso-time-string
-
   }
  
   export type BorrowStatus = "Returned" | "Overdue" | "Checked Out";

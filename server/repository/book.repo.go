@@ -219,7 +219,6 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
 	ORDER BY book.created_at DESC
 	`
-
 	selectAccessionErr := repo.db.Select(&accessions, query)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("selectAccessionErr"))
