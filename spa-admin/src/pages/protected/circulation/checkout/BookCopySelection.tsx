@@ -12,7 +12,6 @@ import {
 import {
   Accession,
   Book,
-  BorrowStatuses,
   DetailedAccession,
   ModalProps,
 } from "@definitions/types";
@@ -21,6 +20,7 @@ import Modal from "react-responsive-modal";
 import { CheckoutForm } from "./CheckoutPage";
 import axiosClient from "@definitions/configs/axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { BorrowStatuses } from "@internal/borrow-status";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -91,29 +91,6 @@ const BookCopySelectionModal = ({
       ),
     [selectedAccessions]
   );
-  const handleCheck = (
-    event: ChangeEvent<HTMLInputElement>,
-    accession: Accession
-  ) => {
-    if (event.target.checked) {
-      setSelectedAccessions((prevSelected) => [
-        ...prevSelected,
-        {
-          authorNumber: book.authorNumber,
-          bookId: book.id ?? "",
-          copyNumber: accession.copyNumber,
-          number: accession.number,
-          ddc: book.ddc,
-          section: book.section,
-          title: book.title,
-          yearPublished: book.yearPublished,
-          isCheckedOut: false,
-        },
-      ]);
-    } else {
-      removeCopy(book.id, accession.number);
-    }
-  };
   const handleCheckonRowClick = (accession: Accession) => {
     if (
       !selectedAccessionCopiesCache.hasOwnProperty(
@@ -123,14 +100,10 @@ const BookCopySelectionModal = ({
       setSelectedAccessions((prevSelected) => [
         ...prevSelected,
         {
-          authorNumber: book.authorNumber,
+          book: book,
           bookId: book.id ?? "",
           copyNumber: accession.copyNumber,
           number: accession.number,
-          ddc: book.ddc,
-          section: book.section,
-          title: book.title,
-          yearPublished: book.yearPublished,
           isCheckedOut: false,
         },
       ]);
@@ -182,10 +155,8 @@ const BookCopySelectionModal = ({
                     <input
                       type="checkbox"
                       checked={isAdded}
+                      readOnly
                       disabled={accession.isCheckedOut}
-                      onChange={(event) => {
-                        handleCheck(event, accession);
-                      }}
                     />
                   </Td>
                   <Td>{accession.number}</Td>

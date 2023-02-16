@@ -96,14 +96,6 @@ func (repo *BookRepository) New(book model.Book) error {
 
 func (repo *BookRepository) Get() []model.Book {
 	var books []model.Book = make([]model.Book, 0)
-
-	// section_id,
-	// section.name as section,
-	// publisher.id as publisher_id,
-	// publisher.name as publisher,
-	// fund_source_id,
-	// source_of_fund.name as fund_source,
-
 	query := `
 	SELECT book.id,title, isbn, 
 	description, 
@@ -219,7 +211,6 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
 	ORDER BY book.created_at DESC
 	`
-
 	selectAccessionErr := repo.db.Select(&accessions, query)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("selectAccessionErr"))
@@ -285,12 +276,6 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	description, 
 	copies,
 	pages,
-	section_id,  
-	section.name as section,
-	publisher.id as publisher_id,
-	publisher.name as publisher,
-	fund_source_id,
-	source_of_fund.name as fund_source,
 	cost_price,
 	edition,
 	year_published,
@@ -298,6 +283,9 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	ddc,
 	author_number,
 	book.created_at,
+	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
 	FROM catalog.book_author
@@ -310,6 +298,7 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	WHERE search_vector @@ websearch_to_tsquery('english', $1)
+	ORDER BY book.created_at desc
 	LIMIT $2 OFFSET $3
 	`
 	selectErr := repo.db.Select(&books, query, filter.Keyword, filter.Limit, filter.Offset)
@@ -321,23 +310,46 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 
 func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
-
 	query := `
-		SELECT accession.id as accession_number, copy_number, 
-		accession.book_id, book.title, book.ddc, book.author_number, 
-		book.year_published, 
-		section.name as section,
-		book.section_id,
-		(CASE WHEN accession_number is null then false else true END) as is_checked_out,
-		book.created_at 
-		FROM get_accession_table() 
-		as accession 
-		INNER JOIN catalog.book on accession.book_id = book.id 
-		INNER JOIN catalog.section on book.section_id = section.id
-		LEFT JOIN circulation.borrowed_book 
-		as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
-		WHERE book.id = $1
-		ORDER BY book.created_at DESC
+	SELECT accession.id as accession_number, copy_number, 
+	accession.book_id,
+	json_build_object(
+		'id', book.id,
+		'title', book.title,
+		'description', book.description,
+		'ddc', book.ddc,
+		'authorNumber', book.author_number,
+		'isbn', book.isbn,
+		'copies', book.copies,
+		'pages', book.pages,
+		'costPrice', book.cost_price,
+		'edition', book.edition,
+		'yearPublished', book.year_published,
+		'receivedAt', book.received_at,
+		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
+		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
+		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'created_at',book.created_at,
+		'authors', (
+		COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+		as authors
+		FROM catalog.book_author
+		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+		where book_id = book.id
+		group by book_id),'[]'))
+		
+	) as book,
+	(CASE WHEN accession_number is null then false else true END) as is_checked_out
+	FROM get_accession_table() 
+	as accession 
+	INNER JOIN catalog.book on accession.book_id = book.id 
+	INNER JOIN catalog.section on book.section_id = section.id
+	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	LEFT JOIN circulation.borrowed_book 
+	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
+    WHERE book.id = $1
+	ORDER BY book.created_at DESC
 	`
 
 	selectAccessionErr := repo.db.Select(&accessions, query, id)

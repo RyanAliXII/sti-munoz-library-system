@@ -18,11 +18,7 @@ type SectionJSON struct {
 func (section *SectionJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	INITIAL_DATA_ON_ERROR := SectionJSON{
-		Section: Section{
-			Name:            "",
-			Id:              0,
-			HasOwnAccession: false,
-		},
+		Section: Section{},
 	}
 	if valid {
 		unmarshalErr := json.Unmarshal(val, section)

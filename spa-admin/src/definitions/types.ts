@@ -85,27 +85,17 @@ export type User = {
     email:string
   }
 
-
-  export interface BorrowedAccession extends Omit<DetailedAccession, 'ddc | authorNumber | yearPublished | section'>{}
+  export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut">{
+    returnedAt: string //iso-time-string
+  }
 
   export type BorrowingTransaction = {
     id?:string,
-    accountDisplayName :string,
-    accountId : string,
-    accountEmail: string,
-    borrowedAccessions: BorrowedAccession[]
+    client: Account
+    borrowedCopies: BorrowedCopy[]
     remarks: string,
     dueDate: string //iso-time-string
     createdAt: string //iso-time-string
     returnedAt: string//iso-time-string
-
   }
  
-  export type BorrowStatus = "Returned" | "Overdue" | "Checked Out";
-
-  export enum BorrowStatuses {
-    Returned = "Returned",
-    Overdue = "Overdue",
-    CheckedOut = "Checked Out",
-    Available = "Available",
-  }

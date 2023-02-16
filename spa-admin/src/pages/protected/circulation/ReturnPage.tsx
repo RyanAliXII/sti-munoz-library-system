@@ -64,7 +64,7 @@ const BorrowingTransactionPage = () => {
                   }
                 >
                   <Td>{transaction.id}</Td>
-                  <Td>{transaction.accountDisplayName}</Td>
+                  <Td>{transaction.client.displayName}</Td>
                   <Td>
                     <TimeAgo datetime={transaction.createdAt} />
                   </Td>

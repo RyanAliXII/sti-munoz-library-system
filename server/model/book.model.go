@@ -6,16 +6,6 @@ import (
 	"slim-app/server/app/db"
 )
 
-type BookNew struct {
-	Book
-	Authors []Author `json:"authors" db:"authors"`
-}
-
-type BookUpdate struct {
-	Book
-	Authors []Author `json:"authors" db:"authors"`
-}
-
 type Book struct {
 	Id          string `json:"id" db:"id"`
 	Title       string `json:"title" db:"title"`
@@ -36,33 +26,24 @@ type Book struct {
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
 
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
-	Accessions BookAccesions   `json:"accessions" db:"accessions"`
+	Accessions AccessionsJSON  `json:"accessions" db:"accessions"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
-
-type Accession struct {
-	Number       int           `json:"number" db:"accession_number" copier:"Number"`
-	CopyNumber   int           `json:"copyNumber" db:"copy_number"`
-	BookId       string        `json:"bookId" db:"book_id" copier:"BookId"`
-	IsCheckedOut bool          `json:"isCheckedOut" db:"is_checked_out"`
-	Book         AccessionBook `json:"book" db:"book"`
-}
-
-type AccessionBook struct {
+type BookJSON struct {
 	Book
 }
 
-func (book *AccessionBook) Scan(value interface{}) error {
+func (book *BookJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	if valid {
 		unmarshalErr := json.Unmarshal(val, book)
 		if unmarshalErr != nil {
-			*book = AccessionBook{
+			*book = BookJSON{
 				Book: Book{},
 			}
 		}
 	} else {
-		*book = AccessionBook{
+		*book = BookJSON{
 			Book: Book{},
 		}
 
@@ -70,30 +51,38 @@ func (book *AccessionBook) Scan(value interface{}) error {
 	return nil
 
 }
-func (book AccessionBook) Value(value interface{}) (driver.Value, error) {
+func (book BookJSON) Value(value interface{}) (driver.Value, error) {
 	return book, nil
 }
 
-type BookAccesions []struct {
+type Accession struct {
+	Number       int      `json:"number" db:"accession_number" copier:"Number"`
+	CopyNumber   int      `json:"copyNumber" db:"copy_number"`
+	BookId       string   `json:"bookId" db:"book_id" copier:"BookId"`
+	IsCheckedOut bool     `json:"isCheckedOut" db:"is_checked_out"`
+	Book         BookJSON `json:"book" db:"book"`
+}
+
+type AccessionsJSON []struct {
 	Number     int `json:"number" db:"number"`
 	CopyNumber int `json:"copyNumber" db:"copy_number"`
 }
 
-func (ba *BookAccesions) Scan(value interface{}) error {
+func (ba *AccessionsJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	if valid {
 		unmarshalErr := json.Unmarshal(val, ba)
 		if unmarshalErr != nil {
-			*ba = make(BookAccesions, 0)
+			*ba = make(AccessionsJSON, 0)
 		}
 
 	} else {
-		*ba = make(BookAccesions, 0)
+		*ba = make(AccessionsJSON, 0)
 	}
 	return nil
 
 }
 
-func (ba BookAccesions) Value(value interface{}) (driver.Value, error) {
+func (ba AccessionsJSON) Value(value interface{}) (driver.Value, error) {
 	return ba, nil
 }

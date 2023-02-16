@@ -36,12 +36,12 @@ func (ctrler *FundSourceController) DeleteSource(ctx *gin.Context) {
 	id, castErr := strconv.Atoi(ctx.Param("id"))
 	if castErr != nil {
 		logger.Warn(castErr.Error(), zap.String("error", "castErr"))
-		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
+		ctx.JSON(httpresp.Fail400(nil, castErr.Error()))
 		return
 	}
 	deleteErr := ctrler.repos.SOFRepository.Delete(id)
 	if deleteErr != nil {
-		ctx.JSON(httpresp.Fail400(gin.H{}, deleteErr.Error()))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 
@@ -58,7 +58,7 @@ func (ctrler *FundSourceController) UpdateSource(ctx *gin.Context) {
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	updateErr := ctrler.repos.SOFRepository.Update(id, model.FundSource{Name: body.Name})
 	if updateErr != nil {
-		ctx.JSON(httpresp.Fail400(gin.H{}, updateErr.Error()))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "Sources updated."))

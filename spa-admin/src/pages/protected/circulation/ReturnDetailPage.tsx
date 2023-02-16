@@ -1,5 +1,8 @@
 import ProfileIcon from "@components/ProfileIcon";
-import { PromptTextAreaDialog } from "@components/ui/dialog/Dialog";
+import {
+  ConfirmDialog,
+  PromptTextAreaDialog,
+} from "@components/ui/dialog/Dialog";
 import { TextAreaClasses } from "@components/ui/form/Input";
 import {
   Thead,
@@ -14,19 +17,28 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import axiosClient from "@definitions/configs/axios";
-import {
-  BorrowStatus,
-  BorrowStatuses,
-  BorrowingTransaction,
-} from "@definitions/types";
+import { BorrowedCopy, BorrowingTransaction } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { PrimaryButton } from "@components/ui/button/Button";
+import {
+  PrimaryButton,
+  SecondaryOutlineButton,
+} from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
-
+import { useState } from "react";
+import { IoReturnUpBackSharp } from "react-icons/io5";
+import {
+  BorrowedCopyInitialValue,
+  BorrowingTransactionInitialValue,
+} from "@definitions/defaults";
+import {
+  BorrowStatuses,
+  checkStatus,
+  isReturned,
+} from "@internal/borrow-status";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -34,24 +46,19 @@ const TransactionByIdPage = () => {
     open: openPrompt,
     isOpen: isPromptOpen,
   } = useSwitch();
+
+  const {
+    close: closeConfirmDialog,
+    open: openConfirmDialog,
+    isOpen: isConfirmDialogOpen,
+  } = useSwitch();
   const { id } = useParams();
+
   const fetchTransaction = async () => {
     const { data: response } = await axiosClient.get(
       `/circulation/transactions/${id}`
     );
-    return (
-      response?.data?.transaction ??
-      ({
-        accountDisplayName: "",
-        accountEmail: "",
-        accountId: "",
-        borrowedAccessions: [],
-        createdAt: "",
-        dueDate: "",
-        returnedAt: "",
-        remarks: "",
-      } as BorrowingTransaction)
-    );
+    return response?.data?.transaction ?? BorrowingTransactionInitialValue;
   };
 
   const { data: transaction, refetch } = useQuery<BorrowingTransaction>({
@@ -75,25 +82,34 @@ const TransactionByIdPage = () => {
       refetch();
     },
   });
-  const checkStatus = (): BorrowStatus => {
-    const returnedDate = new Date(transaction?.returnedAt ?? "");
-    const INVALID_YEAR = 1;
-    if (
-      returnedDate instanceof Date &&
-      !isNaN(returnedDate.getTime()) &&
-      returnedDate.getFullYear() != INVALID_YEAR
-    ) {
-      return BorrowStatuses.Returned;
-    } else {
-      const now = new Date();
-      const dueDate = new Date(transaction?.dueDate ?? "");
-      if (now.setHours(0, 0, 0, 0) > dueDate.setHours(0, 0, 0, 0)) {
-        return BorrowStatuses.Overdue;
-      }
-      return BorrowStatuses.CheckedOut;
-    }
+
+  const status = checkStatus(
+    transaction?.returnedAt ?? "",
+    transaction?.dueDate ?? ""
+  );
+  const [copyToReturn, setCopyToReturn] = useState<BorrowedCopy>(
+    BorrowedCopyInitialValue
+  );
+  const onConfirmReturn = () => {
+    closeConfirmDialog();
+    returnCopy.mutate();
   };
-  const status = checkStatus();
+
+  const returnCopy = useMutation({
+    mutationFn: () =>
+      axiosClient.patch(
+        `/circulation/transactions/${id}/books/${copyToReturn.bookId}/accessions/${copyToReturn.number}`
+      ),
+    onSuccess: () => {
+      toast.success("Book copy has been marked as returned.");
+    },
+    onError: () => {
+      toast.error(ErrorMsg.Update);
+    },
+    onSettled: () => {
+      refetch();
+    },
+  });
   return (
     <>
       <ContainerNoBackground>
@@ -107,10 +123,10 @@ const TransactionByIdPage = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-gray-600 font-bold">
-                {transaction?.accountDisplayName}
+                {transaction?.client.displayName}
               </span>
               <small className="text-gray-500">
-                {transaction?.accountEmail}
+                {transaction?.client.email}
               </small>
             </div>
           </div>
@@ -139,7 +155,7 @@ const TransactionByIdPage = () => {
             className: "mb-5",
           }}
         >
-          Borrowed Books{" "}
+          Borrowed Books
         </Divider>
         <Container className="mx-0 lg:w-full">
           <Table>
@@ -148,15 +164,34 @@ const TransactionByIdPage = () => {
                 <Th>Title</Th>
                 <Th>Copy number</Th>
                 <Th>Accession number</Th>
+                <Th></Th>
               </HeadingRow>
             </Thead>
             <Tbody>
-              {transaction?.borrowedAccessions?.map((accession) => {
+              {transaction?.borrowedCopies?.map((accession) => {
                 return (
                   <BodyRow key={`${accession.number}_${accession.bookId}`}>
-                    <Td>{accession.title}</Td>
+                    <Td>{accession.book.title}</Td>
                     <Td>{accession.copyNumber}</Td>
                     <Td>{accession.number}</Td>
+                    <Td>
+                      {isReturned(accession.returnedAt) ? (
+                        <span className="px-1 py-1 border border-blue-400 rounded text-xs text-blue-400">
+                          Returned
+                        </span>
+                      ) : (
+                        <SecondaryOutlineButton
+                          className="flex gap-2"
+                          onClick={() => {
+                            setCopyToReturn({ ...accession });
+                            openConfirmDialog();
+                          }}
+                        >
+                          <IoReturnUpBackSharp className="text-lg" />
+                          Return Copy
+                        </SecondaryOutlineButton>
+                      )}
+                    </Td>
                   </BodyRow>
                 );
               })}
@@ -218,6 +253,14 @@ const TransactionByIdPage = () => {
           closePrompt();
         }}
       ></PromptTextAreaDialog>
+
+      <ConfirmDialog
+        onConfirm={onConfirmReturn}
+        close={closeConfirmDialog}
+        isOpen={isConfirmDialogOpen}
+        title="Return Copy"
+        text="Are you sure that you want to mark this book copy as returned ?"
+      ></ConfirmDialog>
     </>
   );
 };

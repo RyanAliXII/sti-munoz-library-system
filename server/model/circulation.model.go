@@ -7,40 +7,39 @@ import (
 )
 
 type BorrowingTransaction struct {
-	Id                 string             `json:"id" db:"id"`
-	AccountDisplayName string             `json:"accountDisplayName" db:"display_name"`
-	AccountId          string             `json:"accountId" db:"account_id"`
-	AccountEmail       string             `json:"accountEmail" db:"email"`
-	BorrowedAccessions BorrowedAccessions `json:"borrowedAccessions" db:"borrowed_accessions"`
-	DueDate            db.NullableTime    `json:"dueDate" db:"due_date"`
-	ReturnedAt         db.NullableTime    `json:"returnedAt" db:"returned_at"`
-	Remarks            string             `json:"remarks" db:"remarks"`
-	CreatedAt          db.NullableTime    `json:"createdAt" db:"created_at"`
+	Id             string          `json:"id" db:"id"`
+	Client         AccountJSON     `json:"client" db:"client"`
+	BorrowedCopies BorrowedCopies  `json:"borrowedCopies" db:"borrowed_copies"`
+	DueDate        db.NullableTime `json:"dueDate" db:"due_date"`
+	ReturnedAt     db.NullableTime `json:"returnedAt" db:"returned_at"`
+	Remarks        string          `json:"remarks" db:"remarks"`
+	CreatedAt      db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
 // the accession of borrowed book
-type BorrowedAccessions []struct {
-	Number     int    `json:"number" db:"number"`
-	Title      string `json:"title" db:"book_title"`
-	BookId     string `json:"bookId" db:"book_id"`
-	CopyNumber int    `json:"copyNumber" db:"copy_number"`
+type BorrowedCopies []struct {
+	Number     int             `json:"number" db:"number"`
+	BookId     string          `json:"bookId" db:"book_id"`
+	CopyNumber int             `json:"copyNumber" db:"copy_number"`
+	ReturnedAt db.NullableTime `json:"returnedAt"`
+	Book       BookJSON        `json:"book"`
 }
 
-func (ba *BorrowedAccessions) Scan(value interface{}) error {
+func (copies *BorrowedCopies) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	if valid {
-		unmarshalErr := json.Unmarshal(val, ba)
+		unmarshalErr := json.Unmarshal(val, copies)
 		if unmarshalErr != nil {
-			*ba = make(BorrowedAccessions, 0)
+			*copies = make(BorrowedCopies, 0)
 		}
 
 	} else {
-		*ba = make(BorrowedAccessions, 0)
+		*copies = make(BorrowedCopies, 0)
 	}
 	return nil
 
 }
 
-func (ba BorrowedAccessions) Value(value interface{}) (driver.Value, error) {
-	return ba, nil
+func (copies BorrowedCopies) Value(value interface{}) (driver.Value, error) {
+	return copies, nil
 }

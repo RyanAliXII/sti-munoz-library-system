@@ -16,10 +16,7 @@ type PublisherJSON struct {
 func (publisher *PublisherJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	INITIAL_DATA_ON_ERROR := PublisherJSON{
-		Publisher: Publisher{
-			Name: "",
-			Id:   0,
-		},
+		Publisher: Publisher{},
 	}
 	if valid {
 		unmarshalErr := json.Unmarshal(val, publisher)

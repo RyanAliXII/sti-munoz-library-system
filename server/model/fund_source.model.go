@@ -16,23 +16,16 @@ type FundSourceJSON struct {
 
 func (fundSource *FundSourceJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
+	INITIAL_DATA_ON_ERROR := FundSourceJSON{
+		FundSource: FundSource{},
+	}
 	if valid {
 		unmarshalErr := json.Unmarshal(val, fundSource)
 		if unmarshalErr != nil {
-			*fundSource = FundSourceJSON{
-				FundSource: FundSource{
-					Id:   0,
-					Name: "",
-				},
-			}
+			*fundSource = INITIAL_DATA_ON_ERROR
 		}
 	} else {
-		*fundSource = FundSourceJSON{
-			FundSource: FundSource{
-				Id:   0,
-				Name: "",
-			},
-		}
+		*fundSource = INITIAL_DATA_ON_ERROR
 	}
 	return nil
 

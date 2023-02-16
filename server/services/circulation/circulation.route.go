@@ -14,4 +14,5 @@ func CirculationRoutes(router *gin.RouterGroup, repos *repository.Repositories) 
 	router.GET("/transactions/:id/books", controller.GetTransactionBooks)
 	router.POST("/checkout", middlewares.ValidateBody[CheckoutBody], controller.Checkout)
 	router.PATCH("/transactions/:id", controller.ReturnBooksById)
+	router.PATCH("/transactions/:id/books/:bookId/accessions/:accessionNumber", controller.ReturnBookCopy)
 }

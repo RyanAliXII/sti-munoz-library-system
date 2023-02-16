@@ -31,6 +31,7 @@ import Container, {
 } from "@components/ui/container/Container";
 import Divider from "@components/ui/divider/Divider";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { BookInitialValue } from "@definitions/defaults";
 export type CheckoutForm = {
   client: Account;
   accessions: DetailedAccession[];
@@ -79,29 +80,7 @@ const CheckoutPage = () => {
       accessions: [...accessions],
     }));
   };
-  const [selectedBook, setSelectedBook] = useState<Book>({
-    accessions: [],
-    authorNumber: "",
-    authors: [],
-    copies: 0,
-    costPrice: 0,
-    createdAt: "",
-    ddc: 0,
-    description: "",
-    edition: 0,
-    fundSource: "",
-    fundSourceId: 0,
-    isbn: "",
-    pages: 0,
-    publisher: "",
-    publisherId: 0,
-    receivedAt: "",
-    section: "",
-    sectionId: 0,
-    title: "",
-    yearPublished: 0,
-    id: "",
-  });
+  const [selectedBook, setSelectedBook] = useState<Book>(BookInitialValue);
 
   const {
     close: closeCopySelection,
@@ -231,7 +210,7 @@ const CheckoutPage = () => {
                     <BodyRow
                       key={`${accession.bookId}_${accession.copyNumber}`}
                     >
-                      <Td>{accession.title}</Td>
+                      <Td>{accession.book.title}</Td>
                       <Td>{accession.copyNumber}</Td>
                       <Td>{accession.number}</Td>
                       <Td>
