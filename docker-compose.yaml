@@ -64,5 +64,17 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5204:80"
+  slim_rabbitmq:
+      image: rabbitmq:3.11.9-management-alpine
+      container_name: slim-rabbitmq
+      restart: always
+      depends_on:
+        - slim_server
+      ports:
+        - '5205:5672'
+        - '5206:15672'
+      environment:
+        - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+        - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
 
     
