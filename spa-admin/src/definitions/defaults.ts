@@ -1,4 +1,4 @@
-import { Book } from "./types";
+import { Book, BorrowedCopy, BorrowingTransaction } from "./types";
 
 
 export const BookInitialValue: Book =  {
@@ -33,9 +33,25 @@ export const BookInitialValue: Book =  {
     createdAt: "",
   }
 
-  export const BorrowedCopyInitialValue = {
+  export const BorrowedCopyInitialValue:BorrowedCopy = {
     book: BookInitialValue,
     bookId: "",
     copyNumber: 0,
     number: 0,
+    returnedAt:""
   }
+
+  export const BorrowingTransactionInitialValue: BorrowingTransaction = {
+    client: {
+    displayName: "",
+    email: "",
+    givenName: "",
+    surname: "",
+    id: "",
+  },
+  borrowedCopies: [],
+  createdAt: "",
+  dueDate: "",
+  returnedAt: "",
+  remarks: "",
+}

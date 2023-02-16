@@ -12,7 +12,6 @@ import {
 import {
   Accession,
   Book,
-  BorrowStatuses,
   DetailedAccession,
   ModalProps,
 } from "@definitions/types";
@@ -21,6 +20,7 @@ import Modal from "react-responsive-modal";
 import { CheckoutForm } from "./CheckoutPage";
 import axiosClient from "@definitions/configs/axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { BorrowStatuses } from "@internal/borrow-status";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -91,25 +91,24 @@ const BookCopySelectionModal = ({
       ),
     [selectedAccessions]
   );
+  const selectAccession = (accession: Accession) => {
+    setSelectedAccessions((prevSelected) => [
+      ...prevSelected,
+      {
+        book: book,
+        bookId: book.id ?? "",
+        copyNumber: accession.copyNumber,
+        number: accession.number,
+        isCheckedOut: false,
+      },
+    ]);
+  };
   const handleCheck = (
     event: ChangeEvent<HTMLInputElement>,
     accession: Accession
   ) => {
     if (event.target.checked) {
-      setSelectedAccessions((prevSelected) => [
-        ...prevSelected,
-        {
-          authorNumber: book.authorNumber,
-          bookId: book.id ?? "",
-          copyNumber: accession.copyNumber,
-          number: accession.number,
-          ddc: book.ddc,
-          section: book.section,
-          title: book.title,
-          yearPublished: book.yearPublished,
-          isCheckedOut: false,
-        },
-      ]);
+      selectAccession(accession);
     } else {
       removeCopy(book.id, accession.number);
     }
@@ -120,20 +119,7 @@ const BookCopySelectionModal = ({
         `${book.id}_${accession.number}`
       )
     ) {
-      setSelectedAccessions((prevSelected) => [
-        ...prevSelected,
-        {
-          authorNumber: book.authorNumber,
-          bookId: book.id ?? "",
-          copyNumber: accession.copyNumber,
-          number: accession.number,
-          ddc: book.ddc,
-          section: book.section,
-          title: book.title,
-          yearPublished: book.yearPublished,
-          isCheckedOut: false,
-        },
-      ]);
+      selectAccession(accession);
     } else {
       removeCopy(book.id, accession.number);
     }

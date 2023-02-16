@@ -85,7 +85,9 @@ export type User = {
     email:string
   }
 
-  export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut">{}
+  export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut">{
+    returnedAt: string //iso-time-string
+  }
 
   export type BorrowingTransaction = {
     id?:string,
@@ -97,11 +99,3 @@ export type User = {
     returnedAt: string//iso-time-string
   }
  
-  export type BorrowStatus = "Returned" | "Overdue" | "Checked Out";
-
-  export enum BorrowStatuses {
-    Returned = "Returned",
-    Overdue = "Overdue",
-    CheckedOut = "Checked Out",
-    Available = "Available",
-  }

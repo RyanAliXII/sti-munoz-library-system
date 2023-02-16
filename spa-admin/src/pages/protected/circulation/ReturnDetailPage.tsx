@@ -17,12 +17,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import axiosClient from "@definitions/configs/axios";
-import {
-  BorrowStatus,
-  BorrowStatuses,
-  BorrowedCopy,
-  BorrowingTransaction,
-} from "@definitions/types";
+import { BorrowedCopy, BorrowingTransaction } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -35,7 +30,15 @@ import {
 import Divider from "@components/ui/divider/Divider";
 import { useState } from "react";
 import { IoReturnUpBackSharp } from "react-icons/io5";
-import { BorrowedCopyInitialValue } from "@definitions/defaults";
+import {
+  BorrowedCopyInitialValue,
+  BorrowingTransactionInitialValue,
+} from "@definitions/defaults";
+import {
+  BorrowStatuses,
+  checkStatus,
+  isReturned,
+} from "@internal/borrow-status";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -55,23 +58,7 @@ const TransactionByIdPage = () => {
     const { data: response } = await axiosClient.get(
       `/circulation/transactions/${id}`
     );
-    return (
-      response?.data?.transaction ??
-      ({
-        client: {
-          displayName: "",
-          email: "",
-          givenName: "",
-          surname: "",
-          id: "",
-        },
-        borrowedCopies: [],
-        createdAt: "",
-        dueDate: "",
-        returnedAt: "",
-        remarks: "",
-      } as BorrowingTransaction)
-    );
+    return response?.data?.transaction ?? BorrowingTransactionInitialValue;
   };
 
   const { data: transaction, refetch } = useQuery<BorrowingTransaction>({
@@ -95,25 +82,11 @@ const TransactionByIdPage = () => {
       refetch();
     },
   });
-  const checkStatus = (): BorrowStatus => {
-    const returnedDate = new Date(transaction?.returnedAt ?? "");
-    const INVALID_YEAR = 1;
-    if (
-      returnedDate instanceof Date &&
-      !isNaN(returnedDate.getTime()) &&
-      returnedDate.getFullYear() != INVALID_YEAR
-    ) {
-      return BorrowStatuses.Returned;
-    } else {
-      const now = new Date();
-      const dueDate = new Date(transaction?.dueDate ?? "");
-      if (now.setHours(0, 0, 0, 0) > dueDate.setHours(0, 0, 0, 0)) {
-        return BorrowStatuses.Overdue;
-      }
-      return BorrowStatuses.CheckedOut;
-    }
-  };
-  const status = checkStatus();
+
+  const status = checkStatus(
+    transaction?.returnedAt ?? "",
+    transaction?.dueDate ?? ""
+  );
   const [copyToReturn, setCopyToReturn] = useState<BorrowedCopy>(
     BorrowedCopyInitialValue
   );
@@ -199,16 +172,22 @@ const TransactionByIdPage = () => {
                     <Td>{accession.copyNumber}</Td>
                     <Td>{accession.number}</Td>
                     <Td>
-                      <SecondaryOutlineButton
-                        className="flex gap-2"
-                        onClick={() => {
-                          setCopyToReturn({ ...accession });
-                          openConfirmDialog();
-                        }}
-                      >
-                        <IoReturnUpBackSharp className="text-lg" />
-                        Return Copy
-                      </SecondaryOutlineButton>
+                      {isReturned(accession.returnedAt) ? (
+                        <span className="px-1 py-1 border border-blue-400 rounded text-xs text-blue-400">
+                          Returned
+                        </span>
+                      ) : (
+                        <SecondaryOutlineButton
+                          className="flex gap-2"
+                          onClick={() => {
+                            setCopyToReturn({ ...accession });
+                            openConfirmDialog();
+                          }}
+                        >
+                          <IoReturnUpBackSharp className="text-lg" />
+                          Return Copy
+                        </SecondaryOutlineButton>
+                      )}
                     </Td>
                   </BodyRow>
                 );
