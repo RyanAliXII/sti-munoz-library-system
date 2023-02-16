@@ -15,7 +15,7 @@ type BookRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *BookRepository) New(book model.BookNew) error {
+func (repo *BookRepository) New(book model.Book) error {
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
@@ -28,14 +28,14 @@ func (repo *BookRepository) New(book model.BookNew) error {
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`
 
 	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Copies, book.Pages,
-		book.SectionId, book.PublisherId, book.FundSourceId, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
+		book.Section.Id, book.Publisher.Id, book.FundSource.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
 		return insertBookErr
 	}
 
 	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section where id = $1 ", book.SectionId)
+	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
@@ -96,17 +96,19 @@ func (repo *BookRepository) New(book model.BookNew) error {
 
 func (repo *BookRepository) Get() []model.Book {
 	var books []model.Book = make([]model.Book, 0)
+
+	// section_id,
+	// section.name as section,
+	// publisher.id as publisher_id,
+	// publisher.name as publisher,
+	// fund_source_id,
+	// source_of_fund.name as fund_source,
+
 	query := `
 	SELECT book.id,title, isbn, 
 	description, 
 	copies,
 	pages,
-	section_id,  
-	section.name as section,
-	publisher.id as publisher_id,
-	publisher.name as publisher,
-	fund_source_id,
-	source_of_fund.name as fund_source,
 	cost_price,
 	edition,
 	year_published,
@@ -114,6 +116,9 @@ func (repo *BookRepository) Get() []model.Book {
 	ddc,
 	author_number,
 	book.created_at,
+	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
 	FROM catalog.book_author
@@ -121,10 +126,10 @@ func (repo *BookRepository) Get() []model.Book {
 	where book_id = book.id
 	group by book_id),'[]') as authors,
 	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
-	 FROM catalog.book 
+	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
 	ORDER BY created_at DESC
 	`
 	selectErr := repo.db.Select(&books, query)
@@ -140,12 +145,6 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	description, 
 	copies,
 	pages,
-	section_id,  
-	section.name as section,
-	publisher.name as publisher,
-	publisher.id as publisher_id,
-	fund_source_id,
-	source_of_fund.name as fund_source,
 	cost_price,
 	edition,
 	year_published,
@@ -153,6 +152,9 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	ddc,
 	author_number,
 	book.created_at,
+	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
 	FROM catalog.book_author
@@ -178,20 +180,44 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 
 	query := `
-		SELECT accession.id as accession_number, copy_number, 
-		accession.book_id, book.title, book.ddc, book.author_number, 
-		book.year_published, 
-		section.name as section,
-		book.section_id,
-		(CASE WHEN accession_number is null then false else true END) as is_checked_out,
-		book.created_at 
-		FROM get_accession_table() 
-		as accession 
-		INNER JOIN catalog.book on accession.book_id = book.id 
-		INNER JOIN catalog.section on book.section_id = section.id
-		LEFT JOIN circulation.borrowed_book 
-		as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
-		ORDER BY book.created_at DESC
+	SELECT accession.id as accession_number, copy_number, 
+	accession.book_id,
+	json_build_object(
+		'id', book.id,
+		'title', book.title,
+		'description', book.description,
+		'ddc', book.ddc,
+		'authorNumber', book.author_number,
+		'isbn', book.isbn,
+		'copies', book.copies,
+		'pages', book.pages,
+		'costPrice', book.cost_price,
+		'edition', book.edition,
+		'yearPublished', book.year_published,
+		'receivedAt', book.received_at,
+		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
+		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
+		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'created_at',book.created_at,
+		'authors', (
+		COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+		as authors
+		FROM catalog.book_author
+		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+		where book_id = book.id
+		group by book_id),'[]'))
+		
+	) as book,
+	(CASE WHEN accession_number is null then false else true END) as is_checked_out
+	FROM get_accession_table() 
+	as accession 
+	INNER JOIN catalog.book on accession.book_id = book.id 
+	INNER JOIN catalog.section on book.section_id = section.id
+	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	LEFT JOIN circulation.borrowed_book 
+	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
+	ORDER BY book.created_at DESC
 	`
 
 	selectAccessionErr := repo.db.Select(&accessions, query)
@@ -201,7 +227,8 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	}
 	return accessions
 }
-func (repo *BookRepository) Update(book model.BookUpdate) error {
+
+func (repo *BookRepository) Update(book model.Book) error {
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		transaction.Rollback()
@@ -209,11 +236,11 @@ func (repo *BookRepository) Update(book model.BookUpdate) error {
 		return transactErr
 	}
 
-	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6, 
+	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6,
 	fund_source_id = $7, cost_price= $8, edition = $9, year_published = $10, received_at = $11, author_number = $12, ddc = $13 where id = $14 `
 
 	//update book
-	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.SectionId, book.PublisherId, book.FundSourceId,
+	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.Section.Id, book.Publisher.Id, book.FundSource.Id,
 		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Id)
 	if updateErr != nil {
 		transaction.Rollback()
@@ -328,11 +355,11 @@ func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
 }
 
 type BookRepositoryInterface interface {
-	New(model.BookNew) error
+	New(model.Book) error
 	Get() []model.Book
 	GetOne(id string) model.Book
 	GetAccessions() []model.Accession
-	Update(model.BookUpdate) error
+	Update(model.Book) error
 	Search(Filter) []model.Book
 	GetAccessionsByBookId(id string) []model.Accession
 }

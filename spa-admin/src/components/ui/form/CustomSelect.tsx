@@ -53,8 +53,8 @@ const CustomSelect = <
           }}
         ></Select>
 
-        <div className={InputClasses.LabelWrapperClasslist}>
-          <small className={InputClasses.LabelClasslist}>{props.error}</small>
+        <div>
+          <small className="text-red-400">{props.error}</small>
         </div>
       </div>
     </>

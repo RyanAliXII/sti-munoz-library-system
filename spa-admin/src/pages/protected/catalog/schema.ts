@@ -45,17 +45,17 @@ export const NewBookSchemaValidation = object().shape({
     copies: number().typeError("Value must not be empty and should be numeric.").integer("Value should not be decimal.").min(1, "Value should be atleast 1").required("Number of copies is required."),
     pages: number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).test("check-if-greater-than-0","Value should be greater than 0" ,(value)=> (value ?? 0) > 0).required("Number of pages is required."),
     section: object().shape( {
-        label: string().notRequired(),
-        value: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
+        name: string().notRequired(),
+        id: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
     }),
 
     publisher: object().shape({
-        label: string().notRequired(),
-        value: number().integer(NUMBER_NO_DECIMAL).required("Publisher is required.").min(1, "Please select a publisher."),
+        name: string().notRequired(),
+        id: number().integer(NUMBER_NO_DECIMAL).required("Publisher is required.").min(1, "Please select a publisher."),
     }),
     fundSource: object().shape({
-        label:  string().notRequired(),
-        value:number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
+        name:  string().notRequired(),
+        id:number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
     }),
     costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
     edition : number().typeError("Value must not be empty and should be numeric.").min(0, "The edition must not be less than 0." ).integer(NUMBER_NO_DECIMAL).notRequired(),
@@ -74,17 +74,17 @@ export const UpdateBookSchemaValidation = object().shape({
     isbn: string().required().test("check-isbn", "Invalid ISBN number.", (value)=> validator.isISBN(value ?? " ")),
     pages: number().typeError("Value must not be empty and should be numeric.").integer(NUMBER_NO_DECIMAL).test("check-if-greater-than-0","Value should be greater than 0" ,(value)=> (value ?? 0) > 0).required("Number of pages is required."),
     section: object().shape( {
-        label: string().notRequired(),
-        value: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
+        name: string().notRequired(),
+        id: number().integer(NUMBER_NO_DECIMAL).required("Please select section").min(1, "Please select a section."),
     }),
 
     publisher: object().shape({
-        label: string().notRequired(),
-        value: number().integer(NUMBER_NO_DECIMAL).required("Publisher is required.").min(1, "Please select a publisher."),
+        name: string().notRequired(),
+        id: number().integer(NUMBER_NO_DECIMAL).required("Publisher is required.").min(1, "Please select a publisher."),
     }),
     fundSource: object().shape({
-        label:  string().notRequired(),
-        value:number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
+        name:  string().notRequired(),
+        id:number().integer(NUMBER_NO_DECIMAL).required("Source of fund is required.").min(1, "Please select a source."),
     }),
     costPrice: number().typeError("Value must not be empty and should be numeric.").min(0, "The cost price must not be less than 0.").notRequired(),
     edition : number().typeError("Value must not be empty and should be numeric.").min(0, "The edition must not be less than 0." ).integer(NUMBER_NO_DECIMAL).notRequired(),

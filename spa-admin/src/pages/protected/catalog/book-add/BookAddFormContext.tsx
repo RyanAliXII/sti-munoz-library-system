@@ -5,23 +5,8 @@ import React, { createContext, useContext, useState } from "react";
 import { NewBookSchemaValidation } from "../schema";
 import { SingleValue } from "react-select";
 
-export interface NewBookForm
-  extends Omit<
-    Book,
-    | "id"
-    | "section"
-    | "fundSource"
-    | "publisher"
-    | "publisherId"
-    | "sectionId"
-    | "fundSourceId"
-  > {
-  section: SingleValue<{ label: string; value: number }>;
-  fundSource: SingleValue<{ label: string; value: number }>;
-  publisher: SingleValue<{ label: string; value: number }>;
-}
 export const BookAddFormContext = createContext({} as BookAddContextType);
-interface BookAddContextType extends UseFormType<NewBookForm> {
+interface BookAddContextType extends UseFormType<Book> {
   removeAuthorAsBasisForAuthorNumber: () => void;
   selectAuthorForAuthorNumberGeneration: (author: Author) => void;
   authorFromGeneratedAuthorNumber: Author | null;
@@ -50,22 +35,23 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
   const unSelectAuthorFromGeneratedAuthorNumber = () => {
     setAuthorFromGeneratedAuthorNumber(null);
   };
-  const formClient = useForm<NewBookForm>({
+  const formClient = useForm<Book>({
     initialFormData: {
       title: "",
       isbn: "",
       authors: [],
       section: {
-        label: "Select section.",
-        value: 0,
+        name: "",
+        id: 0,
+        hasOwnAccession: false,
       },
       publisher: {
-        label: "Select publisher.",
-        value: 0,
+        name: "",
+        id: 0,
       },
       fundSource: {
-        label: "Select source of fund.",
-        value: 0,
+        name: "",
+        id: 0,
       },
       copies: 1,
       receivedAt: new Date().toISOString(),

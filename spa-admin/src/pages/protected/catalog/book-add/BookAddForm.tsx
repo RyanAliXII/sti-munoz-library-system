@@ -3,9 +3,9 @@ import { Input } from "@components/ui/form/Input";
 import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
 
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, forwardRef } from "react";
+import { BaseSyntheticEvent } from "react";
 
-import { Author, Section, Publisher, Source } from "@definitions/types";
+import { Author, Section, Publisher, Source, Book } from "@definitions/types";
 
 import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -15,14 +15,12 @@ import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
-import { useBookAddFormContext, NewBookForm } from "./BookAddFormContext";
+import { useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import { ContainerNoBackground } from "@components/ui/container/Container";
 import { FieldRow } from "@components/ui/form/FieldRow";
 
 const BookAddForm = () => {
@@ -110,21 +108,15 @@ const BookAddForm = () => {
       };
     });
   };
-  const handleSectionSelect = (
-    option: SingleValue<{ label: string; value: number }>
-  ) => {
+  const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
     removeFieldError("section.value");
   };
-  const handleSourceSelect = (
-    option: SingleValue<{ label: string; value: number }>
-  ) => {
+  const handleSourceSelect = (option: SingleValue<Source>) => {
     setFieldValue("fundSource", option);
     removeFieldError("fundSource.value");
   };
-  const handlePublisherSelect = (
-    option: SingleValue<{ label: string; value: number }>
-  ) => {
+  const handlePublisherSelect = (option: SingleValue<Source>) => {
     setFieldValue("publisher", option);
     removeFieldError("publisher.value");
   };
@@ -139,7 +131,7 @@ const BookAddForm = () => {
   };
 
   const mutation = useMutation({
-    mutationFn: (parsedForm: NewBookForm) =>
+    mutationFn: (parsedForm: Book) =>
       axiosClient.post("/books/", {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
@@ -233,13 +225,10 @@ const BookAddForm = () => {
             onChange={handleSectionSelect}
             value={form.section}
             className="w-full"
-            error={errors?.section?.value}
-            options={sections?.map((section) => {
-              return {
-                value: section.id ?? 0,
-                label: section.name,
-              };
-            })}
+            getOptionLabel={(option) => option.name}
+            getOptionValue={(option) => option?.id?.toString() ?? ""}
+            error={errors?.section?.id}
+            options={sections}
           />
         </FieldRow>
         <FieldRow
@@ -253,10 +242,10 @@ const BookAddForm = () => {
             className="w-full"
             onChange={handlePublisherSelect}
             value={form.publisher}
-            error={errors?.publisher?.value}
-            options={publishers?.map((publisher) => {
-              return { value: publisher.id ?? 0, label: publisher.name };
-            })}
+            getOptionLabel={(option) => option.name}
+            getOptionValue={(option) => option?.id?.toString() ?? ""}
+            error={errors?.publisher?.id}
+            options={publishers}
           />
         </FieldRow>
         <FieldRow
@@ -271,10 +260,10 @@ const BookAddForm = () => {
             wrapperclass="flex flex-col"
             onChange={handleSourceSelect}
             value={form.fundSource}
-            error={errors?.fundSource?.value}
-            options={sourceOfFunds?.map((source) => {
-              return { value: source.id ?? 0, label: source.name };
-            })}
+            getOptionLabel={(option) => option.name}
+            getOptionValue={(option) => option?.id?.toString() ?? ""}
+            error={errors?.fundSource?.id}
+            options={sourceOfFunds}
           />
         </FieldRow>
         <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>

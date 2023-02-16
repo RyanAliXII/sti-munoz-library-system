@@ -260,7 +260,7 @@ const TitleCard = ({ book }: CardProps) => {
             <big className="block">{book.title} </big>
             <span>{authors.join(" , ")}</span>
             <span className="block">
-              {book.publisher} {book.yearPublished}
+              {book.publisher.name} {book.yearPublished}
             </span>
             <span>{book.pages} p.</span>
           </div>
@@ -288,7 +288,7 @@ const AuthorCard = ({ book }: CardProps) => {
             <big>{authors.join(" , ")}</big>
             <span className="block">{book.title} </span>
             <span className="block">
-              {book.publisher} {book.yearPublished}
+              {book.publisher.name} {book.yearPublished}
             </span>
             <span>{book.pages} p.</span>
           </div>
@@ -312,7 +312,7 @@ const CallNumber = ({ book, copyNumber, accessionNumber }: CallNumberProps) => {
         <QRCode value={qrValue} className="w-16 h-16"></QRCode>
       </div>
       <div className="w-32 h-28 border-gray-400 border border-dashed flex flex-col px-2">
-        <span>{book.section?.substring(0, 3)}</span>
+        <span>{book.section.name?.substring(0, 3)}</span>
         <small className="tracking-wide">
           {book.title.charAt(0)}
           {book.ddc}
