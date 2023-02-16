@@ -57,6 +57,7 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	INNER JOIN get_accession_table() as accession on bb.accession_number = accession.id AND bb.book_id = accession.book_id
 	GROUP BY bt.id, account.id
+	ORDER by bt.created_at DESC
 	`
 	selectErr := repo.db.Select(&transactions, selectTransactionQuery)
 	if selectErr != nil {

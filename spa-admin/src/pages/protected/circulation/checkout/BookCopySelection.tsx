@@ -91,35 +91,22 @@ const BookCopySelectionModal = ({
       ),
     [selectedAccessions]
   );
-  const selectAccession = (accession: Accession) => {
-    setSelectedAccessions((prevSelected) => [
-      ...prevSelected,
-      {
-        book: book,
-        bookId: book.id ?? "",
-        copyNumber: accession.copyNumber,
-        number: accession.number,
-        isCheckedOut: false,
-      },
-    ]);
-  };
-  const handleCheck = (
-    event: ChangeEvent<HTMLInputElement>,
-    accession: Accession
-  ) => {
-    if (event.target.checked) {
-      selectAccession(accession);
-    } else {
-      removeCopy(book.id, accession.number);
-    }
-  };
   const handleCheckonRowClick = (accession: Accession) => {
     if (
       !selectedAccessionCopiesCache.hasOwnProperty(
         `${book.id}_${accession.number}`
       )
     ) {
-      selectAccession(accession);
+      setSelectedAccessions((prevSelected) => [
+        ...prevSelected,
+        {
+          book: book,
+          bookId: book.id ?? "",
+          copyNumber: accession.copyNumber,
+          number: accession.number,
+          isCheckedOut: false,
+        },
+      ]);
     } else {
       removeCopy(book.id, accession.number);
     }
@@ -168,10 +155,8 @@ const BookCopySelectionModal = ({
                     <input
                       type="checkbox"
                       checked={isAdded}
+                      readOnly
                       disabled={accession.isCheckedOut}
-                      onChange={(event) => {
-                        handleCheck(event, accession);
-                      }}
                     />
                   </Td>
                   <Td>{accession.number}</Td>

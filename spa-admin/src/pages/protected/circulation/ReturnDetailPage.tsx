@@ -106,6 +106,9 @@ const TransactionByIdPage = () => {
     onError: () => {
       toast.error(ErrorMsg.Update);
     },
+    onSettled: () => {
+      refetch();
+    },
   });
   return (
     <>
