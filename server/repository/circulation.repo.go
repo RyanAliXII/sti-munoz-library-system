@@ -196,11 +196,25 @@ func (repo *CirculationRepository) ReturnBookCopy(transactionId string, bookId s
 		return transactErr
 	}
 
-	query := `UPDATE circulation.borrowed_book SET returned_at = now() where transaction_id = $1 AND book_id = $2 AND accession_number = $3`
-	_, updateErr := transaction.Exec(query, transactionId, bookId, accessionNumber)
+	updateQuery := `UPDATE circulation.borrowed_book SET returned_at = now() where transaction_id = $1 AND book_id = $2 AND accession_number = $3`
+	_, updateErr := transaction.Exec(updateQuery, transactionId, bookId, accessionNumber)
 	if updateErr != nil {
 		transaction.Rollback()
 		logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.ReturnBookCopy"), slimlog.Error("updateErr"))
+	}
+
+	//check if the books have been returned. If returned, mark the transaction as returned.
+	checkReturnedCopyQuery := `SELECT EXISTS(SELECT 1 FROM circulation.borrowed_book where transaction_id = $1  AND returned_at is null )`
+	exists := false
+	transaction.Get(&exists, checkReturnedCopyQuery, transactionId)
+	if !exists {
+		updateBorrowTransactionQuery := `UPDATE circulation.borrow_transaction SET returned_at = now() where id = $1`
+		_, updateBorrowTransactionErr := transaction.Exec(updateBorrowTransactionQuery, transactionId)
+		if updateBorrowTransactionErr != nil {
+			transaction.Rollback()
+			logger.Error(updateBorrowTransactionErr.Error(), slimlog.Function("CirculationRepository.ReturnBookCopy"), slimlog.Error("updateBorrowTransactionErr"))
+			return updateBorrowTransactionErr
+		}
 	}
 	transaction.Commit()
 	return updateErr
