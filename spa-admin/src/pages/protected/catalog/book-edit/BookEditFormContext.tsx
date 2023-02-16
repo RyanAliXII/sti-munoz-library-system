@@ -8,23 +8,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axiosClient from "@definitions/configs/axios";
 
-export interface EditBookForm
-  extends Omit<
-    Book,
-    | "section"
-    | "fundSource"
-    | "publisher"
-    | "publisherId"
-    | "sectionId"
-    | "fundSourceId"
-    | "copies"
-  > {
-  section: SingleValue<{ label: string; value: number }>;
-  fundSource: SingleValue<{ label: string; value: number }>;
-  publisher: SingleValue<{ label: string; value: number }>;
-}
 export const BookEditFormContext = createContext({} as BookAddContextType);
-interface BookAddContextType extends UseFormType<EditBookForm> {
+interface BookAddContextType extends UseFormType<Book> {
   removeAuthorAsBasisForAuthorNumber: () => void;
   selectAuthorForAuthorNumberGeneration: (author: Author) => void;
   authorFromGeneratedAuthorNumber: Author | null;
@@ -37,21 +22,23 @@ export const useBookEditFormContext = () => {
   return useContext(BookEditFormContext);
 };
 
-const INITIAL_FORM_DATA_FALLBACK = {
+const INITIAL_FORM_DATA: Book = {
   title: "",
   isbn: "",
   authors: [],
+  copies: 1,
   section: {
-    label: "Select section.",
-    value: 0,
+    name: "Select section.",
+    id: 0,
+    hasOwnAccession: false,
   },
   publisher: {
-    label: "Select publisher.",
-    value: 0,
+    name: "Select publisher.",
+    id: 0,
   },
   fundSource: {
-    label: "Select source of fund.",
-    value: 0,
+    name: "Select source of fund.",
+    id: 0,
   },
   receivedAt: new Date().toISOString(),
   authorNumber: "",
@@ -92,13 +79,13 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
     setAuthorFromGeneratedAuthorNumber(null);
   };
 
-  const formClient = useForm<EditBookForm>({
-    initialFormData: INITIAL_FORM_DATA_FALLBACK,
+  const formClient = useForm<Book>({
+    initialFormData: INITIAL_FORM_DATA,
     schema: UpdateBookSchemaValidation,
     scrollToError: true,
   });
 
-  const { isFetchedAfterMount } = useQuery<EditBookForm>({
+  const { isFetchedAfterMount } = useQuery<Book>({
     queryFn: fetchBook,
     queryKey: ["book"],
     staleTime: Infinity,
@@ -106,7 +93,7 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
     refetchOnWindowFocus: false,
     retry: false,
     onSuccess: (data) => {
-      formClient.setForm(() => ({ ...data }));
+      formClient.setForm({ ...data });
     },
     onError: () => {
       {

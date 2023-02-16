@@ -42,12 +42,9 @@ export type User = {
       copies: number;
       edition: number;
       costPrice: number;
-      sectionId:number,
-      section: string
-      fundSourceId: number;
-      fundSource: string
-      publisherId: number;
-      publisher:string
+      section: Section,
+      fundSource: Source,
+      publisher:Publisher
       pages: number;
       yearPublished: number;
       receivedAt: string //iso-string  date
@@ -70,14 +67,9 @@ export type User = {
   }
 
   export interface DetailedAccession extends Accession{
-
-    bookId: string
-    title: string
-    ddc: number;
-    authorNumber: string
-    yearPublished: number;
-    section:string
+    bookId: string 
     isCheckedOut: boolean,
+    book: Book
   }
 
   export type Audit = {

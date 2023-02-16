@@ -67,11 +67,11 @@ const AccessionPage = () => {
           <Tbody>
             {accessions?.map((accession) => {
               return (
-                <BodyRow key={`${accession.copyNumber}_${accession.title}`}>
+                <BodyRow key={`${accession.copyNumber}_${accession.bookId}`}>
                   <Td>{accession.number}</Td>
-                  <Td>{accession.title}</Td>
-                  <Td>{accession.section}</Td>
-                  <Td>{accession.yearPublished}</Td>
+                  <Td>{accession.book.title}</Td>
+                  <Td>{accession.book.section.name}</Td>
+                  <Td>{accession.book.yearPublished}</Td>
                 </BodyRow>
               );
             })}
