@@ -42,12 +42,9 @@ export type User = {
       copies: number;
       edition: number;
       costPrice: number;
-      sectionId:number,
-      section: string
-      fundSourceId: number;
-      fundSource: string
-      publisherId: number;
-      publisher:string
+      section: Section,
+      fundSource: Source,
+      publisher:Publisher
       pages: number;
       yearPublished: number;
       receivedAt: string //iso-string  date
@@ -70,14 +67,9 @@ export type User = {
   }
 
   export interface DetailedAccession extends Accession{
-
-    bookId: string
-    title: string
-    ddc: number;
-    authorNumber: string
-    yearPublished: number;
-    section:string
+    bookId: string 
     isCheckedOut: boolean,
+    book: Book
   }
 
   export type Audit = {
@@ -94,14 +86,12 @@ export type User = {
   }
 
 
-  export interface BorrowedAccession extends Omit<DetailedAccession, 'ddc | authorNumber | yearPublished | section'>{}
+  export interface BorrowedCopies extends DetailedAccession{}
 
   export type BorrowingTransaction = {
     id?:string,
-    accountDisplayName :string,
-    accountId : string,
-    accountEmail: string,
-    borrowedAccessions: BorrowedAccession[]
+    client: Account
+    borrowedCopies: BorrowedCopies[]
     remarks: string,
     dueDate: string //iso-time-string
     createdAt: string //iso-time-string

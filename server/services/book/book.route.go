@@ -9,13 +9,11 @@ import (
 
 func BookRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
 
-	var controller BookControllerInterface = &BookController{
-		repos: repos,
-	}
-	router.POST("/", middlewares.ValidateBody[NewBookBody], controller.NewBook)
+	var controller BookControllerInterface = NewBookController(repos)
+	router.POST("/", middlewares.ValidateBody[BookBody], controller.NewBook)
 	router.GET("/", controller.GetBooks)
 	router.GET("/accessions", controller.GetAccession)
 	router.GET("/:id", controller.GetBookById)
-	router.PUT("/:id", middlewares.ValidateBody[UpdateBookBody], controller.UpdateBook)
+	router.PUT("/:id", middlewares.ValidateBody[BookBody], controller.UpdateBook)
 	router.GET("/:id/accessions", controller.GetAccessionByBookId)
 }
