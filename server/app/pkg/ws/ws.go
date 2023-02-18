@@ -1,10 +1,10 @@
 package ws
 
 import (
-	"fmt"
+	"context"
 	"net/http"
+	"slim-app/server/app/broadcasting"
 	"slim-app/server/app/pkg/slimlog"
-	"slim-app/server/repository"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -44,10 +44,11 @@ func (ws *WebSocket) Reader() {
 	}
 }
 
-func (ws *WebSocket) Writer(repos *repository.Repositories, ctx *gin.Context) {
+func (ws *WebSocket) Writer(broadcaster *broadcasting.Broadcasters, ctx *gin.Context) {
 	ticker := time.NewTicker(time.Second * 1)
 	accountId := ctx.Query("accountId")
-	go repos.NotificationRepository.ListenByAccountId(accountId)
+	context, cancel := context.WithCancel(context.Background())
+	go broadcaster.NotificationBroadcaster.ListenByAccountId(accountId, context)
 
 	for {
 		select {
@@ -55,13 +56,16 @@ func (ws *WebSocket) Writer(repos *repository.Repositories, ctx *gin.Context) {
 			ws.Connection.SetWriteDeadline(time.Now().Add(time.Second * 2))
 			if err := ws.Connection.WriteMessage(websocket.PingMessage, nil); err != nil {
 				logger.Warn("Socket closed", zap.String("account", accountId))
+				cancel()
 				return
 			}
 
-		case d := <-repos.NotificationRepository.Message:
+		case d := <-broadcaster.NotificationBroadcaster.Message():
 			writeErr := ws.Connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
-				fmt.Println(writeErr, " Write Error")
+				logger.Error(writeErr.Error(), slimlog.Function("WebSocket.writer"), slimlog.Error("writeErr"))
+				cancel()
+				return
 			}
 
 		}

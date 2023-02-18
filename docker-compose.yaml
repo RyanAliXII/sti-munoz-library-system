@@ -23,6 +23,7 @@ services:
           RABBITMQ_HOST: ${RABBITMQ_HOST}
       depends_on:
         - slim_postgres
+        - slim_rabbitmq
   slim_spa_admin: 
     container_name: slim-spa-admin
     image: sti-munoz/slim-spa-admin
@@ -72,9 +73,6 @@ services:
       image: rabbitmq:3.11.9-management-alpine
       container_name: slim-rabbitmq
       restart: always
-      depends_on:
-        - slim_server
-        - slim_spa_admin
       ports:
         - '5205:5672'
         - '5206:15672'

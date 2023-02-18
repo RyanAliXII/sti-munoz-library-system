@@ -2,7 +2,6 @@ package repository
 
 import (
 	cutters "slim-app/server/app/pkg/cutters"
-	"slim-app/server/app/pkg/rabbitmq"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -14,15 +13,14 @@ type Repositories struct {
 	SOFRepository          FundSourceRepositoryInterface
 	SectionRepository      SectionRepositoryInterface
 
-	DDCRepository          DDCRepositoryInterface
-	BookRepository         BookRepositoryInterface
-	InventoryRepository    InventoryRepositoryInterface
-	ClientRepository       ClientRepositoryInterface
-	CirculationRepository  CirculationRepositoryInterface
-	NotificationRepository NotificationRepository
+	DDCRepository         DDCRepositoryInterface
+	BookRepository        BookRepositoryInterface
+	InventoryRepository   InventoryRepositoryInterface
+	ClientRepository      ClientRepositoryInterface
+	CirculationRepository CirculationRepositoryInterface
 }
 
-func NewRepositories(db *sqlx.DB, rabbit *rabbitmq.RabbitMQ) Repositories {
+func NewRepositories(db *sqlx.DB) Repositories {
 	return Repositories{
 		AuthorRepository:       NewAuthorRepository(db),
 		PublisherRepository:    NewPublisherRepository(db),
@@ -34,6 +32,5 @@ func NewRepositories(db *sqlx.DB, rabbit *rabbitmq.RabbitMQ) Repositories {
 		InventoryRepository:    NewInventoryRepository(db),
 		ClientRepository:       NewClientRepository(db),
 		CirculationRepository:  NewCirculationRepository(db),
-		NotificationRepository: NewNotificationRepository(rabbit),
 	}
 }

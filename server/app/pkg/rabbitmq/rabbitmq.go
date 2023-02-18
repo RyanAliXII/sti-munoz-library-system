@@ -22,13 +22,14 @@ type RabbitMQ struct {
 func New() *RabbitMQ {
 	connection, connectionErr := amqp.Dial(CONNECTION_STRING)
 	if connectionErr != nil {
-		panic(connectionErr)
+		panic(connectionErr.Error())
 	}
 
 	channel, channelErr := connection.Channel()
 
 	if channelErr != nil {
-		panic(channelErr)
+
+		panic(channelErr.Error())
 	}
 	return &RabbitMQ{
 		Connection: connection,

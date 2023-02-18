@@ -1,8 +1,8 @@
 package realtime
 
 import (
+	"slim-app/server/app/broadcasting"
 	"slim-app/server/app/pkg/ws"
-	"slim-app/server/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -14,22 +14,19 @@ var upgrader = websocket.Upgrader{
 }
 
 type RealtimeController struct {
-	repos *repository.Repositories
+	broadcasters *broadcasting.Broadcasters
 }
 
 func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
-	// id := ctx.Query("id")
-
 	connection, _ := ws.New(ctx.Writer, ctx.Request)
-
 	go connection.Reader()
-	go connection.Writer(ctrler.repos, ctx)
+	go connection.Writer(ctrler.broadcasters, ctx)
 
 }
 
-func NewController(repos *repository.Repositories) RealtimeControllerInteface {
+func NewController(broadcasters *broadcasting.Broadcasters) RealtimeControllerInteface {
 	return &RealtimeController{
-		repos: repos,
+		broadcasters: broadcasters,
 	}
 }
 
