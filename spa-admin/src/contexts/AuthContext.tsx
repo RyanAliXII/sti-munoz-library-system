@@ -64,6 +64,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+    console.log(response);
     setUser({
       email: response.data.mail,
       firstname: response.data.givenName,
@@ -79,7 +80,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
         init();
       }
       if (message.eventType === EventType.LOGIN_SUCCESS) {
-        console.debug("LOGIN SUCCESS");
         const payload: AuthenticationResult =
           message.payload as AuthenticationResult;
         useAccount(payload.account, payload.accessToken);

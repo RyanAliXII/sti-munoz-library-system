@@ -5,8 +5,10 @@ import (
 	"os"
 	"slim-app/server/api/v1"
 	"slim-app/server/app/db"
+	"slim-app/server/app/pkg/rabbitmq"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/repository"
+	"slim-app/server/services/realtime"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -37,9 +39,11 @@ func main() {
 		})
 	})
 	dbConnection := db.Connect()
-	db.RunSeed(dbConnection)
-	repos := repository.NewRepositories(dbConnection)
+	rabbitMq := rabbitmq.New()
 
+	db.RunSeed(dbConnection)
+	repos := repository.NewRepositories(dbConnection, rabbitMq)
+	realtime.RealtimeRoutes(r.Group("/rt"), &repos)
 	api.RegisterAPIV1(r, &repos)
 	logger.Info("Server starting")
 	r.Run(":5200")
