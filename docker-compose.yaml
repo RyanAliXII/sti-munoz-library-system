@@ -17,6 +17,10 @@ services:
           DB_PASSWORD: ${POSTGRES_PASSWORD}
           SPA_ADMIN_URL: ${SPA_ADMIN_URL}
           SPA_CLIENT_URL: ${SPA_ADMIN_URL}
+          RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+          RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+          RABBITMQ_PORT: ${RABBITMQ_PORT}
+          RABBITMQ_HOST: ${RABBITMQ_HOST}
       depends_on:
         - slim_postgres
   slim_spa_admin: 
@@ -70,6 +74,7 @@ services:
       restart: always
       depends_on:
         - slim_server
+        - slim_spa_admin
       ports:
         - '5205:5672'
         - '5206:15672'

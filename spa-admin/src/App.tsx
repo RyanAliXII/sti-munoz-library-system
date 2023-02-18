@@ -8,14 +8,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
 import pages from "@pages/Pages";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { SocketProvider } from "@contexts/SocketContext";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  useEffect(() => {
-    document.title = "Admin";
-  }, []);
   const msalInstance = new PublicClientApplication(msalConfig);
   const router = createBrowserRouter(pages);
 
@@ -23,6 +21,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <MsalProvider instance={msalInstance}>
         <AuthProvider>
+          <SocketProvider></SocketProvider>
           <RouterProvider router={router} />
         </AuthProvider>
       </MsalProvider>
