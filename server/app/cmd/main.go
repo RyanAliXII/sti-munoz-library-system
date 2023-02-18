@@ -39,7 +39,9 @@ func main() {
 		})
 	})
 	dbConnection := db.Connect()
+	defer dbConnection.Close()
 	rabbitMq := rabbitmq.New()
+	defer rabbitMq.Connection.Close()
 
 	db.RunSeed(dbConnection)
 	repos := repository.NewRepositories(dbConnection, rabbitMq)
