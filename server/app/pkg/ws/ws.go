@@ -60,7 +60,6 @@ func (ws *WebSocket) Writer(repos *repository.Repositories, ctx *gin.Context) {
 
 		case d := <-repos.NotificationRepository.Message:
 			writeErr := ws.Connection.WriteMessage(websocket.TextMessage, d.Body)
-
 			if writeErr != nil {
 				fmt.Println(writeErr, " Write Error")
 			}
