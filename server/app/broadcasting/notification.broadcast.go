@@ -13,6 +13,7 @@ import (
 type NotificationBroadcaster struct {
 	rabbit  *rabbitmq.RabbitMQ
 	message chan amqp.Delivery
+	stop    chan bool
 }
 
 func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, context context.Context) {
@@ -64,19 +65,27 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 		false,      // no wait
 		nil,        // arguments
 	)
+
 	if consumeErr != nil {
 		logger.Error(consumeErr.Error(), slimlog.Function("NotificationRepository.Listen"), slimlog.Error("consumeErr"))
 
 	}
 	for {
+
 		select {
 		case <-context.Done():
-			logger.Info("Notification listener has stopped.", zap.String("account", accountId))
+			logger.Info("Notification listener has exited with cancel context.", zap.String("account", accountId))
+			broadcaster.rabbit.Channel.QueueUnbind(queue.Name, routingKey, "notification", nil)
 			return
-		case d := <-messages:
-			logger.Info("New notification received.", zap.String("account", accountId))
+		case d, ok := <-messages:
+			if !ok {
+				broadcaster.stop <- true
+				logger.Info("Notification listener has exited consumer not ok.", zap.String("account", accountId))
+				return
+			}
 			broadcaster.message <- d
 		}
+
 	}
 
 }
@@ -84,14 +93,20 @@ func (broadcaster *NotificationBroadcaster) Message() <-chan amqp.Delivery {
 	return broadcaster.message
 
 }
-func NewNotificationBroadcaster(rabbit *rabbitmq.RabbitMQ) NotificationBroadcasterInterface {
+func (broadcaster *NotificationBroadcaster) Stop() <-chan bool {
+	return broadcaster.stop
+}
+func NewNotificationBroadcaster() NotificationBroadcasterInterface {
+	rabbit := rabbitmq.CreateOrGetInstance()
 	return &NotificationBroadcaster{
 		rabbit:  rabbit,
 		message: make(chan amqp.Delivery),
+		stop:    make(chan bool),
 	}
 }
 
 type NotificationBroadcasterInterface interface {
 	ListenByAccountId(accountId string, context context.Context)
 	Message() <-chan amqp.Delivery
+	Stop() <-chan bool
 }

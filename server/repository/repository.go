@@ -2,8 +2,7 @@ package repository
 
 import (
 	cutters "slim-app/server/app/pkg/cutters"
-
-	"github.com/jmoiron/sqlx"
+	"slim-app/server/app/pkg/postgresdb"
 )
 
 type Repositories struct {
@@ -20,8 +19,9 @@ type Repositories struct {
 	CirculationRepository CirculationRepositoryInterface
 }
 
-func NewRepositories(db *sqlx.DB) Repositories {
-	return Repositories{
+func NewRepositories() *Repositories {
+	db := postgresdb.GetOrCreateInstance()
+	return &Repositories{
 		AuthorRepository:       NewAuthorRepository(db),
 		PublisherRepository:    NewPublisherRepository(db),
 		SOFRepository:          NewFundSourceRepository(db),

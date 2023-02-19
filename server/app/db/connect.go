@@ -7,11 +7,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func CopyDatabase(connection *sqlx.DB) {
-	var dbname string = os.Getenv("DB_NAME")
-	fmt.Println(dbname)
-
-}
 func Connect() *sqlx.DB {
 
 	DRIVER := os.Getenv("DB_DRIVER")

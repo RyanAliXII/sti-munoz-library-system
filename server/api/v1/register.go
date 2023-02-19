@@ -16,16 +16,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAPIV1(router *gin.Engine, repositories *repository.Repositories) {
+func RegisterAPIV1(router *gin.Engine) {
+	repos := repository.NewRepositories()
 	grp := router.Group("/api/1")
-	author.AuthorRoutes(grp.Group("/authors"), repositories)
-	publisher.PublisherRoutes(grp.Group("/publishers"), repositories)
-	fundsrc.FundSourceRoutes(grp.Group("/source-of-funds"), repositories)
-	section.SectionRoutes(grp.Group("/sections"), repositories)
-	authornum.AuthorNumberRoutes(grp.Group("/author-numbers"), repositories)
-	ddc.DDCRoutes(grp.Group("/ddc"), repositories)
-	book.BookRoutes(grp.Group("/books"), repositories)
-	inventory.InventoryRoutes(grp.Group("/inventory"), repositories)
-	client.ClientRoutes(grp.Group("/clients"), repositories)
-	circulation.CirculationRoutes(grp.Group("/circulation"), repositories)
+	author.AuthorRoutes(grp.Group("/authors"), repos)
+	publisher.PublisherRoutes(grp.Group("/publishers"), repos)
+	fundsrc.FundSourceRoutes(grp.Group("/source-of-funds"), repos)
+	section.SectionRoutes(grp.Group("/sections"), repos)
+	authornum.AuthorNumberRoutes(grp.Group("/author-numbers"), repos)
+	ddc.DDCRoutes(grp.Group("/ddc"), repos)
+	book.BookRoutes(grp.Group("/books"), repos)
+	inventory.InventoryRoutes(grp.Group("/inventory"), repos)
+	client.ClientRoutes(grp.Group("/clients"), repos)
+	circulation.CirculationRoutes(grp.Group("/circulation"), repos)
 }

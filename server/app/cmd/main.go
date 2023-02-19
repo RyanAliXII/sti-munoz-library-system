@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"os"
 	"slim-app/server/api/v1"
-	"slim-app/server/app/broadcasting"
+
 	"slim-app/server/app/db"
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
-	"slim-app/server/repository"
 	"slim-app/server/services/realtime"
 	"time"
 
@@ -38,13 +38,12 @@ func main() {
 			"time":    time.Now(),
 		})
 	})
-	dbConnection := db.Connect()
-	defer dbConnection.Close()
+	dbConnection := postgresdb.GetOrCreateInstance()
 	db.RunSeed(dbConnection)
-	repos := repository.NewRepositories(dbConnection)
-	broadcasters := broadcasting.NewBroadcasters()
-	realtime.RealtimeRoutes(r.Group("/rt"), &broadcasters)
-	api.RegisterAPIV1(r, &repos)
+
+	realtime.RealtimeRoutes(r.Group("/rt"))
+	api.RegisterAPIV1(r)
+
 	logger.Info("Server starting")
 	r.Run(":5200")
 
@@ -52,16 +51,17 @@ func main() {
 
 func CustomLogger() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.Next()
+		start := time.Now()
 		method := ctx.Request.Method
 		statusCode := ctx.Writer.Status()
 		clientIP := ctx.ClientIP()
-
+		ctx.Next()
+		latency := time.Since(start)
 		path := ctx.Request.URL.Path
 		if ctx.Writer.Status() >= 500 {
-			logger.Error("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP))
+			logger.Error("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
 		} else {
-			logger.Info("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP))
+			logger.Info("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
 		}
 	}
 }

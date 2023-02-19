@@ -3,8 +3,12 @@ package rabbitmq
 import (
 	"fmt"
 	"os"
+	"slim-app/server/app/pkg/slimlog"
+	"sync"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 )
 
 var USER = os.Getenv("RABBITMQ_DEFAULT_USER")
@@ -19,20 +23,54 @@ type RabbitMQ struct {
 	Channel    *amqp.Channel
 }
 
-func New() *RabbitMQ {
-	connection, connectionErr := amqp.Dial(CONNECTION_STRING)
-	if connectionErr != nil {
-		panic(connectionErr.Error())
+var rabbit = &RabbitMQ{}
+
+var once sync.Once
+
+var logger = slimlog.GetInstance()
+
+func createConnection() *RabbitMQ {
+	var connection *amqp.Connection
+	var channel *amqp.Channel
+	var lastError error
+	const retries = 10
+
+	for i := 0; i < retries; i++ {
+		logger.Info("Connecting to RabbitMQ")
+		tempConnection, connectionErr := amqp.Dial(CONNECTION_STRING)
+		if connectionErr != nil {
+			logger.Warn(connectionErr.Error(), zap.String("nextAction", "Will attempt to redial RabbitMQ."))
+			lastError = connectionErr
+			time.Sleep(time.Second * 2)
+			continue
+		}
+		tempChannel, channelErr := tempConnection.Channel()
+		if channelErr != nil {
+			logger.Warn(connectionErr.Error(), zap.String("nextAction", "Will attempt to redial RabbitMQ."))
+			lastError = channelErr
+			time.Sleep(time.Second * 2)
+			continue
+		}
+		lastError = nil
+		connection = tempConnection
+		channel = tempChannel
+		break
 	}
 
-	channel, channelErr := connection.Channel()
-
-	if channelErr != nil {
-
-		panic(channelErr.Error())
+	if lastError != nil {
+		logger.Error(lastError.Error(), slimlog.Error("Failed to dial RabbitMQ."))
+		panic(lastError.Error())
 	}
+	logger.Info("Successfully connected to RabbitMQ.")
 	return &RabbitMQ{
 		Connection: connection,
 		Channel:    channel,
 	}
+}
+
+func CreateOrGetInstance() *RabbitMQ {
+	once.Do(func() {
+		rabbit = createConnection()
+	})
+	return rabbit
 }
