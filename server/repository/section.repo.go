@@ -15,7 +15,7 @@ type SectionRepository struct {
 
 func (repo *SectionRepository) New(section model.Section) error {
 
-	const TABLE_PREFIX = "sec_"
+	const TABLE_PREFIX = "accession_"
 	var tableName string
 	if section.HasOwnAccession {
 		t := time.Now().Unix()
@@ -38,10 +38,11 @@ func (repo *SectionRepository) New(section model.Section) error {
 		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1, $2)", section.Name, tableName)
 		if insertErr != nil {
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
+			return insertErr
 		}
-		return insertErr
+		return nil
 	}
-	_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name)VALUES($1)", section.Name)
+	_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1,$2)", section.Name, "accession_main")
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
 	}
@@ -49,7 +50,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 }
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
-	selectErr := repo.db.Select(&sections, "SELECT id, name, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section ORDER BY created_at DESC")
+	selectErr := repo.db.Select(&sections, "SELECT id, name, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section ORDER BY created_at DESC")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}

@@ -4,6 +4,9 @@ import (
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -42,6 +45,40 @@ func (repo *ClientRepository) SearchAccounts(filter Filter) []model.Account {
 	}
 	return accounts
 }
+func (repo *ClientRepository) NewAccounts(accounts *[]model.Account) error {
+	var accountRows []goqu.Record = make([]goqu.Record, 0)
+	dialect := goqu.Dialect("postgres")
+	for _, account := range *accounts {
+		accountRows = append(accountRows, goqu.Record{"id": account.Id,
+			"display_name": account.DisplayName, "surname": account.Surname, "given_name": account.GivenName, "email": account.Email})
+	}
+
+	accountDs := dialect.From("client.account").
+		Prepared(true).Insert().Rows(accountRows).
+		OnConflict(
+			exp.NewDoUpdateConflictExpression("id", goqu.Record{"id": goqu.L("EXCLUDED.id"),
+				"display_name": goqu.L("EXCLUDED.display_name"), "surname": goqu.L("EXCLUDED.surname"),
+				"given_name": goqu.L("EXCLUDED.given_name"), "email": goqu.L("EXCLUDED.email")}))
+	query, args, toQueryErr := accountDs.ToSQL()
+	if toQueryErr != nil {
+		return toQueryErr
+	}
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		transaction.Rollback()
+		return transactErr
+	}
+	insertResult, insertErr := transaction.Exec(query, args...)
+	if insertErr != nil {
+		transaction.Rollback()
+		return insertErr
+	}
+	accountsInserted, _ := insertResult.RowsAffected()
+	transaction.Commit()
+	logger.Info("New accounts created.", slimlog.AffectedRows(accountsInserted))
+
+	return nil
+}
 
 func NewClientRepository(db *sqlx.DB) ClientRepositoryInterface {
 	return &ClientRepository{
@@ -52,4 +89,5 @@ func NewClientRepository(db *sqlx.DB) ClientRepositoryInterface {
 type ClientRepositoryInterface interface {
 	GetAccounts(filter Filter) []model.Account
 	SearchAccounts(filter Filter) []model.Account
+	NewAccounts(accounts *[]model.Account) error
 }

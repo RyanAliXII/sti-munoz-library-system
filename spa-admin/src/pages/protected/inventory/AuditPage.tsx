@@ -57,7 +57,7 @@ const AuditPage = () => {
   });
   return (
     <>
-      <ContainerNoBackground className="flex gap-2">
+      <ContainerNoBackground className="flex gap-2 justify-between">
         <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
 
         <PrimaryButton type="button" onClick={openNewAuditModal}>

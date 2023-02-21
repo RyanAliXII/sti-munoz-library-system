@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS accession.default_accession
+DROP TABLE IF EXISTS accession.accession_main

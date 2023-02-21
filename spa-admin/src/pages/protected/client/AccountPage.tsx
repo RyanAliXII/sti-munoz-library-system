@@ -15,11 +15,26 @@ import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
 import { Input } from "@components/ui/form/Input";
-
+import { PrimaryButton } from "@components/ui/button/Button";
+import { TbFileImport } from "react-icons/tb";
+import { useSwitch } from "@hooks/useToggle";
+import Modal from "react-responsive-modal";
+import Uppy from "@uppy/core";
+import Dashboard from "@uppy/dashboard";
+import "@uppy/core/dist/style.css";
+import "@uppy/dashboard/dist/style.css";
+import XHRUpload from "@uppy/xhr-upload";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
+
+  const {
+    close: closeImportModal,
+    isOpen: isImportModalOpen,
+    open: openImportModal,
+  } = useSwitch(false);
   const fetchAccounts = async ({ pageParam = 0 }) => {
     try {
       const { data: response } = await axiosClient.get("/clients/accounts", {
@@ -70,9 +85,21 @@ const AccountPage = () => {
         <div className="w-8/12 ">
           <Input
             type="text"
+            className="mt-5"
             placeholder="Search account by email or name"
             onChange={handleSearch}
           ></Input>
+        </div>
+        <div>
+          <PrimaryButton
+            className="flex gap-1 items-center"
+            onClick={() => {
+              openImportModal();
+            }}
+          >
+            <TbFileImport className="text-lg" />
+            Import
+          </PrimaryButton>
         </div>
       </div>
 
@@ -106,9 +133,49 @@ const AccountPage = () => {
             )}
           </Tbody>
         </Table>
+        {isImportModalOpen && (
+          <Modal
+            open={isImportModalOpen}
+            onClose={closeImportModal}
+            center
+            closeOnEsc
+            showCloseIcon={false}
+            classNames={{
+              modal: "w-9/12 lg:w-6/12",
+            }}
+          >
+            <UploadArea></UploadArea>
+          </Modal>
+        )}
       </Container>
     </>
   );
 };
-
+const UploadArea = () => {
+  useEffect(() => {
+    var uppy = new Uppy({
+      restrictions: {
+        allowedFileTypes: [".csv", ".xlsx"],
+        maxNumberOfFiles: 1,
+      },
+    })
+      .use(Dashboard, {
+        inline: true,
+        target: "#uploadArea",
+        locale: {
+          strings: {
+            browseFiles: " browse",
+            dropPasteFiles: "Drop a .csv or xlsx, click to %{browse}",
+          },
+        },
+      })
+      .use(XHRUpload, {
+        endpoint: `${BASE_URL_V1}/clients/accounts/bulk`,
+      });
+    return () => {
+      uppy.close();
+    };
+  }, []);
+  return <div id="uploadArea"></div>;
+};
 export default AccountPage;

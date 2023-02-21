@@ -8,7 +8,7 @@ DECLARE
 BEGIN
     query := '';
     FOR record IN Cursor1 LOOP
-        table_name := COALESCE(record.accession_table, 'default_accession');
+        table_name := COALESCE(record.accession_table, 'accession_main');
         query := query || 'SELECT * FROM accession.' || table_name || ' UNION ';
     END LOOP;
 

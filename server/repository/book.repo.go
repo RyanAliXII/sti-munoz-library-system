@@ -18,7 +18,7 @@ type BookRepository struct {
 func (repo *BookRepository) New(book model.Book) error {
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("transactErr"))
 		return transactErr
 	}
 	id := uuid.New().String()
@@ -35,7 +35,7 @@ func (repo *BookRepository) New(book model.Book) error {
 	}
 
 	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table is NULL then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
+	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
@@ -43,7 +43,7 @@ func (repo *BookRepository) New(book model.Book) error {
 
 	}
 	dialect := goqu.Dialect("postgres")
-	const DEFAULT_ACCESSION = "default_accession"
+	const DEFAULT_ACCESSION = "accession_main"
 	accession := DEFAULT_ACCESSION
 	if section.HasOwnAccession {
 		accession = string(section.AccessionTable)
@@ -117,7 +117,7 @@ func (repo *BookRepository) Get() []model.Book {
 	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
 	where book_id = book.id
 	group by book_id),'[]') as authors,
-	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
+	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -153,7 +153,7 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
 	where book_id = book.id
 	group by book_id),'[]') as authors,
-	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
+	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
 	 FROM catalog.book 
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -189,7 +189,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 		'receivedAt', book.received_at,
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
-		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'section', json_build_object('id', section.id, 'name', section.name),
 		'created_at',book.created_at,
 		'authors', (
 		COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
@@ -242,7 +242,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 	deleteResult, deleteErr := transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
 	if deleteErr != nil {
 		transaction.Rollback()
-		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.Delete"), slimlog.Error("deleteErr"))
+		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("deleteErr"))
 		return deleteErr
 	}
 	dialect := goqu.Dialect("postgres")
@@ -292,12 +292,12 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
 	where book_id = book.id
 	group by book_id),'[]') as authors,
-	COALESCE(find_accession_json(COALESCE(accession_table, 'default_accession'),book.id), '[]') as accessions
+	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
 	 FROM catalog.book 
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
-	WHERE search_vector @@ websearch_to_tsquery('english', $1)
+	WHERE search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
 	ORDER BY book.created_at desc
 	LIMIT $2 OFFSET $3
 	`

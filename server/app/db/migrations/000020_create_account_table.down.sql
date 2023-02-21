@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS client.account
+DROP TABLE IF EXISTS client.account CASCADE

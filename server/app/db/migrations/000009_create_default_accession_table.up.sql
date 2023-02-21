@@ -1,4 +1,4 @@
-CREATE TABLE accession.default_accession(
+CREATE TABLE accession.accession_main(
 			id integer primary key generated always as identity,
 			book_id uuid,
 			copy_number int,

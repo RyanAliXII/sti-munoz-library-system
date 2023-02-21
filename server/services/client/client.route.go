@@ -9,4 +9,5 @@ import (
 func ClientRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
 	var ctrler ClientControllerInterface = NewClientController(repos)
 	router.GET("/accounts", ctrler.GetAccounts)
+	router.POST("/accounts/bulk", ctrler.ImportAccount)
 }

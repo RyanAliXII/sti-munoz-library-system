@@ -25,6 +25,7 @@ export interface AuditedAccession
     "title" | "ddc" | "authorNumber" | "yearPublished" | "section" | "bookId"
   > {
   isAudited: boolean;
+  isCheckedOut: boolean;
 }
 export interface AuditedBooks extends Omit<Book, "authors"> {
   accessions: AuditedAccession[];
@@ -130,7 +131,11 @@ const AuditScan = () => {
                               <Td>Copy {accession.copyNumber}</Td>
 
                               <Td>
-                                {accession.isAudited ? (
+                                {accession.isCheckedOut ? (
+                                  <span className="text-gray-400">
+                                    Book has been checked out
+                                  </span>
+                                ) : accession.isAudited ? (
                                   <span className="text-green-400">
                                     OK: Found
                                   </span>

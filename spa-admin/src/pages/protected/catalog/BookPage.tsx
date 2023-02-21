@@ -81,7 +81,7 @@ const BookPage = () => {
               yearItemNumber={9}
             />
           </div>
-          <div className="w-3/12 hidden lg:block">
+          <div className="w-3/12 hidden lg:block mb-4 ">
             <CustomSelect label="Section" />
           </div>
           <div className="w-32 mt-1">

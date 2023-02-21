@@ -407,7 +407,7 @@ const BookEditForm = () => {
       <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
         <div>
           <PrimaryButton className="ml-2 lg:ml-0" type="submit">
-            Add to Collection
+            Update Book
           </PrimaryButton>
         </div>
       </div>

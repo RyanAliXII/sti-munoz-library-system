@@ -37,31 +37,51 @@ func (repo *InventoryRepository) GetById(id string) model.Audit {
 func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.AuditedBook {
 
 	var audited []model.AuditedBook
-	query := `	SELECT 
-	book.id  as id,
-	title, isbn, 
+	query := `
+	SELECT book.id,title, isbn, 
 	description, 
 	copies,
 	pages,
-	section_id,  
-	section.name as section,
-	publisher.id as publisher_id,
-	publisher.name as publisher,
-	fund_source_id,
-	source_of_fund.name as fund_source,
 	cost_price,
 	edition,
 	year_published,
 	received_at,
 	ddc,
 	author_number,
-	find_audited_accesion_json(COALESCE(section.accession_table, 'default_accession'), book_id, audit_id) as accessions
+	book.created_at,
+	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
+	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+	as authors
+	FROM catalog.book_author
+	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+	where book_id = book.id
+	group by book_id),'[]') as authors,
+	COALESCE(json_agg(json_build_object('number', accession.id, 'copyNumber', accession.copy_number, 
+	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.transaction_id is null then false else true end))),'[]') as accessions
 	FROM inventory.audited_book  
 	INNER JOIN catalog.book on audited_book.book_id = book.id
+	INNER JOIN get_accession_table() as accession on book.id = accession.book_id 
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
-	WHERE audited_book.audit_id = $1
+	LEFT JOIN inventory.audited_accession as aa on accession.book_id = aa.book_id AND accession.id = aa.accession_id 
+	LEFT JOIN circulation.borrowed_book as bb on accession.book_id = bb.book_id AND  accession.id =  bb. accession_number AND bb.returned_at is null
+	where audited_book.audit_id = $1
+	GROUP BY audited_book.audit_id, audited_book.book_id, book.id, title, isbn, 
+	description, 
+	copies,
+	pages,
+	cost_price,
+	edition,
+	year_published,
+	received_at,
+	ddc,
+	author_number,
+	source_of_fund.id,
+	section.id,
+	publisher.id
 	ORDER BY book.created_at DESC
 	`
 	selectErr := repo.db.Select(&audited, query, id)

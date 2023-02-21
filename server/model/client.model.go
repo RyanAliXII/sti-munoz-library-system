@@ -6,11 +6,11 @@ import (
 )
 
 type Account struct {
-	Id          string  `json:"id" db:"id"`
-	DisplayName string  `json:"displayName" db:"display_name"`
-	GivenName   string  `json:"givenName" db:"given_name"`
-	Surname     string  `json:"surname" db:"surname"`
-	Email       string  `json:"email" db:"email"`
+	Id          string  `json:"id" db:"id" csv:"id"`
+	DisplayName string  `json:"displayName" db:"display_name" csv:"displayName"`
+	GivenName   string  `json:"givenName" db:"given_name" csv:"givenName"`
+	Surname     string  `json:"surname" db:"surname" csv:"surname"`
+	Email       string  `json:"email" db:"email" csv:"mail"`
 	SearchRank  float64 `json:"-" db:"search_rank"`
 }
 

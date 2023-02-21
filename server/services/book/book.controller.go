@@ -18,7 +18,11 @@ type BookController struct {
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var body = model.Book{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	ctrler.repos.BookRepository.New(body)
+	newBookErr := ctrler.repos.BookRepository.New(body)
+	if newBookErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "New book added."))
 }
 
