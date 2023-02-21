@@ -27,6 +27,7 @@ import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { toast } from "react-toastify";
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
 
@@ -144,15 +145,26 @@ const AccountPage = () => {
               modal: "w-9/12 lg:w-6/12",
             }}
           >
-            <UploadArea></UploadArea>
+            <UploadArea
+              refetch={() => {
+                refetch();
+              }}
+            ></UploadArea>
           </Modal>
         )}
       </Container>
     </>
   );
 };
-const UploadArea = () => {
+type UploadAreaProps = {
+  refetch: () => void;
+};
+const UploadArea = ({ refetch }: UploadAreaProps) => {
   useEffect(() => {
+    const onSuccessUpload = () => {
+      toast.success("Accounts have been imported.");
+      refetch();
+    };
     var uppy = new Uppy({
       restrictions: {
         allowedFileTypes: [".csv", ".xlsx"],
@@ -172,7 +184,9 @@ const UploadArea = () => {
       .use(XHRUpload, {
         endpoint: `${BASE_URL_V1}/clients/accounts/bulk`,
       });
+    uppy.on("upload-success", onSuccessUpload);
     return () => {
+      uppy.off("upload-success", onSuccessUpload);
       uppy.close();
     };
   }, []);

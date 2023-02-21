@@ -9,6 +9,7 @@ import {
 } from "./NavigationDropdown";
 import { useAuthContext } from "@contexts/AuthContext";
 import ProfileIcon from "@components/ProfileIcon";
+import LogoutButton from "@components/LogoutButton";
 const Sidebar = () => {
   const { user } = useAuthContext();
   return (
@@ -19,7 +20,7 @@ const Sidebar = () => {
           surname={user.lastname ?? ""}
         ></ProfileIcon>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-hidden">
           <strong className="font-medium">
             {user.firstname + " " + user.lastname}
           </strong>
@@ -53,6 +54,7 @@ const NavigationItems = () => {
           </NavLink>
         );
       })}
+      <LogoutButton />
     </>
   );
 };
