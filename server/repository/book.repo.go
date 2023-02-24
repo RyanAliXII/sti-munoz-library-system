@@ -276,7 +276,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 		for _, accession := range accessions {
 			accessionRows = append(accessionRows, goqu.Record{"book_id": accession.BookId, "copy_number": accession.CopyNumber})
 		}
-		//insert copies to the section acccession table.
+		//transfer copies to the section acccession table.
 		insertCopiesDs := dialect.From(goqu.T(section.AccessionTable).Schema("accession")).Prepared(true).Insert().Rows(accessionRows)
 		insertCopiesQuery, insertCopiesArgs, _ := insertCopiesDs.ToSQL()
 		insertResult, insertCopiesErr := transaction.Exec(insertCopiesQuery, insertCopiesArgs...)
@@ -289,6 +289,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 		deleteOldCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Delete().Where(exp.Ex{
 			"book_id": book.Id,
 		})
+		//delete copies from old accession table
 		deleteOldCopiesQuery, deleteOldCopiesArgs, _ := deleteOldCopiesDs.ToSQL()
 		deleteOldCopiesResult, deleteCopiesErr := transaction.Exec(deleteOldCopiesQuery, deleteOldCopiesArgs...)
 		if deleteCopiesErr != nil {
