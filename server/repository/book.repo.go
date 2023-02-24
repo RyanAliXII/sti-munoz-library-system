@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -109,7 +111,7 @@ func (repo *BookRepository) Get() []model.Book {
 	author_number,
 	book.created_at,
 	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
 	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
@@ -145,7 +147,7 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	author_number,
 	book.created_at,
 	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table ) as section,
 	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 	as authors
@@ -209,6 +211,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
+	where accession.deleted_at is null
 	ORDER BY book.created_at DESC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query)
@@ -220,7 +223,12 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 }
 
 func (repo *BookRepository) Update(book model.Book) error {
+	oldBookRecord := repo.GetOne(book.Id)
+	if len(oldBookRecord.Id) == 0 {
+		return errors.New("book cannot be updated because book doesn't exist")
+	}
 	transaction, transactErr := repo.db.Beginx()
+	dialect := goqu.Dialect("postgres")
 	if transactErr != nil {
 		transaction.Rollback()
 		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
@@ -238,14 +246,69 @@ func (repo *BookRepository) Update(book model.Book) error {
 		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))
 		return updateErr
 	}
-	//delete inserted authors. Might change this impementation next time.
+
+	//handle when book section has been updated.
+	if oldBookRecord.Section.Id != book.Section.Id {
+		section := model.Section{}
+		//get details about the section
+		newSectionGetErr := transaction.Get(&section, "Select accession_table from catalog.section where id = $1", book.Section.Id)
+		fmt.Println(section)
+		if newSectionGetErr != nil {
+			transaction.Rollback()
+			logger.Error(newSectionGetErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("newSectionGetErr"))
+			return newSectionGetErr
+		}
+		// get all copies
+		selectCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Select(
+			goqu.C("id").As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"),
+		).Where(goqu.Ex{
+			"book_id": book.Id,
+		})
+		selectCopiesQuery, selectCopiesArgs, _ := selectCopiesDs.ToSQL()
+		accessions := make([]model.Accession, 0)
+		selectAccessionErr := transaction.Select(&accessions, selectCopiesQuery, selectCopiesArgs...)
+		if selectAccessionErr != nil {
+			transaction.Rollback()
+			logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("selectAccessionErr"))
+			return selectAccessionErr
+		}
+		accessionRows := make([]goqu.Record, 0)
+		for _, accession := range accessions {
+			accessionRows = append(accessionRows, goqu.Record{"book_id": accession.BookId, "copy_number": accession.CopyNumber})
+		}
+		//insert copies to the section acccession table.
+		insertCopiesDs := dialect.From(goqu.T(section.AccessionTable).Schema("accession")).Prepared(true).Insert().Rows(accessionRows)
+		insertCopiesQuery, insertCopiesArgs, _ := insertCopiesDs.ToSQL()
+		insertResult, insertCopiesErr := transaction.Exec(insertCopiesQuery, insertCopiesArgs...)
+
+		if insertCopiesErr != nil {
+			transaction.Rollback()
+			logger.Error(insertCopiesErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertCopiesErr"))
+			return insertCopiesErr
+		}
+		deleteOldCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Delete().Where(exp.Ex{
+			"book_id": book.Id,
+		})
+		deleteOldCopiesQuery, deleteOldCopiesArgs, _ := deleteOldCopiesDs.ToSQL()
+		deleteOldCopiesResult, deleteCopiesErr := transaction.Exec(deleteOldCopiesQuery, deleteOldCopiesArgs...)
+		if deleteCopiesErr != nil {
+			transaction.Rollback()
+			logger.Error(deleteCopiesErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertCopiesErr"))
+			return insertCopiesErr
+		}
+		insertedCopiesAffectedRows, _ := insertResult.RowsAffected()
+		deletedOldCopiesAffectedRows, _ := deleteOldCopiesResult.RowsAffected()
+		logger.Info("Tranferred copies.", slimlog.AffectedRows(deletedOldCopiesAffectedRows))
+		logger.Info("Book copies inserted.", slimlog.AffectedRows(insertedCopiesAffectedRows))
+
+	}
 	deleteResult, deleteErr := transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
 	if deleteErr != nil {
 		transaction.Rollback()
 		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("deleteErr"))
 		return deleteErr
 	}
-	dialect := goqu.Dialect("postgres")
+
 	var authorRows []goqu.Record = make([]goqu.Record, 0)
 	for _, author := range book.Authors {
 		authorRows = append(authorRows, goqu.Record{"book_id": book.Id, "author_id": author.Id})

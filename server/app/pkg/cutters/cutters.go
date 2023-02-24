@@ -34,7 +34,10 @@ type AuthorNumber struct {
 func (cutters *Cutters) GenerateCutter(firstname string, lastname string) AuthorNumber {
 	caser := cases.Title(language.English)
 	firstname = strings.ToLower(firstname)
+	firstname = strings.TrimSpace(firstname)
 	lastname = strings.ToLower(lastname)
+	lastname = strings.TrimSpace(lastname)
+
 	firstnameInitialChar := firstname[0:1]
 	// lastnameInitialChar := lastname[0:1]
 	endIndex := strings.Index(ALPHABET_STRING, firstnameInitialChar)
@@ -57,11 +60,13 @@ func (cutters *Cutters) GenerateCutter(firstname string, lastname string) Author
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
 		number := cutters.Default[key]
+		fmt.Println(number)
 		if number != 0 {
 			authorNumber.Number = number
 			authorNumber.Surname = key
 			return authorNumber
 		}
+
 		key = key[0 : len(key)-1]
 	}
 
