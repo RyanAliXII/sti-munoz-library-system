@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -68,9 +69,9 @@ func (repo *PublisherRepository) Update(id int, publisher model.Publisher) error
 	logger.Info("model.Publisher Updated", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
 	return updateErr
 }
-func NewPublisherRepository(db *sqlx.DB) PublisherRepositoryInterface {
+func NewPublisherRepository() PublisherRepositoryInterface {
 	return &PublisherRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 

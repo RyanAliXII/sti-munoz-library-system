@@ -12,13 +12,13 @@ import (
 )
 
 type BookController struct {
-	repos *repository.Repositories
+	bookRepository repository.BookRepositoryInterface
 }
 
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var body = model.Book{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	newBookErr := ctrler.repos.BookRepository.New(body)
+	newBookErr := ctrler.bookRepository.New(body)
 	if newBookErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -52,14 +52,14 @@ func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 	}
 	if len(keyword) > 0 {
 		filter.Keyword = keyword
-		books := ctrler.repos.BookRepository.Search(filter)
+		books := ctrler.bookRepository.Search(filter)
 		ctx.JSON(httpresp.Success200(gin.H{
 			"books": books,
 		}, "Books fetched."))
 		return
 	}
 	var books []model.Book = make([]model.Book, 0)
-	books = ctrler.repos.BookRepository.Get()
+	books = ctrler.bookRepository.Get()
 
 	ctx.JSON(httpresp.Success200(gin.H{
 		"books": books,
@@ -74,7 +74,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
 		return
 	}
-	var book model.Book = ctrler.repos.BookRepository.GetOne(id)
+	var book model.Book = ctrler.bookRepository.GetOne(id)
 	if len(book.Id) == 0 {
 		ctx.JSON(httpresp.Fail404(nil, "Book not found."))
 		return
@@ -84,7 +84,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	}, "model.Book fetched."))
 }
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
-	accessions := ctrler.repos.BookRepository.GetAccessions()
+	accessions := ctrler.bookRepository.GetAccessions()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accession Fetched."))
@@ -93,7 +93,7 @@ func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 func (ctrler *BookController) UpdateBook(ctx *gin.Context) {
 	body := model.Book{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	updateErr := ctrler.repos.BookRepository.Update(body)
+	updateErr := ctrler.bookRepository.Update(body)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail(500, nil, "Unknown error occured."))
 		return
@@ -108,14 +108,14 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
 		return
 	}
-	accessions := ctrler.repos.BookRepository.GetAccessionsByBookId(id)
+	accessions := ctrler.bookRepository.GetAccessionsByBookId(id)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accessions successfully fetched for specific book."))
 }
-func NewBookController(repos *repository.Repositories) BookControllerInterface {
+func NewBookController() BookControllerInterface {
 	return &BookController{
-		repos: repos,
+		bookRepository: repository.NewBookRepository(),
 	}
 }
 

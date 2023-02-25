@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -64,9 +65,9 @@ func (repo *FundSourceRepository) Update(id int, source model.FundSource) error 
 	logger.Info("Source updated", zap.Int("sourceId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_SOURCE))
 	return updateErr
 }
-func NewFundSourceRepository(db *sqlx.DB) FundSourceRepositoryInterface {
+func NewFundSourceRepository() FundSourceRepositoryInterface {
 	return &FundSourceRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 type DDCController struct {
-	repos *repository.Repositories
+	ddcRepository repository.DDCRepositoryInterface
 }
 
 func (ctler *DDCController) GetDDC(ctx *gin.Context) {
@@ -44,9 +44,9 @@ func (ctler *DDCController) GetDDC(ctx *gin.Context) {
 	if len(keyword) > 0 {
 		filter.Keyword = keyword
 		if len(searchBy) > 0 && searchBy == SEARCH_BY_CLASS_NUMBER {
-			ddc = ctler.repos.DDCRepository.SearchByNumber(filter)
+			ddc = ctler.ddcRepository.SearchByNumber(filter)
 		} else {
-			ddc = ctler.repos.DDCRepository.SearchByName(filter)
+			ddc = ctler.ddcRepository.SearchByName(filter)
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"ddc": ddc,
@@ -54,14 +54,14 @@ func (ctler *DDCController) GetDDC(ctx *gin.Context) {
 		return
 	}
 
-	ddc = ctler.repos.DDCRepository.Get(filter)
+	ddc = ctler.ddcRepository.Get(filter)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"ddc": ddc,
 	}, "DDC fetched."))
 }
-func NewDDCController(repos *repository.Repositories) DDCControllerInterface {
+func NewDDCController() DDCControllerInterface {
 	return &DDCController{
-		repos: repos,
+		ddcRepository: repository.NewDDCRepository(),
 	}
 
 }

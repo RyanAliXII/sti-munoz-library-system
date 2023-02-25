@@ -1,13 +1,11 @@
 package client
 
 import (
-	"slim-app/server/repository"
-
 	"github.com/gin-gonic/gin"
 )
 
-func ClientRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
-	var ctrler ClientControllerInterface = NewClientController(repos)
+func ClientRoutes(router *gin.RouterGroup) {
+	var ctrler ClientControllerInterface = NewClientController()
 	router.GET("/accounts", ctrler.GetAccounts)
 	router.POST("/accounts/bulk", ctrler.ImportAccount)
 }

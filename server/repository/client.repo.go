@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -80,9 +81,9 @@ func (repo *ClientRepository) NewAccounts(accounts *[]model.Account) error {
 	return nil
 }
 
-func NewClientRepository(db *sqlx.DB) ClientRepositoryInterface {
+func NewClientRepository() ClientRepositoryInterface {
 	return &ClientRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 

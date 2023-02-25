@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 	"time"
@@ -219,9 +220,9 @@ func (repo *CirculationRepository) ReturnBookCopy(transactionId string, bookId s
 	transaction.Commit()
 	return updateErr
 }
-func NewCirculationRepository(db *sqlx.DB) CirculationRepositoryInterface {
+func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 

@@ -12,13 +12,13 @@ import (
 )
 
 type PublisherController struct {
-	repos *repository.Repositories
+	publisherRepository repository.PublisherRepositoryInterface
 }
 
 func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
-	insertErr := ctrler.repos.PublisherRepository.New(publisher)
+	insertErr := ctrler.publisherRepository.New(publisher)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
@@ -26,7 +26,7 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Publisher added."))
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
-	var publishers []model.Publisher = ctrler.repos.PublisherRepository.Get()
+	var publishers []model.Publisher = ctrler.publisherRepository.Get()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"publishers": publishers,
 	}, "Publishers successfully fetched."))
@@ -40,7 +40,7 @@ func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
 	}
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
-	updateErr := ctrler.repos.PublisherRepository.Update(id, publisher)
+	updateErr := ctrler.publisherRepository.Update(id, publisher)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, updateErr.Error()))
 		return
@@ -55,16 +55,16 @@ func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
 		return
 	}
-	deleteErr := ctrler.repos.PublisherRepository.Delete(id)
+	deleteErr := ctrler.publisherRepository.Delete(id)
 	if deleteErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, deleteErr.Error()))
 		return
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Publisher deleted."))
 }
-func NewPublisherController(repos *repository.Repositories) PublisherControllerInterface {
+func NewPublisherController() PublisherControllerInterface {
 	return &PublisherController{
-		repos: repos,
+		publisherRepository: repository.NewPublisherRepository(),
 	}
 
 }

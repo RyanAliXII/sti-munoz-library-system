@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	cutters "slim-app/server/app/pkg/cutters"
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -57,10 +58,11 @@ func (repo *AuthorNumberRepository) GenerateByTitle(title string) cutters.Author
 	return repo.cutters.GenerateCutterByTitle(title)
 }
 
-func NewAuthorNumberRepository(cutters *cutters.Cutters, db *sqlx.DB) AuthorNumberRepositoryInterface {
+func NewAuthorNumberRepository() AuthorNumberRepositoryInterface {
+
 	return &AuthorNumberRepository{
-		cutters: cutters,
-		db:      db,
+		cutters: cutters.NewCuttersTable(),
+		db:      postgresdb.GetOrCreateInstance(),
 	}
 }
 

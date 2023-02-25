@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"slim-app/server/app/pkg/dewey"
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
@@ -37,9 +38,9 @@ func (repo *DDCRepository) SearchByNumber(filter Filter) []dewey.DeweyDecimal {
 	}
 	return deweys
 }
-func NewDDCRepository(db *sqlx.DB) DDCRepositoryInterface {
+func NewDDCRepository() DDCRepositoryInterface {
 	return &DDCRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 

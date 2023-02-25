@@ -1,10 +1,5 @@
 package repository
 
-import (
-	cutters "slim-app/server/app/pkg/cutters"
-	"slim-app/server/app/pkg/postgresdb"
-)
-
 type Repositories struct {
 	AuthorRepository       AuthorRepositoryInterface
 	AuthorNumberRepository AuthorNumberRepositoryInterface
@@ -19,18 +14,18 @@ type Repositories struct {
 	CirculationRepository CirculationRepositoryInterface
 }
 
-func NewRepositories() *Repositories {
-	db := postgresdb.GetOrCreateInstance()
+func New() *Repositories {
+
 	return &Repositories{
-		AuthorRepository:       NewAuthorRepository(db),
-		PublisherRepository:    NewPublisherRepository(db),
-		SOFRepository:          NewFundSourceRepository(db),
-		SectionRepository:      NewSectionRepository(db),
-		AuthorNumberRepository: NewAuthorNumberRepository(cutters.NewCuttersTable(), db),
-		DDCRepository:          NewDDCRepository(db),
-		BookRepository:         NewBookRepository(db),
-		InventoryRepository:    NewInventoryRepository(db),
-		ClientRepository:       NewClientRepository(db),
-		CirculationRepository:  NewCirculationRepository(db),
+		AuthorRepository:       NewAuthorRepository(),
+		PublisherRepository:    NewPublisherRepository(),
+		SOFRepository:          NewFundSourceRepository(),
+		SectionRepository:      NewSectionRepository(),
+		AuthorNumberRepository: NewAuthorNumberRepository(),
+		DDCRepository:          NewDDCRepository(),
+		BookRepository:         NewBookRepository(),
+		InventoryRepository:    NewInventoryRepository(),
+		ClientRepository:       NewClientRepository(),
+		CirculationRepository:  NewCirculationRepository(),
 	}
 }

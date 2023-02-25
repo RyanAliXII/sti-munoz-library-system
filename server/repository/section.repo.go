@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 	"time"
@@ -61,9 +62,9 @@ func (repo *SectionRepository) GetOne(id int) model.Section {
 
 	return section
 }
-func NewSectionRepository(db *sqlx.DB) SectionRepositoryInterface {
+func NewSectionRepository() SectionRepositoryInterface {
 	return &SectionRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 )
 
 type ClientController struct {
-	repos *repository.Repositories
+	clientRepository repository.ClientRepositoryInterface
 }
 
 func (ctrler *ClientController) GetAccounts(ctx *gin.Context) {
@@ -41,9 +41,9 @@ func (ctrler *ClientController) GetAccounts(ctx *gin.Context) {
 	var accounts []model.Account
 	if len(keyword) > 0 {
 		filter.Keyword = keyword
-		accounts = ctrler.repos.ClientRepository.SearchAccounts(filter)
+		accounts = ctrler.clientRepository.SearchAccounts(filter)
 	} else {
-		accounts = ctrler.repos.ClientRepository.GetAccounts(filter)
+		accounts = ctrler.clientRepository.GetAccounts(filter)
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
@@ -78,15 +78,15 @@ func (ctrler *ClientController) ImportAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	newAccountsErr := ctrler.repos.ClientRepository.NewAccounts(&accounts)
+	newAccountsErr := ctrler.clientRepository.NewAccounts(&accounts)
 	if newAccountsErr != nil {
 		logger.Error(newAccountsErr.Error(), slimlog.Function("ClientController.ImportAccount"), slimlog.Error("newAccountsErr"))
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
-func NewClientController(repos *repository.Repositories) ClientControllerInterface {
+func NewClientController() ClientControllerInterface {
 	return &ClientController{
-		repos: repos,
+		clientRepository: repository.NewClientRepository(),
 	}
 
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type AuthorNumberController struct {
-	repos *repository.Repositories
+	authorNumberRepository repository.AuthorNumberRepositoryInterface
 }
 
 func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
@@ -22,7 +22,7 @@ func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 	var title string = ctx.Query("title")
 
 	if len(title) > 0 {
-		var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.GenerateByTitle(title)
+		var number cutters.AuthorNumber = ctrler.authorNumberRepository.GenerateByTitle(title)
 		ctx.JSON(httpresp.Success200(gin.H{
 			"authorNumber": number,
 		}, "Author number generated"))
@@ -35,7 +35,7 @@ func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 	}
 
 	logger.Info("Generate by author.", zap.String("given", givenName), zap.String("surname", surname))
-	var number cutters.AuthorNumber = ctrler.repos.AuthorNumberRepository.Generate(givenName, surname)
+	var number cutters.AuthorNumber = ctrler.authorNumberRepository.Generate(givenName, surname)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"authorNumber": number,
 	}, "Author number generated"))
@@ -68,17 +68,17 @@ func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
 	var table []model.AuthorNumber
 	if len(keyword) > 0 {
 		filter.Keyword = keyword
-		table = ctrler.repos.AuthorNumberRepository.Search(filter)
+		table = ctrler.authorNumberRepository.Search(filter)
 	} else {
-		table = ctrler.repos.AuthorNumberRepository.Get(filter)
+		table = ctrler.authorNumberRepository.Get(filter)
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"table": table}, "Author numbers returned."))
 
 }
 func (ctrler *AuthorNumberController) GetAuthorNumbersByInitial(ctx *gin.Context) {}
-func NewAuthorNumberController(repos *repository.Repositories) AuthorNumberControllerInterface {
+func NewAuthorNumberController() AuthorNumberControllerInterface {
 	return &AuthorNumberController{
-		repos: repos,
+		authorNumberRepository: repository.NewAuthorNumberRepository(),
 	}
 
 }
