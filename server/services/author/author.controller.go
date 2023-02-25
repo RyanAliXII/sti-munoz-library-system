@@ -1,6 +1,7 @@
 package author
 
 import (
+	"fmt"
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/model"
 	"slim-app/server/repository"
@@ -63,6 +64,11 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author Updated"))
 }
+func (ctrler *AuthorController) NewOrganizationAsAuthor(ctx *gin.Context) {
+	org := model.OrganizationAsAuthor{}
+	ctx.ShouldBindBodyWith(&org, binding.JSON)
+	fmt.Println(org)
+}
 func NewAuthorController() AuthorControllerInterface {
 	authorRepo := repository.NewAuthorRepository()
 	return &AuthorController{
@@ -76,4 +82,5 @@ type AuthorControllerInterface interface {
 	GetAuthors(ctx *gin.Context)
 	DeleteAuthor(ctx *gin.Context)
 	UpdateAuthor(ctx *gin.Context)
+	NewOrganizationAsAuthor(ctx *gin.Context)
 }

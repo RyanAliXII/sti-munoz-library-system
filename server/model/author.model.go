@@ -11,11 +11,16 @@ type Author struct {
 	MiddleName string `json:"middleName" db:"middle_name"`
 	Surname    string `json:"surname" db:"surname"`
 }
+
 type AuthorsJSON []struct {
 	Id         int    `json:"id" db:"id"`
 	GivenName  string `json:"givenName" db:"given_name"`
 	MiddleName string `json:"middleName" db:"middle_name"`
 	Surname    string `json:"surname" db:"surname"`
+}
+type OrganizationAsAuthor struct {
+	Id   int    `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
 }
 
 func (ba *AuthorsJSON) Scan(value interface{}) error {

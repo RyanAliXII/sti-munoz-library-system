@@ -52,7 +52,7 @@ func (repo *AuthorRepository) Delete(id int) error {
 	logger.Info("model.Author deleted", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
 	return deleteErr
 }
-func (repo *AuthorRepository) GetByBookId(bookId string) []model.Author {
+func (repo *AuthorRepository) GetAuthoredBook(bookId string) []model.Author {
 	var authors []model.Author = make([]model.Author, 0)
 	query := `
 	SELECT author.id,  author.given_name, author.middle_name, author.surname
@@ -88,6 +88,10 @@ func (repo *AuthorRepository) Update(id int, author model.Author) error {
 	return updateErr
 }
 
+func (repo *AuthorRepository) NewOrganizationAsAuthor() {
+
+}
+
 func NewAuthorRepository() AuthorRepositoryInterface {
 	db := postgresdb.GetOrCreateInstance()
 	return &AuthorRepository{
@@ -98,7 +102,7 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 type AuthorRepositoryInterface interface {
 	New(model.Author) error
 	Get() []model.Author
-	GetByBookId(bookId string) []model.Author
+	GetAuthoredBook(string) []model.Author
 	Delete(id int) error
 	Update(id int, author model.Author) error
 }

@@ -99,3 +99,7 @@ export type User = {
     returnedAt: string//iso-time-string
   }
  
+export type Organization  = {
+  id?: number
+  name: string
+}

@@ -24,7 +24,6 @@ interface TabContentProps {
   activeTab: ActiveTab;
   modalRef: React.RefObject<HTMLDivElement>;
 }
-
 const checkActive = (key: string, state: string) => {
   if (key === state) {
     return Classes.Active;
