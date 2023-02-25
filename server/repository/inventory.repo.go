@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -147,9 +148,9 @@ func (repo *InventoryRepository) UpdateAudit(audit model.Audit) error {
 	}
 	return updateErr
 }
-func NewInventoryRepository(db *sqlx.DB) InventoryRepositoryInterface {
+func NewInventoryRepository() InventoryRepositoryInterface {
 	return &InventoryRepository{
-		db: db,
+		db: postgresdb.GetOrCreateInstance(),
 	}
 
 }

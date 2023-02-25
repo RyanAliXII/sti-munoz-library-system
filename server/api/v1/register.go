@@ -1,7 +1,6 @@
 package api
 
 import (
-	"slim-app/server/repository"
 	"slim-app/server/services/author"
 	authornum "slim-app/server/services/author_number"
 	"slim-app/server/services/book"
@@ -17,16 +16,15 @@ import (
 )
 
 func RegisterAPIV1(router *gin.Engine) {
-	repos := repository.NewRepositories()
 	grp := router.Group("/api/1")
-	author.AuthorRoutes(grp.Group("/authors"), repos)
-	publisher.PublisherRoutes(grp.Group("/publishers"), repos)
-	fundsrc.FundSourceRoutes(grp.Group("/source-of-funds"), repos)
-	section.SectionRoutes(grp.Group("/sections"), repos)
-	authornum.AuthorNumberRoutes(grp.Group("/author-numbers"), repos)
-	ddc.DDCRoutes(grp.Group("/ddc"), repos)
-	book.BookRoutes(grp.Group("/books"), repos)
-	inventory.InventoryRoutes(grp.Group("/inventory"), repos)
-	client.ClientRoutes(grp.Group("/clients"), repos)
-	circulation.CirculationRoutes(grp.Group("/circulation"), repos)
+	author.AuthorRoutes(grp.Group("/authors"))
+	publisher.PublisherRoutes(grp.Group("/publishers"))
+	fundsrc.FundSourceRoutes(grp.Group("/source-of-funds"))
+	section.SectionRoutes(grp.Group("/sections"))
+	authornum.AuthorNumberRoutes(grp.Group("/author-numbers"))
+	ddc.DDCRoutes(grp.Group("/ddc"))
+	book.BookRoutes(grp.Group("/books"))
+	inventory.InventoryRoutes(grp.Group("/inventory"))
+	client.ClientRoutes(grp.Group("/clients"))
+	circulation.CirculationRoutes(grp.Group("/circulation"))
 }

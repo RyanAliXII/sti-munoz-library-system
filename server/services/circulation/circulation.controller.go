@@ -15,11 +15,11 @@ import (
 )
 
 type CirculationController struct {
-	repos *repository.Repositories
+	circulationRepository repository.CirculationRepositoryInterface
 }
 
 func (ctrler *CirculationController) GetTransactions(ctx *gin.Context) {
-	transactions := ctrler.repos.CirculationRepository.GetBorrowingTransactions()
+	transactions := ctrler.circulationRepository.GetBorrowingTransactions()
 	ctx.JSON(httpresp.Success200(gin.H{"transactions": transactions}, "Transactions fetched."))
 }
 func (ctrler *CirculationController) GetTransactionBooks(ctx *gin.Context) {
@@ -33,7 +33,7 @@ func (ctrler *CirculationController) GetTransactionById(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
 		return
 	}
-	transaction := ctrler.repos.CirculationRepository.GetBorrowingTransactionById(id)
+	transaction := ctrler.circulationRepository.GetBorrowingTransactionById(id)
 	if len(transaction.Id) == 0 {
 		ctx.JSON(httpresp.Fail404(nil, "Transaction not found."))
 		return
@@ -53,7 +53,7 @@ func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Checkout failed."))
 		return
 	}
-	newTransactionErr := ctrler.repos.CirculationRepository.NewTransaction(body.ClientId, body.DueDate, accessions)
+	newTransactionErr := ctrler.circulationRepository.NewTransaction(body.ClientId, body.DueDate, accessions)
 	if newTransactionErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -76,7 +76,7 @@ func (ctrler *CirculationController) ReturnBooksById(ctx *gin.Context) {
 		return
 	}
 
-	returnErr := ctrler.repos.CirculationRepository.ReturnBooksByTransactionId(id, body.Remarks)
+	returnErr := ctrler.circulationRepository.ReturnBooksByTransactionId(id, body.Remarks)
 	if returnErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -101,7 +101,7 @@ func (ctrler *CirculationController) ReturnBookCopy(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Invalid url params."))
 		return
 	}
-	returnCopyErr := ctrler.repos.CirculationRepository.ReturnBookCopy(transactionId, bookId, accessionNumber)
+	returnCopyErr := ctrler.circulationRepository.ReturnBookCopy(transactionId, bookId, accessionNumber)
 	if returnCopyErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -109,9 +109,9 @@ func (ctrler *CirculationController) ReturnBookCopy(ctx *gin.Context) {
 
 	ctx.JSON(httpresp.Success200(nil, "Book copy has been returned."))
 }
-func NewCirculationController(repos *repository.Repositories) CirculationControllerInterface {
+func NewCirculationController() CirculationControllerInterface {
 	return &CirculationController{
-		repos: repos,
+		circulationRepository: repository.NewCirculationRepository(),
 	}
 }
 

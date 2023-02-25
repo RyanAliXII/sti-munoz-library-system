@@ -14,19 +14,19 @@ import (
 )
 
 type InventoryController struct {
-	repos *repository.Repositories
+	inventoryRepository repository.InventoryRepositoryInterface
 }
 
 func (ctrler *InventoryController) GetAudits(ctx *gin.Context) {
 
-	var audits []model.Audit = ctrler.repos.InventoryRepository.GetAudit()
+	var audits []model.Audit = ctrler.inventoryRepository.GetAudit()
 
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audits}, "Audits fetched."))
 
 }
 func (ctrler *InventoryController) GetAuditById(ctx *gin.Context) {
 	id := ctx.Param("id")
-	audit := ctrler.repos.InventoryRepository.GetById(id)
+	audit := ctrler.inventoryRepository.GetById(id)
 	if len(audit.Id) == 0 {
 		ctx.JSON(httpresp.Fail404(nil, "model.Audit not found."))
 		return
@@ -35,7 +35,7 @@ func (ctrler *InventoryController) GetAuditById(ctx *gin.Context) {
 }
 func (ctrler InventoryController) GetAuditedAccession(ctx *gin.Context) {
 	id := ctx.Param("id")
-	audited := ctrler.repos.InventoryRepository.GetAuditedAccessionById(id)
+	audited := ctrler.inventoryRepository.GetAuditedAccessionById(id)
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audited}, "Accession fetched."))
 }
 func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
@@ -47,7 +47,7 @@ func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid accession number."))
 		return
 	}
-	ctrler.repos.InventoryRepository.AddToAudit(auditId, bookId, parsedAccessionId)
+	ctrler.inventoryRepository.AddToAudit(auditId, bookId, parsedAccessionId)
 	ctx.JSON(httpresp.Success200(nil, "Book audited."))
 }
 
@@ -55,7 +55,7 @@ func (ctrler *InventoryController) NewAudit(ctx *gin.Context) {
 
 	var audit model.Audit = model.Audit{}
 	ctx.ShouldBindBodyWith(&audit, binding.JSON)
-	insertErr := ctrler.repos.InventoryRepository.NewAudit(audit)
+	insertErr := ctrler.inventoryRepository.NewAudit(audit)
 
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
@@ -77,7 +77,7 @@ func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
 	if len(audit.Id) == 0 {
 		audit.Id = id
 	}
-	updatErr := ctrler.repos.InventoryRepository.UpdateAudit(audit)
+	updatErr := ctrler.inventoryRepository.UpdateAudit(audit)
 	if updatErr != nil {
 		logger.Error(updatErr.Error(), slimlog.Function("InventoryController.UpdateAudit"), slimlog.Error("updateErr"))
 		ctx.JSON(httpresp.Fail400(nil, updatErr.Error()))
@@ -85,9 +85,10 @@ func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "model.Audit updated"))
 }
-func NewInventoryController(repos *repository.Repositories) InventoryControllerInterface {
+func NewInventoryController() InventoryControllerInterface {
+
 	return &InventoryController{
-		repos: repos,
+		inventoryRepository: repository.NewInventoryRepository(),
 	}
 
 }

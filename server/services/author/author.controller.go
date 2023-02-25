@@ -11,14 +11,14 @@ import (
 )
 
 type AuthorController struct {
-	repos *repository.Repositories
+	authorRepository repository.AuthorRepositoryInterface
 }
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	var author model.Author = model.Author{}
 
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
-	insertErr := ctrler.repos.AuthorRepository.New(author)
+	insertErr := ctrler.authorRepository.New(author)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
@@ -26,7 +26,7 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
-	var authors []model.Author = ctrler.repos.AuthorRepository.Get()
+	var authors []model.Author = ctrler.authorRepository.Get()
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors}, "Authors fetched."))
 }
 
@@ -37,7 +37,7 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
 		return
 	}
-	err := ctrler.repos.AuthorRepository.Delete(id)
+	err := ctrler.authorRepository.Delete(id)
 	if err != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, err.Error()))
 		return
@@ -57,15 +57,16 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		logger.Error(bindingErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
 	}
-	updateErr := ctrler.repos.AuthorRepository.Update(id, author)
+	updateErr := ctrler.authorRepository.Update(id, author)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, updateErr.Error()))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author Updated"))
 }
-func NewAuthorController(repos *repository.Repositories) AuthorControllerInterface {
+func NewAuthorController() AuthorControllerInterface {
+	authorRepo := repository.NewAuthorRepository()
 	return &AuthorController{
-		repos: repos,
+		authorRepository: authorRepo,
 	}
 
 }

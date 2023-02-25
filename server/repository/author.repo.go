@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -87,7 +88,8 @@ func (repo *AuthorRepository) Update(id int, author model.Author) error {
 	return updateErr
 }
 
-func NewAuthorRepository(db *sqlx.DB) AuthorRepositoryInterface {
+func NewAuthorRepository() AuthorRepositoryInterface {
+	db := postgresdb.GetOrCreateInstance()
 	return &AuthorRepository{
 		db: db,
 	}

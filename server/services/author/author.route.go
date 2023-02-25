@@ -2,13 +2,12 @@ package author
 
 import (
 	"slim-app/server/app/http/middlewares"
-	"slim-app/server/repository"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AuthorRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
-	var controller AuthorControllerInterface = NewAuthorController(repos)
+func AuthorRoutes(router *gin.RouterGroup) {
+	var controller AuthorControllerInterface = NewAuthorController()
 	router.GET("/", controller.GetAuthors)
 	router.POST("/", middlewares.ValidateBody[AuthorBody], controller.NewAuthor)
 	router.PUT("/:id/", middlewares.ValidateBody[AuthorBody], controller.UpdateAuthor)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"slim-app/server/app/broadcasting"
 	"slim-app/server/app/pkg/slimlog"
-	"slim-app/server/repository"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,7 @@ import (
 )
 
 type RealtimeController struct {
-	repos *repository.Repositories
+	// repos *repository.Repositories
 	// broadcasters *broadcasting.Broadcasters
 }
 
@@ -69,10 +68,8 @@ loop:
 	connection.Close()
 	logger.Warn("Socket has been closed.", zap.String("account", accountId))
 }
-func NewController(repos *repository.Repositories) RealtimeControllerInteface {
-	return &RealtimeController{
-		repos: repos,
-	}
+func NewController() RealtimeControllerInteface {
+	return &RealtimeController{}
 }
 
 type RealtimeControllerInteface interface {

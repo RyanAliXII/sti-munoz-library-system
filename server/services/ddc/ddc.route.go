@@ -1,12 +1,10 @@
 package ddc
 
 import (
-	"slim-app/server/repository"
-
 	"github.com/gin-gonic/gin"
 )
 
-func DDCRoutes(router *gin.RouterGroup, repos *repository.Repositories) {
-	var controller DDCControllerInterface = NewDDCController(repos)
+func DDCRoutes(router *gin.RouterGroup) {
+	var controller DDCControllerInterface = NewDDCController()
 	router.GET("/", controller.GetDDC)
 }

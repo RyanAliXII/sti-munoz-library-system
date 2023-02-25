@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
@@ -14,7 +15,8 @@ import (
 )
 
 type BookRepository struct {
-	db *sqlx.DB
+	db                *sqlx.DB
+	sectionRepository SectionRepositoryInterface
 }
 
 func (repo *BookRepository) New(book model.Book) error {
@@ -423,10 +425,11 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	}
 	return accessions
 }
-func NewBookRepository(db *sqlx.DB) BookRepositoryInterface {
-
+func NewBookRepository() BookRepositoryInterface {
+	logger.Info("BOOK REPO INIT")
 	return &BookRepository{
-		db: db,
+		db:                postgresdb.GetOrCreateInstance(),
+		sectionRepository: NewSectionRepository(),
 	}
 }
 
