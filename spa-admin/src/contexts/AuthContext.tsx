@@ -64,7 +64,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    console.log(response);
     setUser({
       email: response.data.mail,
       firstname: response.data.givenName,

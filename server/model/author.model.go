@@ -18,7 +18,7 @@ type AuthorsJSON []struct {
 	MiddleName string `json:"middleName" db:"middle_name"`
 	Surname    string `json:"surname" db:"surname"`
 }
-type OrganizationAsAuthor struct {
+type Organization struct {
 	Id   int    `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
 }
