@@ -1,3 +1,4 @@
+import { isReturned } from "@internal/borrow-status";
 
 export type User = {
     firstname?: string;
@@ -91,6 +92,7 @@ export type User = {
 
   export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut">{
     returnedAt: string //iso-time-string
+    isReturned: boolean
   }
 
   export type BorrowingTransaction = {
@@ -98,6 +100,7 @@ export type User = {
     client: Account
     borrowedCopies: BorrowedCopy[]
     remarks: string,
+    isReturned: boolean
     dueDate: string //iso-time-string
     createdAt: string //iso-time-string
     returnedAt: string//iso-time-string

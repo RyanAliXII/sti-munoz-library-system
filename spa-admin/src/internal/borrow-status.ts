@@ -13,6 +13,7 @@ export enum BorrowStatuses {
 
 export const checkStatus = (returnedDateISO: string, dueDateIso: string): BorrowStatus => {
   const returnedDate = new Date(returnedDateISO);
+  console.log(returnedDate)
   const INVALID_YEAR = 1;
   if (
     //if returnedAt date is valid then books are already returned.

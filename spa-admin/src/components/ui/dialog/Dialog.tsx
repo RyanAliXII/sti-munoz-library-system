@@ -4,7 +4,6 @@ import {
   LighButton,
   LightOutlineButton,
   PrimaryButton,
-  SecondaryOutlineButton,
 } from "../button/Button";
 import { useState } from "react";
 
