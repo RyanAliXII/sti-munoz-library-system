@@ -1,7 +1,6 @@
 import { AuthorNumber } from "@definitions/types";
 import { useState } from "react";
 
-import { useBookEditFormContext } from "../BookEditFormContext";
 import { Input } from "@components/ui/form/Input";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -19,19 +18,14 @@ import {
 
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
+import { useBookEditFormContext } from "../BookEditFormContext";
 
 type BrowseTabProps = {
   modalRef: React.RefObject<HTMLDivElement>;
 };
 const BrowseTab = ({ modalRef }: BrowseTabProps) => {
   const OFFSET_INCREMENT = 50;
-  const {
-    form,
-    setFieldValue,
-    removeFieldError,
-    selectedAuthorNumberFromSelection,
-    setAuthorNumberFromSelection,
-  } = useBookEditFormContext();
+  const { form, setFieldValue, removeFieldError } = useBookEditFormContext();
   const [searchKeyword, setKeyword] = useState("");
   const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
@@ -65,6 +59,7 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
     },
   });
   const debounceSearch = useDebounce();
+
   useScrollWatcher({
     element: modalRef.current,
     onScrollEnd: () => {
@@ -76,7 +71,6 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
       "authorNumber",
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
-    setAuthorNumberFromSelection(authorNumber);
     removeFieldError("authorNumber");
   };
   return (
@@ -107,7 +101,7 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
       <Table>
         <Thead>
           <HeadingRow>
-            <Th></Th>
+            {/* <Th></Th> */}
             <Th>Surname</Th>
             <Th>Number</Th>
           </HeadingRow>
@@ -124,20 +118,14 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
                   }}
                   className="cursor-pointer"
                 >
-                  <Td>
+                  {/* <Td>
                     <Input
                       wrapperclass="flex items-center"
                       type="checkbox"
                       className="h-4"
                       readOnly
-                      checked={
-                        authorNumber.surname ===
-                        selectedAuthorNumberFromSelection.surname
-                          ? true
-                          : false
-                      }
                     ></Input>
-                  </Td>
+                  </Td> */}
                   <Td>{authorNumber.surname}</Td>
                   <Td>{authorNumber.number}</Td>
                 </BodyRow>

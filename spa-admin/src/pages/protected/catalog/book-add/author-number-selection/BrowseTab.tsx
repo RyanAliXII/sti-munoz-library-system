@@ -25,13 +25,7 @@ type BrowseTabProps = {
 };
 const BrowseTab = ({ modalRef }: BrowseTabProps) => {
   const OFFSET_INCREMENT = 50;
-  const {
-    form,
-    setFieldValue,
-    removeFieldError,
-    selectedAuthorNumberFromSelection,
-    setAuthorNumberFromSelection,
-  } = useBookAddFormContext();
+  const { form, setFieldValue, removeFieldError } = useBookAddFormContext();
   const [searchKeyword, setKeyword] = useState("");
   const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
@@ -77,7 +71,6 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
       "authorNumber",
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
-    setAuthorNumberFromSelection(authorNumber);
     removeFieldError("authorNumber");
   };
   return (
@@ -108,7 +101,7 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
       <Table>
         <Thead>
           <HeadingRow>
-            <Th></Th>
+            {/* <Th></Th> */}
             <Th>Surname</Th>
             <Th>Number</Th>
           </HeadingRow>
@@ -125,20 +118,14 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
                   }}
                   className="cursor-pointer"
                 >
-                  <Td>
+                  {/* <Td>
                     <Input
                       wrapperclass="flex items-center"
                       type="checkbox"
                       className="h-4"
                       readOnly
-                      checked={
-                        authorNumber.surname ===
-                        selectedAuthorNumberFromSelection.surname
-                          ? true
-                          : false
-                      }
                     ></Input>
-                  </Td>
+                  </Td> */}
                   <Td>{authorNumber.surname}</Td>
                   <Td>{authorNumber.number}</Td>
                 </BodyRow>

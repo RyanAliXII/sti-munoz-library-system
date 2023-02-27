@@ -18,9 +18,13 @@ const (
 	GET_AUTHORS   = "AuthorRepository.Get"
 	DELETE_AUTHOR = "AuthorRepository.Delete"
 	UPDATE_AUTHOR = "AuthorRepository.Update"
+	NEW_ORG       = "AuthoRepository.NewOrganization"
+	GET_ORGS      = "AuthorRepository.GetOrganizations"
+	DELETE_ORG    = "AuthorRepository.DeleteOrganization"
+	UPDATE_ORG    = "AuthorRepository.UpdateOrganization"
 )
 
-func (repo *AuthorRepository) New(author model.Author) error {
+func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
 
 	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.author(given_name, middle_name, surname)VALUES(:given_name, :middle_name, :surname )", author)
 	if insertErr != nil {
@@ -28,10 +32,10 @@ func (repo *AuthorRepository) New(author model.Author) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) Get() []model.Author {
+func (repo *AuthorRepository) Get() []model.PersonAsAuthor {
 
-	var authors []model.Author = make([]model.Author, 0)
-	selectErr := repo.db.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL")
+	authors := make([]model.PersonAsAuthor, 0)
+	selectErr := repo.db.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
@@ -49,11 +53,11 @@ func (repo *AuthorRepository) Delete(id int) error {
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
 		logger.Warn(getAffectedErr.Error(), zap.Int("authorId", id), slimlog.Function(DELETE_AUTHOR))
 	}
-	logger.Info("model.Author deleted", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
+	logger.Info("model.PersonAsAuthor deleted", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
 	return deleteErr
 }
-func (repo *AuthorRepository) GetByBookId(bookId string) []model.Author {
-	var authors []model.Author = make([]model.Author, 0)
+func (repo *AuthorRepository) GetAuthoredBook(bookId string) []model.PersonAsAuthor {
+	var authors []model.PersonAsAuthor = make([]model.PersonAsAuthor, 0)
 	query := `
 	SELECT author.id,  author.given_name, author.middle_name, author.surname
 	FROM catalog.book_author
@@ -67,7 +71,7 @@ func (repo *AuthorRepository) GetByBookId(bookId string) []model.Author {
 	}
 	return authors
 }
-func (repo *AuthorRepository) Update(id int, author model.Author) error {
+func (repo *AuthorRepository) Update(id int, author model.PersonAsAuthor) error {
 
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.author SET given_name = $1, middle_name = $2, surname = $3 where id = $4")
 	if prepareErr != nil {
@@ -84,7 +88,38 @@ func (repo *AuthorRepository) Update(id int, author model.Author) error {
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
 		logger.Warn(getAffectedErr.Error(), zap.Int("authordId", id), slimlog.Function(UPDATE_AUTHOR))
 	}
-	logger.Info("model.Author updated", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_AUTHOR))
+	logger.Info("model.PersonAsAuthor updated", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_AUTHOR))
+	return updateErr
+}
+
+func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
+
+	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.organization(name)VALUES(:name )", org)
+	if insertErr != nil {
+		logger.Error(insertErr.Error(), slimlog.Function(NEW_ORG), slimlog.Error("insertErr"))
+	}
+	return insertErr
+}
+func (repo *AuthorRepository) GetOrganization() []model.OrgAsAuthor {
+	orgs := make([]model.OrgAsAuthor, 0)
+	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null")
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function(GET_ORGS), slimlog.Error("selectErr"))
+	}
+	return orgs
+}
+func (repo *AuthorRepository) DeleteOrganization(id int) error {
+	_, deleteErr := repo.db.Exec("UPDATE catalog.organization SET deleted_at  = NOW() Where id = $1", id)
+	if deleteErr != nil {
+		logger.Error(deleteErr.Error(), slimlog.Function(DELETE_ORG), slimlog.Error("deleteErr"))
+	}
+	return deleteErr
+}
+func (repo *AuthorRepository) UpdateOrganization(org model.OrgAsAuthor) error {
+	_, updateErr := repo.db.Exec("UPDATE catalog.organization SET name = $1 Where id = $2", org.Name, org.Id)
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), slimlog.Function(UPDATE_ORG), slimlog.Error("updateErr"))
+	}
 	return updateErr
 }
 
@@ -96,9 +131,13 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 }
 
 type AuthorRepositoryInterface interface {
-	New(model.Author) error
-	Get() []model.Author
-	GetByBookId(bookId string) []model.Author
+	New(model.PersonAsAuthor) error
+	Get() []model.PersonAsAuthor
+	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
-	Update(id int, author model.Author) error
+	Update(id int, author model.PersonAsAuthor) error
+	NewOrganization(org model.OrgAsAuthor) error
+	GetOrganization() []model.OrgAsAuthor
+	DeleteOrganization(id int) error
+	UpdateOrganization(org model.OrgAsAuthor) error
 }

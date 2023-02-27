@@ -10,27 +10,42 @@ type MetaData struct {
 }
 
 type BookBody struct {
-	Id            string      `json:"id" `
-	Title         string      `json:"title" binding:"required,min=1,max=150"`
-	Description   string      `json:"description" `
-	ISBN          string      `json:"isbn"  binding:"required,min=1,max=150,isbn"`
-	Copies        int         `json:"copies" binding:"required,gte=1"`
-	Pages         int         `json:"pages" binding:"required,gte=1"`
-	Section       MetaData    `json:"section"  binding:"required,gte=1,dive"`
-	Publisher     MetaData    `json:"publisher"  binding:"required,dive"`
-	FundSource    MetaData    `json:"fundSource" binding:"required,dive"`
-	CostPrice     float32     `json:"costPrice"  binding:"gte=0"`
-	Edition       int         `json:"edition" binding:"gte=0" `
-	YearPublished int         `json:"yearPublished"  binding:"required"`
-	DDC           float64     `json:"ddc"  binding:"gte=0,lt=1000"`
-	AuthorNumber  string      `json:"authorNumber" binding:"required,min=1,max=50"`
-	ReceivedAt    time.Time   `json:"receivedAt" binding:"required"`
-	Authors       AuthorsBody `json:"authors" binding:"dive"`
+	Id            string    `json:"id" `
+	Title         string    `json:"title" binding:"required,min=1,max=150"`
+	Description   string    `json:"description" `
+	ISBN          string    `json:"isbn"  binding:"required,min=1,max=150,isbn"`
+	Copies        int       `json:"copies" binding:"required,gte=1"`
+	Pages         int       `json:"pages" binding:"required,gte=1"`
+	Section       MetaData  `json:"section"  binding:"required,gte=1,dive"`
+	Publisher     MetaData  `json:"publisher"  binding:"required,dive"`
+	FundSource    MetaData  `json:"fundSource" binding:"required,dive"`
+	CostPrice     float32   `json:"costPrice"  binding:"gte=0"`
+	Edition       int       `json:"edition" binding:"gte=0" `
+	YearPublished int       `json:"yearPublished"  binding:"required"`
+	DDC           float64   `json:"ddc"  binding:"gte=0,lt=1000"`
+	AuthorNumber  string    `json:"authorNumber" binding:"required,min=1,max=50"`
+	ReceivedAt    time.Time `json:"receivedAt" binding:"required"`
+	Authors       Authors   `json:"authors" binding:"dive"`
 }
 
-type AuthorsBody []struct {
-	Id         int    `json:"id" db:"id" binding:"required,min=1"`
-	GivenName  string `json:"givenName" db:"given_name" binding:"required,max=100,min=1"`
-	MiddleName string `json:"middleName" db:"middle_name"`
-	Surname    string `json:"surname" db:"surname" binding:"required,max=100,min=1"`
+type Authors struct {
+	People       PeopleAsAuthorBody `json:"people" binding:"dive"`
+	Organization OrgsAsAuthor       `json:"organizations" binding:"dive"`
+	Publisher    PublishersBody     `json:"publishers"  binding:"dive"`
+}
+
+type PeopleAsAuthorBody []struct {
+	Id         int    `json:"id"  binding:"required,gte=1"`
+	GivenName  string `json:"givenName" binding:"required,max=100,min=1"`
+	MiddleName string `json:"middleName" binding:"max=100"`
+	Surname    string `json:"surname" binding:"required,max=100,min=1"`
+}
+
+type OrgsAsAuthor []struct {
+	Id   int    `json:"id"   binding:"required,gte=1"`
+	Name string `json:"name" binding:"required,max=250,min=1"`
+}
+type PublishersBody []struct {
+	Id   int    `json:"id" binding:"required,gte=1"`
+	Name string `json:"name" binding:"required,max=150,min=1"`
 }

@@ -243,9 +243,12 @@ type CardProps = {
   book: Book;
 };
 const TitleCard = ({ book }: CardProps) => {
-  const authors = book?.authors?.map(
+  const peopleAuthors = book?.authors.people?.map(
     (author) => `${author.givenName} ${author.surname}`
   );
+  const orgAuthors = book?.authors.organizations?.map((org) => org.name);
+  const publisherAuthors = book?.authors.publishers.map((p) => p.name);
+  const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
   return (
     <div className=" h-80 border-gray-400 border border-dashed">
       <div className="flex h-full">
@@ -271,9 +274,12 @@ const TitleCard = ({ book }: CardProps) => {
 };
 
 const AuthorCard = ({ book }: CardProps) => {
-  const authors = book.authors.map((author) => {
-    return `${author.givenName} ${author.surname}`;
-  });
+  const peopleAuthors = book?.authors.people?.map(
+    (author) => `${author.givenName} ${author.surname}`
+  );
+  const orgAuthors = book?.authors.organizations?.map((org) => org.name);
+  const publisherAuthors = book?.authors.publishers.map((p) => p.name);
+  const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
   return (
     <div className="h-80 border-gray-400 border border-dashed">
       <div className="flex h-full">

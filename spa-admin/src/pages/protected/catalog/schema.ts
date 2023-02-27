@@ -100,4 +100,8 @@ export const AuditSchemaValidation = object().shape({
     name : string().required("Name is required.").max(150, "Name should not exceed 150 characters.")
 })
 
+export const OrganizationValidation = object().shape({
+    name : string().required("Name is required.").max(250, "Name should not exceed 250 characters.")
+})
+
 

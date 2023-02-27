@@ -1,12 +1,11 @@
 import { ModalProps } from "@definitions/types";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Modal from "react-responsive-modal";
 
 import { useRef } from "react";
 
 import GenerateTab from "./GenerateTab";
-import BrowseTab from "./BrowseTab";
-import { useBookAddFormContext } from "../BookAddFormContext";
+import BrowseTab from "../../book-add/author-number-selection/BrowseTab";
 
 enum Classes {
   Active = "inline-block p-4 text-blue-400 bg-gray-100 rounded-t-lg active cursor-pointer",
@@ -24,7 +23,6 @@ interface TabContentProps {
   activeTab: ActiveTab;
   modalRef: React.RefObject<HTMLDivElement>;
 }
-
 const checkActive = (key: string, state: string) => {
   if (key === state) {
     return Classes.Active;
@@ -38,21 +36,6 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
   const [activeTab, setActiveTab] = useState<ActiveTab>(Tab.Generate);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const {
-    selectedAuthorNumberFromSelection,
-    form,
-    unSelectAuthorNumberSelection,
-    unSelectAuthorFromGeneratedAuthorNumber,
-  } = useBookAddFormContext();
-  useEffect(() => {
-    const currentSelectedAuthorNumber = `${selectedAuthorNumberFromSelection.surname.charAt(
-      0
-    )}${selectedAuthorNumberFromSelection.number}`;
-    if (form.authorNumber != currentSelectedAuthorNumber) {
-      unSelectAuthorNumberSelection();
-      unSelectAuthorFromGeneratedAuthorNumber();
-    }
-  }, [isOpen]);
   if (!isOpen) return null;
 
   return (
