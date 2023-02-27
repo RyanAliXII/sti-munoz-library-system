@@ -12,9 +12,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import AuthorSelectionModal from "../book-edit/author-selection/AuthorSelectionModal";
-import SelectedAuthorsTable from "../book-edit/author-selection/SelectedAuthorsTable";
-import AuthorNumberSelectionModal from "../book-edit/author-number-selection/AuthorNumberSelectionModal";
+
 import { useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
@@ -22,6 +20,9 @@ import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
 import { ContainerNoBackground } from "@components/ui/container/Container";
 import { FieldRow } from "@components/ui/form/FieldRow";
+import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
+import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
+import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
 
 const BookAddForm = () => {
   const {
