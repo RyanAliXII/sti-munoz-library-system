@@ -122,6 +122,7 @@ func (repo *AuthorRepository) UpdateOrganization(org model.OrgAsAuthor) error {
 	}
 	return updateErr
 }
+
 func NewAuthorRepository() AuthorRepositoryInterface {
 	db := postgresdb.GetOrCreateInstance()
 	return &AuthorRepository{

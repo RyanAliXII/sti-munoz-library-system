@@ -7,12 +7,12 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import { useBookAddFormContext } from "../../book-add/BookAddFormContext";
+
 import axiosClient from "@definitions/configs/axios";
 import { useQuery } from "@tanstack/react-query";
 import { PersonAuthor } from "@definitions/types";
 import { useMemo } from "react";
-// import { Author } from "@definitions/types";
+import { useBookEditFormContext } from "../BookEditFormContext";
 
 const PersonAsAuthorSelection = () => {
   const fetchAuthors = async () => {
@@ -24,7 +24,7 @@ const PersonAsAuthorSelection = () => {
       return [];
     }
   };
-  const { setForm, form } = useBookAddFormContext();
+  const { setForm, form } = useBookEditFormContext();
 
   const { data: authors } = useQuery<PersonAuthor[]>({
     queryFn: fetchAuthors,

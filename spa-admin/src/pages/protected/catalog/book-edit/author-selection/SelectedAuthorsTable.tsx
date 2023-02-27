@@ -9,11 +9,11 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import { useBookAddFormContext } from "../../book-add/BookAddFormContext";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { useBookEditFormContext } from "../BookEditFormContext";
 
 const SelectedAuthorsTable = () => {
-  const { form, setForm } = useBookAddFormContext();
+  const { form, setForm } = useBookEditFormContext();
 
   const removePersonAsAuthor = (author: PersonAuthor) => {
     setForm((prev) => ({

@@ -1,6 +1,6 @@
-import { PersonAuthor, AuthorNumber } from "@definitions/types";
+import { AuthorNumber } from "@definitions/types";
 
-import { useBookAddFormContext } from "../BookAddFormContext";
+import { useBookAddFormContext } from "../../book-add/BookAddFormContext";
 import { Input } from "@components/ui/form/Input";
 
 import axiosClient from "@definitions/configs/axios";
@@ -17,15 +17,7 @@ import {
 import { PrimaryButton } from "@components/ui/button/Button";
 
 const GenerateTab = () => {
-  const {
-    form,
-    setFieldValue,
-    removeFieldError,
-    // selectAuthorForAuthorNumberGeneration,
-    // authorFromGeneratedAuthorNumber,
-    // removeAuthorAsBasisForAuthorNumber,
-    // setAuthorNumberFromSelection,
-  } = useBookAddFormContext();
+  const { form, setFieldValue, removeFieldError } = useBookAddFormContext();
   const generateByTitle = async () => {
     // remove selected author check mark if there is any.
     const { data: response } = await axiosClient.get(
@@ -54,7 +46,6 @@ const GenerateTab = () => {
     surname: string,
     type: string
   ) => {
-    // selectAuthorForAuthorNumberGeneration(author);
     const { data: response } = await axiosClient.get(
       "/author-numbers/generator",
       {

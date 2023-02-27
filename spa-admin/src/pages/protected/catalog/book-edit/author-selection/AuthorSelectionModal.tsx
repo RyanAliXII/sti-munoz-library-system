@@ -1,12 +1,12 @@
 import { ModalProps } from "@definitions/types";
 
-import React, { useState } from "react";
-
 import Modal from "react-responsive-modal";
-import { useBookAddFormContext } from "../../book-add/BookAddFormContext";
+
 import PersonAsAuthorSelection from "./PersonAsAuthorSelection";
 import OrganizationSelection from "./OrganizationSelection";
 import PublisherSelection from "./PublisherSelection";
+import { useBookEditFormContext } from "../BookEditFormContext";
+import { useState } from "react";
 
 type ActiveTab = "PERSON" | "ORG" | "PUBLISHER";
 enum Tab {
@@ -26,7 +26,7 @@ const checkActive = (key: string, state: string) => {
   return Classes.Default;
 };
 const AuthorSelectionModal = ({ closeModal, isOpen }: ModalProps) => {
-  const { form } = useBookAddFormContext();
+  const { form } = useBookEditFormContext();
   const [activeTab, setActiveTab] = useState<ActiveTab>(Tab.Person);
   const numberOfAuthorSelected =
     form.authors.organizations.length +

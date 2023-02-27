@@ -14,7 +14,7 @@ import CustomSelect from "@components/ui/form/CustomSelect";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import AuthorSelectionModal from "../book-edit/author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "../book-edit/author-selection/SelectedAuthorsTable";
-import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
+import AuthorNumberSelectionModal from "../book-edit/author-number-selection/AuthorNumberSelectionModal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";

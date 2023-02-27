@@ -12,11 +12,10 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import { useBookAddFormContext } from "../../book-add/BookAddFormContext";
 import { useMemo } from "react";
-import { remove } from "lodash";
+import { useBookEditFormContext } from "../BookEditFormContext";
 const PublisherSelection = () => {
-  const { setForm, form } = useBookAddFormContext();
+  const { setForm, form } = useBookEditFormContext();
   const fetchPublisher = async () => {
     try {
       const { data: response } = await axiosClient.get("/publishers/");
