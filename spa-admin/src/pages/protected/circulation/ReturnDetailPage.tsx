@@ -34,11 +34,6 @@ import {
   BorrowedCopyInitialValue,
   BorrowingTransactionInitialValue,
 } from "@definitions/defaults";
-import {
-  BorrowStatuses,
-  checkStatus,
-  isReturned,
-} from "@internal/borrow-status";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -83,10 +78,6 @@ const TransactionByIdPage = () => {
     },
   });
 
-  const status = checkStatus(
-    transaction?.returnedAt ?? "",
-    transaction?.dueDate ?? ""
-  );
   const [copyToReturn, setCopyToReturn] = useState<BorrowedCopy>(
     BorrowedCopyInitialValue
   );
@@ -175,7 +166,7 @@ const TransactionByIdPage = () => {
                     <Td>{accession.copyNumber}</Td>
                     <Td>{accession.number}</Td>
                     <Td>
-                      {isReturned(accession.returnedAt) ? (
+                      {accession.isReturned ? (
                         <span className="px-1 py-1 border border-blue-400 rounded text-xs text-blue-400">
                           Returned
                         </span>
@@ -200,7 +191,7 @@ const TransactionByIdPage = () => {
         </Container>
       </ContainerNoBackground>
 
-      {status == BorrowStatuses.Returned ? (
+      {transaction?.isReturned ? (
         <ContainerNoBackground className="px-4 py-6">
           <Divider
             heading="h2"
@@ -227,7 +218,7 @@ const TransactionByIdPage = () => {
         </ContainerNoBackground>
       ) : null}
 
-      {status != BorrowStatuses.Returned ? (
+      {!transaction?.isReturned ? (
         <ContainerNoBackground className="px-4 py-6">
           <div>
             <PrimaryButton

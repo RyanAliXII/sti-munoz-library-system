@@ -20,9 +20,12 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 	var transactions []model.BorrowingTransaction = make([]model.BorrowingTransaction, 0)
 	selectTransactionQuery := `
 	SELECT bt.id,
+	(case when bt.returned_at is null then false else true end) as is_returned,
 	json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
-	COALESCE(json_agg(json_build_object('number', bb.accession_number,'bookId', bb.book_id,'copyNumber', accession.copy_number ,'returnedAt',bb.returned_at,'book', json_build_object('id', book.id,
+	COALESCE(json_agg(json_build_object('number', bb.accession_number,'bookId', bb.book_id,'copyNumber', accession.copy_number ,
+	'returnedAt',bb.returned_at,'book', 
+	    json_build_object('id', book.id,
 		'title', book.title,
 		'description', book.description,
 		'ddc', book.ddc,
@@ -37,14 +40,27 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
-		'authors',(
-		COALESCE((SELECT json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-		as authors
-		FROM catalog.book_author
-		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-		where book_id = book.id
-		group by book_id),'[]')),																		 
-		'created_at',book.created_at)								   
+		'authors', json_build_object(
+			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+					  as authors
+					  FROM catalog.book_author
+					  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+					  where book_id = book.id
+					  group by book_id),'[]'),
+				
+			'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
+									 FROM catalog.org_book_author as oba 
+									 INNER JOIN catalog.organization as org on oba.org_id = org.id 
+									  where book_id = book.id group by book_id ),'[]'),
+				
+			'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
+								  FROM catalog.publisher_book_author as pba 
+								  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
+								  where book_id = book.id group by book_id
+								  ),'[]')
+		),																		 
+		'created_at',book.created_at),
+		'isReturned', (case when bb.returned_at is null then false else true end) 							   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
 	COALESCE(bt.remarks, '') as remarks,
@@ -71,6 +87,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	var transaction model.BorrowingTransaction = model.BorrowingTransaction{}
 
 	query := `SELECT bt.id,
+	(case when bt.returned_at is null then false else true end) as is_returned,
 	json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 	COALESCE(json_agg(json_build_object('number', bb.accession_number,'bookId', bb.book_id,'copyNumber', accession.copy_number ,'returnedAt',bb.returned_at,'book', json_build_object('id', book.id,
@@ -88,14 +105,27 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
-		'authors',(
-		COALESCE((SELECT json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-		as authors
-		FROM catalog.book_author
-		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-		where book_id = book.id
-		group by book_id),'[]')),																		 
-		'created_at',book.created_at)								   
+		'authors', json_build_object(
+			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+					  as authors
+					  FROM catalog.book_author
+					  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+					  where book_id = book.id
+					  group by book_id),'[]'),
+				
+			'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
+									 FROM catalog.org_book_author as oba 
+									 INNER JOIN catalog.organization as org on oba.org_id = org.id 
+									  where book_id = book.id group by book_id ),'[]'),
+				
+			'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
+								  FROM catalog.publisher_book_author as pba 
+								  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
+								  where book_id = book.id group by book_id
+								  ),'[]')
+		),																		 
+		'created_at',book.created_at),
+		'isReturned', (case when bb.returned_at is null then false else true end) 									   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
 	COALESCE(bt.remarks, '') as remarks,
