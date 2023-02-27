@@ -254,13 +254,25 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', section.id, 'name', section.name),
 		'created_at',book.created_at,
-		'authors', (
-		COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-		as authors
-		FROM catalog.book_author
-		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-		where book_id = book.id
-		group by book_id),'[]'))
+		'authors', json_build_object(
+			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+					  as authors
+					  FROM catalog.book_author
+					  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+					  where book_id = book.id
+					  group by book_id),'[]'),
+				
+			'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
+									 FROM catalog.org_book_author as oba 
+									 INNER JOIN catalog.organization as org on oba.org_id = org.id 
+									  where book_id = book.id group by book_id ),'[]'),
+				
+			'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
+								  FROM catalog.publisher_book_author as pba 
+								  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
+								  where book_id = book.id group by book_id
+								  ),'[]')
+		) 
 		
 	) as book,
 	(CASE WHEN accession_number is null then false else true END) as is_checked_out
@@ -444,23 +456,38 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	author_number,
 	book.created_at,
 	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end)) as section,
+	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
 	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
-	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-	as authors
-	FROM catalog.book_author
-	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-	where book_id = book.id
-	group by book_id),'[]') as authors,
+	json_build_object(
+	'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+			  as authors
+			  FROM catalog.book_author
+			  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+			  where book_id = book.id
+			  group by book_id),'[]'),
+		
+	'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
+							 FROM catalog.org_book_author as oba 
+							 INNER JOIN catalog.organization as org on oba.org_id = org.id 
+							  where book_id = book.id group by book_id ),'[]'),
+		
+	'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
+						  FROM catalog.publisher_book_author as pba 
+						  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
+						  where book_id = book.id group by book_id
+						  ),'[]')
+	) as authors,
+
 	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
-	 FROM catalog.book 
+	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
 	WHERE search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
-	ORDER BY book.created_at desc
+	ORDER BY created_at DESC
 	LIMIT $2 OFFSET $3
 	`
+
 	selectErr := repo.db.Select(&books, query, filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepository.Search"), slimlog.Error("selectErr"))
@@ -490,13 +517,25 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
 		'created_at',book.created_at,
-		'authors', (
-		COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-		as authors
-		FROM catalog.book_author
-		INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-		where book_id = book.id
-		group by book_id),'[]'))
+		'authors', json_build_object(
+			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+					  as authors
+					  FROM catalog.book_author
+					  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+					  where book_id = book.id
+					  group by book_id),'[]'),
+				
+			'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
+									 FROM catalog.org_book_author as oba 
+									 INNER JOIN catalog.organization as org on oba.org_id = org.id 
+									  where book_id = book.id group by book_id ),'[]'),
+				
+			'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
+								  FROM catalog.publisher_book_author as pba 
+								  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
+								  where book_id = book.id group by book_id
+								  ),'[]')
+		) 
 		
 	) as book,
 	(CASE WHEN accession_number is null then false else true END) as is_checked_out
