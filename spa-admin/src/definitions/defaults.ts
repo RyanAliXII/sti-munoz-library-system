@@ -4,7 +4,11 @@ import { Book, BorrowedCopy, BorrowingTransaction } from "./types";
 export const BookInitialValue: Book =  {
     title: "",
     isbn: "",
-    authors: [],
+    authors: {
+      organizations:[],
+      people:[],
+      publishers:[]
+    },
     section: {
       name: "",
       id: 0,
