@@ -37,21 +37,6 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
   const [activeTab, setActiveTab] = useState<ActiveTab>(Tab.Generate);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const {
-    selectedAuthorNumberFromSelection,
-    form,
-    unSelectAuthorNumberSelection,
-    unSelectAuthorFromGeneratedAuthorNumber,
-  } = useBookAddFormContext();
-  useEffect(() => {
-    const currentSelectedAuthorNumber = `${selectedAuthorNumberFromSelection.surname.charAt(
-      0
-    )}${selectedAuthorNumberFromSelection.number}`;
-    if (form.authorNumber != currentSelectedAuthorNumber) {
-      unSelectAuthorNumberSelection();
-      unSelectAuthorFromGeneratedAuthorNumber();
-    }
-  }, [isOpen]);
   if (!isOpen) return null;
 
   return (

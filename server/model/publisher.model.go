@@ -9,25 +9,44 @@ type Publisher struct {
 	Id   int    `json:"id"`
 	Name string `json:"name" db:"name"`
 }
+
+type PublishersJSON []struct {
+	Publisher
+}
+
+func (instance *PublishersJSON) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+
+	if valid {
+		unmarshalErr := json.Unmarshal(val, instance)
+		if unmarshalErr != nil {
+			*instance = make(PublishersJSON, 0)
+		}
+	} else {
+		*instance = make(PublishersJSON, 0)
+	}
+	return nil
+
+}
+func (copy PublishersJSON) Value(value interface{}) (driver.Value, error) {
+	return copy, nil
+}
+
 type PublisherJSON struct {
 	Publisher
 }
 
-func (publisher *PublisherJSON) Scan(value interface{}) error {
+func (instance *PublisherJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
-	INITIAL_DATA_ON_ERROR := PublisherJSON{
-		Publisher: Publisher{},
-	}
 	if valid {
-		unmarshalErr := json.Unmarshal(val, publisher)
+		unmarshalErr := json.Unmarshal(val, instance)
 		if unmarshalErr != nil {
-			*publisher = INITIAL_DATA_ON_ERROR
+			*instance = PublisherJSON{}
 		}
 	} else {
-		*publisher = INITIAL_DATA_ON_ERROR
+		*instance = PublisherJSON{}
 	}
 	return nil
-
 }
 func (publisher PublisherJSON) Value(value interface{}) (driver.Value, error) {
 	return publisher, nil

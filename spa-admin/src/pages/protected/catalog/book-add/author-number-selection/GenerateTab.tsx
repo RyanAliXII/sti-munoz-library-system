@@ -1,4 +1,4 @@
-import { Author, AuthorNumber } from "@definitions/types";
+import { PersonAuthor, AuthorNumber } from "@definitions/types";
 
 import { useBookAddFormContext } from "../BookAddFormContext";
 import { Input } from "@components/ui/form/Input";
@@ -21,13 +21,13 @@ const GenerateTab = () => {
     form,
     setFieldValue,
     removeFieldError,
-    selectAuthorForAuthorNumberGeneration,
-    authorFromGeneratedAuthorNumber,
-    removeAuthorAsBasisForAuthorNumber,
-    setAuthorNumberFromSelection,
+    // selectAuthorForAuthorNumberGeneration,
+    // authorFromGeneratedAuthorNumber,
+    // removeAuthorAsBasisForAuthorNumber,
+    // setAuthorNumberFromSelection,
   } = useBookAddFormContext();
   const generateByTitle = async () => {
-    removeAuthorAsBasisForAuthorNumber(); // remove selected author check mark if there is any.
+    // remove selected author check mark if there is any.
     const { data: response } = await axiosClient.get(
       "/author-numbers/generator",
       {
@@ -47,17 +47,20 @@ const GenerateTab = () => {
       "authorNumber",
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
-    setAuthorNumberFromSelection(authorNumber);
     removeFieldError("authorNumber");
   };
-  const generateAuthorNumberByAuthor = async (author: Author) => {
-    selectAuthorForAuthorNumberGeneration(author);
+  const generateAuthorNumberByAuthor = async (
+    givenName: string,
+    surname: string,
+    type: string
+  ) => {
+    // selectAuthorForAuthorNumberGeneration(author);
     const { data: response } = await axiosClient.get(
       "/author-numbers/generator",
       {
         params: {
-          givenName: author.givenName,
-          surname: author.surname,
+          givenName: givenName,
+          surname: surname,
         },
       }
     );
@@ -71,7 +74,7 @@ const GenerateTab = () => {
       "authorNumber",
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
-    setAuthorNumberFromSelection(authorNumber);
+
     removeFieldError("authorNumber");
   };
 
@@ -80,6 +83,11 @@ const GenerateTab = () => {
     form.title.length > 25
       ? `${form.title.substring(0, TITLE_CHARACTER_LIMIT)}...`
       : form.title;
+
+  const numberOfAuthorSelected =
+    form.authors.organizations.length +
+    form.authors.people.length +
+    form.authors.publishers.length;
   return (
     <>
       <div>
@@ -123,7 +131,7 @@ const GenerateTab = () => {
         </div>
       </div>
       <hr></hr>
-      {form.authors.length === 0 ? (
+      {numberOfAuthorSelected === 0 ? (
         <div className="h-80 w-full flex items-center justify-center flex-col">
           <small className="text-sm text-gray-400 ">
             You have not selected any authors. Please select one to generate.
@@ -140,35 +148,77 @@ const GenerateTab = () => {
           <Table className="w-full">
             <Thead className=" sticky top-0">
               <HeadingRow>
-                <Th></Th>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
+                {/* <Th></Th> */}
+                <Th>Author</Th>
               </HeadingRow>
             </Thead>
             <Tbody>
-              {form.authors.map((author) => {
+              {form.authors.people.map((author) => {
                 return (
                   <BodyRow
                     className="cursor-pointer"
                     key={author.id}
                     onClick={() => {
-                      generateAuthorNumberByAuthor(author);
+                      generateAuthorNumberByAuthor(
+                        author.givenName,
+                        author.surname,
+                        "person"
+                      );
                     }}
                   >
-                    <Td>
+                    {/* <Td>
                       <Input
                         wrapperclass="flex items-center h-4"
                         type="checkbox"
                         readOnly
-                        checked={
-                          authorFromGeneratedAuthorNumber?.id === author.id
-                        }
                       ></Input>
-                    </Td>
+                    </Td> */}
                     <Td>{author.givenName}</Td>
-                    <Td>{author.middleName}</Td>
-                    <Td>{author.surname}</Td>
+                  </BodyRow>
+                );
+              })}
+              {form.authors.organizations.map((author) => {
+                return (
+                  <BodyRow
+                    className="cursor-pointer"
+                    key={author.id}
+                    onClick={() => {
+                      generateAuthorNumberByAuthor("none", author.name, "org");
+                    }}
+                  >
+                    {/* <Td>
+                      <Input
+                        wrapperclass="flex items-center h-4"
+                        type="checkbox"
+                        readOnly
+                      ></Input>
+                    </Td> */}
+                    <Td>{author.name}</Td>
+                  </BodyRow>
+                );
+              })}
+
+              {form.authors.publishers.map((author) => {
+                return (
+                  <BodyRow
+                    className="cursor-pointer"
+                    key={author.id}
+                    onClick={() => {
+                      generateAuthorNumberByAuthor(
+                        "none",
+                        author.name,
+                        "publisher"
+                      );
+                    }}
+                  >
+                    {/* <Td>
+                      <Input
+                        wrapperclass="flex items-center h-4"
+                        type="checkbox"
+                        readOnly
+                      ></Input>
+                    </Td> */}
+                    <Td>{author.name}</Td>
                   </BodyRow>
                 );
               })}

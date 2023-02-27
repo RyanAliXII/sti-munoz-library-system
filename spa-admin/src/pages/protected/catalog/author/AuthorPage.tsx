@@ -1,6 +1,6 @@
 import "react-responsive-modal/styles.css";
 
-import { Author } from "@definitions/types";
+import { PersonAuthor } from "@definitions/types";
 
 import { ContainerNoBackground } from "@components/ui/container/Container";
 
@@ -10,12 +10,12 @@ import { PrimaryButton } from "@components/ui/button/Button";
 import OrganizationAsAuthor from "./organization/OrganizationAsAuthor";
 import PublisherAsAuthor from "./publisher/PublisherAsAuthor";
 
-export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
+export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
   givenName: "",
   middleName: "",
   surname: "",
 };
-export const EDIT_AUTHOR_INITIAL_FORM: Author = {
+export const EDIT_AUTHOR_INITIAL_FORM: PersonAuthor = {
   id: 0,
   givenName: "",
   middleName: "",

@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS catalog.org_book_author

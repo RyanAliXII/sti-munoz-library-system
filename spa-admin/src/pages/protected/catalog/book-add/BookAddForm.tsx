@@ -5,15 +5,15 @@ import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent } from "react";
 
-import { Author, Section, Publisher, Source, Book } from "@definitions/types";
+import { Section, Publisher, Source, Book } from "@definitions/types";
 
 import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
-import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
+import AuthorSelectionModal from "../book-edit/author-selection/AuthorSelectionModal";
+import SelectedAuthorsTable from "../book-edit/author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
@@ -90,24 +90,7 @@ const BookAddForm = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
-  const selectAuthorFromTable = (a: Author) => {
-    setForm((prevForm) => {
-      return {
-        ...prevForm,
-        authors: [...(prevForm?.authors ?? []), a],
-      };
-    });
-  };
-  const removeAuthorFromTable = (a: Author) => {
-    setForm((prevForm) => {
-      const filtered =
-        prevForm.authors?.filter((author) => author.id != a.id) ?? [];
-      return {
-        ...prevForm,
-        authors: [...filtered],
-      };
-    });
-  };
+
   const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
     removeFieldError("section.value");
@@ -151,7 +134,10 @@ const BookAddForm = () => {
   const handleDescriptionInput = (content: string, editor: any) => {
     setFieldValue("description", content);
   };
-
+  const numberOfSelectedAuthors =
+    form.authors.people.length +
+    form.authors.organizations.length +
+    form.authors.publishers.length;
   return (
     <form onSubmit={submit}>
       <ContainerNoBackground>
@@ -341,12 +327,12 @@ const BookAddForm = () => {
           className="mb-10 overflow-y-auto scroll-smooth"
           style={{ maxHeight: "300px" }}
         >
-          {form.authors?.length === 0 ? (
+          {numberOfSelectedAuthors === 0 ? (
             <div className="flex items-center h-10 justify-center">
               <small className="text-gray-400">No authors selected.</small>
             </div>
           ) : (
-            <SelectedAuthorsTable removeAuthor={removeAuthorFromTable} />
+            <SelectedAuthorsTable />
           )}
         </div>
 
@@ -407,8 +393,6 @@ const BookAddForm = () => {
         <AuthorSelectionModal
           closeModal={closeAuthorSelection}
           isOpen={isAuthorSelectionOpen}
-          selectAuthor={selectAuthorFromTable}
-          removeAuthor={removeAuthorFromTable}
         />
         <DDCSelectionModal
           closeModal={closeDDCSelection}

@@ -15,7 +15,7 @@ type AuthorController struct {
 }
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
-	var author model.Author = model.Author{}
+	var author model.PersonAsAuthor = model.PersonAsAuthor{}
 
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
 	insertErr := ctrler.authorRepository.New(author)
@@ -23,10 +23,10 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
 	}
-	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author added."))
+	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
-	var authors []model.Author = ctrler.authorRepository.Get()
+	var authors []model.PersonAsAuthor = ctrler.authorRepository.Get()
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors}, "Authors fetched."))
 }
 
@@ -42,7 +42,7 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(gin.H{}, err.Error()))
 		return
 	}
-	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author deleted."))
+	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor deleted."))
 }
 
 func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
@@ -51,7 +51,7 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		logger.Warn(castErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
 	}
-	var author model.Author
+	var author model.PersonAsAuthor
 	bindingErr := ctx.ShouldBindBodyWith(&author, binding.JSON)
 	if bindingErr != nil {
 		logger.Error(bindingErr.Error())
@@ -61,10 +61,10 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{}, updateErr.Error()))
 	}
-	ctx.JSON(httpresp.Success200(gin.H{}, "model.Author Updated"))
+	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor Updated"))
 }
 func (ctrler *AuthorController) NewOrganizationAsAuthor(ctx *gin.Context) {
-	org := model.Organization{}
+	org := model.OrgAsAuthor{}
 	ctx.ShouldBindBodyWith(&org, binding.JSON)
 
 	newErr := ctrler.authorRepository.NewOrganization(org)
@@ -103,7 +103,7 @@ func (ctrler *AuthorController) UpdateOrganization(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	org := model.Organization{}
+	org := model.OrgAsAuthor{}
 	ctx.ShouldBindBodyWith(&org, binding.JSON)
 	org.Id = parsedId
 	updateErr := ctrler.authorRepository.UpdateOrganization(org)

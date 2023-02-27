@@ -74,26 +74,57 @@ func (repo *BookRepository) New(book model.Book) error {
 	insertedAccessionRows, _ := insertAccessionResult.RowsAffected()
 	logger.Info("Added new book.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedBookRows))
 	logger.Info("model.Accession added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAccessionRows))
-	//insert authors.
-	if len(book.Authors) > 0 {
-		var authorRows []goqu.Record = make([]goqu.Record, 0)
-		for _, author := range book.Authors {
-			authorRows = append(authorRows, goqu.Record{"book_id": book.Id, "author_id": author.Id})
+
+	if len(book.Authors.People) > 0 {
+		rows := make([]goqu.Record, 0)
+
+		for _, p := range book.Authors.People {
+			rows = append(rows, goqu.Record{"book_id": book.Id, "author_id": p.Id})
 		}
-		authorDs := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(authorRows)
-		insertAuthorQuery, authorArgs, _ := authorDs.ToSQL()
+		ds := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(rows)
+		query, args, _ := ds.ToSQL()
 
-		insertAuthorResult, insertAuthorErr := transaction.Exec(insertAuthorQuery, authorArgs...)
-
+		_, insertAuthorErr := transaction.Exec(query, args...)
 		if insertAuthorErr != nil {
 			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New.insertAuthorErr"))
+			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert people"))
 			return insertAuthorErr
 		}
-		insertedAuthorRows, _ := insertAuthorResult.RowsAffected()
-		logger.Info("Author added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAuthorRows))
-
 	}
+
+	if len(book.Authors.Organizations) > 0 {
+		rows := make([]goqu.Record, 0)
+
+		for _, org := range book.Authors.Organizations {
+			rows = append(rows, goqu.Record{"book_id": book.Id, "org_id": org.Id})
+		}
+		ds := dialect.From("catalog.org_book_author").Prepared(true).Insert().Rows(rows)
+		query, args, _ := ds.ToSQL()
+
+		_, insertAuthorErr := transaction.Exec(query, args...)
+		if insertAuthorErr != nil {
+			transaction.Rollback()
+			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert orgs"))
+			return insertAuthorErr
+		}
+	}
+	if len(book.Authors.Publishers) > 0 {
+		rows := make([]goqu.Record, 0)
+
+		for _, publisher := range book.Authors.Publishers {
+			rows = append(rows, goqu.Record{"book_id": book.Id, "publisher_id": publisher.Id})
+		}
+		ds := dialect.From("catalog.publisher_book_author").Prepared(true).Insert().Rows(rows)
+		query, args, _ := ds.ToSQL()
+
+		_, insertAuthorErr := transaction.Exec(query, args...)
+		if insertAuthorErr != nil {
+			transaction.Rollback()
+			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert publisher"))
+			return insertAuthorErr
+		}
+	}
+
 	transaction.Commit()
 	return nil
 }
@@ -115,12 +146,26 @@ func (repo *BookRepository) Get() []model.Book {
 	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
 	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
 	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
-	COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-	as authors
-	FROM catalog.book_author
-	INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-	where book_id = book.id
-	group by book_id),'[]') as authors,
+	json_build_object(
+	'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
+			  as authors
+			  FROM catalog.book_author
+			  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
+			  where book_id = book.id
+			  group by book_id),'[]'),
+		
+	'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
+							 FROM catalog.org_book_author as oba 
+							 INNER JOIN catalog.organization as org on oba.org_id = org.id 
+							  where book_id = book.id group by book_id ),'[]'),
+		
+	'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
+						  FROM catalog.publisher_book_author as pba 
+						  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
+						  where book_id = book.id group by book_id
+						  ),'[]')
+	) as authors,
+
 	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
@@ -312,27 +357,27 @@ func (repo *BookRepository) Update(book model.Book) error {
 		return deleteErr
 	}
 
-	var authorRows []goqu.Record = make([]goqu.Record, 0)
-	for _, author := range book.Authors {
-		authorRows = append(authorRows, goqu.Record{"book_id": book.Id, "author_id": author.Id})
-	}
-	authorDs := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(authorRows)
-	insertAuthorQuery, authorArgs, _ := authorDs.ToSQL()
-	insertAuthorResult, insertAuthorErr := transaction.Exec(insertAuthorQuery, authorArgs...)
-	if insertAuthorErr != nil {
-		transaction.Rollback()
-		logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertAuthorErr"))
-		return insertAuthorErr
-	}
+	// var authorRows []goqu.Record = make([]goqu.Record, 0)
+	// for _, author := range book.Authors {
+	// 	authorRows = append(authorRows, goqu.Record{"book_id": book.Id, "author_id": author.Id})
+	// }
+	// authorDs := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(authorRows)
+	// insertAuthorQuery, authorArgs, _ := authorDs.ToSQL()
+	// insertAuthorResult, insertAuthorErr := transaction.Exec(insertAuthorQuery, authorArgs...)
+	// if insertAuthorErr != nil {
+	// 	transaction.Rollback()
+	// 	logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertAuthorErr"))
+	// 	return insertAuthorErr
+	// }
 
-	insertedAuthorRows, _ := insertAuthorResult.RowsAffected()
+	// insertedAuthorRows, _ := insertAuthorResult.RowsAffected()
 	deleteAuthorRows, _ := deleteResult.RowsAffected()
 	updatedBookRows, _ := updateResult.RowsAffected()
 
 	logger.Info("Book updated.", slimlog.AffectedRows(updatedBookRows))
 	logger.Info("Author deleted.", slimlog.AffectedRows(deleteAuthorRows))
-	logger.Info("Author updated.", slimlog.AffectedRows(insertedAuthorRows))
-	transaction.Commit()
+	// logger.Info("Author updated.", slimlog.AffectedRows(insertedAuthorRows))
+	transaction.Rollback()
 	return nil
 }
 func (repo *BookRepository) Search(filter Filter) []model.Book {

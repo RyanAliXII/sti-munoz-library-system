@@ -1,48 +1,38 @@
-import Table, {
-  BodyRow,
-  HeadingRow,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
-import { Author, ModalProps } from "@definitions/types";
-import { useQuery } from "@tanstack/react-query";
-import React from "react";
+import { ModalProps } from "@definitions/types";
+
+import React, { useState } from "react";
 
 import Modal from "react-responsive-modal";
-import { useBookEditFormContext } from "../BookEditFormContext";
+import { useBookAddFormContext } from "../../book-add/BookAddFormContext";
+import PersonAsAuthorSelection from "./PersonAsAuthorSelection";
+import OrganizationSelection from "./OrganizationSelection";
+import PublisherSelection from "./PublisherSelection";
 
-interface AuthorSelectionModalProps extends ModalProps {
-  selectAuthor?: (a: Author) => void;
-  removeAuthor?: (a: Author) => void;
+type ActiveTab = "PERSON" | "ORG" | "PUBLISHER";
+enum Tab {
+  Person = "PERSON",
+  Organization = "ORG",
+  Publisher = "PUBLISHER",
 }
-const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
-  closeModal,
-  isOpen,
-  selectAuthor,
-  removeAuthor,
-}) => {
-  const fetchAuthors = async () => {
-    try {
-      const { data: response } = await axiosClient.get("/authors/");
-      return response?.data?.authors ?? [];
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  };
-  const { form } = useBookEditFormContext();
-  const { data: authors } = useQuery<Author[]>({
-    queryFn: fetchAuthors,
-    queryKey: ["authors"],
-  });
+enum Classes {
+  Active = "inline-block p-4 text-blue-400 bg-gray-100 rounded-t-lg active cursor-pointer",
+  Default = "inline-block p-4 text-gray-400  rounded-t-lg cursor-pointer",
+}
 
+const checkActive = (key: string, state: string) => {
+  if (key === state) {
+    return Classes.Active;
+  }
+  return Classes.Default;
+};
+const AuthorSelectionModal = ({ closeModal, isOpen }: ModalProps) => {
+  const { form } = useBookAddFormContext();
+  const [activeTab, setActiveTab] = useState<ActiveTab>(Tab.Person);
+  const numberOfAuthorSelected =
+    form.authors.organizations.length +
+    form.authors.people.length +
+    form.authors.publishers.length;
   if (!isOpen) return null;
-
-  const selectedAuthorsCount = form.authors.length;
-
   return (
     <>
       <Modal
@@ -63,56 +53,74 @@ const AuthorSelectionModal: React.FC<AuthorSelectionModalProps> = ({
           <div className="mb-3">
             <h3 className="text-2xl"> Authors</h3>
             <small>
-              You have selected
-              <strong> {selectedAuthorsCount} </strong>
-              {selectedAuthorsCount > 1 ? "authors" : "author"}
+              You have selected:
+              <span className="font-semibold">
+                {" "}
+                {numberOfAuthorSelected}{" "}
+                {numberOfAuthorSelected > 1 ? "Authors" : "Author"}
+              </span>
             </small>
-          </div>
-          <Table.Table className="w-full border-b-0">
-            <Thead>
-              <HeadingRow>
-                <Th></Th>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {authors?.map((author) => {
-                const isChecked = form.authors.find((a) => a.id === author.id);
 
-                return (
-                  <BodyRow
-                    key={author.id}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      if (!isChecked) {
-                        selectAuthor?.(author);
-                      } else {
-                        removeAuthor?.(author);
-                      }
-                    }}
-                  >
-                    <Td>
-                      <input
-                        type="checkbox"
-                        readOnly
-                        checked={isChecked ? true : false}
-                        className="h-4 w-4 border"
-                      />
-                    </Td>
-                    <Td>{author.givenName}</Td>
-                    <Td>{author.middleName}</Td>
-                    <Td>{author.surname}</Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table.Table>
+            <div>
+              <nav className="mb-6 mt-5">
+                <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 ">
+                  <li className="mr-2">
+                    <a
+                      aria-current="page"
+                      className={checkActive(Tab.Person, activeTab)}
+                      onClick={() => {
+                        setActiveTab(Tab.Person);
+                      }}
+                    >
+                      Person as Author
+                    </a>
+                  </li>
+                  <li className="mr-2">
+                    <a
+                      aria-current="page"
+                      className={checkActive(Tab.Organization, activeTab)}
+                      onClick={() => {
+                        setActiveTab(Tab.Organization);
+                      }}
+                    >
+                      Organization as Author
+                    </a>
+                  </li>
+                  <li className="mr-2">
+                    <a
+                      aria-current="page"
+                      className={checkActive(Tab.Publisher, activeTab)}
+                      onClick={() => {
+                        setActiveTab(Tab.Publisher);
+                      }}
+                    >
+                      Publisher as Author
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+            <TabContent activeTab={activeTab} />
+          </div>
         </div>
       </Modal>
     </>
   );
 };
 
+type TabContentProps = {
+  activeTab: ActiveTab;
+};
+const TabContent = ({ activeTab }: TabContentProps) => {
+  switch (activeTab) {
+    case Tab.Person:
+      return <PersonAsAuthorSelection />;
+    case Tab.Organization:
+      return <OrganizationSelection />;
+    case Tab.Publisher:
+      return <PublisherSelection />;
+    default:
+      return <></>;
+  }
+};
 export default AuthorSelectionModal;

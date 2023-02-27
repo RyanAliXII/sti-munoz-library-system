@@ -14,7 +14,7 @@ export type User = {
   export interface EditModalProps <T> extends ModalProps  {
     formData: T
   }
-  export type Author = {
+  export type PersonAuthor = {
     id?: number;
     givenName: string;
     middleName?: string;
@@ -50,7 +50,11 @@ export type User = {
       receivedAt: string //iso-string  date
       ddc: number;
       description: string;
-      authors: Author[];
+      authors: {
+        people: PersonAuthor[]
+        organizations: Organization[]
+        publishers: Publisher[]
+      };
       authorNumber: string
       accessions: Accession[]
       createdAt: string //iso-string date
