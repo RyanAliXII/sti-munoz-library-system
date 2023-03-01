@@ -57,7 +57,7 @@ func (repo *BookRepository) New(book model.Book) error {
 	var accessionRows []goqu.Record = make([]goqu.Record, 0)
 	for i := 0; i < book.Copies; i++ {
 		copyNumber := i + 1
-		accessionRows = append(accessionRows, goqu.Record{"book_id": book.Id, "copy_number": copyNumber})
+		accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), "book_id": book.Id, "copy_number": copyNumber})
 
 	}
 	accessionDs := dialect.From(table).Prepared(true).Insert().Rows(accessionRows)
@@ -165,12 +165,17 @@ func (repo *BookRepository) Get() []model.Book {
 						  where book_id = book.id group by book_id
 						  ),'[]')
 	) as authors,
-
-	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
+	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
+	GROUP BY 
+	book.id,
+	source_of_fund.id,
+	section.id,
+	publisher.id
 	ORDER BY created_at DESC
 	`
 	selectErr := repo.db.Select(&books, query)
@@ -215,13 +220,18 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 						  where book_id = book.id group by book_id
 						  ),'[]')
 	) as authors,
-
-	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
+	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
 	Where book.id = $1
+	GROUP BY 
+	book.id,
+	source_of_fund.id,
+	section.id,
+	publisher.id
 	ORDER BY created_at DESC
 	LIMIT 1
 	`
@@ -235,7 +245,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 
 	query := `
-	SELECT accession.id as accession_number, copy_number, 
+	SELECT accession.id, accession.number, copy_number, 
 	accession.book_id,
 	json_build_object(
 		'id', book.id,
@@ -283,7 +293,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
+	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
 	where accession.deleted_at is null
 	ORDER BY book.created_at DESC
 	`
@@ -321,18 +331,19 @@ func (repo *BookRepository) Update(book model.Book) error {
 	}
 
 	//handle when book section has been updated.
+	//temporary implementation
 	if oldBookRecord.Section.Id != book.Section.Id {
-		section := model.Section{}
+		newSection := model.Section{}
 		//get details about the section
-		newSectionGetErr := transaction.Get(&section, "Select accession_table from catalog.section where id = $1", book.Section.Id)
+		newSectionGetErr := transaction.Get(&newSection, "Select accession_table from catalog.section where id = $1", book.Section.Id)
 		if newSectionGetErr != nil {
 			transaction.Rollback()
 			logger.Error(newSectionGetErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("newSectionGetErr"))
 			return newSectionGetErr
 		}
-		// get all copies
+		// get all copies to transfer
 		selectCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Select(
-			goqu.C("id").As("accession_number"), goqu.C("copy_number"), goqu.C("book_id"),
+			goqu.C("id"), goqu.C("number"), goqu.C("copy_number"), goqu.C("book_id"),
 		).Where(goqu.Ex{
 			"book_id": book.Id,
 		})
@@ -346,10 +357,10 @@ func (repo *BookRepository) Update(book model.Book) error {
 		}
 		accessionRows := make([]goqu.Record, 0)
 		for _, accession := range accessions {
-			accessionRows = append(accessionRows, goqu.Record{"book_id": accession.BookId, "copy_number": accession.CopyNumber})
+			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", newSection.AccessionTable)), "book_id": accession.BookId, "copy_number": accession.CopyNumber})
 		}
-		//transfer copies to the section acccession table.
-		insertCopiesDs := dialect.From(goqu.T(section.AccessionTable).Schema("accession")).Prepared(true).Insert().Rows(accessionRows)
+		//transfer copies to the another section's acccession table.
+		insertCopiesDs := dialect.From(goqu.T(newSection.AccessionTable).Schema("accession")).Prepared(true).Insert().Rows(accessionRows)
 		insertCopiesQuery, insertCopiesArgs, _ := insertCopiesDs.ToSQL()
 		insertResult, insertCopiesErr := transaction.Exec(insertCopiesQuery, insertCopiesArgs...)
 
@@ -478,12 +489,18 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 						  ),'[]')
 	) as authors,
 
-	COALESCE(find_accession_json(COALESCE(accession_table, 'accession_main'),book.id), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
+	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
 	WHERE search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
+	GROUP BY 
+	book.id,
+	source_of_fund.id,
+	section.id,
+	publisher.id
 	ORDER BY created_at DESC
 	LIMIT $2 OFFSET $3
 	`
@@ -498,7 +515,7 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 	query := `
-	SELECT accession.id as accession_number, copy_number, 
+	SELECT accession.id, accession.number, copy_number, 
 	accession.book_id,
 	json_build_object(
 		'id', book.id,
@@ -546,7 +563,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
 	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.id = bb.accession_number AND returned_at is NULL
+	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
     WHERE book.id = $1
 	ORDER BY book.created_at DESC
 	`

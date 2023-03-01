@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS get_next_id(accession_counter_column text)

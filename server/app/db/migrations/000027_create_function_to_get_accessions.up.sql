@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION get_accession_table()
-RETURNS TABLE (id INTEGER, book_id uuid, copy_number INTEGER, created_at timestamptz, deleted_at timestamptz) AS $$
+RETURNS TABLE (id uuid,number integer, book_id uuid, copy_number INTEGER, created_at timestamptz, deleted_at timestamptz) AS $$
 DECLARE
     query text;
     table_name text;

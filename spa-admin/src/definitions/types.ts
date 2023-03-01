@@ -67,6 +67,7 @@ export type User = {
     surname: string;
   };
   export type Accession = {
+    id?: string
     number: number,
     copyNumber:number
   }

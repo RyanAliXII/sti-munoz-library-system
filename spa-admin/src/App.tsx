@@ -26,7 +26,7 @@ const App = () => {
         </AuthProvider>
       </MsalProvider>
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={2000}
         hideProgressBar={true}
         newestOnTop={true}

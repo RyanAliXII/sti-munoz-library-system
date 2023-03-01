@@ -15,7 +15,12 @@ type SectionRepository struct {
 }
 
 func (repo *SectionRepository) New(section model.Section) error {
+	transaction, transactErr := repo.db.Beginx()
 
+	if transactErr != nil {
+		logger.Error(transactErr.Error(), slimlog.Function("SectionRepository.New"))
+		return transactErr
+	}
 	const TABLE_PREFIX = "accession_"
 	var tableName string
 	if section.HasOwnAccession {
@@ -23,7 +28,8 @@ func (repo *SectionRepository) New(section model.Section) error {
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
 		var query string = fmt.Sprintf(`
 		CREATE TABLE accession.%s(
-			id integer primary key generated always as identity,
+			id uuid primary key DEFAULT uuid_generate_v4(),
+			number integer UNIQUE,
 			book_id uuid,
 			copy_number int,
 			created_at timestamptz DEFAULT NOW(),
@@ -31,22 +37,35 @@ func (repo *SectionRepository) New(section model.Section) error {
 			FOREIGN KEY(book_id) REFERENCES catalog.book(id)
 		)
 	`, tableName)
-		_, createErr := repo.db.Exec(query)
+		_, createErr := transaction.Exec(query)
 		if createErr != nil {
+			transaction.Rollback()
 			logger.Error(createErr.Error(), slimlog.Function("SectionRepository.New"))
 			return createErr
 		}
-		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1, $2)", section.Name, tableName)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1, $2)", section.Name, tableName)
 		if insertErr != nil {
+			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
 			return insertErr
 		}
-		return nil
+	} else {
+		tableName = "accession_main"
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1,$2)", section.Name, tableName)
+		if insertErr != nil {
+			transaction.Rollback()
+			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
+			return insertErr
+		}
 	}
-	_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1,$2)", section.Name, "accession_main")
-	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
+
+	_, createCounterErr := transaction.Exec("INSERT into accession.counter(accession) VALUES($1) ON CONFLICT (accession) DO NOTHING", tableName)
+	if createCounterErr != nil {
+		transaction.Rollback()
+		logger.Error(createCounterErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("createCounterErr"))
+		return createCounterErr
 	}
+	transaction.Commit()
 	return nil
 }
 func (repo *SectionRepository) Get() []model.Section {
