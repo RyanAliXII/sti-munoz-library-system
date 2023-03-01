@@ -112,11 +112,9 @@ const BookAddForm = () => {
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
-      // const parsedForm = await validate();
-      // if (!parsedForm) return;
-      // console.log(parsedForm);
-      // newBook.mutate(parsedForm);
-      fileUploader?.upload();
+      const formData = await validate();
+      if (!formData) return;
+      newBook.mutate(formData);
     } catch {}
   };
 
@@ -126,8 +124,14 @@ const BookAddForm = () => {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
       }),
-    onSuccess: () => {
+    onSuccess: ({ data: response }) => {
       toast.success("Book has been added");
+      if (fileUploader) {
+        fileUploader.setMeta({
+          bookId: response.data.book.id,
+        });
+        fileUploader.upload();
+      }
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -151,9 +155,6 @@ const BookAddForm = () => {
       restrictions: {
         allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
         maxNumberOfFiles: 3,
-      },
-      onBeforeFileAdded: (currentFile, files) => {
-        return true;
       },
     })
       .use(Dashboard, {

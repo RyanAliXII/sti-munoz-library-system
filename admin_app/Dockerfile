@@ -8,5 +8,5 @@ COPY . .
 RUN npm install
 
 EXPOSE 5201
-  
+
 CMD ["npm","run","dev"]

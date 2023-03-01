@@ -6,7 +6,6 @@ import (
 	"slim-app/server/api/v1"
 
 	"slim-app/server/app/db"
-	"slim-app/server/app/pkg/objstore"
 	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/services/realtime"
@@ -41,12 +40,11 @@ func main() {
 	})
 	dbConnection := postgresdb.GetOrCreateInstance()
 	db.RunSeed(dbConnection)
-	objstore.GetorCreateInstance()
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
 	logger.Info("Server starting")
 
-	// r.Run(":5200")
+	r.Run(":5200")
 
 }
 

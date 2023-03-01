@@ -1,7 +1,6 @@
 package book
 
 import (
-	"fmt"
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/model"
 	"slim-app/server/repository"
@@ -19,12 +18,16 @@ type BookController struct {
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var book = model.Book{}
 	ctx.ShouldBindBodyWith(&book, binding.JSON)
-	// newBookErr := ctrler.bookRepository.New(book)
-	// if newBookErr != nil {
-	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	// 	return
-	// }
-	ctx.JSON(httpresp.Success200(nil, "New book added."))
+	bookId, newBookErr := ctrler.bookRepository.New(book)
+	if newBookErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"book": gin.H{
+			"id": bookId,
+		},
+	}, "New book added."))
 }
 
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
@@ -117,12 +120,18 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 
 func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
 	body := BookCoverUploadBody{}
+	bindErr := ctx.ShouldBind(&body)
 
-	ctx.ShouldBind(&body)
-
-	for _, cover := range body.Covers {
-		fmt.Println(cover.Filename)
+	if bindErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
+		return
 	}
+	uploadErr := ctrler.bookRepository.UploadBookCover(body.BookId, body.Covers)
+	if uploadErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Book covers uploaded."))
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{

@@ -1,8 +1,12 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"path/filepath"
+	"slim-app/server/app/pkg/objstore"
 	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
@@ -12,21 +16,25 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/minio/minio-go/v7"
+	"go.uber.org/zap"
 )
 
 type BookRepository struct {
 	db                *sqlx.DB
 	sectionRepository SectionRepositoryInterface
+	minio             *minio.Client
 }
 
-func (repo *BookRepository) New(book model.Book) error {
+func (repo *BookRepository) New(book model.Book) (string, error) {
+	id := uuid.New().String()
+	book.Id = id
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("transactErr"))
-		return transactErr
+		return book.Id, transactErr
 	}
-	id := uuid.New().String()
-	book.Id = id
+
 	insertBookQuery := `INSERT INTO catalog.book(
 		title, isbn, description, copies, pages, section_id, publisher_id, fund_source_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`
@@ -35,7 +43,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		book.Section.Id, book.Publisher.Id, book.FundSource.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
-		return insertBookErr
+		return book.Id, insertBookErr
 	}
 
 	var section model.Section
@@ -43,7 +51,7 @@ func (repo *BookRepository) New(book model.Book) error {
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
-		return selectSectionErr
+		return book.Id, selectSectionErr
 
 	}
 	dialect := goqu.Dialect("postgres")
@@ -67,7 +75,7 @@ func (repo *BookRepository) New(book model.Book) error {
 	if insertAccessionErr != nil {
 		transaction.Rollback()
 		logger.Error(insertAccessionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertAccessionErr"))
-		return insertAccessionErr
+		return book.Id, insertAccessionErr
 	}
 
 	insertedBookRows, _ := insertBookResult.RowsAffected()
@@ -88,7 +96,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert people"))
-			return insertAuthorErr
+			return book.Id, insertAuthorErr
 		}
 	}
 
@@ -105,7 +113,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert orgs"))
-			return insertAuthorErr
+			return book.Id, insertAuthorErr
 		}
 	}
 	if len(book.Authors.Publishers) > 0 {
@@ -121,12 +129,12 @@ func (repo *BookRepository) New(book model.Book) error {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert publisher"))
-			return insertAuthorErr
+			return book.Id, insertAuthorErr
 		}
 	}
 
 	transaction.Commit()
-	return nil
+	return book.Id, nil
 }
 
 func (repo *BookRepository) Get() []model.Book {
@@ -575,20 +583,59 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	}
 	return accessions
 }
+func (repo *BookRepository) UploadBookCover(bookId string, covers []*multipart.FileHeader) error {
+	ctx := context.Background()
+	dialect := goqu.Dialect("postgres")
+
+	bookCoverRows := make([]goqu.Record, 0)
+	for idx, cover := range covers {
+		extension := filepath.Ext(cover.Filename)
+		objectName := fmt.Sprintf("/covers/%s/cover_%d%s", bookId, idx, extension)
+		fileBuffer, _ := cover.Open()
+		defer fileBuffer.Close()
+		contentType := cover.Header["Content-Type"][0]
+		fileSize := cover.Size
+
+		info, uploadErr := repo.minio.PutObject(ctx, objstore.PUBLIC_BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+			ContentType: contentType,
+		})
+		if uploadErr != nil {
+			logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("uploadErr"))
+			return uploadErr
+		}
+		bookCoverRows = append(bookCoverRows, goqu.Record{
+			"path":    info.Key,
+			"book_id": bookId,
+		})
+		logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+
+	}
+	ds := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)
+
+	query, args, _ := ds.ToSQL()
+
+	_, insertCoverErr := repo.db.Exec(query, args...)
+
+	if insertCoverErr != nil {
+		return insertCoverErr
+	}
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
-	logger.Info("BOOK REPO INIT")
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
 		sectionRepository: NewSectionRepository(),
+		minio:             objstore.GetorCreateInstance(),
 	}
 }
 
 type BookRepositoryInterface interface {
-	New(model.Book) error
+	New(model.Book) (string, error)
 	Get() []model.Book
 	GetOne(id string) model.Book
 	GetAccessions() []model.Accession
 	Update(model.Book) error
 	Search(Filter) []model.Book
 	GetAccessionsByBookId(id string) []model.Accession
+	UploadBookCover(bookId string, covers []*multipart.FileHeader) error
 }

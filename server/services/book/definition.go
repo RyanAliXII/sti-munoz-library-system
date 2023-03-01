@@ -53,4 +53,5 @@ type PublishersBody []struct {
 
 type BookCoverUploadBody struct {
 	Covers []*multipart.FileHeader `form:"covers" binding:"required"`
+	BookId string                  `form:"bookId" binding:"required,uuid"`
 }

@@ -2,19 +2,21 @@ package objstore
 
 import (
 	"context"
-	"log"
 	"os"
+	"slim-app/server/app/pkg/slimlog"
 	"sync"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"go.uber.org/zap"
 )
 
 var ENDPOINT = os.Getenv("MINIO_ENDPOINT")
 var ACCESS_KEY = os.Getenv("MINIO_ACCESS_KEY")
 var SECRET_KEY = os.Getenv("MINIO_SECRET_KEY")
+var logger = slimlog.GetInstance()
 var USE_SSL = false
-
+var PUBLIC_BUCKET = "sti.munoz.edsa.public"
 var once sync.Once
 var client *minio.Client
 
@@ -28,21 +30,23 @@ func createConnection() *minio.Client {
 		panic(initErr)
 	}
 
-	bucketName := "sti.munoz.edsa"
 	location := "ap-southeast-1"
 
-	err := client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
+	err := client.MakeBucket(ctx, PUBLIC_BUCKET, minio.MakeBucketOptions{
+		Region: location,
+	})
+
 	if err != nil {
-		// Check to see if we already own this bucket (which happens if you run this twice)
-		exists, errBucketExists := client.BucketExists(ctx, bucketName)
+		exists, errBucketExists := client.BucketExists(ctx, PUBLIC_BUCKET)
 		if errBucketExists == nil && exists {
-			log.Printf("We already own %s\n", bucketName)
+			logger.Info("Bucket has already existed.", zap.String("bucketName", PUBLIC_BUCKET))
 		} else {
-			log.Fatalln(err)
+			logger.Error("Unknown Error Occured while creating bucket.")
 		}
 	} else {
-		log.Printf("Successfully created %s\n", bucketName)
+		logger.Info("Bucket successfully created.", zap.String("bucketName", PUBLIC_BUCKET))
 	}
+
 	return client
 }
 
