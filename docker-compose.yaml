@@ -79,5 +79,19 @@ services:
       environment:
         - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
         - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+  slim_minio:
+      image: minio/minio
+      container_name: slim-minio
+      restart: always
+      volumes:
+        - minio_storage:/data
+      ports:
+        - '5207:9000'
+        - '5208:9001'
+      environment:
+          MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+          MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      command: server --console-address ":9001" /data
 
-    
+volumes:
+  minio_storage: {}
