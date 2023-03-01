@@ -56,7 +56,8 @@ func (book BookJSON) Value(value interface{}) (driver.Value, error) {
 }
 
 type Accession struct {
-	Number       int      `json:"number" db:"accession_number" copier:"Number"`
+	Id           string   `json:"id"`
+	Number       int      `json:"number" db:"number" copier:"Number"`
 	CopyNumber   int      `json:"copyNumber" db:"copy_number"`
 	BookId       string   `json:"bookId" db:"book_id" copier:"BookId"`
 	IsCheckedOut bool     `json:"isCheckedOut" db:"is_checked_out"`
@@ -64,8 +65,9 @@ type Accession struct {
 }
 
 type AccessionsJSON []struct {
-	Number     int `json:"number" db:"number"`
-	CopyNumber int `json:"copyNumber" db:"copy_number"`
+	Id         string `json:"id"`
+	Number     int    `json:"number" db:"number"`
+	CopyNumber int    `json:"copyNumber" db:"copy_number"`
 }
 
 func (ba *AccessionsJSON) Scan(value interface{}) error {

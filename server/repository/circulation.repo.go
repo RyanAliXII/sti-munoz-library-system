@@ -72,7 +72,7 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
-	INNER JOIN get_accession_table() as accession on bb.accession_number = accession.id AND bb.book_id = accession.book_id
+	INNER JOIN get_accession_table() as accession on bb.accession_number = accession.number AND bb.book_id = accession.book_id
 	GROUP BY bt.id, account.id
 	ORDER by bt.created_at DESC
 	`
@@ -137,7 +137,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
-	INNER JOIN get_accession_table() as accession on bb.accession_number = accession.id AND bb.book_id = accession.book_id
+	INNER JOIN get_accession_table() as accession on bb.accession_number = accession.number AND bb.book_id = accession.book_id
 	Where bt.id = $1
 	GROUP BY bt.id, account.id
 	`
