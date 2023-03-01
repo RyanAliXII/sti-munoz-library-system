@@ -1,31 +1,36 @@
 version: '3.8'
 services:
-  slim_server:
-      container_name: slim-server
+  server:
+      container_name: server
       image: sti-munoz/slim-server
       ports: 
         - '5200:5200'
       volumes:
         - ./server:/go/dev
       environment:
-          MIGRATE: ${DB_DRIVER}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@slim_postgres/${POSTGRES_DB}?sslmode=disable
+          MIGRATE: ${DB_DRIVER}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable
           DB_DRIVER: ${DB_DRIVER}
           DB_HOST: ${DB_HOST}
           DB_PORT : ${DB_PORT}
           DB_NAME: ${POSTGRES_DB}
           DB_USERNAME : ${POSTGRES_USER}
           DB_PASSWORD: ${POSTGRES_PASSWORD}
-          SPA_ADMIN_URL: ${SPA_ADMIN_URL}
-          SPA_CLIENT_URL: ${SPA_ADMIN_URL}
+          ADMIN_APP_URL: ${ADMIN_APP_URL}
+          CLIENT_APP_URL: ${CLIENT_APP_URL}
           RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
           RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
           RABBITMQ_PORT: ${RABBITMQ_PORT}
           RABBITMQ_HOST: ${RABBITMQ_HOST}
+          MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+          MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+          MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+          MINIO_PORT: ${MINIO_PORT}
       depends_on:
-        - slim_postgres
-        - slim_rabbitmq
-  slim_spa_admin: 
-    container_name: slim-spa-admin
+        - postgres
+        - rabbitmq
+        - minio
+  admin_app: 
+    container_name: admin_app
     image: sti-munoz/slim-spa-admin
     ports:
     - '5201:5201'
@@ -33,9 +38,9 @@ services:
         - /node/dev/node_modules
         - ./spa-admin:/node/dev
     depends_on:
-      - slim_server
-  slim_spa_client: 
-    container_name: slim-spa-client
+      - server
+  client_app: 
+    container_name: client_app
     image: sti-munoz/slim-spa-client
     ports:
     - '5202:5202'
@@ -43,9 +48,9 @@ services:
         - /node/dev/node_modules
         - ./spa-client:/node/dev
     depends_on:
-      - slim_server
-  slim_postgres: 
-    container_name: slim-postgres
+      - server
+  postgres: 
+    container_name: postgres
     restart: always
     image: postgres:15.0-alpine
     ports:
@@ -56,12 +61,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-  slim_pgadmin:
-    container_name: slim-pgadmin4
+  pgadmin:
+    container_name: pgadmin4
     image: dpage/pgadmin4
     restart: always
     depends_on:
-      - slim_postgres
+      - postgres
     volumes:
     - ./pgadmin:/pgadmin
     environment:
@@ -69,9 +74,9 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5204:80"
-  slim_rabbitmq:
+  rabbitmq:
       image: rabbitmq:3.11.9-management-alpine
-      container_name: slim-rabbitmq
+      container_name: rabbitmq
       restart: always
       ports:
         - '5205:5672'
@@ -79,9 +84,9 @@ services:
       environment:
         - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
         - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-  slim_minio:
+  minio:
       image: minio/minio
-      container_name: slim-minio
+      container_name: minio
       restart: always
       volumes:
         - minio_storage:/data
