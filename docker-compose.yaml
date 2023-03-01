@@ -2,7 +2,7 @@ version: '3.8'
 services:
   server:
       container_name: server
-      image: sti-munoz/slim-server
+      image: sti-munoz-library/server
       ports: 
         - '5200:5200'
       volumes:
@@ -31,7 +31,7 @@ services:
         - minio
   admin_app: 
     container_name: admin_app
-    image: sti-munoz/slim-spa-admin
+    image: sti-munoz-library/admin
     ports:
     - '5201:5201'
     volumes:
@@ -41,7 +41,7 @@ services:
       - server
   client_app: 
     container_name: client_app
-    image: sti-munoz/slim-spa-client
+    image: sti-munoz-library/client
     ports:
     - '5202:5202'
     volumes:
