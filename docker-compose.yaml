@@ -36,7 +36,7 @@ services:
     - '5201:5201'
     volumes:
         - /node/dev/node_modules
-        - ./spa-admin:/node/dev
+        - ./admin_app:/node/dev
     depends_on:
       - server
   client_app: 
@@ -46,7 +46,7 @@ services:
     - '5202:5202'
     volumes:
         - /node/dev/node_modules
-        - ./spa-client:/node/dev
+        - ./client_app:/node/dev
     depends_on:
       - server
   postgres: 
