@@ -1,5 +1,5 @@
 import { AuthorNumber } from "@definitions/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Input } from "@components/ui/form/Input";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -73,6 +73,7 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
     );
     removeFieldError("authorNumber");
   };
+
   return (
     <div>
       <div className="flex gap-2 items-center mb-3">

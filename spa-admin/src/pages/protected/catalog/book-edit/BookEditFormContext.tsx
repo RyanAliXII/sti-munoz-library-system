@@ -72,7 +72,6 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
     refetchOnWindowFocus: false,
     retry: false,
     onSuccess: (data) => {
-      console.log(data);
       formClient.setForm({ ...data });
     },
     onError: () => {

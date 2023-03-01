@@ -5,7 +5,7 @@ import Modal from "react-responsive-modal";
 import { useRef } from "react";
 
 import GenerateTab from "./GenerateTab";
-import BrowseTab from "../../book-add/author-number-selection/BrowseTab";
+import BrowseTab from "./BrowseTab";
 
 enum Classes {
   Active = "inline-block p-4 text-blue-400 bg-gray-100 rounded-t-lg active cursor-pointer",
