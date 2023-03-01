@@ -1,6 +1,7 @@
 package book
 
 import (
+	"mime/multipart"
 	"time"
 )
 
@@ -48,4 +49,8 @@ type OrgsAsAuthor []struct {
 type PublishersBody []struct {
 	Id   int    `json:"id" binding:"required,gte=1"`
 	Name string `json:"name" binding:"required,max=150,min=1"`
+}
+
+type BookCoverUploadBody struct {
+	Covers []*multipart.FileHeader `form:"covers" binding:"required"`
 }

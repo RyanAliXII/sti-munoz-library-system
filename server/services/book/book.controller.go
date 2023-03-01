@@ -1,6 +1,7 @@
 package book
 
 import (
+	"fmt"
 	"slim-app/server/app/http/httpresp"
 	"slim-app/server/model"
 	"slim-app/server/repository"
@@ -18,11 +19,11 @@ type BookController struct {
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var book = model.Book{}
 	ctx.ShouldBindBodyWith(&book, binding.JSON)
-	newBookErr := ctrler.bookRepository.New(book)
-	if newBookErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
+	// newBookErr := ctrler.bookRepository.New(book)
+	// if newBookErr != nil {
+	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	// 	return
+	// }
 	ctx.JSON(httpresp.Success200(nil, "New book added."))
 }
 
@@ -113,6 +114,16 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 		"accessions": accessions,
 	}, "Accessions successfully fetched for specific book."))
 }
+
+func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
+	body := BookCoverUploadBody{}
+
+	ctx.ShouldBind(&body)
+
+	for _, cover := range body.Covers {
+		fmt.Println(cover.Filename)
+	}
+}
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
@@ -126,4 +137,5 @@ type BookControllerInterface interface {
 	GetBookById(ctx *gin.Context)
 	UpdateBook(ctx *gin.Context)
 	GetAccessionByBookId(ctx *gin.Context)
+	UploadBookCover(ctx *gin.Context)
 }

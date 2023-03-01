@@ -165,7 +165,7 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
       toast.success("Accounts have been imported.");
       refetch();
     };
-    var uppy = new Uppy({
+    const uppy = new Uppy({
       restrictions: {
         allowedFileTypes: [".csv", ".xlsx"],
         maxNumberOfFiles: 1,

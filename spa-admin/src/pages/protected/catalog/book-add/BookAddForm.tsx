@@ -3,7 +3,7 @@ import { Input } from "@components/ui/form/Input";
 import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
 
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
@@ -23,6 +23,11 @@ import { FieldRow } from "@components/ui/form/FieldRow";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
+import Dashboard from "@uppy/dashboard";
+import Uppy from "@uppy/core";
+import { image } from "html2canvas/dist/types/css/types/image";
+import XHRUpload from "@uppy/xhr-upload";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
 
 const BookAddForm = () => {
   const {
@@ -107,14 +112,15 @@ const BookAddForm = () => {
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
-      const parsedForm = await validate();
-      if (!parsedForm) return;
-      console.log(parsedForm);
-      mutation.mutate(parsedForm);
+      // const parsedForm = await validate();
+      // if (!parsedForm) return;
+      // console.log(parsedForm);
+      // newBook.mutate(parsedForm);
+      fileUploader?.upload();
     } catch {}
   };
 
-  const mutation = useMutation({
+  const newBook = useMutation({
     mutationFn: (parsedForm: Book) =>
       axiosClient.post("/books/", {
         ...parsedForm,
@@ -139,6 +145,41 @@ const BookAddForm = () => {
     form.authors.people.length +
     form.authors.organizations.length +
     form.authors.publishers.length;
+  const [fileUploader, setFileUploader] = useState<Uppy>();
+  useEffect(() => {
+    const uppy = new Uppy({
+      restrictions: {
+        allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
+        maxNumberOfFiles: 3,
+      },
+      onBeforeFileAdded: (currentFile, files) => {
+        return true;
+      },
+    })
+      .use(Dashboard, {
+        inline: true,
+        target: "#bookCoverUpload",
+        hideUploadButton: true,
+        width: "100%",
+        height: "15rem",
+        locale: {
+          strings: {
+            browseFiles: " browse",
+            dropPasteFiles: "Drop a book image cover, click to %{browse}",
+          },
+        },
+      })
+      .use(XHRUpload, {
+        fieldName: "covers",
+        bundle: true,
+        endpoint: `${BASE_URL_V1}/books/cover`,
+      });
+    setFileUploader(uppy);
+    return () => {
+      uppy.close();
+    };
+  }, []);
+
   return (
     <form onSubmit={submit}>
       <ContainerNoBackground>
@@ -311,6 +352,9 @@ const BookAddForm = () => {
             apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
             onEditorChange={handleDescriptionInput}
           />
+        </FieldRow>
+        <FieldRow label="Book Cover" fieldDetails="Add image cover of the book">
+          <div id="bookCoverUpload"></div>
         </FieldRow>
       </ContainerNoBackground>
       <ContainerNoBackground>
