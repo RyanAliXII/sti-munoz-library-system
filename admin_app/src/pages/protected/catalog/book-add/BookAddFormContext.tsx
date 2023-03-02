@@ -53,6 +53,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       yearPublished: new Date().getFullYear(),
       accessions: [],
       createdAt: "",
+      covers: [],
     },
     schema: NewBookSchemaValidation,
     scrollToError: true,

@@ -1,7 +1,7 @@
 import { Input } from "@components/ui/form/Input";
 import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
@@ -19,6 +19,11 @@ import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
 import { FieldRow } from "@components/ui/form/FieldRow";
+import Uppy from "@uppy/core";
+import Dashboard from "@uppy/dashboard";
+import XHRUpload from "@uppy/xhr-upload";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { buildS3Url } from "@definitions/configs/s3";
 
 const BookEditForm = () => {
   const {
@@ -118,6 +123,9 @@ const BookEditForm = () => {
       }),
     onSuccess: () => {
       toast.success("Book has been updated.");
+      if (!fileUploader) return;
+      fileUploader.setMeta({ bookId: form.id });
+      fileUploader.upload();
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -134,6 +142,58 @@ const BookEditForm = () => {
     form.authors.people.length +
     form.authors.organizations.length +
     form.authors.publishers.length;
+
+  const [fileUploader, setFileUploader] = useState<Uppy>();
+
+  useEffect(() => {
+    const uppy = new Uppy({
+      restrictions: {
+        allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
+        maxNumberOfFiles: 3,
+      },
+    })
+      .use(Dashboard, {
+        inline: true,
+        target: "#bookCoverUpload",
+        hideUploadButton: true,
+        width: "100%",
+        height: "15rem",
+        locale: {
+          strings: {
+            browseFiles: " browse",
+            dropPasteFiles: "Drop a book image cover, click to %{browse}",
+          },
+        },
+      })
+      .use(XHRUpload, {
+        fieldName: "covers",
+        bundle: true,
+        method: "PUT",
+        endpoint: `${BASE_URL_V1}/books/cover`,
+      });
+
+    setFileUploader(uppy);
+
+    return () => {
+      uppy.cancelAll();
+      uppy.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!fileUploader) return;
+    for (const coverKey of form.covers) {
+      fetch(buildS3Url(coverKey))
+        .then((response) => response.blob())
+        .then((blob) => {
+          fileUploader.addFile({
+            name: coverKey,
+            type: blob.type,
+            data: blob,
+          });
+        });
+    }
+  }, [form.covers]);
   return (
     <form onSubmit={submit}>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
@@ -293,6 +353,9 @@ const BookEditForm = () => {
             onEditorChange={handleDescriptionInput}
             value={form.description}
           />
+        </FieldRow>
+        <FieldRow label="Book Cover" fieldDetails="Add image cover of the book">
+          <div id="bookCoverUpload"></div>
         </FieldRow>
       </div>
       <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">

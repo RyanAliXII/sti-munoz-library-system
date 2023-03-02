@@ -56,6 +56,7 @@ export type User = {
         organizations: Organization[]
         publishers: Publisher[]
       };
+      covers:[], 
       authorNumber: string
       accessions: Accession[]
       createdAt: string //iso-string date

@@ -15,6 +15,7 @@ import (
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
+	"github.com/jaevor/go-nanoid"
 	"github.com/jmoiron/sqlx"
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
@@ -591,11 +592,15 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
 	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
-
+	canonicID, nanoIdErr := nanoid.Standard(21)
+	if nanoIdErr != nil {
+		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("nanoIdErr"))
+		return nanoIdErr
+	}
 	bookCoverRows := make([]goqu.Record, 0)
-	for idx, cover := range covers {
+	for _, cover := range covers {
 		extension := filepath.Ext(cover.Filename)
-		objectName := fmt.Sprintf("/covers/%s/cover_%d%s", bookId, idx, extension)
+		objectName := fmt.Sprintf("/covers/%s/%s%s", bookId, canonicID(), extension)
 		fileBuffer, _ := cover.Open()
 		defer fileBuffer.Close()
 		contentType := cover.Header["Content-Type"][0]
@@ -628,46 +633,7 @@ func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.File
 }
 
 func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.FileHeader) error {
-	// ctx := context.Background()
-	// objectsCh := make(chan minio.ObjectInfo)
-	// repo.minio.RemoveObjects(ctx, objstore.BUCKET, objectsCh, minio.RemoveObjectsOptions{
-	// 	GovernanceBypass: ,
-	// })
-	// dialect := goqu.Dialect("postgres")
 
-	// bookCoverRows := make([]goqu.Record, 0)
-	// for idx, cover := range covers {
-	// 	extension := filepath.Ext(cover.Filename)
-	// 	objectName := fmt.Sprintf("/covers/%s/cover_%d%s", bookId, idx, extension)
-	// 	fileBuffer, _ := cover.Open()
-	// 	defer fileBuffer.Close()
-	// 	contentType := cover.Header["Content-Type"][0]
-	// 	fileSize := cover.Size
-
-	// 	info, uploadErr := repo.minio.PutObject(ctx, objstore.PUBLIC_BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
-	// 		ContentType: contentType,
-	// 	})
-	// 	if uploadErr != nil {
-	// 		logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("uploadErr"))
-	// 		return uploadErr
-	// 	}
-	// 	bookCoverRows = append(bookCoverRows, goqu.Record{
-	// 		"path":    info.Key,
-	// 		"book_id": bookId,
-	// 	})
-	// 	logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
-
-	// }
-	// ds := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)
-
-	// query, args, _ := ds.ToSQL()
-
-	// _, insertCoverErr := repo.db.Exec(query, args...)
-
-	// if insertCoverErr != nil {
-	// 	return insertCoverErr
-	// }
-	// return nil
 	return nil
 }
 func NewBookRepository() BookRepositoryInterface {

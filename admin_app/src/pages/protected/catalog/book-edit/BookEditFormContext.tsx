@@ -48,6 +48,7 @@ const INITIAL_FORM_DATA: Book = {
   yearPublished: new Date().getFullYear(),
   createdAt: "",
   accessions: [],
+  covers: [],
 };
 
 export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
@@ -64,7 +65,7 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
     scrollToError: true,
   });
 
-  const { isFetchedAfterMount } = useQuery<Book>({
+  const { isLoading, isFetched } = useQuery<Book>({
     queryFn: fetchBook,
     queryKey: ["book"],
     staleTime: Infinity,
@@ -87,7 +88,7 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
         ...formClient,
       }}
     >
-      {isFetchedAfterMount && children}
+      {isFetched ? children : <></>}
     </BookEditFormContext.Provider>
   );
 };

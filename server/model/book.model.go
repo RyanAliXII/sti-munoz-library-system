@@ -91,3 +91,9 @@ func (ba *AccessionsJSON) Scan(value interface{}) error {
 func (ba AccessionsJSON) Value(value interface{}) (driver.Value, error) {
 	return ba, nil
 }
+
+type BookCover struct {
+	Id     int    `json:"int" db:"id"`
+	BookId string `json:"bookId" db:"book_id"`
+	Path   string `json:"path" db:"path"`
+}

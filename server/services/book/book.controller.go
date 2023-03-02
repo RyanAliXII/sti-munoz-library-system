@@ -120,10 +120,17 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 
 func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
 	body := BookCoverUploadBody{}
+
 	bindErr := ctx.ShouldBind(&body)
 
 	if bindErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
+		return
+	}
+
+	_, parseIdErr := uuid.Parse(body.BookId)
+	if parseIdErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
 	uploadErr := ctrler.bookRepository.NewBookCover(body.BookId, body.Covers)
@@ -134,7 +141,20 @@ func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Book covers uploaded."))
 }
 func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
+	body := BookCoverUploadBody{}
 
+	bindErr := ctx.ShouldBind(&body)
+	if bindErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
+		return
+	}
+	_, parseIdErr := uuid.Parse(body.BookId)
+	if parseIdErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
+		return
+	}
+	ctrler.bookRepository.UpdateBookCover(body.BookId, body.Covers)
+	ctx.JSON(httpresp.Success200(nil, "Book Cover Updated."))
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{
