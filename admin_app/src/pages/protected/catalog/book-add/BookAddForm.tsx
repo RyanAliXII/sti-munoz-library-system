@@ -23,11 +23,12 @@ import { FieldRow } from "@components/ui/form/FieldRow";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
-// import Dashboard from "@uppy/dashboard";
+
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { zIndex } from "html2canvas/dist/types/css/property-descriptors/z-index";
 
 const uppy = new Uppy({
   restrictions: {
@@ -140,14 +141,6 @@ const BookAddForm = () => {
       uppy.upload().finally(() => {
         uppy.cancelAll();
       });
-      // if (fileUploader) {
-      //   fileUploader.setMeta({
-      //     bookId: response.data.book.id,
-      //   });
-      //   fileUploader.upload().finally(() => {
-      //     fileUploader.cancelAll();
-      //   });
-      // }
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -345,6 +338,12 @@ const BookAddForm = () => {
             width={"100%"}
             height={"300px"}
             hideUploadButton={true}
+            locale={{
+              strings: {
+                browseFiles: " browse",
+                dropPasteFiles: "Drop a book image cover, click to %{browse}",
+              },
+            }}
           ></Dashboard>
         </FieldRow>
       </ContainerNoBackground>

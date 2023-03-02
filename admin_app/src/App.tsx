@@ -10,7 +10,7 @@ import pages from "@pages/Pages";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { toast, ToastContainer } from "react-toastify";
 import { SocketProvider } from "@contexts/SocketContext";
-
+import "@assets/css/global.css";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -26,7 +26,7 @@ const App = () => {
         </AuthProvider>
       </MsalProvider>
       <ToastContainer
-        position="bottom-right"
+        position="top-right"
         autoClose={2000}
         hideProgressBar={true}
         newestOnTop={true}
