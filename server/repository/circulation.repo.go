@@ -40,6 +40,7 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
 		'authors', json_build_object(
 			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 					  as authors
@@ -105,6 +106,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
 		'authors', json_build_object(
 			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 					  as authors

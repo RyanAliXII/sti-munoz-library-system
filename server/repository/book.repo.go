@@ -173,7 +173,8 @@ func (repo *BookRepository) Get() []model.Book {
 						  where book_id = book.id group by book_id
 						  ),'[]')
 	) as authors,
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
+	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -228,7 +229,8 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 						  where book_id = book.id group by book_id
 						  ),'[]')
 	) as authors,
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
+	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -272,6 +274,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', section.id, 'name', section.name),
 		'created_at',book.created_at,
+		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
 		'authors', json_build_object(
 			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 					  as authors
@@ -291,7 +294,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 								  where book_id = book.id group by book_id
 								  ),'[]')
 		) 
-		
+	  
 	) as book,
 	(CASE WHEN accession_number is null then false else true END) as is_checked_out
 	FROM get_accession_table() 
@@ -497,7 +500,8 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 						  ),'[]')
 	) as authors,
 
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
+	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -541,6 +545,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
 		'created_at',book.created_at,
 		'authors', json_build_object(
 			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 

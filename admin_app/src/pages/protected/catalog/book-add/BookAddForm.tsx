@@ -49,7 +49,6 @@ const BookAddForm = () => {
     form,
     handleFormInput,
     errors,
-    setForm,
     resetForm,
     validate,
     removeFieldError,
@@ -130,7 +129,9 @@ const BookAddForm = () => {
         fileUploader.setMeta({
           bookId: response.data.book.id,
         });
-        fileUploader.upload();
+        fileUploader.upload().finally(() => {
+          fileUploader.cancelAll();
+        });
       }
     },
     onError: (error) => {
@@ -138,7 +139,7 @@ const BookAddForm = () => {
       console.error(error);
     },
     onSettled: () => {
-      // resetForm();
+      resetForm();
       window.scrollTo({ behavior: "smooth", top: 0 });
     },
   });
