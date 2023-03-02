@@ -588,7 +588,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	}
 	return accessions
 }
-func (repo *BookRepository) UploadBookCover(bookId string, covers []*multipart.FileHeader) error {
+func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
 	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
 
@@ -601,7 +601,7 @@ func (repo *BookRepository) UploadBookCover(bookId string, covers []*multipart.F
 		contentType := cover.Header["Content-Type"][0]
 		fileSize := cover.Size
 
-		info, uploadErr := repo.minio.PutObject(ctx, objstore.PUBLIC_BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+		info, uploadErr := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 			ContentType: contentType,
 		})
 		if uploadErr != nil {
@@ -626,6 +626,50 @@ func (repo *BookRepository) UploadBookCover(bookId string, covers []*multipart.F
 	}
 	return nil
 }
+
+func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.FileHeader) error {
+	// ctx := context.Background()
+	// objectsCh := make(chan minio.ObjectInfo)
+	// repo.minio.RemoveObjects(ctx, objstore.BUCKET, objectsCh, minio.RemoveObjectsOptions{
+	// 	GovernanceBypass: ,
+	// })
+	// dialect := goqu.Dialect("postgres")
+
+	// bookCoverRows := make([]goqu.Record, 0)
+	// for idx, cover := range covers {
+	// 	extension := filepath.Ext(cover.Filename)
+	// 	objectName := fmt.Sprintf("/covers/%s/cover_%d%s", bookId, idx, extension)
+	// 	fileBuffer, _ := cover.Open()
+	// 	defer fileBuffer.Close()
+	// 	contentType := cover.Header["Content-Type"][0]
+	// 	fileSize := cover.Size
+
+	// 	info, uploadErr := repo.minio.PutObject(ctx, objstore.PUBLIC_BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+	// 		ContentType: contentType,
+	// 	})
+	// 	if uploadErr != nil {
+	// 		logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("uploadErr"))
+	// 		return uploadErr
+	// 	}
+	// 	bookCoverRows = append(bookCoverRows, goqu.Record{
+	// 		"path":    info.Key,
+	// 		"book_id": bookId,
+	// 	})
+	// 	logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+
+	// }
+	// ds := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)
+
+	// query, args, _ := ds.ToSQL()
+
+	// _, insertCoverErr := repo.db.Exec(query, args...)
+
+	// if insertCoverErr != nil {
+	// 	return insertCoverErr
+	// }
+	// return nil
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -642,5 +686,6 @@ type BookRepositoryInterface interface {
 	Update(model.Book) error
 	Search(Filter) []model.Book
 	GetAccessionsByBookId(id string) []model.Accession
-	UploadBookCover(bookId string, covers []*multipart.FileHeader) error
+	NewBookCover(bookId string, covers []*multipart.FileHeader) error
+	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 }

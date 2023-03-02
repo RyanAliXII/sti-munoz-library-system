@@ -126,12 +126,15 @@ func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
 		return
 	}
-	uploadErr := ctrler.bookRepository.UploadBookCover(body.BookId, body.Covers)
+	uploadErr := ctrler.bookRepository.NewBookCover(body.BookId, body.Covers)
 	if uploadErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers uploaded."))
+}
+func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
+
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{
@@ -147,4 +150,5 @@ type BookControllerInterface interface {
 	UpdateBook(ctx *gin.Context)
 	GetAccessionByBookId(ctx *gin.Context)
 	UploadBookCover(ctx *gin.Context)
+	UpdateBookCover(ctx *gin.Context)
 }
