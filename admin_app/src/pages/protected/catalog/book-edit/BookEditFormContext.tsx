@@ -52,34 +52,10 @@ const INITIAL_FORM_DATA: Book = {
 };
 
 export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
-  const navigate = useNavigate();
-  const { id: bookId } = useParams();
-  const fetchBook = async () => {
-    const { data: response } = await axiosClient.get(`/books/${bookId}`);
-    return response?.data?.book ?? {};
-  };
-
   const formClient = useForm<Book>({
     initialFormData: INITIAL_FORM_DATA,
     schema: UpdateBookSchemaValidation,
     scrollToError: true,
-  });
-
-  const { isLoading, isFetched } = useQuery<Book>({
-    queryFn: fetchBook,
-    queryKey: ["book"],
-    staleTime: Infinity,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: false,
-    retry: false,
-    onSuccess: (data) => {
-      formClient.setForm({ ...data });
-    },
-    onError: () => {
-      {
-        navigate("/void");
-      }
-    },
   });
 
   return (
@@ -88,7 +64,7 @@ export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
         ...formClient,
       }}
     >
-      {isFetched ? children : <></>}
+      {children}
     </BookEditFormContext.Provider>
   );
 };

@@ -3,7 +3,7 @@ import { Input } from "@components/ui/form/Input";
 import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
 
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { BaseSyntheticEvent, useEffect } from "react";
 
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
@@ -28,13 +28,14 @@ import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import { zIndex } from "html2canvas/dist/types/css/property-descriptors/z-index";
 
+const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
     maxNumberOfFiles: 3,
   },
+  infoTimeout: TW0_SECONDS,
 }).use(XHRUpload, {
   fieldName: "covers",
   bundle: true,
@@ -158,7 +159,11 @@ const BookAddForm = () => {
     form.authors.people.length +
     form.authors.organizations.length +
     form.authors.publishers.length;
-
+  useEffect(() => {
+    return () => {
+      uppy.cancelAll();
+    };
+  }, []);
   return (
     <form onSubmit={submit}>
       <ContainerNoBackground>
@@ -336,7 +341,7 @@ const BookAddForm = () => {
           <Dashboard
             uppy={uppy}
             width={"100%"}
-            height={"300px"}
+            height={"450px"}
             hideUploadButton={true}
             locale={{
               strings: {

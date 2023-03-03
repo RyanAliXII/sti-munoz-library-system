@@ -153,7 +153,11 @@ func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	ctrler.bookRepository.UpdateBookCover(body.BookId, body.Covers)
+	updateCoverErr := ctrler.bookRepository.UpdateBookCover(body.BookId, body.Covers)
+	if updateCoverErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "Book Cover Updated."))
 }
 func NewBookController() BookControllerInterface {
