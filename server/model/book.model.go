@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"slim-app/server/app/db"
+
+	"github.com/lib/pq"
 )
 
 type Book struct {
@@ -27,6 +29,7 @@ type Book struct {
 
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
 	Accessions AccessionsJSON  `json:"accessions" db:"accessions"`
+	Covers     pq.StringArray  `json:"covers" db:"covers"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
 type BookJSON struct {
@@ -87,4 +90,10 @@ func (ba *AccessionsJSON) Scan(value interface{}) error {
 
 func (ba AccessionsJSON) Value(value interface{}) (driver.Value, error) {
 	return ba, nil
+}
+
+type BookCover struct {
+	Id     int    `json:"int" db:"id"`
+	BookId string `json:"bookId" db:"book_id"`
+	Path   string `json:"path" db:"path"`
 }

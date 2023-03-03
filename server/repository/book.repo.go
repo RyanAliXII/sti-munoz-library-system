@@ -1,8 +1,12 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"path/filepath"
+	"slim-app/server/app/pkg/objstore"
 	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
@@ -11,22 +15,27 @@ import (
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
+	"github.com/jaevor/go-nanoid"
 	"github.com/jmoiron/sqlx"
+	"github.com/minio/minio-go/v7"
+	"go.uber.org/zap"
 )
 
 type BookRepository struct {
 	db                *sqlx.DB
 	sectionRepository SectionRepositoryInterface
+	minio             *minio.Client
 }
 
-func (repo *BookRepository) New(book model.Book) error {
+func (repo *BookRepository) New(book model.Book) (string, error) {
+	id := uuid.New().String()
+	book.Id = id
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("transactErr"))
-		return transactErr
+		return book.Id, transactErr
 	}
-	id := uuid.New().String()
-	book.Id = id
+
 	insertBookQuery := `INSERT INTO catalog.book(
 		title, isbn, description, copies, pages, section_id, publisher_id, fund_source_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`
@@ -35,7 +44,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		book.Section.Id, book.Publisher.Id, book.FundSource.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
-		return insertBookErr
+		return book.Id, insertBookErr
 	}
 
 	var section model.Section
@@ -43,7 +52,7 @@ func (repo *BookRepository) New(book model.Book) error {
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
-		return selectSectionErr
+		return book.Id, selectSectionErr
 
 	}
 	dialect := goqu.Dialect("postgres")
@@ -67,7 +76,7 @@ func (repo *BookRepository) New(book model.Book) error {
 	if insertAccessionErr != nil {
 		transaction.Rollback()
 		logger.Error(insertAccessionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertAccessionErr"))
-		return insertAccessionErr
+		return book.Id, insertAccessionErr
 	}
 
 	insertedBookRows, _ := insertBookResult.RowsAffected()
@@ -88,7 +97,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert people"))
-			return insertAuthorErr
+			return book.Id, insertAuthorErr
 		}
 	}
 
@@ -105,7 +114,7 @@ func (repo *BookRepository) New(book model.Book) error {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert orgs"))
-			return insertAuthorErr
+			return book.Id, insertAuthorErr
 		}
 	}
 	if len(book.Authors.Publishers) > 0 {
@@ -121,12 +130,12 @@ func (repo *BookRepository) New(book model.Book) error {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert publisher"))
-			return insertAuthorErr
+			return book.Id, insertAuthorErr
 		}
 	}
 
 	transaction.Commit()
-	return nil
+	return book.Id, nil
 }
 
 func (repo *BookRepository) Get() []model.Book {
@@ -165,7 +174,8 @@ func (repo *BookRepository) Get() []model.Book {
 						  where book_id = book.id group by book_id
 						  ),'[]')
 	) as authors,
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
+	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -220,7 +230,8 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 						  where book_id = book.id group by book_id
 						  ),'[]')
 	) as authors,
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
+	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -264,6 +275,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', section.id, 'name', section.name),
 		'created_at',book.created_at,
+		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
 		'authors', json_build_object(
 			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
 					  as authors
@@ -283,7 +295,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 								  where book_id = book.id group by book_id
 								  ),'[]')
 		) 
-		
+	  
 	) as book,
 	(CASE WHEN accession_number is null then false else true END) as is_checked_out
 	FROM get_accession_table() 
@@ -489,7 +501,8 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 						  ),'[]')
 	) as authors,
 
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions
+	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
+	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
@@ -533,6 +546,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
 		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
 		'section', json_build_object('id', publisher.id, 'name', publisher.name),
+		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
 		'created_at',book.created_at,
 		'authors', json_build_object(
 			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
@@ -575,20 +589,155 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	}
 	return accessions
 }
+func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
+	ctx := context.Background()
+	dialect := goqu.Dialect("postgres")
+	canonicID, nanoIdErr := nanoid.Standard(21)
+	if nanoIdErr != nil {
+		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("nanoIdErr"))
+		return nanoIdErr
+	}
+	bookCoverRows := make([]goqu.Record, 0)
+	for _, cover := range covers {
+		extension := filepath.Ext(cover.Filename)
+		objectName := fmt.Sprintf("covers/%s/%s%s", bookId, canonicID(), extension)
+		fileBuffer, _ := cover.Open()
+		defer fileBuffer.Close()
+		contentType := cover.Header["Content-Type"][0]
+		fileSize := cover.Size
+
+		info, uploadErr := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+			ContentType: contentType,
+		})
+		if uploadErr != nil {
+			logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("uploadErr"))
+			return uploadErr
+		}
+		bookCoverRows = append(bookCoverRows, goqu.Record{
+			"path":    info.Key,
+			"book_id": bookId,
+		})
+		logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+
+	}
+	ds := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)
+
+	query, args, _ := ds.ToSQL()
+
+	_, insertCoverErr := repo.db.Exec(query, args...)
+
+	if insertCoverErr != nil {
+		return insertCoverErr
+	}
+	return nil
+}
+
+func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.FileHeader) error {
+	ctx := context.Background()
+	dialect := goqu.Dialect("postgres")
+	path := fmt.Sprintf("covers/%s/", bookId)
+	canonicID, nanoIdErr := nanoid.Standard(21)
+	if nanoIdErr != nil {
+		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("nanoIdErr"))
+		return nanoIdErr
+	}
+	objects := repo.minio.ListObjects(ctx, objstore.BUCKET, minio.ListObjectsOptions{
+		Recursive: true,
+		Prefix:    path,
+	})
+	//map old uploaded book covers.
+	oldCoversMap := make(map[string]minio.ObjectInfo)
+	for obj := range objects {
+		oldCoversMap[obj.Key] = obj
+	}
+	newCoversMap := make(map[string]*multipart.FileHeader)
+	bookCoverRows := make([]goqu.Record, 0)
+
+	//check if book covers are already uploaded. If not, uploud.
+	for _, cover := range covers {
+		key := fmt.Sprintf("%s%s", path, cover.Filename)
+		_, isAlreadyUploaded := oldCoversMap[key]
+		if !isAlreadyUploaded {
+			extension := filepath.Ext(cover.Filename)
+			objectName := fmt.Sprintf("%s%s%s", path, canonicID(), extension)
+			fileBuffer, _ := cover.Open()
+			defer fileBuffer.Close()
+			contentType := cover.Header["Content-Type"][0]
+			fileSize := cover.Size
+
+			info, uploadErr := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+				ContentType: contentType,
+			})
+			if uploadErr != nil {
+				logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("uploadErr"))
+				return uploadErr
+			}
+			//store new cover to be inserted later
+			bookCoverRows = append(bookCoverRows, goqu.Record{
+				"path":    info.Key,
+				"book_id": bookId,
+			})
+			logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+		}
+		newCoversMap[key] = cover
+	}
+	transaction, transactErr := repo.db.Beginx()
+
+	if transactErr != nil {
+		transaction.Rollback()
+		return transactErr
+	}
+
+	// check if old covers are removed, if removed, delete from object storage
+	for _, oldCover := range oldCoversMap {
+		key := oldCover.Key
+		_, stillExist := newCoversMap[key]
+		if !stillExist {
+			deleteObjErr := repo.minio.RemoveObject(ctx, objstore.BUCKET, oldCover.Key, minio.RemoveObjectOptions{})
+			if deleteObjErr != nil {
+				transaction.Rollback()
+				logger.Error(deleteObjErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("deleteObjErr"))
+				return deleteObjErr
+			}
+			_, deleteErr := transaction.Exec("Delete from catalog.book_cover where book_id= $1 AND path = $2  ", bookId, key)
+			//delete from db
+			if deleteErr != nil {
+				transaction.Rollback()
+				logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("deleteErr"))
+				return deleteErr
+			}
+		}
+
+	}
+	// insert new uploaded cover to db.
+	insertDs := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)
+	query, args, _ := insertDs.ToSQL()
+	_, insertErr := transaction.Exec(query, args...)
+
+	if insertErr != nil {
+		transaction.Rollback()
+		logger.Error(insertErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("insertErr"))
+		return insertErr
+	}
+	transaction.Commit()
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
-	logger.Info("BOOK REPO INIT")
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
 		sectionRepository: NewSectionRepository(),
+		minio:             objstore.GetorCreateInstance(),
 	}
 }
 
 type BookRepositoryInterface interface {
-	New(model.Book) error
+	New(model.Book) (string, error)
 	Get() []model.Book
 	GetOne(id string) model.Book
 	GetAccessions() []model.Accession
 	Update(model.Book) error
 	Search(Filter) []model.Book
 	GetAccessionsByBookId(id string) []model.Accession
+	NewBookCover(bookId string, covers []*multipart.FileHeader) error
+	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 }

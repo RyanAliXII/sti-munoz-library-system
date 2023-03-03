@@ -18,12 +18,16 @@ type BookController struct {
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var book = model.Book{}
 	ctx.ShouldBindBodyWith(&book, binding.JSON)
-	newBookErr := ctrler.bookRepository.New(book)
+	bookId, newBookErr := ctrler.bookRepository.New(book)
 	if newBookErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "New book added."))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"book": gin.H{
+			"id": bookId,
+		},
+	}, "New book added."))
 }
 
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
@@ -113,6 +117,49 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 		"accessions": accessions,
 	}, "Accessions successfully fetched for specific book."))
 }
+
+func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
+	body := BookCoverUploadBody{}
+
+	bindErr := ctx.ShouldBind(&body)
+
+	if bindErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
+		return
+	}
+
+	_, parseIdErr := uuid.Parse(body.BookId)
+	if parseIdErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
+		return
+	}
+	uploadErr := ctrler.bookRepository.NewBookCover(body.BookId, body.Covers)
+	if uploadErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Book covers uploaded."))
+}
+func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
+	body := BookCoverUploadBody{}
+
+	bindErr := ctx.ShouldBind(&body)
+	if bindErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
+		return
+	}
+	_, parseIdErr := uuid.Parse(body.BookId)
+	if parseIdErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
+		return
+	}
+	updateCoverErr := ctrler.bookRepository.UpdateBookCover(body.BookId, body.Covers)
+	if updateCoverErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Book Cover Updated."))
+}
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
@@ -126,4 +173,6 @@ type BookControllerInterface interface {
 	GetBookById(ctx *gin.Context)
 	UpdateBook(ctx *gin.Context)
 	GetAccessionByBookId(ctx *gin.Context)
+	UploadBookCover(ctx *gin.Context)
+	UpdateBookCover(ctx *gin.Context)
 }
