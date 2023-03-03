@@ -15,7 +15,7 @@ const msalConfig: Configuration = {
     iframeHashTimeout: 10000,
   },
 };
-export const SCOPES =  ["User.Read", "User.ReadBasic.All", "openid", "profile"]
+export const SCOPES =  ["User.Read", "User.ReadBasic.All", "openid", "profile", "api://1b3617d9-7634-43f9-acf2-bd45c0b45ad6/library.admin"]
 export const loginRequest: PopupRequest = {
   scopes: SCOPES
 };

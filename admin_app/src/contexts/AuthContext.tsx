@@ -10,6 +10,7 @@ import {
   EventMessage,
   AuthenticationResult,
 } from "@azure/msal-browser";
+import { SCOPES } from "@definitions/configs/msal.config";
 
 export const AuthContext = createContext({} as AuthContextState);
 export const useAuthContext = () => {
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         const account = msalClient.getAllAccounts()[0];
 
         const response = await msalClient.acquireTokenSilent({
-          scopes: ["User.Read"],
+          scopes: SCOPES,
         });
 
         await useAccount(account, response.accessToken);
@@ -82,6 +83,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
         const payload: AuthenticationResult =
           message.payload as AuthenticationResult;
         useAccount(payload.account, payload.accessToken);
+      }
+      if (message.eventType === EventType.LOGIN_FAILURE) {
+        console.log(message.error);
       }
     });
     return callbackId;

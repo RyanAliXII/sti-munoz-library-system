@@ -25,6 +25,9 @@ services:
           MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
           MINIO_ENDPOINT: ${MINIO_ENDPOINT}
           MINIO_PORT: ${MINIO_PORT}
+          AZURE_AD_CLIENT: ${AZURE_AD_CLIENT}
+          AZURE_AD_TENANT: ${AZURE_AD_TENANT}
+          AZURE_APP_ID: ${AZURE_APP_ID}
       depends_on:
         - postgres
         - rabbitmq

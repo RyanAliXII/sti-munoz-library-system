@@ -3,6 +3,7 @@ import { MdLogout } from "react-icons/md";
 
 const LogoutButton = () => {
   const { instance: msalClient } = useMsal();
+
   const logout = async () => {
     const account = msalClient.getActiveAccount();
     msalClient.logoutRedirect({

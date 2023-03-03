@@ -1,6 +1,7 @@
 package api
 
 import (
+	"slim-app/server/app/http/middlewares"
 	"slim-app/server/services/author"
 	authornum "slim-app/server/services/author_number"
 	"slim-app/server/services/book"
@@ -17,6 +18,7 @@ import (
 
 func RegisterAPIV1(router *gin.Engine) {
 	grp := router.Group("/api/1")
+	grp.Use(middlewares.ValidateToken)
 	author.AuthorRoutes(grp.Group("/authors"))
 	publisher.PublisherRoutes(grp.Group("/publishers"))
 	fundsrc.FundSourceRoutes(grp.Group("/source-of-funds"))

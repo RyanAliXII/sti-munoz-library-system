@@ -27,8 +27,11 @@ import { Publisher } from "@definitions/types";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import { useMsal } from "@azure/msal-react";
+import { SCOPES } from "@definitions/configs/msal.config";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
+  const { instance: msal } = useMsal();
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -52,10 +55,17 @@ const PublisherPage = () => {
 
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await axiosClient.get("/publishers/");
+      const token = await msal.acquireTokenSilent({
+        scopes: ["api://1b3617d9-7634-43f9-acf2-bd45c0b45ad6/library.admin"],
+      });
+
+      const { data: response } = await axiosClient.get("/publishers/", {
+        headers: {
+          Authorization: `Bearer ${token.accessToken}`,
+        },
+      });
       return response?.data?.publishers || [];
     } catch (error) {
-      console.error(error);
       toast.error(ErrorMsg.Get);
     }
     return [];

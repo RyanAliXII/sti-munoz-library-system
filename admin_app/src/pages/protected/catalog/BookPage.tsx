@@ -31,8 +31,11 @@ import TimeAgo from "timeago-react";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import { useMsal } from "@azure/msal-react";
+import { SCOPES } from "@definitions/configs/msal.config";
 
 const BookPage = () => {
+  const { instance: msal } = useMsal();
   const {
     close: closePrintablesModal,
     open: openPrintablesModal,
@@ -40,7 +43,14 @@ const BookPage = () => {
   } = useSwitch();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await axiosClient.get("/books/");
+      const token = await msal.acquireTokenSilent({
+        scopes: ["api://1b3617d9-7634-43f9-acf2-bd45c0b45ad6/library.admin"],
+      });
+      const { data: response } = await axiosClient.get("/books/", {
+        headers: {
+          Authorization: `Bearer ${token.accessToken}`,
+        },
+      });
       return response?.data?.books ?? [];
     } catch (error) {
       console.error(error);
