@@ -12,24 +12,18 @@
 Clone the project
 
 ```bash
-  git clone https://github.com/RyanAliXII/SLiM-App.git
-```
-
-Go to the project directory
-
-```bash
-  cd slim-app
+  git clone https://github.com/RyanAliXII/STI-Munoz-Library-System.git
 ```
 
 Build containers
 
 ```bash
 
-    docker build -t sti-munoz/slim-spa-admin ./spa-admin
+    docker build -t sti-munoz-library/admin  ./admin_app
 
-    docker build -t sti-munoz/slim-spa-client ./spa-client
+    docker build -t sti-munoz-library/client ./client_app
 
-    docker build -t sti-munoz/slim-server ./server
+    docker build -t sti-munoz-library/server ./server
 
 ```
 
@@ -52,7 +46,7 @@ Go to project root directory and run
 Clone the project
 
 ```bash
-  git clone https://github.com/RyanAliXII/SLiM-App.git
+  git clone https://github.com/RyanAliXII/STI-Munoz-Library-System.git
 ```
 
 Go to the project directory
@@ -64,8 +58,8 @@ Go to the project directory
 Go to each services folder
 
 ```bash
-    in spa-admin folder run :   npm run dev
-    in spa-client folder run :   npm run dev
+    in admin_app folder run :   npm run dev
+    in client_app folder run :   npm run dev
     in server folder: go run main.go
 
 ```
