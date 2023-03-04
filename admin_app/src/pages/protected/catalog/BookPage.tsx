@@ -31,9 +31,9 @@ import TimeAgo from "timeago-react";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import { useMsal } from "@azure/msal-react";
-import { SCOPES } from "@definitions/configs/msal/msal.config";
+
 import { useRequest } from "@hooks/useRequest";
+import { SCOPES } from "@definitions/configs/msal/scopes";
 
 const BookPage = () => {
   const {

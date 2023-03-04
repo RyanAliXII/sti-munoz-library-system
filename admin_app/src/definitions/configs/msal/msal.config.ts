@@ -18,7 +18,7 @@ const msalConfig: Configuration = {
   },
 };
 export const loginRequest: PopupRequest = {
-  scopes: MS_GRAPH_SCOPE
+  scopes: ["User.Read", "User.ReadBasic.All", "openid", "profile"]
 };
 
 
