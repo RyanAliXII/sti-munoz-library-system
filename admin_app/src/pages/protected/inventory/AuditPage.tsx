@@ -1,5 +1,3 @@
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import CustomSelect from "@components/ui/form/CustomSelect";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import {
   BodyRow,
@@ -10,7 +8,7 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
+
 import { Audit, EditModalProps, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,6 +24,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { Input } from "@components/ui/form/Input";
+import { useRequest } from "@hooks/useRequest";
 
 const AuditPage = () => {
   const {
@@ -43,9 +42,11 @@ const AuditPage = () => {
     name: "",
     id: "",
   });
+
+  const { Get } = useRequest();
   const fetchAudits = async () => {
     try {
-      const { data: response } = await axiosClient("/inventory/audits");
+      const { data: response } = await Get("/inventory/audits");
       return response?.data?.audits ?? [];
     } catch {
       return [];
@@ -129,10 +130,10 @@ const NewAuditModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     }
   };
-
+  const { Post } = useRequest();
   const newAudit = useMutation({
     mutationFn: (parsedForm: NewAuditForm) =>
-      axiosClient.post("/inventory/audits", parsedForm),
+      Post("/inventory/audits", parsedForm),
     onSuccess: () => {
       toast.success("New audit has been added.");
       queryClient.invalidateQueries(["audits"]);
@@ -211,10 +212,10 @@ const EditAuditModal: React.FC<EditModalProps<Audit>> = ({
       console.error(error);
     }
   };
-
+  const { Put } = useRequest();
   const updateAudit = useMutation({
     mutationFn: (parsedForm: Audit) =>
-      axiosClient.put(`/inventory/audits/${parsedForm.id}`, parsedForm),
+      Put(`/inventory/audits/${parsedForm.id}`, parsedForm),
     onSuccess: () => {
       toast.success("Audit has been updated.");
       queryClient.invalidateQueries(["audits"]);

@@ -14,7 +14,7 @@ import {
   BodyRow,
   HeadingRow,
 } from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
+
 import { EditModalProps, ModalProps, Source } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
@@ -26,7 +26,7 @@ import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-
+import { useRequest } from "@hooks/useRequest";
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const FundSourcePage = () => {
   const {
@@ -51,8 +51,9 @@ const FundSourcePage = () => {
   );
 
   const queryClient = useQueryClient();
+  const { Get, Delete } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.delete(`/source-of-funds/${selectedRow.id}/`),
+    mutationFn: () => Delete(`/source-of-funds/${selectedRow.id}/`),
     onSuccess: () => {
       toast.success("Source deleted.");
       queryClient.invalidateQueries(["sources"]);
@@ -68,9 +69,10 @@ const FundSourcePage = () => {
   const onConfirmDialog = () => {
     mutation.mutate();
   };
+
   const fetchSources = async () => {
     try {
-      const { data: response } = await axiosClient.get("/source-of-funds/");
+      const { data: response } = await Get("/source-of-funds/");
       return response.data.sources ?? [];
     } catch (error) {
       console.error(error);
@@ -152,9 +154,10 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       initialFormData: SOURCE_FORM_DEFAULT_VALUES,
       schema: SourceofFundSchema,
     });
+  const { Post } = useRequest();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.post("/source-of-funds/", form),
+    mutationFn: () => Post("/source-of-funds/", form),
     onSuccess: () => {
       toast.success("New source has been added.");
       queryClient.invalidateQueries(["sources"]);
@@ -222,13 +225,13 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
     initialFormData: SOURCE_FORM_DEFAULT_VALUES,
     schema: SourceofFundSchema,
   });
-
+  const { Put } = useRequest();
   useEffect(() => {
     setForm({ ...formData });
   }, [formData]);
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.put(`/source-of-funds/${formData.id}/`, form),
+    mutationFn: () => Put(`/source-of-funds/${formData.id}/`, form),
     onSuccess: () => {
       toast.success("Source has been updated");
       queryClient.invalidateQueries(["sources"]);

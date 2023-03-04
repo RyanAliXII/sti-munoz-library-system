@@ -16,7 +16,7 @@ import {
   HeadingRow,
 } from "@components/ui/table/Table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
+
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { Section } from "@definitions/types";
@@ -24,6 +24,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { Input } from "@components/ui/form/Input";
+import { useRequest } from "@hooks/useRequest";
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,
@@ -36,10 +37,10 @@ const SectionPage = () => {
     open: openEditModal,
     close: closeEditModal,
   } = useSwitch();
-
+  const { Get } = useRequest();
   const fetchSections = async () => {
     try {
-      const { data: response } = await axiosClient.get("/sections/");
+      const { data: response } = await Get("/sections/");
       return response.data?.sections ?? [];
     } catch (error) {
       console.error(error);
@@ -122,8 +123,9 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   });
 
   const queryClient = useQueryClient();
+  const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.post("/sections/", form),
+    mutationFn: () => Post("/sections/", form),
     onSuccess: () => {
       toast.success("New section added");
       queryClient.invalidateQueries(["sections"]);
@@ -135,6 +137,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       closeModal();
     },
   });
+
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {

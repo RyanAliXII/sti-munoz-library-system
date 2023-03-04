@@ -15,7 +15,7 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
+
 import { Accession, Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
@@ -33,24 +33,19 @@ import Container, {
 } from "@components/ui/container/Container";
 import { useMsal } from "@azure/msal-react";
 import { SCOPES } from "@definitions/configs/msal.config";
+import { useRequest } from "@hooks/useRequest";
 
 const BookPage = () => {
-  const { instance: msal } = useMsal();
   const {
     close: closePrintablesModal,
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
+
+  const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const token = await msal.acquireTokenSilent({
-        scopes: ["api://1b3617d9-7634-43f9-acf2-bd45c0b45ad6/library.admin"],
-      });
-      const { data: response } = await axiosClient.get("/books/", {
-        headers: {
-          Authorization: `Bearer ${token.accessToken}`,
-        },
-      });
+      const { data: response } = await Get("/books/", {}, [SCOPES.book.read]);
       return response?.data?.books ?? [];
     } catch (error) {
       console.error(error);

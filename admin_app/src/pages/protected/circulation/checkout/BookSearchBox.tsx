@@ -1,7 +1,8 @@
 import { InputClasses } from "@components/ui/form/Input";
-import axiosClient from "@definitions/configs/axios";
+
 import { Book } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
+import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import Downshift from "downshift";
 import { BaseSyntheticEvent, useState } from "react";
@@ -19,9 +20,10 @@ const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
   const handleSearchBoxChange = (event: BaseSyntheticEvent) => {
     debounce(() => setKeyword(event.target.value), null, DELAY_IN_MILLISECOND);
   };
+  const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await axiosClient.get("/books/", {
+      const { data: response } = await Get("/books/", {
         params: {
           offset: 0,
           keyword: searchKeyword,

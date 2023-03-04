@@ -11,9 +11,10 @@ import React, { BaseSyntheticEvent, FormEventHandler, useEffect } from "react";
 import Modal from "react-responsive-modal";
 import { OrganizationValidation } from "../../schema";
 import { useMutation } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
+
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
+import { useRequest } from "@hooks/useRequest";
 
 interface EditOrgModalProps extends ModalProps {
   refetch: () => void;
@@ -35,6 +36,8 @@ const EditOrganizationModal = ({
   useEffect(() => {
     setForm({ ...formData });
   }, [formData]);
+
+  const { Put } = useRequest();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -45,7 +48,7 @@ const EditOrganizationModal = ({
   };
   const updateOrganization = useMutation({
     mutationFn: (data: Organization) =>
-      axiosClient.put(`/authors/organizations/${data.id}`, data),
+      Put(`/authors/organizations/${data.id}`, data),
     onSuccess: () => {
       toast.success("Organization has been updated.");
       refetch();

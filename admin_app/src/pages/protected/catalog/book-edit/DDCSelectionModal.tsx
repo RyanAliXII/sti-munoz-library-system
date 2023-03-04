@@ -11,12 +11,13 @@ import {
 import { ModalProps } from "@definitions/types";
 import Modal from "react-responsive-modal";
 import { useBookEditFormContext } from "./BookEditFormContext";
-import axiosClient from "@definitions/configs/axios";
+
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
+import { BaseSyntheticEvent, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
+import { useRequest } from "@hooks/useRequest";
 
 type DDC = {
   name: string;
@@ -56,6 +57,7 @@ type DDCTableProps = {
   modalRef: React.RefObject<HTMLDivElement>;
 };
 const DDCTable = ({ modalRef }: DDCTableProps) => {
+  const { Get } = useRequest();
   const PAGE_OFFSET_INCREMENT = 50;
   const { form, setForm, removeFieldError } = useBookEditFormContext();
   const searchDebounce = useDebounce();
@@ -83,7 +85,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   };
   const fetchDDC = async ({ pageParam = 0 }) => {
     try {
-      const { data: response } = await axiosClient.get("/ddc/", {
+      const { data: response } = await Get("/ddc/", {
         params: {
           offset: pageParam,
           limit: 50,

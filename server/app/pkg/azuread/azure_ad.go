@@ -13,8 +13,10 @@ import (
 var logger = slimlog.GetInstance()
 var CLIENT_ID = os.Getenv("AZURE_AD_CLIENT")
 var TENANT_ID = os.Getenv("AZURE_AD_TENANT")
-var JWKS_URL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys", TENANT_ID)
+var JWKS_URL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", TENANT_ID, CLIENT_ID)
 var APP_ID = os.Getenv("AZURE_APP_ID")
+
+var GRAPH_API_AUD = ""
 var once sync.Once
 
 var jwks *keyfunc.JWKS

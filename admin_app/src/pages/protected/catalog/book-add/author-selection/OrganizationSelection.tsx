@@ -1,4 +1,3 @@
-import axiosClient from "@definitions/configs/axios";
 import { useQuery } from "@tanstack/react-query";
 import {
   Table,
@@ -13,14 +12,14 @@ import { Organization } from "@definitions/types";
 
 import { useMemo } from "react";
 import { useBookAddFormContext } from "../BookAddFormContext";
+import { useRequest } from "@hooks/useRequest";
 
 const OrganizationSelection = () => {
   const { setForm, form } = useBookAddFormContext();
+  const { Get } = useRequest();
   const fetchOrganizations = async () => {
     try {
-      const { data: response } = await axiosClient.get(
-        "/authors/organizations"
-      );
+      const { data: response } = await Get("/authors/organizations");
 
       return response?.data?.organizations || [];
     } catch {

@@ -8,22 +8,21 @@ import {
   Th,
 } from "@components/ui/table/Table";
 
-import { Input } from "@components/ui/form/Input";
 import { useQuery } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
+
 import { BorrowingTransaction } from "@definitions/types";
 import TimeAgo from "timeago-react";
 import { useNavigate } from "react-router-dom";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import { useRequest } from "@hooks/useRequest";
 
 const BorrowingTransactionPage = () => {
+  const { Get } = useRequest();
   const fetchTransactions = async () => {
     try {
-      const { data: response } = await axiosClient.get(
-        "/circulation/transactions"
-      );
+      const { data: response } = await Get("/circulation/transactions");
       return response?.data?.transactions ?? [];
     } catch {
       return [];

@@ -11,9 +11,9 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
 import { Publisher } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import { AiFillInfoCircle, AiOutlineRight } from "react-icons/ai";
 import { BsArrowRight } from "react-icons/bs";
@@ -22,8 +22,9 @@ import { toast } from "react-toastify";
 
 const PublisherAsAuthor = () => {
   const fetchPublisher = async () => {
+    const { Get } = useRequest();
     try {
-      const { data: response } = await axiosClient.get("/publishers/");
+      const { data: response } = await Get("/publishers/");
       return response?.data?.publishers || [];
     } catch (error) {
       console.error(error);
@@ -32,11 +33,7 @@ const PublisherAsAuthor = () => {
     return [];
   };
 
-  const {
-    data: publishers,
-    isLoading,
-    isError,
-  } = useQuery<Publisher[]>({
+  const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
     queryKey: ["publishers"],
   });

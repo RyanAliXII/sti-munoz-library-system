@@ -7,7 +7,6 @@ import { BaseSyntheticEvent, useEffect } from "react";
 
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
-import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
 import CustomSelect from "@components/ui/form/CustomSelect";
@@ -28,6 +27,7 @@ import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { useRequest } from "@hooks/useRequest";
 
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
@@ -68,10 +68,10 @@ const BookAddForm = () => {
     setFieldValue,
     registerFormGroup,
   } = useBookAddFormContext();
-
+  const { Get, Post } = useRequest();
   const fetchPublishers = async () => {
     try {
-      const { data: response } = await axiosClient.get("/publishers/");
+      const { data: response } = await Get("/publishers/");
       return response.data?.publishers ?? [];
     } catch (error) {
       console.log(error);
@@ -80,7 +80,7 @@ const BookAddForm = () => {
   };
   const fetchSourceofFunds = async () => {
     try {
-      const { data: response } = await axiosClient.get("/source-of-funds/");
+      const { data: response } = await Get("/source-of-funds/");
       return response.data?.sources ?? [];
     } catch (error) {
       console.log(error);
@@ -89,7 +89,7 @@ const BookAddForm = () => {
   };
   const fetchSections = async () => {
     try {
-      const { data: response } = await axiosClient.get("/sections/");
+      const { data: response } = await Get("/sections/");
       return response.data?.sections ?? [];
     } catch (error) {
       console.log(error);
@@ -132,7 +132,7 @@ const BookAddForm = () => {
 
   const newBook = useMutation({
     mutationFn: (parsedForm: Book) =>
-      axiosClient.post("/books/", {
+      Post("/books/", {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
       }),
