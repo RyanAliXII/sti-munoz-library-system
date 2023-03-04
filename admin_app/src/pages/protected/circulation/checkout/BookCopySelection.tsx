@@ -15,12 +15,13 @@ import {
   DetailedAccession,
   ModalProps,
 } from "@definitions/types";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "react-responsive-modal";
 import { CheckoutForm } from "./CheckoutPage";
-import axiosClient from "@definitions/configs/axios";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BorrowStatuses } from "@internal/borrow-status";
+import { useRequest } from "@hooks/useRequest";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -38,11 +39,10 @@ const BookCopySelectionModal = ({
     DetailedAccession[]
   >([]);
 
+  const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
-      const { data: response } = await axiosClient.get(
-        `/books/${book.id}/accessions`
-      );
+      const { data: response } = await Get(`/books/${book.id}/accessions`);
       return response?.data?.accessions ?? [];
     } catch {
       return [];

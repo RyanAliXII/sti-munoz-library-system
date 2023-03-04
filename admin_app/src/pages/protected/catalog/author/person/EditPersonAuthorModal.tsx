@@ -1,7 +1,7 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
-import axiosClient from "@definitions/configs/axios";
-import { Author, EditModalProps } from "@definitions/types";
+
+import { PersonAuthor, EditModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,14 +10,15 @@ import { toast } from "react-toastify";
 import { CreateAuthorSchema } from "../../schema";
 import Modal from "react-responsive-modal";
 import { EDIT_AUTHOR_INITIAL_FORM } from "../AuthorPage";
+import { useRequest } from "@hooks/useRequest";
 
-const EditAuthorPersonModal: React.FC<EditModalProps<Author>> = ({
+const EditAuthorPersonModal: React.FC<EditModalProps<PersonAuthor>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
   const { form, errors, removeErrors, setForm, validate, handleFormInput } =
-    useForm<Author>({
+    useForm<PersonAuthor>({
       initialFormData: EDIT_AUTHOR_INITIAL_FORM,
       schema: CreateAuthorSchema,
     });
@@ -42,8 +43,9 @@ const EditAuthorPersonModal: React.FC<EditModalProps<Author>> = ({
       console.error(error);
     }
   };
+  const { Put } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.put(`/authors/${formData.id}/`, form),
+    mutationFn: () => Put(`/authors/${formData.id}/`, form),
     onSuccess: () => {
       toast.success("Author has been updated.");
       queryClient.invalidateQueries(["authors"]);

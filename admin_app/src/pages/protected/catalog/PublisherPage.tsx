@@ -17,7 +17,7 @@ import {
   HeadingRow,
   BodyRow,
 } from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
+
 import { EditModalProps, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
@@ -27,8 +27,12 @@ import { Publisher } from "@definitions/types";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import { useMsal } from "@azure/msal-react";
+import { SCOPES } from "@definitions/configs/msal.config";
+import { useRequest } from "@hooks/useRequest";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
+  const { instance: msal } = useMsal();
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -49,20 +53,21 @@ const PublisherPage = () => {
   const [selectedRow, setSelectedRow] = useState<Publisher>(
     PUBLISHER_FORM_DEFAULT_VALUES
   );
-
+  const { Get, Delete } = useRequest();
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await axiosClient.get("/publishers/");
+      const { data: response } = await Get("/publishers/", {}, [
+        SCOPES.pulisher.delete,
+      ]);
       return response?.data?.publishers || [];
     } catch (error) {
-      console.error(error);
       toast.error(ErrorMsg.Get);
     }
     return [];
   };
   const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: () => axiosClient.delete(`/publishers/${selectedRow.id}/`),
+  const deletePublisher = useMutation({
+    mutationFn: () => Delete(`/publishers/${selectedRow.id}/`),
     onSuccess: () => {
       queryClient.invalidateQueries(["publishers"]);
       toast.success("Publisher deleted.");
@@ -76,7 +81,7 @@ const PublisherPage = () => {
     },
   });
   const onConfirmDialog = () => {
-    mutation.mutate();
+    deletePublisher.mutate();
   };
 
   const {
@@ -158,9 +163,10 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
     });
+  const { Post } = useRequest();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.post("/publishers/", form),
+    mutationFn: () => Post("/publishers/", form, {}),
     onSuccess: () => {
       toast.success("New publisher has been added.");
       queryClient.invalidateQueries(["publishers"]);
@@ -235,8 +241,9 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
   }, [formData]);
 
   const queryClient = useQueryClient();
+  const { Put } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.put(`/publishers/${formData.id}/`, form),
+    mutationFn: () => Put(`/publishers/${formData.id}/`, form),
     onSuccess: () => {
       toast.success("Publisher has been updated.");
       queryClient.invalidateQueries(["publishers"]);

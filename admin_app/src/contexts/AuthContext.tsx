@@ -10,6 +10,7 @@ import {
   EventMessage,
   AuthenticationResult,
 } from "@azure/msal-browser";
+import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal.config";
 
 export const AuthContext = createContext({} as AuthContextState);
 export const useAuthContext = () => {
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         const account = msalClient.getAllAccounts()[0];
 
         const response = await msalClient.acquireTokenSilent({
-          scopes: ["User.Read"],
+          scopes: MS_GRAPH_SCOPE,
         });
 
         await useAccount(account, response.accessToken);
@@ -43,19 +44,17 @@ export const AuthProvider = ({ children }: BaseProps) => {
       }
     } catch (error) {
       localStorage.clear();
-
       setAuthenticated(false);
     }
   };
   const useAccount = async (account: AccountInfo | null, accessToken = "") => {
     if (account && accessToken.length > 0) {
       msalClient.setActiveAccount(account);
-
       await fetchUser(accessToken);
       setAuthenticated(true);
       return;
     }
-    setAuthenticated(false);
+    throw new Error("cannot use Account");
   };
 
   const fetchUser = async (accessToken: string) => {
@@ -82,6 +81,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
         const payload: AuthenticationResult =
           message.payload as AuthenticationResult;
         useAccount(payload.account, payload.accessToken);
+      }
+      if (message.eventType === EventType.LOGIN_FAILURE) {
+        console.log(message.error);
       }
     });
     return callbackId;

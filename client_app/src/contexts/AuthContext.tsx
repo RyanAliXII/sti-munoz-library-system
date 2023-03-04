@@ -19,7 +19,12 @@ export const useAuthContext = () => {
 export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
   const [authenticated, setAuthenticated] = useState(false);
-  const [user, setUser] = useState({} as User);
+  const [user, setUser] = useState({
+    id: "",
+    email: "",
+    firstname: "",
+    lastname: "",
+  } as User);
   const [loading, setLoading] = useState(true);
 
   const useAccountFromStorage = async () => {
@@ -34,6 +39,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         throw new Error("NO ACCOUNTS");
       }
     } catch (error) {
+      console.error(error);
       setAuthenticated(false);
     }
   };
@@ -48,17 +54,22 @@ export const AuthProvider = ({ children }: BaseProps) => {
   };
 
   const fetchUser = async (accessToken: string) => {
-    const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    setUser({
-      email: response.data.mail,
-      firstname: response.data.givenName,
-      lastname: response.data.surname,
-      id: response.data.id,
-    });
+    try {
+      const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setUser({
+        email: response.data.mail,
+        firstname: response.data.givenName,
+        lastname: response.data.surname,
+        id: response.data.id,
+      });
+    } catch (error) {
+      console.error(error);
+      setAuthenticated(false);
+    }
   };
 
   const subscribeMsalEvent = () => {

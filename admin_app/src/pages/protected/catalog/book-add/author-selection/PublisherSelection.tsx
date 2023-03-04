@@ -1,4 +1,3 @@
-import axiosClient from "@definitions/configs/axios";
 import { Publisher } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useQuery } from "@tanstack/react-query";
@@ -14,11 +13,13 @@ import {
 } from "@components/ui/table/Table";
 import { useMemo } from "react";
 import { useBookAddFormContext } from "../BookAddFormContext";
+import { useRequest } from "@hooks/useRequest";
 const PublisherSelection = () => {
   const { setForm, form } = useBookAddFormContext();
+  const { Get } = useRequest();
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await axiosClient.get("/publishers/");
+      const { data: response } = await Get("/publishers/");
       return response?.data?.publishers || [];
     } catch (error) {
       console.error(error);

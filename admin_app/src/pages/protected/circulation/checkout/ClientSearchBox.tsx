@@ -1,5 +1,5 @@
 import { InputClasses } from "@components/ui/form/Input";
-import axiosClient from "@definitions/configs/axios";
+
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import Downshift from "downshift";
 import { BaseSyntheticEvent, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { CheckoutForm } from "./CheckoutPage";
+import { useRequest } from "@hooks/useRequest";
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
   form: CheckoutForm;
@@ -19,9 +20,10 @@ const ClientSearchBox = ({ setClient, form }: ClientSearchBoxProps) => {
   const handleSearchBoxChange = (event: BaseSyntheticEvent) => {
     debounce(() => setKeyword(event.target.value), null, DELAY_IN_MILLISECOND);
   };
+  const { Get } = useRequest();
   const fetchAccounts = async () => {
     try {
-      const { data: response } = await axiosClient.get("/clients/accounts", {
+      const { data: response } = await Get("/clients/accounts", {
         params: {
           offset: 0,
           keyword: searchKeyword,

@@ -1,10 +1,8 @@
 import { AuthorNumber } from "@definitions/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Input } from "@components/ui/form/Input";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-
-import axiosClient from "@definitions/configs/axios";
 
 import {
   BodyRow,
@@ -19,17 +17,19 @@ import {
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useBookEditFormContext } from "../BookEditFormContext";
+import { useRequest } from "@hooks/useRequest";
 
 type BrowseTabProps = {
   modalRef: React.RefObject<HTMLDivElement>;
 };
 const BrowseTab = ({ modalRef }: BrowseTabProps) => {
+  const { Get } = useRequest();
   const OFFSET_INCREMENT = 50;
   const { form, setFieldValue, removeFieldError } = useBookEditFormContext();
   const [searchKeyword, setKeyword] = useState("");
   const fetchCuttersTable = async ({ pageParam = 0 }) => {
     try {
-      const { data: response } = await axiosClient.get(`/author-numbers/`, {
+      const { data: response } = await Get(`/author-numbers/`, {
         params: {
           offset: pageParam,
           keyword: searchKeyword,

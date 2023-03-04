@@ -13,11 +13,9 @@ import {
 } from "@components/ui/table/Table";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import { toast } from "react-toastify";
-import { Author } from "@definitions/types";
+import { PersonAuthor } from "@definitions/types";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { ErrorMsg } from "@definitions/var";
 import { EDIT_AUTHOR_INITIAL_FORM } from "../AuthorPage";
@@ -26,6 +24,8 @@ import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import EditAuthorModal from "./EditPersonAuthorModal";
 import AddAuthorModal from "./AddPersonModal";
 import { PrimaryButton } from "@components/ui/button/Button";
+import axios from "axios";
+import { useRequest } from "@hooks/useRequest";
 const PersonAsAuthor = () => {
   const {
     isOpen: isAddModalOpen,
@@ -44,12 +44,13 @@ const PersonAsAuthor = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<Author>(
+  const [selectedRow, setSelectedRow] = useState<PersonAuthor>(
     EDIT_AUTHOR_INITIAL_FORM
   );
+  const { Get, Delete } = useRequest();
   const fetchAuthors = async () => {
     try {
-      const { data: response } = await axiosClient.get("/authors/");
+      const { data: response } = await Get("/authors/");
       return response.data.authors ?? [];
     } catch (error) {
       toast.error(ErrorMsg.Get);
@@ -59,7 +60,7 @@ const PersonAsAuthor = () => {
   };
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.delete(`/authors/${selectedRow?.id}/`),
+    mutationFn: () => Delete(`/authors/${selectedRow?.id}/`),
     onSuccess: () => {
       queryClient.invalidateQueries(["authors"]);
       toast.success("Author has been deleted.");
@@ -75,7 +76,7 @@ const PersonAsAuthor = () => {
   const onConfirmDialog = () => {
     mutation.mutate();
   };
-  const { data: authors } = useQuery<Author[]>({
+  const { data: authors } = useQuery<PersonAuthor[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors"],
   });
@@ -136,7 +137,7 @@ const PersonAsAuthor = () => {
 };
 
 type AuthorTableRowType = {
-  author: Author;
+  author: PersonAuthor;
   openEditModal: () => void;
   openDialog?: () => void;
 };

@@ -16,7 +16,7 @@ import {
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import axiosClient from "@definitions/configs/axios";
+
 import { BorrowedCopy, BorrowingTransaction } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
@@ -34,6 +34,7 @@ import {
   BorrowedCopyInitialValue,
   BorrowingTransactionInitialValue,
 } from "@definitions/defaults";
+import { useRequest } from "@hooks/useRequest";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -48,11 +49,9 @@ const TransactionByIdPage = () => {
     isOpen: isConfirmDialogOpen,
   } = useSwitch();
   const { id } = useParams();
-
+  const { Get, Patch, Post } = useRequest();
   const fetchTransaction = async () => {
-    const { data: response } = await axiosClient.get(
-      `/circulation/transactions/${id}`
-    );
+    const { data: response } = await Get(`/circulation/transactions/${id}`);
     return response?.data?.transaction ?? BorrowingTransactionInitialValue;
   };
 
@@ -66,7 +65,7 @@ const TransactionByIdPage = () => {
   });
   const returnBooks = useMutation({
     mutationFn: (remarks: string) =>
-      axiosClient.patch(`/circulation/transactions/${id}`, {
+      Patch(`/circulation/transactions/${id}`, {
         remarks: remarks,
       }),
     onError: () => {
@@ -88,7 +87,7 @@ const TransactionByIdPage = () => {
 
   const returnCopy = useMutation({
     mutationFn: () =>
-      axiosClient.patch(
+      Patch(
         `/circulation/transactions/${id}/books/${copyToReturn.bookId}/accessions/${copyToReturn.number}`
       ),
     onSuccess: () => {

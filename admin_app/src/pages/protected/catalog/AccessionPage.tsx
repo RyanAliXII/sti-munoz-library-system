@@ -13,14 +13,16 @@ import {
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import axiosClient from "@definitions/configs/axios";
+
 import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
+import { useRequest } from "@hooks/useRequest";
 
 const AccessionPage = () => {
+  const { Get } = useRequest();
   const fetchAccessions = async () => {
     try {
-      const { data: response } = await axiosClient.get("/books/accessions");
+      const { data: response } = await Get("/books/accessions");
       return response?.data?.accessions ?? [];
     } catch {
       return [];

@@ -14,7 +14,7 @@ import {
 import { useSwitch } from "@hooks/useToggle";
 import AddOrganizationModal from "./AddOrganizationModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
+
 import { Organization } from "@definitions/types";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { useState } from "react";
@@ -22,6 +22,7 @@ import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import EditOrganizationModal from "./EditOrganizationModal";
+import { useRequest } from "@hooks/useRequest";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -40,12 +41,10 @@ const OrganizationAsAuthor = () => {
     isOpen: isEditModalOpen,
     open: openEditModal,
   } = useSwitch();
+  const { Get, Delete } = useRequest();
   const fetchOrganizations = async () => {
     try {
-      const { data: response } = await axiosClient.get(
-        "/authors/organizations"
-      );
-
+      const { data: response } = await Get("/authors/organizations");
       return response?.data?.organizations || [];
     } catch {
       return [];
@@ -59,8 +58,7 @@ const OrganizationAsAuthor = () => {
     deleteOrganization.mutate();
   };
   const deleteOrganization = useMutation({
-    mutationFn: () =>
-      axiosClient.delete(`/authors/organizations/${selectedRow.id}`),
+    mutationFn: () => Delete(`/authors/organizations/${selectedRow.id}`),
     onSuccess: () => {
       toast.success("Organization deleted.");
     },

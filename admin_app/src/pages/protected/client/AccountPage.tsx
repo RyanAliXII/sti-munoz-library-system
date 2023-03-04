@@ -10,7 +10,7 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 import Container from "@components/ui/container/Container";
-import axiosClient from "@definitions/configs/axios";
+
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
@@ -28,6 +28,7 @@ import "@uppy/dashboard/dist/style.css";
 import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { toast } from "react-toastify";
+import { useRequest } from "@hooks/useRequest";
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
 
@@ -36,9 +37,10 @@ const AccountPage = () => {
     isOpen: isImportModalOpen,
     open: openImportModal,
   } = useSwitch(false);
+  const { Get } = useRequest();
   const fetchAccounts = async ({ pageParam = 0 }) => {
     try {
-      const { data: response } = await axiosClient.get("/clients/accounts", {
+      const { data: response } = await Get("/clients/accounts", {
         params: {
           offset: pageParam,
           keyword: searchKeyword,

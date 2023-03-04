@@ -11,7 +11,7 @@ import {
 import { AiOutlineScan } from "react-icons/ai";
 
 import { useState } from "react";
-import axiosClient from "@definitions/configs/axios";
+
 import { useMutation } from "@tanstack/react-query";
 import { Account, Book, DetailedAccession } from "@definitions/types";
 
@@ -32,6 +32,7 @@ import Container, {
 import Divider from "@components/ui/divider/Divider";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { BookInitialValue } from "@definitions/defaults";
+import { useRequest } from "@hooks/useRequest";
 export type CheckoutForm = {
   client: Account;
   accessions: DetailedAccession[];
@@ -111,10 +112,10 @@ const CheckoutPage = () => {
       );
     }
   };
-
+  const { Post } = useRequest();
   const submitCheckout = useMutation({
     mutationFn: (formData: CheckoutForm) =>
-      axiosClient.post("/circulation/checkout", {
+      Post("/circulation/checkout", {
         clientId: formData.client.id,
         accessions: formData.accessions,
         dueDate: formData.dueDate,

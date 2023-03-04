@@ -15,7 +15,7 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import axiosClient from "@definitions/configs/axios";
+
 import { Accession, Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +31,9 @@ import TimeAgo from "timeago-react";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import { useMsal } from "@azure/msal-react";
+import { SCOPES } from "@definitions/configs/msal.config";
+import { useRequest } from "@hooks/useRequest";
 
 const BookPage = () => {
   const {
@@ -38,9 +41,11 @@ const BookPage = () => {
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
+
+  const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await axiosClient.get("/books/");
+      const { data: response } = await Get("/books/", {}, [SCOPES.book.read]);
       return response?.data?.books ?? [];
     } catch (error) {
       console.error(error);

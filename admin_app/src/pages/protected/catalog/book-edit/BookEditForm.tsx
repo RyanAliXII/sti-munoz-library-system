@@ -5,7 +5,6 @@ import { BaseSyntheticEvent, useEffect } from "react";
 
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
-import axiosClient from "@definitions/configs/axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
 import CustomSelect from "@components/ui/form/CustomSelect";
@@ -26,6 +25,7 @@ import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { buildS3Url } from "@definitions/configs/s3";
 import { useNavigate, useParams } from "react-router-dom";
 import { HttpStatusCode } from "axios";
+import { useRequest } from "@hooks/useRequest";
 
 const uppy = new Uppy({
   restrictions: {
@@ -67,9 +67,10 @@ const BookEditForm = () => {
     registerFormGroup,
   } = useBookEditFormContext();
 
+  const { Get, Put } = useRequest();
   const fetchPublishers = async () => {
     try {
-      const { data: response } = await axiosClient.get("/publishers/");
+      const { data: response } = await Get("/publishers/");
       return response.data?.publishers ?? [];
     } catch (error) {
       console.log(error);
@@ -78,7 +79,7 @@ const BookEditForm = () => {
   };
   const fetchSourceofFunds = async () => {
     try {
-      const { data: response } = await axiosClient.get("/source-of-funds/");
+      const { data: response } = await Get("/source-of-funds/");
       return response.data?.sources ?? [];
     } catch (error) {
       console.error(error);
@@ -87,7 +88,7 @@ const BookEditForm = () => {
   };
   const fetchSections = async () => {
     try {
-      const { data: response } = await axiosClient.get("/sections/");
+      const { data: response } = await Get("/sections/");
       return response.data?.sections ?? [];
     } catch (error) {
       console.log(error);
@@ -132,7 +133,7 @@ const BookEditForm = () => {
 
   const mutation = useMutation({
     mutationFn: (parsedForm: Book) =>
-      axiosClient.put(`books/${parsedForm.id}`, {
+      Put(`books/${parsedForm.id}`, {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
       }),
@@ -157,7 +158,7 @@ const BookEditForm = () => {
   const navigate = useNavigate();
   const { id: bookId } = useParams();
   const fetchBook = async () => {
-    const { data: response } = await axiosClient.get(`/books/${bookId}`);
+    const { data: response } = await Get(`/books/${bookId}`);
     return response?.data?.book ?? {};
   };
   const { isFetched } = useQuery<Book>({

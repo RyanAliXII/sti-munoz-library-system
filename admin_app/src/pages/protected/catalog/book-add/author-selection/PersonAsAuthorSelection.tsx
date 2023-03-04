@@ -8,16 +8,17 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import axiosClient from "@definitions/configs/axios";
 import { useQuery } from "@tanstack/react-query";
 import { PersonAuthor } from "@definitions/types";
 import { useMemo } from "react";
 import { useBookAddFormContext } from "../BookAddFormContext";
+import { useRequest } from "@hooks/useRequest";
 
 const PersonAsAuthorSelection = () => {
+  const { Get } = useRequest();
   const fetchAuthors = async () => {
     try {
-      const { data: response } = await axiosClient.get("/authors/");
+      const { data: response } = await Get("/authors/");
       return response?.data?.authors ?? [];
     } catch (error) {
       console.error(error);

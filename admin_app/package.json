@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^2.32.1",
-    "@azure/msal-react": "^1.5.1",
+    "@azure/msal-react": "^1.5.3",
     "@tanstack/react-query": "^4.20.4",
     "@tanstack/react-table": "^8.7.4",
     "@tinymce/tinymce-react": "^4.2.0",

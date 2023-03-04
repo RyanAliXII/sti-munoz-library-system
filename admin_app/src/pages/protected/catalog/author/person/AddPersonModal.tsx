@@ -1,6 +1,5 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
-import axiosClient from "@definitions/configs/axios";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,12 +7,13 @@ import { BaseSyntheticEvent } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { CreateAuthorSchema } from "../../schema";
-import { Author, ModalProps } from "@definitions/types";
+import { PersonAuthor, ModalProps } from "@definitions/types";
 import { ADD_AUTHOR_INITIAL_FORM } from "../AuthorPage";
+import { useRequest } from "@hooks/useRequest";
 
 const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { form, errors, validate, handleFormInput, resetForm } = useForm<
-    Omit<Author, "id">
+    Omit<PersonAuthor, "id">
   >({
     initialFormData: ADD_AUTHOR_INITIAL_FORM,
     schema: CreateAuthorSchema,
@@ -28,9 +28,9 @@ const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     }
   };
-
+  const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => axiosClient.post("/authors/", form),
+    mutationFn: () => Post("/authors/", form),
     onSuccess: () => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);

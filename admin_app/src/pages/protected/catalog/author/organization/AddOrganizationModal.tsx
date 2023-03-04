@@ -1,19 +1,15 @@
-import {
-  LighButton,
-  LightOutlineButton,
-  PrimaryButton,
-  SecondaryOutlineButton,
-} from "@components/ui/button/Button";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
 import { ModalProps, Organization } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
-import React, { BaseSyntheticEvent, FormEventHandler } from "react";
+import { BaseSyntheticEvent } from "react";
 import Modal from "react-responsive-modal";
 import { OrganizationValidation } from "../../schema";
 import { useMutation } from "@tanstack/react-query";
-import axiosClient from "@definitions/configs/axios";
+
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
+import { useRequest } from "@hooks/useRequest";
 
 type AddFormType = Omit<Organization, "id">;
 interface AddOrgModalProps extends ModalProps {
@@ -31,6 +27,8 @@ const AddOrganizationModal = ({
       },
       schema: OrganizationValidation,
     });
+
+  const { Post } = useRequest();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -40,8 +38,7 @@ const AddOrganizationModal = ({
     } catch {}
   };
   const newOrganization = useMutation({
-    mutationFn: (data: AddFormType) =>
-      axiosClient.post("/authors/organizations", data),
+    mutationFn: (data: AddFormType) => Post("/authors/organizations", data),
     onSuccess: () => {
       toast.success("New organization has been added.");
       refetch();

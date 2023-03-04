@@ -1,4 +1,3 @@
-import axiosClient from "@definitions/configs/axios";
 import { Accession, Audit, Book } from "@definitions/types";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -18,6 +17,7 @@ import useQRScanner from "@hooks/useQRScanner";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import { useRequest } from "@hooks/useRequest";
 
 export interface AuditedAccession
   extends Omit<
@@ -36,9 +36,9 @@ type QrResult = {
 };
 const AuditScan = () => {
   const { id } = useParams();
-
+  const { Get, Post } = useRequest();
   const fetchAudit = async () => {
-    const { data: response } = await axiosClient.get(`/inventory/audits/${id}`);
+    const { data: response } = await Get(`/inventory/audits/${id}`);
     return response?.data?.audit ?? {};
   };
   const navigate = useNavigate();
@@ -59,9 +59,7 @@ const AuditScan = () => {
 
   const fetchAuditedBooks = async () => {
     try {
-      const { data: response } = await axiosClient.get(
-        `inventory/audits/${id}/books`
-      );
+      const { data: response } = await Get(`inventory/audits/${id}/books`);
       return response?.data?.audits ?? [];
     } catch {
       return [];
@@ -72,9 +70,10 @@ const AuditScan = () => {
     queryFn: fetchAuditedBooks,
     queryKey: ["auditedBooks"],
   });
+
   const sendBook = useMutation({
     mutationFn: (qrResult: QrResult) =>
-      axiosClient.post(
+      Post(
         `/inventory/audits/${id}/books/${qrResult.bookId}/accessions/${qrResult.accessionNumber}`
       ),
     onSuccess: () => {
