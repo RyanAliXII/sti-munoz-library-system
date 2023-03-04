@@ -10,7 +10,7 @@ import {
   EventMessage,
   AuthenticationResult,
 } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal.config";
+import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/msal.config";
 
 export const AuthContext = createContext({} as AuthContextState);
 export const useAuthContext = () => {

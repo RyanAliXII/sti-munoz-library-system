@@ -1,7 +1,7 @@
 import { PopupRequest, Configuration } from "@azure/msal-browser";
+import { MS_GRAPH_SCOPE } from "./scopes";
 
-
-const CLIENT_ID = "1b3617d9-7634-43f9-acf2-bd45c0b45ad6"
+export const CLIENT_ID = "1b3617d9-7634-43f9-acf2-bd45c0b45ad6"
 const msalConfig: Configuration = {
   auth: {
     clientId: CLIENT_ID,
@@ -17,28 +17,9 @@ const msalConfig: Configuration = {
     iframeHashTimeout: 10000,
   },
 };
-export const MS_GRAPH_SCOPE =  ["User.Read", "User.ReadBasic.All", "openid", "profile"]
 export const loginRequest: PopupRequest = {
   scopes: MS_GRAPH_SCOPE
 };
-
-export const createScope = (scope: string)=>{
-  return `api://${CLIENT_ID}/${scope}`
-} 
-export const SCOPES = {
-    library:{
-      access : createScope("Library.Admin.Access"),
-    },
-    pulisher: {
-        read: createScope("Publisher.Read"),
-        delete: createScope("Publisher.Delete")
-      },
-    book:{
-        read: createScope("Book.Read")
-    }
-
-}
-
 
 
 export default msalConfig;

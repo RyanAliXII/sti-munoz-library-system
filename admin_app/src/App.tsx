@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "@contexts/AuthContext";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
-import msalConfig from "./definitions/configs/msal.config";
+import msalConfig from "./definitions/configs/msal/msal.config";
 import "@assets/css/tailwind.css";
 import "react-toastify/dist/ReactToastify.css";
 import pages from "@pages/Pages";

@@ -1,5 +1,5 @@
 import { useMsal } from "@azure/msal-react"
-import { SCOPES } from "@definitions/configs/msal.config"
+import { SCOPES } from "@definitions/configs/msal/scopes"
 import axios, { AxiosRequestConfig } from "axios"
 import { StatusCodes } from "http-status-codes"
 
