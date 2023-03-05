@@ -12,7 +12,7 @@ export const useRequest = ()=>{
     request.interceptors.response.use(response=>{
         return response
     },  error =>{
-        if (error.response.status === StatusCodes.UNAUTHORIZED){
+        if (error?.response?.status === StatusCodes.UNAUTHORIZED){
                 const activeAccount = instance.getActiveAccount()
                 const loginHint = activeAccount?.idTokenClaims?.login_hint
                 instance.logout({
@@ -36,7 +36,7 @@ export const useRequest = ()=>{
             return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
     const Get = async(url: string, config?:AxiosRequestConfig<any>, scopes = [] as string[])=>{
@@ -53,7 +53,7 @@ export const useRequest = ()=>{
         return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
     const Delete = async(url: string, config?:AxiosRequestConfig<any>, scopes = [] as string[])=>{
@@ -71,7 +71,7 @@ export const useRequest = ()=>{
             
         }
         catch(error){
-            throw(error)
+            throw error
         }
       
     }
@@ -89,7 +89,7 @@ export const useRequest = ()=>{
             return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
     const Patch = async(url: string, data?: any, config?:AxiosRequestConfig<any> | undefined, scopes = [] as string[] )=>{
@@ -107,7 +107,7 @@ export const useRequest = ()=>{
             return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
    

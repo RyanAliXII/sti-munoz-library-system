@@ -125,5 +125,7 @@ export type Module = {
 
 export type Role ={
   name: string,
-  permissions: Record<string, string[]>
+  permissions: Record<string, string[]> 
 }
+
+

@@ -1,26 +1,10 @@
 package acl
 
-type Permission struct {
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"name"`
-}
-type Module struct {
-	Name                       string       `json:"name"`
-	DisplayText                string       `json:"displayText"`
-	RequiredPermissionToAccess string       `json:"requiredPermissionToAccess"`
-	Permissions                []Permission `json:"permissions"`
-}
-
 var Modules = []Module{
 	{
-		Name:                       "Publisher",
-		DisplayText:                "Publisher",
-		RequiredPermissionToAccess: "Publisher.Access",
+		Name:        "Publisher",
+		DisplayText: "Publisher",
 		Permissions: []Permission{
-			{
-				Name:        "Publisher.Access",
-				Description: "User has access to publisher module.",
-			},
 			{
 				Name:        "Publisher.Read",
 				Description: "User can view publisher.",
@@ -40,15 +24,10 @@ var Modules = []Module{
 		},
 	},
 	{
-		Name:                       "Author",
-		DisplayText:                "Author",
-		RequiredPermissionToAccess: "Author.Access",
-		Permissions: []Permission{
-			{
-				Name:        "Author.Access",
-				Description: "User has access to author module.",
-			},
+		Name:        "Author",
+		DisplayText: "Author",
 
+		Permissions: []Permission{
 			{
 				Name:        "Author.Read",
 				Description: "User can view author.",
@@ -68,14 +47,9 @@ var Modules = []Module{
 		},
 	},
 	{
-		Name:                       "Book",
-		DisplayText:                "Book",
-		RequiredPermissionToAccess: "Book.Access",
+		Name:        "Book",
+		DisplayText: "Book",
 		Permissions: []Permission{
-			{
-				Name:        "Book.Access",
-				Description: "User has access to book module.",
-			},
 			{
 				Name:        "Book.Read",
 				Description: "User can view book.",
@@ -95,14 +69,9 @@ var Modules = []Module{
 		},
 	},
 	{
-		Name:                       "SOF",
-		DisplayText:                "Source of Fund",
-		RequiredPermissionToAccess: "SOF.Access",
+		Name:        "SOF",
+		DisplayText: "Source of Fund",
 		Permissions: []Permission{
-			{
-				Name:        "SOF.Access",
-				Description: "User has access to source of fund module.",
-			},
 			{
 				Name:        "SOF.Read",
 				Description: "User can view source of fund.",
@@ -122,14 +91,9 @@ var Modules = []Module{
 		},
 	},
 	{
-		Name:                       "Account",
-		DisplayText:                "Account",
-		RequiredPermissionToAccess: "Account.Access",
+		Name:        "Account",
+		DisplayText: "Account",
 		Permissions: []Permission{
-			{
-				Name:        "Account.Access",
-				Description: "User has access to client's account module.",
-			},
 			{
 				Name:        "Account.Read",
 				Description: "User can view client's account.",
@@ -141,14 +105,10 @@ var Modules = []Module{
 		},
 	},
 	{
-		Name:                       "Accession",
-		DisplayText:                "Accession",
-		RequiredPermissionToAccess: "Accession.Access",
+		Name:        "Accession",
+		DisplayText: "Accession",
+
 		Permissions: []Permission{
-			{
-				Name:        "Accession.Access",
-				Description: "User has access to accession module.",
-			},
 			{
 				Name:        "Accession.Read",
 				Description: "User can view accession.",
@@ -156,14 +116,9 @@ var Modules = []Module{
 		},
 	},
 	{
-		Name:                       "AccessControl",
-		DisplayText:                "Access Control",
-		RequiredPermissionToAccess: "AccessControl.Access",
+		Name:        "AccessControl",
+		DisplayText: "Access Control",
 		Permissions: []Permission{
-			{
-				Name:        "AccessControl.Access",
-				Description: "User has access access control module.",
-			},
 			{
 				Name:        "AccessControl.Assign",
 				Description: "User can assign role to user.",
@@ -175,5 +130,39 @@ var Modules = []Module{
 		},
 	},
 }
+var PermissionsFlatArray = getModulesPermissionsFlatArray()
+var PermissionsStructuredMap = getModulesPermissionsStructuredMap()
+var PermissionsFlatMap = getModulesPermissionsFlatMap()
 
-// }
+func getModulesPermissionsFlatArray() []Permission {
+	permissions := make([]Permission, 0)
+	for _, module := range Modules {
+		permissions = append(permissions, module.Permissions...)
+	}
+	return permissions
+
+}
+
+func getModulesPermissionsStructuredMap() map[string]map[string]Permission {
+	permissions := map[string]map[string]Permission{}
+
+	for _, module := range Modules {
+		for _, p := range module.Permissions {
+			permissions[module.Name] = map[string]Permission{
+				p.Name: p,
+			}
+		}
+	}
+	return permissions
+}
+
+func getModulesPermissionsFlatMap() map[string]Permission {
+	permissions := map[string]Permission{}
+
+	for _, module := range Modules {
+		for _, p := range module.Permissions {
+			permissions[p.Name] = p
+		}
+	}
+	return permissions
+}

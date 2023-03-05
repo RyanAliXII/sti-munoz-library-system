@@ -18,9 +18,9 @@ import { ModalProps, Module, Role } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery } from "@tanstack/react-query";
-import { remove } from "lodash";
-import React, { BaseSyntheticEvent, MouseEventHandler, useMemo } from "react";
+import { Mutation, useMutation, useQuery } from "@tanstack/react-query";
+
+import React, { BaseSyntheticEvent, useEffect, useMemo } from "react";
 
 import Modal from "react-responsive-modal";
 
@@ -58,7 +58,7 @@ const AccessControlPage = () => {
 };
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
-  const { Get } = useRequest();
+  const { Get, Post } = useRequest();
   const { form, handleFormInput, setForm } = useForm<Role>({
     initialFormData: {
       name: "",
@@ -68,7 +68,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
 
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
-    console.log(form);
+    createRole.mutate();
   };
   const fetchPermissions = async () => {
     try {
@@ -79,6 +79,10 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       return [];
     }
   };
+  const createRole = useMutation({
+    mutationFn: () => Post("/system/roles", form),
+    onSuccess: () => {},
+  });
 
   const { data: modules } = useQuery<Module[]>({
     queryKey: ["modules"],
@@ -156,18 +160,11 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                   <ul className="list-none px-1 ">
                     {module.permissions.map((p) => {
                       let isChecked = false;
-                      let isDisabled = false;
                       const selectedModule = selectedPermissionCache[
                         module.name
                       ] as Record<string, boolean>;
                       if (selectedModule) {
                         isChecked = selectedModule[p.name];
-                      }
-                      if (
-                        !selectedModule &&
-                        p.name != module.requiredPermissionToAccess
-                      ) {
-                        isDisabled = true;
                       }
 
                       return (
@@ -179,9 +176,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                                 handleRemove(module.name, p.name);
                                 return;
                               }
-                              if (!isDisabled) {
-                                handleSelect(module.name, p.name);
-                              }
+                              handleSelect(module.name, p.name);
                             }}
                           >
                             <div>
@@ -189,7 +184,6 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                                 type="checkbox"
                                 checked={isChecked ? true : false}
                                 readOnly={true}
-                                disabled={isDisabled}
                                 className="h-8 flex items-center"
                               ></input>
                             </div>
