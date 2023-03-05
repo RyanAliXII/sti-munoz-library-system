@@ -156,11 +156,18 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                   <ul className="list-none px-1 ">
                     {module.permissions.map((p) => {
                       let isChecked = false;
+                      let isDisabled = false;
                       const selectedModule = selectedPermissionCache[
                         module.name
-                      ] as Record<string, string>;
+                      ] as Record<string, boolean>;
                       if (selectedModule) {
-                        isChecked = selectedModule[p.name] ? true : false;
+                        isChecked = selectedModule[p.name];
+                      }
+                      if (
+                        !selectedModule &&
+                        p.name != module.requiredPermissionToAccess
+                      ) {
+                        isDisabled = true;
                       }
 
                       return (
@@ -172,14 +179,17 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                                 handleRemove(module.name, p.name);
                                 return;
                               }
-                              handleSelect(module.name, p.name);
+                              if (!isDisabled) {
+                                handleSelect(module.name, p.name);
+                              }
                             }}
                           >
                             <div>
                               <input
                                 type="checkbox"
-                                checked={isChecked}
+                                checked={isChecked ? true : false}
                                 readOnly={true}
+                                disabled={isDisabled}
                                 className="h-8 flex items-center"
                               ></input>
                             </div>
