@@ -112,3 +112,18 @@ export type Organization  = {
   id?: number
   name: string
 }
+export type Permission = {
+  name : string
+  description: string
+}
+export type Module = {
+  name: string,
+  displayText: string
+  requiredPermissionToAccess: string,
+  permissions: Permission[]
+}
+
+export type Role ={
+  name: string,
+  permissions: Record<string, string[]>
+}

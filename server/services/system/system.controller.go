@@ -2,7 +2,7 @@ package system
 
 import (
 	"slim-app/server/app/http/httpresp"
-	"slim-app/server/app/pkg/security"
+	acl "slim-app/server/app/pkg/security"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,10 +10,10 @@ import (
 type SystemController struct {
 }
 
-func (ctrler *SystemController) GetPermissions(ctx *gin.Context) {
+func (ctrler *SystemController) GetModules(ctx *gin.Context) {
 
 	ctx.JSON(httpresp.Success200(gin.H{
-		"permissions": security.Permissions,
+		"modules": acl.Modules,
 	}, "Permissions fetched."))
 }
 
@@ -22,5 +22,5 @@ func NewSystemConctroller() SystemControllerInterface {
 }
 
 type SystemControllerInterface interface {
-	GetPermissions(ctx *gin.Context)
+	GetModules(ctx *gin.Context)
 }

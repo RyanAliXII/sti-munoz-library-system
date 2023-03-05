@@ -6,6 +6,6 @@ import (
 
 func SystemRoutes(router *gin.RouterGroup) {
 	ctrler := NewSystemConctroller()
-	router.GET("/permissions", ctrler.GetPermissions)
+	router.GET("/modules", ctrler.GetModules)
 
 }

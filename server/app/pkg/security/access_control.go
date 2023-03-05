@@ -1,157 +1,179 @@
-package security
+package acl
 
 type Permission struct {
 	Name        string `json:"name" db:"name"`
-	IsRoot      bool   `json:"isRoot" db:"isRoot"`
 	Description string `json:"description" db:"name"`
 }
+type Module struct {
+	Name                       string       `json:"name"`
+	DisplayText                string       `json:"displayText"`
+	RequiredPermissionToAccess string       `json:"requiredPermissionToAccess"`
+	Permissions                []Permission `json:"permissions"`
+}
 
-var Permissions = map[string][]Permission{
+var Modules = []Module{
+	{
+		Name:                       "Publisher",
+		DisplayText:                "Publisher",
+		RequiredPermissionToAccess: "Publisher.Access",
+		Permissions: []Permission{
+			{
+				Name:        "Publisher.Access",
+				Description: "User has access to publisher module.",
+			},
+			{
+				Name:        "Publisher.Read",
+				Description: "User can view publisher.",
+			},
+			{
+				Name:        "Publisher.Update",
+				Description: "User can update publisher.",
+			},
+			{
+				Name:        "Publisher.Delete",
+				Description: "User can delete publisher.",
+			},
+			{
+				Name:        "Publisher.Add",
+				Description: "User can add publisher.",
+			},
+		},
+	},
+	{
+		Name:                       "Author",
+		DisplayText:                "Author",
+		RequiredPermissionToAccess: "Author.Access",
+		Permissions: []Permission{
+			{
+				Name:        "Author.Access",
+				Description: "User has access to author module.",
+			},
 
-	"publisher": {
-		{
-			Name:        "Publisher.Access",
-			Description: "User has access to publisher module.",
-			IsRoot:      true,
-		},
-		{
-			Name:        "Publisher.Read",
-			Description: "User can view publisher.",
-		},
-		{
-			Name:        "Publisher.Update",
-			Description: "User can update publisher.",
-		},
-		{
-			Name:        "Publisher.Delete",
-			Description: "User can delete publisher.",
-		},
-		{
-			Name:        "Publisher.Add",
-			Description: "User can add publisher.",
+			{
+				Name:        "Author.Read",
+				Description: "User can view author.",
+			},
+			{
+				Name:        "Author.Update",
+				Description: "User can update author.",
+			},
+			{
+				Name:        "Author.Delete",
+				Description: "User can delete author.",
+			},
+			{
+				Name:        "Author.Add",
+				Description: "User can add author.",
+			},
 		},
 	},
-
-	"author": {
-		{
-			Name:        "Author.Access",
-			Description: "User has access to author module.",
-			IsRoot:      true,
-		},
-
-		{
-			Name:        "Author.Read",
-			Description: "User can view author.",
-		},
-		{
-			Name:        "Author.Update",
-			Description: "User can update author.",
-		},
-		{
-			Name:        "Author.Delete",
-			Description: "User can delete author.",
-		},
-		{
-			Name:        "Author.Add",
-			Description: "User can add author.",
-		},
-	},
-	"book": {
-		{
-			Name:        "Book.Access",
-			Description: "User has access to book module.",
-			IsRoot:      true,
-		},
-		{
-			Name:        "Book.Read",
-			Description: "User can view book.",
-		},
-		{
-			Name:        "Book.Update",
-			Description: "User can update book",
-		},
-		{
-			Name:        "Book.Delete",
-			Description: "User can weed or delete book.",
-		},
-		{
-			Name:        "Book.Add",
-			Description: "User can add book.",
+	{
+		Name:                       "Book",
+		DisplayText:                "Book",
+		RequiredPermissionToAccess: "Book.Access",
+		Permissions: []Permission{
+			{
+				Name:        "Book.Access",
+				Description: "User has access to book module.",
+			},
+			{
+				Name:        "Book.Read",
+				Description: "User can view book.",
+			},
+			{
+				Name:        "Book.Update",
+				Description: "User can update book",
+			},
+			{
+				Name:        "Book.Delete",
+				Description: "User can weed or delete book.",
+			},
+			{
+				Name:        "Book.Add",
+				Description: "User can add book.",
+			},
 		},
 	},
-	"source": {
-		{
-			Name:        "SOF.Access",
-			Description: "User has access to source of fund module.",
-			IsRoot:      true,
-		},
-		{
-			Name:        "SOF.Read",
-			Description: "User can view source of fund.",
-		},
-		{
-			Name:        "SOF.Update",
-			Description: "User can update source of fund.",
-		},
-		{
-			Name:        "SOF.Delete",
-			Description: "User can delete source of fund.",
-		},
-		{
-			Name:        "SOF.Add",
-			Description: "User can add source of fund.",
-		},
-	},
-	"account": {
-		{
-			Name:        "Account.Access",
-			Description: "User has access to client's account module.",
-			IsRoot:      true,
-		},
-		{
-			Name:        "Account.Read",
-			Description: "User can view client's account.",
-		},
-		{
-			Name:        "Account.Add",
-			Description: "User can add source of fund.",
+	{
+		Name:                       "SOF",
+		DisplayText:                "Source of Fund",
+		RequiredPermissionToAccess: "SOF.Access",
+		Permissions: []Permission{
+			{
+				Name:        "SOF.Access",
+				Description: "User has access to source of fund module.",
+			},
+			{
+				Name:        "SOF.Read",
+				Description: "User can view source of fund.",
+			},
+			{
+				Name:        "SOF.Update",
+				Description: "User can update source of fund.",
+			},
+			{
+				Name:        "SOF.Delete",
+				Description: "User can delete source of fund.",
+			},
+			{
+				Name:        "SOF.Add",
+				Description: "User can add source of fund.",
+			},
 		},
 	},
-	"accession": {
-		{
-			Name:        "Accession.Access",
-			Description: "User has access to accession module.",
-			IsRoot:      true,
-		},
-		{
-			Name:        "Accession.Read",
-			Description: "User can view accession.",
+	{
+		Name:                       "Account",
+		DisplayText:                "Account",
+		RequiredPermissionToAccess: "Account.Access",
+		Permissions: []Permission{
+			{
+				Name:        "Account.Access",
+				Description: "User has access to client's account module.",
+			},
+			{
+				Name:        "Account.Read",
+				Description: "User can view client's account.",
+			},
+			{
+				Name:        "Account.Add",
+				Description: "User can add source of fund.",
+			},
 		},
 	},
-	"security": {
-		{
-			Name:        "AccessControl.Security",
-			IsRoot:      true,
-			Description: "User can view security access control module.",
+	{
+		Name:                       "Accession",
+		DisplayText:                "Accession",
+		RequiredPermissionToAccess: "Accession.Access",
+		Permissions: []Permission{
+			{
+				Name:        "Accession.Access",
+				Description: "User has access to accession module.",
+			},
+			{
+				Name:        "Accession.Read",
+				Description: "User can view accession.",
+			},
 		},
-		{
-			Name:        "AccessControl.Assign",
-			Description: "User can assign role to user.",
-		},
-		{
-			Name:        "AccessControl.CreateRole",
-			Description: "User can create role.",
+	},
+	{
+		Name:                       "AccessControl",
+		DisplayText:                "Access Control",
+		RequiredPermissionToAccess: "AccessControl.Access",
+		Permissions: []Permission{
+			{
+				Name:        "AccessControl.Access",
+				Description: "User has access access control module.",
+			},
+			{
+				Name:        "AccessControl.Assign",
+				Description: "User can assign role to user.",
+			},
+			{
+				Name:        "AccessControl.CreateRole",
+				Description: "User can create role.",
+			},
 		},
 	},
 }
-
-// func createPermission(domain string){
-// permissions := []string{
-// 	".NoAccess",
-// 	".Read",
-// 	".Update",
-// 	".Add",
-// 	".Delete",
-// }
 
 // }
