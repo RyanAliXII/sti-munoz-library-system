@@ -9,9 +9,15 @@ import { ClipLoader } from "react-spinners";
 import { useRequest } from "@hooks/useRequest";
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
+  label?: string;
+  placeholder?: string;
 };
 const HIGHLIGHTED_CLASS = "bg-gray-100";
-const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
+const ClientSearchBox = ({
+  setClient,
+  placeholder,
+  label,
+}: ClientSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
   const DELAY_IN_MILLISECOND = 500;
@@ -54,11 +60,11 @@ const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
           getMenuProps,
           highlightedIndex,
         }) => (
-          <div className="w-10/12  relative">
-            <label className={InputClasses.LabelClasslist}>Search client</label>
+          <div className="w-full relative">
+            <label className={InputClasses.LabelClasslist}>{label ?? ""}</label>
             <input
               {...getInputProps({
-                placeholder: "Enter client's surname, given name or email",
+                placeholder: placeholder ?? "",
                 onChange: handleSearchBoxChange,
                 className: InputClasses.InputDefaultClasslist,
               })}

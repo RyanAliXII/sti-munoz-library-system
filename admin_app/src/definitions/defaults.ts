@@ -22,13 +22,14 @@ export const BookInitialValue: Book =  {
       name: "",
       id: 0,
     },
+    covers:[],
     copies: 1,
     receivedAt: new Date().toISOString(),
     authorNumber: "",
     ddc: 0,
     costPrice: 0,
     description: "",
-
+  
     edition: 0,
     pages: 1,
 
@@ -39,6 +40,7 @@ export const BookInitialValue: Book =  {
 
   export const BorrowedCopyInitialValue:BorrowedCopy = {
     book: BookInitialValue,
+    isReturned: false,
     bookId: "",
     copyNumber: 0,
     number: 0,
@@ -58,5 +60,6 @@ export const BookInitialValue: Book =  {
   dueDate: "",
   returnedAt: "",
   remarks: "",
+  isReturned: false
 }
 

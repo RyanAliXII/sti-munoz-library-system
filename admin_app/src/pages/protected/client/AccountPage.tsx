@@ -29,6 +29,8 @@ import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { toast } from "react-toastify";
 import { useRequest } from "@hooks/useRequest";
+import { useMsal } from "@azure/msal-react";
+import { SCOPES } from "@definitions/configs/msal/scopes";
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
 
@@ -80,7 +82,25 @@ const AccountPage = () => {
     setSearchKeyWord(event.target.value);
     debounceSearch(search, "", 500);
   };
+  // sh!t implementation, will come back and fix this. this will be good for now.
+  // POOP
+  const [token, setToken] = useState("");
+  const { instance } = useMsal();
+  const getAccessToken = async () => {
+    const token = await instance.acquireTokenSilent({
+      scopes: [SCOPES.library.access],
+    });
 
+    setToken(token.accessToken);
+  };
+
+  useEffect(() => {
+    if (isImportModalOpen) {
+      getAccessToken();
+    }
+  }, [isImportModalOpen]);
+
+  // POOP
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex items-center gap-5">
@@ -151,6 +171,7 @@ const AccountPage = () => {
               refetch={() => {
                 refetch();
               }}
+              token={token}
             ></UploadArea>
           </Modal>
         )}
@@ -160,8 +181,9 @@ const AccountPage = () => {
 };
 type UploadAreaProps = {
   refetch: () => void;
+  token: string;
 };
-const UploadArea = ({ refetch }: UploadAreaProps) => {
+const UploadArea = ({ refetch, token }: UploadAreaProps) => {
   useEffect(() => {
     const onSuccessUpload = () => {
       toast.success("Accounts have been imported.");
@@ -184,6 +206,9 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
         },
       })
       .use(XHRUpload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         endpoint: `${BASE_URL_V1}/clients/accounts/bulk`,
       });
     uppy.on("upload-success", onSuccessUpload);
