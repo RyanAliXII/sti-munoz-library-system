@@ -113,12 +113,17 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
   {
     text: "System",
-    to: "/system",
+    to: "/",
     icon: <FiSettings className="text-xl" />,
     items: [
       {
-        to: "/system/access",
-        text: "Access Control",
+        to: "/system/access-control/",
+        text: "Role and Permission",
+        items: [],
+      },
+      {
+        to: "/system/access-control/assign",
+        text: "Assign Role",
         items: [],
       },
     ],

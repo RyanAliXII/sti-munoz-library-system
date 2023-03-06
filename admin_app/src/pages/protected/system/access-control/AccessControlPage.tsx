@@ -18,11 +18,17 @@ import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 
-import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import {
+  AiFillInfoCircle,
+  AiOutlineDelete,
+  AiOutlineEdit,
+} from "react-icons/ai";
 
 import AddRoleModal from "./AddRoleModal";
 import { useState } from "react";
 import EditRoleModal from "./EditRoleModal";
+import { NavLink } from "react-router-dom";
+import { BsArrowRight } from "react-icons/bs";
 
 const AccessControlPage = () => {
   const {
@@ -61,6 +67,30 @@ const AccessControlPage = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Access Control</h1>
           <PrimaryButton onClick={openAddModal}>Create Role</PrimaryButton>
+        </div>
+      </ContainerNoBackground>
+
+      <ContainerNoBackground className="flex gap-2">
+        <div className="w-full py-5 bg-blue-100 rounded">
+          <div className="flex justify-between gap-5 w-full">
+            <div className="flex items-center gap-2">
+              <AiFillInfoCircle className="text-xl text-blue-500 ml-2"></AiFillInfoCircle>
+              <small className="text-blue-500">
+                The user role determines which set of permissions apply to the
+                system user. You can assign role to user to allow access to
+                certain system modules.
+              </small>
+            </div>
+            <div className="flex items-center gap-2 mr-5 text-blue-500 justify-self-end">
+              <NavLink
+                to={"/system/access-control/assign"}
+                className="text-xs font-semibold"
+              >
+                Start assigning role
+              </NavLink>
+              <BsArrowRight className="font-semibold" />
+            </div>
+          </div>
         </div>
       </ContainerNoBackground>
       <Container>
