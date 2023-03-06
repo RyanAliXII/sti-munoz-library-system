@@ -119,11 +119,11 @@ export type Permission = {
 export type Module = {
   name: string,
   displayText: string
-  requiredPermissionToAccess: string,
   permissions: Permission[]
 }
 
 export type Role ={
+  id?: number
   name: string,
   permissions: Record<string, string[]> 
 }

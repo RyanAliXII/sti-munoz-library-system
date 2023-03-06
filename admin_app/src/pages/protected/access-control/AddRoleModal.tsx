@@ -2,64 +2,21 @@ import {
   LightOutlineButton,
   PrimaryButton,
 } from "@components/ui/button/Button";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
 import Divider from "@components/ui/divider/Divider";
 import { Input } from "@components/ui/form/Input";
-import {
-  HeadingRow,
-  Table,
-  Tbody,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
 import { ModalProps, Module, Role } from "@definitions/types";
+import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
-import { useSwitch } from "@hooks/useToggle";
-import { Mutation, useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import React, { BaseSyntheticEvent, useEffect, useMemo } from "react";
-
+import React, { BaseSyntheticEvent, useMemo } from "react";
 import Modal from "react-responsive-modal";
-
-const AccessControlPage = () => {
-  const {
-    isOpen: isAddModalOpen,
-    close: closeAddModal,
-    open: openAddModal,
-  } = useSwitch();
-
-  return (
-    <>
-      <ContainerNoBackground>
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-700">Access Control</h1>
-          <PrimaryButton onClick={openAddModal}>Create Role</PrimaryButton>
-        </div>
-      </ContainerNoBackground>
-      <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Roles</Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody></Tbody>
-        </Table>
-      </Container>
-      <AddRoleModal
-        isOpen={isAddModalOpen}
-        closeModal={closeAddModal}
-      ></AddRoleModal>
-    </>
-  );
-};
+import { toast } from "react-toastify";
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const { Get, Post } = useRequest();
-  const { form, handleFormInput, setForm } = useForm<Role>({
+  const { form, handleFormInput, setForm, resetForm } = useForm<Role>({
     initialFormData: {
       name: "",
       permissions: {},
@@ -70,6 +27,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     event.preventDefault();
     createRole.mutate();
   };
+  const queryClient = useQueryClient();
   const fetchPermissions = async () => {
     try {
       const { data: response } = await Get("/system/modules");
@@ -81,7 +39,17 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   };
   const createRole = useMutation({
     mutationFn: () => Post("/system/roles", form),
-    onSuccess: () => {},
+    onSuccess: () => {
+      toast.success("Role has been created Successfully");
+      queryClient.invalidateQueries(["roles"]);
+    },
+    onError: () => {
+      toast.error(ErrorMsg.New);
+    },
+    onSettled: () => {
+      resetForm();
+      closeModal();
+    },
   });
 
   const { data: modules } = useQuery<Module[]>({
@@ -146,6 +114,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
             type="text"
             name="name"
             onChange={handleFormInput}
+            value={form.name}
             label="Role name"
             placeholder="e.g Librarian, Assistant Librarian, Staff"
           ></Input>
@@ -220,5 +189,4 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     </Modal>
   );
 };
-
-export default AccessControlPage;
+export default AddRoleModal;

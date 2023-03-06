@@ -19,7 +19,7 @@ import AccountPage from "./protected/client/AccountPage";
 import CheckoutPage from "./protected/circulation/checkout/CheckoutPage";
 import ReturnPage from "./protected/circulation/ReturnPage";
 import ReturnDetailPage from "./protected/circulation/ReturnDetailPage";
-import AccessControlPage from "./protected/AccessControlPage";
+import AccessControlPage from "./protected/access-control/AccessControlPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
