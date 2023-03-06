@@ -12,6 +12,7 @@ import (
 	"slim-app/server/services/inventory"
 	"slim-app/server/services/publisher"
 	"slim-app/server/services/section"
+	"slim-app/server/services/system"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,4 +30,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	inventory.InventoryRoutes(grp.Group("/inventory"))
 	client.ClientRoutes(grp.Group("/clients"))
 	circulation.CirculationRoutes(grp.Group("/circulation"))
+	system.SystemRoutes(grp.Group("/system"))
 }

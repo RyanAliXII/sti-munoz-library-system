@@ -12,7 +12,7 @@ export const useRequest = ()=>{
     request.interceptors.response.use(response=>{
         return response
     },  error =>{
-        if (error.response.status === StatusCodes.UNAUTHORIZED){
+        if (error?.response?.status === StatusCodes.UNAUTHORIZED){
                 const activeAccount = instance.getActiveAccount()
                 const loginHint = activeAccount?.idTokenClaims?.login_hint
                 instance.logout({
@@ -20,23 +20,26 @@ export const useRequest = ()=>{
                     logoutHint: loginHint
                 })
         }
-        return error
+        if(error?.response?.status >= 400){
+            throw error
+        }
     })
     const Post = async(url: string, data?: any, config?:AxiosRequestConfig<any> | undefined, scopes = [] as string[] )=>{
         try{
             const tokens = await instance.acquireTokenSilent({
                 scopes:[SCOPES.library.access, ...scopes]
             })
-            const response = request.post(url, data, {
+            const response =     request.post(url, data, {
                 ...config,
                 headers:{
                     "Authorization" : `Bearer ${tokens.accessToken}`,
                 }
             })
+        
             return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
     const Get = async(url: string, config?:AxiosRequestConfig<any>, scopes = [] as string[])=>{
@@ -53,7 +56,7 @@ export const useRequest = ()=>{
         return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
     const Delete = async(url: string, config?:AxiosRequestConfig<any>, scopes = [] as string[])=>{
@@ -61,7 +64,7 @@ export const useRequest = ()=>{
             const tokens = await instance.acquireTokenSilent({
                 scopes:[SCOPES.library.access, ...scopes]
             })
-            const response = await request.delete(url, {
+            const response = request.delete(url, {
                 ...config,
                 headers:{
                     "Authorization" : `Bearer ${tokens.accessToken}`,
@@ -71,7 +74,7 @@ export const useRequest = ()=>{
             
         }
         catch(error){
-            throw(error)
+            throw error
         }
       
     }
@@ -89,7 +92,7 @@ export const useRequest = ()=>{
             return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
     const Patch = async(url: string, data?: any, config?:AxiosRequestConfig<any> | undefined, scopes = [] as string[] )=>{
@@ -107,7 +110,7 @@ export const useRequest = ()=>{
             return response
         }
         catch(error){
-            throw(error)
+            throw error
         }
     }
    

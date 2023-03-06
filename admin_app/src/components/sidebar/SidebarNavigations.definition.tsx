@@ -11,7 +11,7 @@ import { BsBookshelf, BsListCheck } from "react-icons/bs";
 import { ImBooks } from "react-icons/im";
 import { ReactNode } from "react";
 import { CgArrowsExchange } from "react-icons/cg";
-import { FiBookOpen } from "react-icons/fi";
+import { FiBookOpen, FiSettings } from "react-icons/fi";
 export type SidebarNavItem = {
   to: string;
   text?: string;
@@ -109,6 +109,23 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       //   to: "/circulation/return",
       //   items: [],
       // },
+    ],
+  },
+  {
+    text: "System",
+    to: "/",
+    icon: <FiSettings className="text-xl" />,
+    items: [
+      {
+        to: "/system/access-control/",
+        text: "Role and Permission",
+        items: [],
+      },
+      {
+        to: "/system/access-control/assign",
+        text: "Assign Role",
+        items: [],
+      },
     ],
   },
   // {

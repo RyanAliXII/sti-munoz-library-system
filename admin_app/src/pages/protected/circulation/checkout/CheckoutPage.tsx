@@ -144,7 +144,7 @@ const CheckoutPage = () => {
           Select Client
         </Divider>
         <div className="w-full flex items-center gap-2">
-          <ClientSearchBox setClient={setClient} form={checkout} />
+          <ClientSearchBox setClient={setClient} />
           <SecondaryButton className="h-9 mt-6 flex justify-center">
             <AiOutlineScan className="text-white inline text-lg " />
           </SecondaryButton>

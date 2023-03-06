@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes } from "react";
 
 export enum ButtonClasses {
-  PrimaryButtonDefaultClasslist = "bg-blue-500 p-2 rounded text-sm text-white font-semibold",
+  PrimaryButtonDefaultClasslist = "bg-blue-500 p-2 rounded text-sm text-white font-semibold disabled:opacity-75",
   DangerButtonDefaultClasslist = "bg-red-500 p-2 rounded text-sm text-white font-semibold",
   SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 text-sm rounded text-white font-semibold",
   LightButtonDefaultClasslist = "bg-gray-400 p-2 rounded text-sm text-white font-semibold",

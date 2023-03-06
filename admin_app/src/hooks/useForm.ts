@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent,  useRef, useState } from "react";
+import React, { BaseSyntheticEvent,  MutableRefObject,  useRef, useState } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import {  ObjectShape } from "yup/lib/object";
 import {get, set} from 'lodash'
@@ -8,6 +8,7 @@ type UseFormProps<T> = {
   initialFormData: T;
   schema?: ObjectSchema<ObjectShape>;
   scrollToError?: boolean
+  parentElementScroll?: MutableRefObject<HTMLElement | null>
 };
 
 enum InputTypes{
@@ -24,9 +25,9 @@ export interface UseFormType<T>{
   errors: any
   resetForm:()=>void,
   registerFormGroup:(el:any)=>(el:any)=>void
-
+ 
 }
-export const useForm = <T extends object>({initialFormData, schema, scrollToError=false}: UseFormProps<T>): UseFormType<T> => {
+export const useForm = <T extends object>({initialFormData, schema, scrollToError=false, parentElementScroll}: UseFormProps<T>): UseFormType<T> => {
   const [form, setForm] = useState<T>({...initialFormData});
   const [errors, setErrors] = useState<any>();
   const removeErrors = () => {
@@ -86,7 +87,7 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
       errorObject = set(errorObject, err?.path ?? '', err.message )
     });
     
-    if(scrollToError && error.inner.length > 0){
+    if(scrollToError && error.inner.length > 0 && !parentElementScroll?.current){
       const inputPath = error?.inner[0]?.path
       const element = get(formGroupRefs.current, inputPath ?? "", null )
       if(!element) return errorObject
@@ -94,6 +95,11 @@ export const useForm = <T extends object>({initialFormData, schema, scrollToErro
         offset: -150,
         duration: 700
     });
+    }
+    if (parentElementScroll?.current && scrollToError){
+      const inputPath = error?.inner[0]?.path
+      const element = get(formGroupRefs.current, inputPath ?? "", null ) as HTMLElement
+      parentElementScroll.current.scrollTo({behavior: "smooth", top:element.scrollTop})
     }
  
     return errorObject;
