@@ -13,19 +13,27 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { BaseSyntheticEvent, useMemo } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
+import { RoleSchemaValidation } from "./schema";
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const { Get, Post } = useRequest();
-  const { form, handleFormInput, setForm, resetForm } = useForm<Role>({
-    initialFormData: {
-      name: "",
-      permissions: {},
-    },
-  });
+  const { form, handleFormInput, setForm, resetForm, validate, errors } =
+    useForm<Role>({
+      initialFormData: {
+        name: "",
+        permissions: {},
+      },
+      scrollToError: true,
+      schema: RoleSchemaValidation,
+    });
 
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
-    createRole.mutate();
+    try {
+      const role = await validate();
+      if (!role) return;
+      createRole.mutate(role);
+    } catch {}
   };
   const queryClient = useQueryClient();
   const fetchPermissions = async () => {
@@ -38,7 +46,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     }
   };
   const createRole = useMutation({
-    mutationFn: () => Post("/system/roles", form),
+    mutationFn: (role: Role) => Post("/system/roles", role),
     onSuccess: () => {
       toast.success("Role has been created Successfully");
       queryClient.invalidateQueries(["roles"]);
@@ -116,11 +124,14 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
             onChange={handleFormInput}
             value={form.name}
             label="Role name"
+            error={errors?.name}
             placeholder="e.g Librarian, Assistant Librarian, Staff"
           ></Input>
 
           <div>
-            <h2 className="text-lg py-2 font-semibold ml-1">Access Control</h2>
+            <h2 className="text-lg py-2 font-semibold ml-1 mt-4">
+              Role Access Level
+            </h2>
             {modules?.map((module) => {
               return (
                 <div key={module.name} className="px-2">

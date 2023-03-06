@@ -6,6 +6,7 @@ import (
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 	"slim-app/server/repository"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -46,6 +47,11 @@ func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
 func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 	role := model.Role{}
 	bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
+	id, parseIdErr := strconv.Atoi(ctx.Param("id"))
+	if parseIdErr != nil {
+		logger.Error("Invalid param id.", slimlog.Function("SystemController.UpdateRole"), slimlog.Error("parseIdErr"))
+		return
+	}
 	if bindingErr != nil {
 		logger.Error(bindingErr.Error(), slimlog.Function("SystemController.UpdateRole"), slimlog.Error("bindingErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
@@ -57,9 +63,9 @@ func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Permissions doesn't not exists on this app."))
 		return
 	}
-
-	insertErr := ctrler.systemRepository.NewRole(role)
-	if insertErr != nil {
+	role.Id = id
+	updateErr := ctrler.systemRepository.UpdateRole(role)
+	if updateErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}

@@ -62,7 +62,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }}
           />
           <div className="h-2 flex items-center mt-2">
-            <small className="text-red-500">{props.error}</small>
+            <small className="text-red-500 ml-1">{props.error}</small>
           </div>
         </div>
       </>

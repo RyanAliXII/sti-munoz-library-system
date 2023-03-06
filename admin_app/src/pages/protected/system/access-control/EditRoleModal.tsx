@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { BaseSyntheticEvent, useEffect, useMemo } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
+import { RoleSchemaValidation } from "./schema";
 
 const EditRoleModal = ({
   closeModal,
@@ -20,11 +21,12 @@ const EditRoleModal = ({
   formData,
 }: EditModalProps<Role>) => {
   const { Get, Put } = useRequest();
-  const { form, handleFormInput, setForm, resetForm } = useForm<Role>({
+  const { form, handleFormInput, setForm, validate, errors } = useForm<Role>({
     initialFormData: {
       name: "",
       permissions: {},
     },
+    schema: RoleSchemaValidation,
   });
   useEffect(() => {
     setForm({ ...formData });
@@ -32,7 +34,11 @@ const EditRoleModal = ({
 
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
-    updateRole.mutate();
+    try {
+      const role = await validate();
+      if (!role) return;
+      updateRole.mutate(role);
+    } catch {}
   };
   const queryClient = useQueryClient();
   const fetchModules = async () => {
@@ -45,7 +51,7 @@ const EditRoleModal = ({
     }
   };
   const updateRole = useMutation({
-    mutationFn: () => Put(`/system/roles/${formData.id}`, form),
+    mutationFn: (role: Role) => Put(`/system/roles/${formData.id}`, form),
     onSuccess: () => {
       toast.success("Role has been updated Successfully");
       queryClient.invalidateQueries(["roles"]);
@@ -54,7 +60,6 @@ const EditRoleModal = ({
       toast.error(ErrorMsg.Update);
     },
     onSettled: () => {
-      resetForm();
       closeModal();
     },
   });
@@ -124,10 +129,13 @@ const EditRoleModal = ({
             value={form.name}
             label="Role name"
             placeholder="e.g Librarian, Assistant Librarian, Staff"
+            error={errors?.name}
           ></Input>
 
           <div>
-            <h2 className="text-lg py-2 font-semibold ml-1">Access Control</h2>
+            <h2 className="text-lg py-2 font-semibold ml-1 mt-4">
+              Role Access Level
+            </h2>
             {modules?.map((module) => {
               return (
                 <div key={module.name} className="px-2">

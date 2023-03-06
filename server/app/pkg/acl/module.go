@@ -100,7 +100,7 @@ var Modules = []Module{
 			},
 			{
 				Name:        "Account.Add",
-				Description: "User can add source of fund.",
+				Description: "User can add client's account.",
 			},
 		},
 	},
