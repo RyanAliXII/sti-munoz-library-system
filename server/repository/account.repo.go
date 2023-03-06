@@ -11,22 +11,22 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type ClientRepository struct {
+type AccountRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *ClientRepository) GetAccounts(filter Filter) []model.Account {
+func (repo *AccountRepository) GetAccounts(filter Filter) []model.Account {
 	query := `SELECT id, email, display_name, given_name, surname FROM client.account LIMIT $1 OFFSET $2`
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("ClientRepository.GetAccounts"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.GetAccounts"), slimlog.Error("selectErr"))
 	}
 	return accounts
 }
 
-func (repo *ClientRepository) SearchAccounts(filter Filter) []model.Account {
+func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
 	query := `
 			SELECT id, email, 
 			display_name, 
@@ -42,11 +42,11 @@ func (repo *ClientRepository) SearchAccounts(filter Filter) []model.Account {
 
 	selectErr := repo.db.Select(&accounts, query, filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("ClientRepository.SearchAccounts"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.SearchAccounts"), slimlog.Error("selectErr"))
 	}
 	return accounts
 }
-func (repo *ClientRepository) NewAccounts(accounts *[]model.Account) error {
+func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 	var accountRows []goqu.Record = make([]goqu.Record, 0)
 	dialect := goqu.Dialect("postgres")
 	for _, account := range *accounts {
@@ -81,13 +81,13 @@ func (repo *ClientRepository) NewAccounts(accounts *[]model.Account) error {
 	return nil
 }
 
-func NewClientRepository() ClientRepositoryInterface {
-	return &ClientRepository{
+func NewAccountRepository() AccountRepositoryInterface {
+	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
 	}
 }
 
-type ClientRepositoryInterface interface {
+type AccountRepositoryInterface interface {
 	GetAccounts(filter Filter) []model.Account
 	SearchAccounts(filter Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error

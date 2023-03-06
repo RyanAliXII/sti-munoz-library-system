@@ -1,4 +1,4 @@
-package client
+package account
 
 import (
 	"slim-app/server/app/pkg/slimlog"

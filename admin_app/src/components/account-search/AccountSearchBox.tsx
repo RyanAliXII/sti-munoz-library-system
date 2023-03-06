@@ -13,7 +13,7 @@ type ClientSearchBoxProps = {
   placeholder?: string;
 };
 const HIGHLIGHTED_CLASS = "bg-gray-100";
-const ClientSearchBox = ({
+const AccountSearchBox = ({
   setClient,
   placeholder,
   label,
@@ -27,7 +27,7 @@ const ClientSearchBox = ({
   const { Get } = useRequest();
   const fetchAccounts = async () => {
     try {
-      const { data: response } = await Get("/clients/accounts", {
+      const { data: response } = await Get("/accounts/", {
         params: {
           offset: 0,
           keyword: searchKeyword,
@@ -118,4 +118,4 @@ const ClientSearchBox = ({
   );
 };
 
-export default ClientSearchBox;
+export default AccountSearchBox;

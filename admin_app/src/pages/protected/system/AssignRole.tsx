@@ -13,12 +13,11 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import ClientSearchBox from "@components/client-search-box/ClientSearchBox";
-import { useForm } from "@hooks/useForm";
+import AccountSearchBox from "@components/account-search/AccountSearchBox";
+
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
-import { option } from "io-ts-types";
 import { SingleValue } from "react-select";
 import { PrimaryButton } from "@components/ui/button/Button";
 import { AssignRoleFormSchemaValidation } from "./schema";
@@ -104,11 +103,11 @@ const AssignRolePage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <ClientSearchBox
+        <AccountSearchBox
           setClient={handleSelect}
           label="Search Accounts"
           placeholder="Enter account given name, surname or email"
-        ></ClientSearchBox>
+        ></AccountSearchBox>
       </ContainerNoBackground>
       <Container>
         <Table>

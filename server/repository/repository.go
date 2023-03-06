@@ -10,7 +10,7 @@ type Repositories struct {
 	DDCRepository         DDCRepositoryInterface
 	BookRepository        BookRepositoryInterface
 	InventoryRepository   InventoryRepositoryInterface
-	ClientRepository      ClientRepositoryInterface
+	ClientRepository      AccountRepositoryInterface
 	CirculationRepository CirculationRepositoryInterface
 }
 
@@ -25,7 +25,7 @@ func New() *Repositories {
 		DDCRepository:          NewDDCRepository(),
 		BookRepository:         NewBookRepository(),
 		InventoryRepository:    NewInventoryRepository(),
-		ClientRepository:       NewClientRepository(),
+		ClientRepository:       NewAccountRepository(),
 		CirculationRepository:  NewCirculationRepository(),
 	}
 }
