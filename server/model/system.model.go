@@ -18,6 +18,11 @@ func (instance Permissions) Value() (driver.Value, error) {
 	return json.Marshal(instance)
 }
 
+type AccountRoles []struct {
+	Account Account `json:"account"`
+	Role    Role    `json:"role"`
+}
+
 func (instance *Permissions) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {

@@ -5,6 +5,9 @@ import (
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
 
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -37,6 +40,28 @@ func (repo *SystemRepository) GetRoles() []model.Role {
 	}
 	return roles
 }
+func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error {
+	dialect := goqu.Dialect("postgres")
+	rows := make([]goqu.Record, 0)
+	for _, ar := range accountRoles {
+		rows = append(rows, goqu.Record{
+			"account_id": ar.Account.Id,
+			"role_id":    ar.Role.Id,
+		})
+	}
+	ds := dialect.From(goqu.T("account_role").Schema("system")).
+		Prepared(true).Insert().
+		Rows(rows).
+		OnConflict(exp.NewDoUpdateConflictExpression("account_id", goqu.Record{"role_id": goqu.L("EXCLUDED.role_id")}))
+
+	query, args, _ := ds.ToSQL()
+
+	_, insertErr := repo.db.Exec(query, args...)
+	if insertErr != nil {
+		logger.Error(insertErr.Error(), slimlog.Function("SystemRepository.AssignRole"), slimlog.Error("insertErr"))
+	}
+	return insertErr
+}
 func NewSystemRepository() SystemRepositoryInterface {
 	db := postgresdb.GetOrCreateInstance()
 	return &SystemRepository{
@@ -48,4 +73,5 @@ type SystemRepositoryInterface interface {
 	NewRole(role model.Role) error
 	GetRoles() []model.Role
 	UpdateRole(role model.Role) error
+	AssignRole(accountRoles model.AccountRoles) error
 }

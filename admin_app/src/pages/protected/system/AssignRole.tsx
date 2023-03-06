@@ -16,9 +16,14 @@ import {
 import ClientSearchBox from "@components/client-search-box/ClientSearchBox";
 import { useForm } from "@hooks/useForm";
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { option } from "io-ts-types";
+import { SingleValue } from "react-select";
+import { PrimaryButton } from "@components/ui/button/Button";
+import { AssignRoleFormSchemaValidation } from "./schema";
+import { toast } from "react-toastify";
+import { ErrorMsg } from "@definitions/var";
 
 type AssignForm = {
   account: Account;
@@ -54,7 +59,44 @@ const AssignRolePage = () => {
   const {} = useQuery({
     queryKey: ["roles"],
   });
-
+  const handleRoleSelection = (index: number, role: SingleValue<Role>) => {
+    const newData = [...form];
+    newData[index] = {
+      ...form[index],
+      account: {
+        ...form[index].account,
+      },
+      role: { ...(role as Role) },
+    };
+    setForm(newData);
+  };
+  const submit = async () => {
+    try {
+      const data: unknown = await AssignRoleFormSchemaValidation.validate(form);
+      assignRole.mutate(data as AssignForm);
+    } catch (error) {
+      toast.error(
+        "Role cannot be empty. Please assign a role to user accounts."
+      );
+      console.log(error);
+    }
+  };
+  const { Post } = useRequest();
+  const assignRole = useMutation({
+    mutationKey: ["roles"],
+    mutationFn: (formData: AssignForm) =>
+      Post("/system/roles/accounts", formData),
+    onSuccess: (response) => {
+      console.log(response);
+      toast.success("Roles has been assigned successfully.");
+    },
+    onError: () => {
+      toast.error(ErrorMsg.New);
+    },
+    onSettled: () => {
+      setForm([]);
+    },
+  });
   return (
     <>
       <ContainerNoBackground>
@@ -79,13 +121,10 @@ const AssignRolePage = () => {
                   <Td>{d.account.displayName}</Td>
                   <Td style={{ maxWidth: "100px" }}>
                     <CustomSelect
-                      //   value={form[index].role}
-                      //   onChange={(value) => {
-                      //     form[index] = {
-                      //       ...form[index],
-                      //       role: value as Role,
-                      //     };
-                      //   }}
+                      value={form[index].role}
+                      onChange={(value) => {
+                        handleRoleSelection(index, value);
+                      }}
                       options={roles}
                       getOptionLabel={(option) => option.name}
                       getOptionValue={(option) => option.id?.toString() ?? ""}
@@ -97,6 +136,11 @@ const AssignRolePage = () => {
           </Tbody>
         </Table>
       </Container>
+      <ContainerNoBackground>
+        <PrimaryButton onClick={submit} disabled={form.length === 0}>
+          Assign role
+        </PrimaryButton>
+      </ContainerNoBackground>
     </>
   );
 };

@@ -77,6 +77,21 @@ func (ctrler *SystemController) GetRoles(ctx *gin.Context) {
 		"roles": roles,
 	}, "User roles fetched."))
 }
+func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
+	accountRoles := model.AccountRoles{}
+	bindingErr := ctx.ShouldBindBodyWith(&accountRoles, binding.JSON)
+	if bindingErr != nil {
+		logger.Error(bindingErr.Error(), slimlog.Function("SystemController.AssignRole"), slimlog.Error("bindingErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
+		return
+	}
+	assignErr := ctrler.systemRepository.AssignRole(accountRoles)
+	if assignErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Roles assigned successfully."))
+}
 func NewSystemConctroller() SystemControllerInterface {
 	return &SystemController{
 		systemRepository: repository.NewSystemRepository(),
@@ -88,4 +103,5 @@ type SystemControllerInterface interface {
 	CreateRole(ctx *gin.Context)
 	GetRoles(ctx *gin.Context)
 	UpdateRole(ctx *gin.Context)
+	AssignRole(ctx *gin.Context)
 }

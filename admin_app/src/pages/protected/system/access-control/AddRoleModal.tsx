@@ -13,7 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { BaseSyntheticEvent, Ref, useMemo, useRef } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { RoleSchemaValidation } from "./schema";
+import { RoleSchemaValidation } from "../schema";
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const { Get, Post } = useRequest();

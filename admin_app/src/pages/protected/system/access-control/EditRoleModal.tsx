@@ -13,7 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { BaseSyntheticEvent, useEffect, useMemo, useRef } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { RoleSchemaValidation } from "./schema";
+import { RoleSchemaValidation } from "../schema";
 
 const EditRoleModal = ({
   closeModal,

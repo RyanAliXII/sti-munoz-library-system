@@ -20,19 +20,22 @@ export const useRequest = ()=>{
                     logoutHint: loginHint
                 })
         }
-        return error
+        if(error?.response?.status >= 400){
+            throw error
+        }
     })
     const Post = async(url: string, data?: any, config?:AxiosRequestConfig<any> | undefined, scopes = [] as string[] )=>{
         try{
             const tokens = await instance.acquireTokenSilent({
                 scopes:[SCOPES.library.access, ...scopes]
             })
-            const response = request.post(url, data, {
+            const response =     request.post(url, data, {
                 ...config,
                 headers:{
                     "Authorization" : `Bearer ${tokens.accessToken}`,
                 }
             })
+        
             return response
         }
         catch(error){
@@ -61,7 +64,7 @@ export const useRequest = ()=>{
             const tokens = await instance.acquireTokenSilent({
                 scopes:[SCOPES.library.access, ...scopes]
             })
-            const response = await request.delete(url, {
+            const response = request.delete(url, {
                 ...config,
                 headers:{
                     "Authorization" : `Bearer ${tokens.accessToken}`,
