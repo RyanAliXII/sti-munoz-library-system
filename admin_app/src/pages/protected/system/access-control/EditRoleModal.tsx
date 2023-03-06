@@ -10,7 +10,7 @@ import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import React, { BaseSyntheticEvent, useEffect, useMemo } from "react";
+import React, { BaseSyntheticEvent, useEffect, useMemo, useRef } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { RoleSchemaValidation } from "./schema";
@@ -21,12 +21,21 @@ const EditRoleModal = ({
   formData,
 }: EditModalProps<Role>) => {
   const { Get, Put } = useRequest();
-  const { form, handleFormInput, setForm, validate, errors } = useForm<Role>({
+  const modalRef = useRef<HTMLElement | null>(null);
+  const {
+    form,
+    handleFormInput,
+    setForm,
+    validate,
+    errors,
+    registerFormGroup,
+  } = useForm<Role>({
     initialFormData: {
       name: "",
       permissions: {},
     },
     schema: RoleSchemaValidation,
+    parentElementScroll: modalRef,
   });
   useEffect(() => {
     setForm({ ...formData });
@@ -51,7 +60,7 @@ const EditRoleModal = ({
     }
   };
   const updateRole = useMutation({
-    mutationFn: (role: Role) => Put(`/system/roles/${formData.id}`, form),
+    mutationFn: (role: Role) => Put(`/system/roles/${formData.id}`, role),
     onSuccess: () => {
       toast.success("Role has been updated Successfully");
       queryClient.invalidateQueries(["roles"]);
@@ -123,6 +132,7 @@ const EditRoleModal = ({
             <h1 className="text-xl font-semibold">Edit role</h1>
           </div>
           <Input
+            ref={registerFormGroup("name")}
             type="text"
             name="name"
             onChange={handleFormInput}

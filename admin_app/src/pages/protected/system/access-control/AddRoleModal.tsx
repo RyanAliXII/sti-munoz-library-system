@@ -10,22 +10,31 @@ import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import React, { BaseSyntheticEvent, useMemo } from "react";
+import React, { BaseSyntheticEvent, Ref, useMemo, useRef } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { RoleSchemaValidation } from "./schema";
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const { Get, Post } = useRequest();
-  const { form, handleFormInput, setForm, resetForm, validate, errors } =
-    useForm<Role>({
-      initialFormData: {
-        name: "",
-        permissions: {},
-      },
-      scrollToError: true,
-      schema: RoleSchemaValidation,
-    });
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const {
+    form,
+    handleFormInput,
+    setForm,
+    resetForm,
+    validate,
+    errors,
+    registerFormGroup,
+  } = useForm<Role>({
+    initialFormData: {
+      name: "",
+      permissions: {},
+    },
+    scrollToError: true,
+    parentElementScroll: modalRef,
+    schema: RoleSchemaValidation,
+  });
 
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
@@ -103,6 +112,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   return (
     <Modal
       center
+      ref={modalRef}
       onClose={closeModal}
       open={isOpen}
       showCloseIcon={false}
@@ -120,6 +130,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
           </div>
           <Input
             type="text"
+            ref={registerFormGroup("name")}
             name="name"
             onChange={handleFormInput}
             value={form.name}
