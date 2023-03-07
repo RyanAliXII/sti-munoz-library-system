@@ -2,9 +2,10 @@ package realtime
 
 import (
 	"context"
-	"slim-app/server/app/broadcasting"
-	"slim-app/server/app/pkg/slimlog"
 	"time"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/broadcasting"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

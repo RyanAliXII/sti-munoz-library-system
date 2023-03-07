@@ -2,9 +2,10 @@ package repository
 
 import (
 	"fmt"
-	"slim-app/server/app/pkg/dewey"
-	"slim-app/server/app/pkg/postgresdb"
-	"slim-app/server/app/pkg/slimlog"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/dewey"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
 )

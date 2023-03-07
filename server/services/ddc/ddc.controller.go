@@ -1,10 +1,11 @@
 package ddc
 
 import (
-	"slim-app/server/app/http/httpresp"
-	"slim-app/server/app/pkg/dewey"
-	"slim-app/server/repository"
 	"strconv"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/dewey"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
 	"github.com/gin-gonic/gin"
 )

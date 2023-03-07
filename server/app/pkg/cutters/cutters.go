@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	data "slim-app/server/app/pkg/cutters/data"
 	"strings"
+
+	data "github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters/data"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

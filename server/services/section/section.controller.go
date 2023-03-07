@@ -2,9 +2,10 @@ package section
 
 import (
 	"net/http"
-	"slim-app/server/app/http/httpresp"
-	"slim-app/server/model"
-	"slim-app/server/repository"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

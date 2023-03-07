@@ -1,11 +1,12 @@
 package authornum
 
 import (
-	"slim-app/server/app/http/httpresp"
-	"slim-app/server/app/pkg/cutters"
-	"slim-app/server/model"
-	"slim-app/server/repository"
 	"strconv"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

@@ -3,8 +3,9 @@ package objstore
 import (
 	"context"
 	"os"
-	"slim-app/server/app/pkg/slimlog"
 	"sync"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"

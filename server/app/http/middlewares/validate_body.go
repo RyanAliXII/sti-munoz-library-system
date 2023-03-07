@@ -2,7 +2,8 @@ package middlewares
 
 import (
 	"net/http"
-	"slim-app/server/app/http/httpresp"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

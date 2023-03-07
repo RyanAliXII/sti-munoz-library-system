@@ -3,9 +3,10 @@ package rabbitmq
 import (
 	"fmt"
 	"os"
-	"slim-app/server/app/pkg/slimlog"
 	"sync"
 	"time"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"

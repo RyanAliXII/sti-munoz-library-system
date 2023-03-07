@@ -3,9 +3,10 @@ package azuread
 import (
 	"fmt"
 	"os"
-	"slim-app/server/app/pkg/slimlog"
 	"sync"
 	"time"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/MicahParks/keyfunc"
 )

@@ -3,13 +3,15 @@ package main
 import (
 	"net/http"
 	"os"
-	"slim-app/server/api/v1"
 
-	"slim-app/server/app/db"
-	"slim-app/server/app/pkg/postgresdb"
-	"slim-app/server/app/pkg/slimlog"
-	"slim-app/server/services/realtime"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/api/v1"
+
 	"time"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

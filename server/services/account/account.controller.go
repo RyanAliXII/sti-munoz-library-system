@@ -2,11 +2,12 @@ package account
 
 import (
 	"io/ioutil"
-	"slim-app/server/app/http/httpresp"
-	"slim-app/server/app/pkg/slimlog"
-	"slim-app/server/model"
-	"slim-app/server/repository"
 	"strconv"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

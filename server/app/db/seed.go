@@ -1,9 +1,9 @@
 package db
 
 import (
-	"slim-app/server/app/pkg/cutters"
-	"slim-app/server/app/pkg/dewey"
-	"slim-app/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/dewey"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/golang-migrate/migrate/v4"

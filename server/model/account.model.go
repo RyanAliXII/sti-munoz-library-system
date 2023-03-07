@@ -3,7 +3,8 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"slim-app/server/app/db"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 )
 
 type Account struct {

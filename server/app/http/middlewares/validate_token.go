@@ -2,9 +2,10 @@ package middlewares
 
 import (
 	"net/http"
-	"slim-app/server/app/pkg/azuread"
-	"slim-app/server/app/pkg/slimlog"
 	"strings"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"

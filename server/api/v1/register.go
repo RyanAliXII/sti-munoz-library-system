@@ -1,18 +1,18 @@
 package api
 
 import (
-	"slim-app/server/app/http/middlewares"
-	"slim-app/server/services/account"
-	"slim-app/server/services/author"
-	authornum "slim-app/server/services/author_number"
-	"slim-app/server/services/book"
-	"slim-app/server/services/circulation"
-	"slim-app/server/services/ddc"
-	fundsrc "slim-app/server/services/fund_source"
-	"slim-app/server/services/inventory"
-	"slim-app/server/services/publisher"
-	"slim-app/server/services/section"
-	"slim-app/server/services/system"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/account"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/author"
+	authornum "github.com/RyanAliXII/sti-munoz-library-system/server/services/author_number"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/circulation"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
+	fundsrc "github.com/RyanAliXII/sti-munoz-library-system/server/services/fund_source"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/publisher"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/section"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/system"
 
 	"github.com/gin-gonic/gin"
 )

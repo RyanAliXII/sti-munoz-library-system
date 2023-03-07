@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
-	"slim-app/server/app/pkg/objstore"
-	"slim-app/server/app/pkg/postgresdb"
-	"slim-app/server/app/pkg/slimlog"
-	"slim-app/server/model"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"

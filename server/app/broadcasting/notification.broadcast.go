@@ -3,9 +3,9 @@ package broadcasting
 import (
 	"context"
 	"fmt"
-	"slim-app/server/app/pkg/rabbitmq"
-	"slim-app/server/app/pkg/slimlog"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
 )
