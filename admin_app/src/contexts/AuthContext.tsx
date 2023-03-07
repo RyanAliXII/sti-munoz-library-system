@@ -3,7 +3,7 @@ import { BaseProps } from "@definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
 import axios from "axios";
-import { Account, User } from "@definitions/types";
+import { Account, Role, User } from "@definitions/types";
 import {
   AccountInfo,
   EventType,
@@ -22,6 +22,7 @@ export type AuthContextState = {
   setAuthenticated: Function;
   loading?: boolean;
   user: User;
+  hasPermissions: (requiredPermissions: string[]) => boolean;
 };
 
 export const AuthProvider = ({ children }: BaseProps) => {
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState({} as User);
   const [loading, setLoading] = useState(true);
-
+  const [permissions, setPermissions] = useState<string[]>([]);
   const useAccountFromStorage = async () => {
     try {
       if (msalClient.getAllAccounts().length > 0) {
@@ -92,7 +93,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         scopes: [SCOPES.library.access],
       });
 
-      await axiosClient.get(
+      const { data: response } = await axiosClient.get(
         `/accounts/roles/${tokens.account?.localAccountId}}`,
         {
           headers: {
@@ -100,10 +101,30 @@ export const AuthProvider = ({ children }: BaseProps) => {
           },
         }
       );
-    } catch (err) {
+      if (!response.data.role) return;
+      const role: Role = response.data.role;
+      const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
+        (a, moduleName) => [...a, ...role.permissions[moduleName]],
+        []
+      );
+      setPermissions(permissionsArr);
+    } catch (error) {
       console.error("Failed to fetch permissions.");
-      throw err;
+      throw error;
     }
+  };
+
+  const hasPermissions = (requredPermissions: string[]) => {
+    // if empty array is given, it means accessing module doesnt not require any permissions for access.
+    if (requredPermissions.length === 0) {
+      return true;
+    }
+    for (const p of requredPermissions) {
+      if (permissions.includes(p)) {
+        return true;
+      }
+    }
+    return false;
   };
 
   const logout = async () => {
@@ -166,7 +187,15 @@ export const AuthProvider = ({ children }: BaseProps) => {
     };
   }, []);
   return (
-    <AuthContext.Provider value={{ authenticated, setAuthenticated, user }}>
+    <AuthContext.Provider
+      value={{
+        authenticated,
+        setAuthenticated,
+        user,
+
+        hasPermissions,
+      }}
+    >
       {!loading ? children : <Loader />}
     </AuthContext.Provider>
   );

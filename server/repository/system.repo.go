@@ -43,10 +43,10 @@ func (repo *SystemRepository) GetRoles() []model.Role {
 func (repo *SystemRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
 
 	role := model.Role{}
-	query := `SELECT role.id, COALESCE(role.name,'') as name, COALESCE(permissions, '{}') as permissions from system.account as ac
-	LEFT JOIN system.account_role as ar on ac.id = ar.account_id
-	LEFT JOIN system.role on ar.role_id = role.id
-	where ac.id = $1`
+	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '{}') as permissions from system.account as ac
+		LEFT JOIN system.account_role as ar on ac.id = ar.account_id
+		LEFT JOIN system.role on ar.role_id = role.id
+		where ac.id = $1`
 
 	getErr := repo.db.Get(&role, query, accountId)
 	if getErr != nil {
