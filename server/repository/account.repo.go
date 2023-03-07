@@ -85,7 +85,6 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 	return nil
 }
 func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) error {
-
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("transactErr"))
@@ -114,7 +113,6 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 	OneMonth := time.Hour * 730
 
 	if len(registeredAccount.Id) > 0 {
-
 		if time.Now().Equal(registeredAccount.UpdatedAt.Time.Add(OneMonth)) || time.Now().After(registeredAccount.UpdatedAt.Add(OneMonth)) {
 			_, updateErr := transaction.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
 				account.DisplayName, account.Email, account.Surname, account.GivenName, account.Id)

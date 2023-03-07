@@ -67,7 +67,7 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 	COALESCE(bt.remarks, '') as remarks,
 	bt.due_date, bt.returned_at
 	from circulation.borrow_transaction as bt
-	INNER JOIN client.account on bt.account_id = account.id
+	INNER JOIN system.account on bt.account_id = account.id
 	INNER JOIN circulation.borrowed_book as bb on bt.id = bb.transaction_id
 	INNER JOIN catalog.book on bb.book_id = book.id
 	INNER JOIN catalog.section on book.section_id = section.id
@@ -133,7 +133,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	COALESCE(bt.remarks, '') as remarks,
 	bt.due_date, bt.returned_at
 	from circulation.borrow_transaction as bt
-	INNER JOIN client.account on bt.account_id = account.id
+	INNER JOIN system.account on bt.account_id = account.id
 	INNER JOIN circulation.borrowed_book as bb on bt.id = bb.transaction_id
 	INNER JOIN catalog.book on bb.book_id = book.id
 	INNER JOIN catalog.section on book.section_id = section.id
