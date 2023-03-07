@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/acl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
@@ -40,6 +42,7 @@ func main() {
 			"time":    time.Now(),
 		})
 	})
+	fmt.Println(acl.BuiltInRoles.MIS)
 	dbConnection := postgresdb.GetOrCreateInstance()
 	db.RunSeed(dbConnection)
 	realtime.RealtimeRoutes(r.Group("/rt"))

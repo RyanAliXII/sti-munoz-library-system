@@ -11,7 +11,6 @@ import {
   AuthenticationResult,
 } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
-import { verify } from "crypto";
 import axiosClient from "@definitions/configs/axios";
 
 export const AuthContext = createContext({} as AuthContextState);
@@ -45,8 +44,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         throw new Error("NO ACCOUNTS");
       }
     } catch (error) {
-      localStorage.clear();
-      setAuthenticated(false);
+      logout();
     }
   };
 
@@ -63,11 +61,12 @@ export const AuthProvider = ({ children }: BaseProps) => {
           surname: user.data.surname,
         };
         await verifyAccount(accountData);
+        await getRolePermissions();
         setAuthenticated(true);
         return;
       }
-    } catch {
-      throw new Error("cannot use Account");
+    } catch (error) {
+      throw error;
     }
   };
 
@@ -81,10 +80,41 @@ export const AuthProvider = ({ children }: BaseProps) => {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
       });
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to verify user.");
+      throw error;
+    }
+  };
+
+  const getRolePermissions = async () => {
+    try {
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: [SCOPES.library.access],
+      });
+
+      await axiosClient.get(
+        `/accounts/roles/${tokens.account?.localAccountId}}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Failed to fetch permissions.");
       throw err;
     }
+  };
+
+  const logout = async () => {
+    const account = msalClient.getActiveAccount();
+    if (account) {
+      await msalClient.logout({
+        account: account,
+        logoutHint: account?.idTokenClaims?.login_hint,
+      });
+    }
+    localStorage.clear();
   };
 
   const fetchUser = async (accessToken: string) => {
