@@ -3,14 +3,16 @@ import { BaseProps } from "@definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
 import axios from "axios";
-import { User } from "@definitions/types";
+import { Account, User } from "@definitions/types";
 import {
   AccountInfo,
   EventType,
   EventMessage,
   AuthenticationResult,
 } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE } from "@definitions/configs/msal/scopes";
+import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
+import { verify } from "crypto";
+import axiosClient from "@definitions/configs/axios";
 
 export const AuthContext = createContext({} as AuthContextState);
 export const useAuthContext = () => {
@@ -34,11 +36,11 @@ export const AuthProvider = ({ children }: BaseProps) => {
       if (msalClient.getAllAccounts().length > 0) {
         const account = msalClient.getAllAccounts()[0];
 
-        const response = await msalClient.acquireTokenSilent({
+        const tokens = await msalClient.acquireTokenSilent({
           scopes: MS_GRAPH_SCOPE,
         });
 
-        await useAccount(account, response.accessToken);
+        await useAccount(account, tokens.accessToken);
       } else {
         throw new Error("NO ACCOUNTS");
       }
@@ -47,14 +49,42 @@ export const AuthProvider = ({ children }: BaseProps) => {
       setAuthenticated(false);
     }
   };
+
   const useAccount = async (account: AccountInfo | null, accessToken = "") => {
-    if (account && accessToken.length > 0) {
-      msalClient.setActiveAccount(account);
-      await fetchUser(accessToken);
-      setAuthenticated(true);
-      return;
+    try {
+      if (account && accessToken.length > 0) {
+        msalClient.setActiveAccount(account);
+        const user = await fetchUser(accessToken);
+        const accountData: Account = {
+          id: user.data.id,
+          displayName: user.data.displayName,
+          email: user.data.mail,
+          givenName: user.data.givenName,
+          surname: user.data.surname,
+        };
+        await verifyAccount(accountData);
+        setAuthenticated(true);
+        return;
+      }
+    } catch {
+      throw new Error("cannot use Account");
     }
-    throw new Error("cannot use Account");
+  };
+
+  const verifyAccount = async (account: Account) => {
+    try {
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: [SCOPES.library.access],
+      });
+      await axiosClient.post("/accounts/verification", account, {
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to verify user.");
+      throw err;
+    }
   };
 
   const fetchUser = async (accessToken: string) => {
@@ -69,6 +99,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       lastname: response.data.surname,
       id: response.data.id,
     });
+    return response;
   };
 
   const subscribeMsalEvent = () => {

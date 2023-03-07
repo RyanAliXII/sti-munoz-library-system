@@ -92,6 +92,7 @@ func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Roles assigned successfully."))
 }
+
 func NewSystemConctroller() SystemControllerInterface {
 	return &SystemController{
 		systemRepository: repository.NewSystemRepository(),

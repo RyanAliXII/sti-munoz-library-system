@@ -1,14 +1,17 @@
 package repository
 
 import (
+	"database/sql"
 	"slim-app/server/app/pkg/postgresdb"
 	"slim-app/server/app/pkg/slimlog"
 	"slim-app/server/model"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
 type AccountRepository struct {
@@ -81,10 +84,51 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 
 	return nil
 }
-func (repo *AccountRepository) VerifyAndUpdateAccount() {
+func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) error {
 
-	account := model.Account{}
-	repo.db.Get(&account, "Select * system.account")
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		logger.Error(transactErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("transactErr"))
+		transaction.Rollback()
+		return transactErr
+	}
+	registeredAccount := model.Account{}
+	getErr := transaction.Get(&registeredAccount, "Select id, display_name, email, surname, given_name, updated_at from system.account where id = $1 or email = $2", account.Id, account.Email)
+	if getErr != nil {
+		if getErr == sql.ErrNoRows {
+			_, insertErr := transaction.Exec("Insert into system.account(id, display_name, email, surname, given_name) VALUES ($1, $2, $3, $4, $5)",
+				account.Id, account.DisplayName, account.Email, account.Surname, account.GivenName)
+			if insertErr != nil {
+				logger.Error(insertErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("insertErr"))
+				transaction.Rollback()
+				return insertErr
+			}
+			logger.Info("Inserting user account.", zap.String("accountId", account.Id), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"))
+			transaction.Commit()
+			return nil
+		}
+		transaction.Rollback()
+		logger.Error(getErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("getErr"))
+		return getErr
+	}
+	OneMonth := time.Hour * 730
+
+	if len(registeredAccount.Id) > 0 {
+
+		if time.Now().Equal(registeredAccount.UpdatedAt.Time.Add(OneMonth)) || time.Now().After(registeredAccount.UpdatedAt.Add(OneMonth)) {
+			_, updateErr := transaction.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
+				account.DisplayName, account.Email, account.Surname, account.GivenName, account.Id)
+			if updateErr != nil {
+				logger.Error(updateErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("updateErr"))
+				transaction.Rollback()
+				return updateErr
+			}
+			logger.Info("Updating user account.", zap.String("accountId", registeredAccount.Id), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"))
+		}
+
+	}
+	transaction.Commit()
+	return nil
 }
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
@@ -96,4 +140,5 @@ type AccountRepositoryInterface interface {
 	GetAccounts(filter Filter) []model.Account
 	SearchAccounts(filter Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
+	VerifyAndUpdateAccount(account model.Account) error
 }
