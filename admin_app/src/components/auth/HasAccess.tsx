@@ -1,20 +1,19 @@
 import { useAuthContext } from "@contexts/AuthContext";
-import React, { Children, ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { ReactNode } from "react";
 
-type PermissionGateProps = {
+type HasPermissionProps = {
   requiredPermissions?: string[];
   children?: ReactNode;
 };
-const PermissionGate = ({
+const HasAccess = ({
   requiredPermissions = [],
   children,
-}: PermissionGateProps) => {
+}: HasPermissionProps) => {
   const { hasPermissions } = useAuthContext();
   if (hasPermissions(requiredPermissions)) {
     return <>{children}</>;
   }
-  return <Navigate to={"/forbidden"} />;
+  return null;
 };
 
-export default PermissionGate;
+export default HasAccess;

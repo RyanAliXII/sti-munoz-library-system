@@ -10,6 +10,7 @@ import {
 import { useAuthContext } from "@contexts/AuthContext";
 import ProfileIcon from "@components/ProfileIcon";
 import LogoutButton from "@components/LogoutButton";
+import HasAccess from "@components/auth/HasAccess";
 const Sidebar = () => {
   const { user } = useAuthContext();
   return (
@@ -71,13 +72,15 @@ const NavigationDrawer = (item: SidebarNavItem) => {
     >
       {item.items.map((innerItem) => {
         return (
-          <NavLink
-            key={innerItem.text}
-            className={(active) => isNavActive(active.isActive)}
-            to={innerItem.to}
-          >
-            <small className="ml-11">{innerItem.text}</small>
-          </NavLink>
+          <HasAccess requiredPermissions={innerItem.requiredPermissions ?? []}>
+            <NavLink
+              key={innerItem.text}
+              className={(active) => isNavActive(active.isActive)}
+              to={innerItem.to}
+            >
+              <small className="ml-11">{innerItem.text}</small>
+            </NavLink>
+          </HasAccess>
         );
       })}
     </NavigationDropdown>
