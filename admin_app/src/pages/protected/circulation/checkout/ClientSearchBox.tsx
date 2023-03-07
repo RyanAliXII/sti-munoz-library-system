@@ -21,7 +21,7 @@ const ClientSearchBox = ({ setClient }: ClientSearchBoxProps) => {
   const { Get } = useRequest();
   const fetchAccounts = async () => {
     try {
-      const { data: response } = await Get("/clients/accounts", {
+      const { data: response } = await Get("/accounts/", {
         params: {
           offset: 0,
           keyword: searchKeyword,

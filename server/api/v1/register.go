@@ -2,11 +2,11 @@ package api
 
 import (
 	"slim-app/server/app/http/middlewares"
+	"slim-app/server/services/account"
 	"slim-app/server/services/author"
 	authornum "slim-app/server/services/author_number"
 	"slim-app/server/services/book"
 	"slim-app/server/services/circulation"
-	"slim-app/server/services/client"
 	"slim-app/server/services/ddc"
 	fundsrc "slim-app/server/services/fund_source"
 	"slim-app/server/services/inventory"
@@ -28,7 +28,7 @@ func RegisterAPIV1(router *gin.Engine) {
 	ddc.DDCRoutes(grp.Group("/ddc"))
 	book.BookRoutes(grp.Group("/books"))
 	inventory.InventoryRoutes(grp.Group("/inventory"))
-	client.ClientRoutes(grp.Group("/clients"))
+	account.ClientRoutes(grp.Group("/accounts"))
 	circulation.CirculationRoutes(grp.Group("/circulation"))
 	system.SystemRoutes(grp.Group("/system"))
 }

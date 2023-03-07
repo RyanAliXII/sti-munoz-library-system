@@ -1,4 +1,4 @@
-CREATE TABLE accession.accession_main(
+CREATE TABLE IF NOT EXISTS accession.accession_main(
 			id uuid primary key DEFAULT uuid_generate_v4(),
 			number INTEGER UNIQUE,
 			book_id uuid,

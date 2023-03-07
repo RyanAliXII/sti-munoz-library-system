@@ -1,4 +1,4 @@
-ALTER TABLE IF EXISTS client.account
+ALTER TABLE IF EXISTS system.account
 add COLUMN IF NOT EXISTS search_vector tsvector
 generated always as (
     setweight(to_tsvector('simple', surname), 'A')   

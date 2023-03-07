@@ -1,1 +1,1 @@
-alter table client.account DROP IF EXISTS search_vector;
+alter table system.account DROP IF EXISTS search_vector;
