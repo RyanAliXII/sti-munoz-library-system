@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS client.account(
+CREATE TABLE IF NOT EXISTS system.account(
      id UUID PRIMARY KEY,
      email Text NOT NULL,
      display_name Text NOT NULL,

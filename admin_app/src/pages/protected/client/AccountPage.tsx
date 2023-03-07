@@ -42,7 +42,7 @@ const AccountPage = () => {
   const { Get } = useRequest();
   const fetchAccounts = async ({ pageParam = 0 }) => {
     try {
-      const { data: response } = await Get("/clients/accounts", {
+      const { data: response } = await Get("/accounts/", {
         params: {
           offset: pageParam,
           keyword: searchKeyword,
@@ -209,7 +209,7 @@ const UploadArea = ({ refetch, token }: UploadAreaProps) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        endpoint: `${BASE_URL_V1}/clients/accounts/bulk`,
+        endpoint: `${BASE_URL_V1}/accounts/bulk`,
       });
     uppy.on("upload-success", onSuccessUpload);
     return () => {

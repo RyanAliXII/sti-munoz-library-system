@@ -16,7 +16,7 @@ type AccountRepository struct {
 }
 
 func (repo *AccountRepository) GetAccounts(filter Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, surname FROM client.account LIMIT $1 OFFSET $2`
+	query := `SELECT id, email, display_name, given_name, surname FROM system.account LIMIT $1 OFFSET $2`
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -33,7 +33,7 @@ func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
 			given_name, surname, 
 			(  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
 			) as search_rank
-			FROM client.account where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
+			FROM system.account where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
 			ORDER BY search_rank DESC
 			LIMIT $2
 			OFFSET $3
@@ -53,8 +53,7 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 		accountRows = append(accountRows, goqu.Record{"id": account.Id,
 			"display_name": account.DisplayName, "surname": account.Surname, "given_name": account.GivenName, "email": account.Email})
 	}
-
-	accountDs := dialect.From("client.account").
+	accountDs := dialect.From("system.account").
 		Prepared(true).Insert().Rows(accountRows).
 		OnConflict(
 			exp.NewDoUpdateConflictExpression("id", goqu.Record{"id": goqu.L("EXCLUDED.id"),
@@ -62,6 +61,7 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 				"given_name": goqu.L("EXCLUDED.given_name"), "email": goqu.L("EXCLUDED.email")}))
 	query, args, toQueryErr := accountDs.ToSQL()
 	if toQueryErr != nil {
+		logger.Error(toQueryErr.Error(), slimlog.Function("AccountRepository.NewAccounts"))
 		return toQueryErr
 	}
 	transaction, transactErr := repo.db.Beginx()
@@ -71,6 +71,7 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 	}
 	insertResult, insertErr := transaction.Exec(query, args...)
 	if insertErr != nil {
+		logger.Error(insertErr.Error(), slimlog.Function("AccountRepository.NewAccounts"))
 		transaction.Rollback()
 		return insertErr
 	}
@@ -80,7 +81,11 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 
 	return nil
 }
+func (repo *AccountRepository) VerifyAndUpdateAccount() {
 
+	account := model.Account{}
+	repo.db.Get(&account, "Select * system.account")
+}
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
