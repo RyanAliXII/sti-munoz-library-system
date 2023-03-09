@@ -10,4 +10,4 @@ type Module struct {
 	Permissions []Permission `json:"permissions"`
 }
 
-// returns a flat list of permissions
+

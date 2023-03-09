@@ -61,7 +61,7 @@ func (cutters *Cutters) GenerateCutter(firstname string, lastname string) Author
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
 		number := cutters.Default[key]
-		fmt.Println(number)
+	
 		if number != 0 {
 			authorNumber.Number = number
 			authorNumber.Surname = key

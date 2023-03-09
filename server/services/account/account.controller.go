@@ -1,7 +1,6 @@
 package account
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -23,8 +22,7 @@ type AccountController struct {
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
-	fmt.Println(ctx.Get("requestorId"))
-	fmt.Println(ctx.Get("requestorRole"))
+	
 	const (
 		DEFAULT_OFFSET = 0
 		DEFAULT_LIMIT  = 50
@@ -131,6 +129,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 					Name:        role,
 					Permissions: acl.BuiltInRoles.Root,
 				}
+				acl.StorePermissions(accountId,acl.BuiltInRoles.Root)
 				ctx.JSON(httpresp.Success200(gin.H{
 					"role": accountRole,
 				}, "Role has been fetched successfully."))
@@ -142,6 +141,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 					Name:        role,
 					Permissions: acl.BuiltInRoles.MIS,
 				}
+				acl.StorePermissions(accountId, acl.BuiltInRoles.MIS)
 				ctx.JSON(httpresp.Success200(gin.H{
 					"role": accountRole,
 				}, "Role has been fetched successfully."))
@@ -149,13 +149,19 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 			}
 		}
 	}
-	//if no built-in permission fetch from db
+	//if no built-in permission fetch application assigned role from db
 	role, getRoleErr := ctrler.systemRepository.GetRoleByAccountId(accountId)
 	if getRoleErr != nil {
 		ctx.JSON(httpresp.Fail500(
 			nil, "Unknown error occured."))
 		return
 	}
+	// if no permission was assisgned to a user. don't give access to app.
+	if len(role.Permissions) == 0 {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
+	}
+	acl.StorePermissions(accountId, role.Permissions)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"role": role,
 	}, "Role has been fetched successfully."))

@@ -25,6 +25,7 @@ func buildRootUserPermissions() map[string][]string {
 			permissions[module.Name] = append(permissions[module.Name], p.Name)
 		}
 	}
+
 	return permissions
 }
 

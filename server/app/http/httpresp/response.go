@@ -70,3 +70,6 @@ func Fail500(data map[string]interface{}, message string) (int, HttpResponse) {
 		Message: message,
 	}
 }
+
+
+

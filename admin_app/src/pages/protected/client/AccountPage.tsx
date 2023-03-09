@@ -84,6 +84,7 @@ const AccountPage = () => {
     debounceSearch(search, "", 500);
   };
   // sh!t implementation, will come back and fix this. this will be good for now.
+  //TODO: refactor.
   // POOP
   const [token, setToken] = useState("");
   const { instance } = useMsal();

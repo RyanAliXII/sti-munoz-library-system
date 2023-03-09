@@ -48,7 +48,8 @@ func ValidateToken(ctx *gin.Context) {
 	}
 	if hasRoles {
 		var requestorRole string = ""
-		//cant  typecast array of interface to array of string, this will be good for now
+		//cant  typecast array of interface to array of string, this will be good 
+		//TODO: Refactor
 		roleArr, isRoleArray := roles.([]interface{})
 		if isRoleArray {
 			for _, r := range roleArr {

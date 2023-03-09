@@ -52,7 +52,7 @@ func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
-	role.Permissions = acl.Validate(role.Permissions)
+	role.Permissions = acl.Validate(role.Permissions)	
 	role.Id = id
 	updateErr := ctrler.systemRepository.UpdateRole(role)
 	if updateErr != nil {
