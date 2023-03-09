@@ -129,6 +129,7 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 	transaction.Commit()
 	return nil
 }
+
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),

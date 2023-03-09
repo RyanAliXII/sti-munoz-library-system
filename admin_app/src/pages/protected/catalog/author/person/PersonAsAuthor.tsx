@@ -26,6 +26,7 @@ import AddAuthorModal from "./AddPersonModal";
 import { PrimaryButton } from "@components/ui/button/Button";
 import axios from "axios";
 import { useRequest } from "@hooks/useRequest";
+import HasAccess from "@components/auth/HasAccess";
 const PersonAsAuthor = () => {
   const {
     isOpen: isAddModalOpen,
@@ -82,11 +83,13 @@ const PersonAsAuthor = () => {
   });
   return (
     <>
-      <ContainerNoBackground className="flex gap-2">
-        <div className="w-full">
-          <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
-        </div>
-      </ContainerNoBackground>
+      <HasAccess requiredPermissions={["Author.Add"]}>
+        <ContainerNoBackground className="flex gap-2">
+          <div className="w-full">
+            <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
+          </div>
+        </ContainerNoBackground>
+      </HasAccess>
       <Container>
         <div className="w-full">
           <Table>
@@ -117,13 +120,16 @@ const PersonAsAuthor = () => {
             </Tbody>
           </Table>
         </div>
-        <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
-        <EditAuthorModal
-          isOpen={isEditModalOpen}
-          formData={selectedRow}
-          closeModal={closeEditModal}
-        />
-
+        <HasAccess requiredPermissions={["Author.Add"]}>
+          <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+        </HasAccess>
+        <HasAccess requiredPermissions={["Author.Edit"]}>
+          <EditAuthorModal
+            isOpen={isEditModalOpen}
+            formData={selectedRow}
+            closeModal={closeEditModal}
+          />
+        </HasAccess>
         <DangerConfirmDialog
           close={closeConfirmDialog}
           isOpen={isConfirmDialogOpen}
@@ -153,14 +159,18 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
       <Td>{author.middleName}</Td>
       <Td>{author.surname}</Td>
       <Td className="p-2 flex gap-2 items-center">
-        <AiOutlineEdit
-          className="cursor-pointer text-yellow-400 text-xl"
-          onClick={openEditModal}
-        />
-        <AiOutlineDelete
-          className="cursor-pointer text-orange-600  text-xl"
-          onClick={openDialog}
-        />
+        <HasAccess requiredPermissions={["Author.Edit"]}>
+          <AiOutlineEdit
+            className="cursor-pointer text-yellow-400 text-xl"
+            onClick={openEditModal}
+          />
+        </HasAccess>
+        <HasAccess requiredPermissions={["Author.Delete"]}>
+          <AiOutlineDelete
+            className="cursor-pointer text-orange-600  text-xl"
+            onClick={openDialog}
+          />
+        </HasAccess>
       </Td>
     </BodyRow>
   );

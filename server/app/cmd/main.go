@@ -40,6 +40,7 @@ func main() {
 			"time":    time.Now(),
 		})
 	})
+	
 	dbConnection := postgresdb.GetOrCreateInstance()
 	db.RunSeed(dbConnection)
 	realtime.RealtimeRoutes(r.Group("/rt"))

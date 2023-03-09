@@ -23,6 +23,7 @@ import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import EditOrganizationModal from "./EditOrganizationModal";
 import { useRequest } from "@hooks/useRequest";
+import HasAccess from "@components/auth/HasAccess";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -74,13 +75,15 @@ const OrganizationAsAuthor = () => {
     <>
       <ContainerNoBackground className="flex gap-2">
         <div className="w-full">
-          <PrimaryButton
-            onClick={() => {
-              open();
-            }}
-          >
-            New Organization
-          </PrimaryButton>
+          <HasAccess requiredPermissions={["Author.Add"]}>
+            <PrimaryButton
+              onClick={() => {
+                open();
+              }}
+            >
+              New Organization
+            </PrimaryButton>
+          </HasAccess>
         </div>
       </ContainerNoBackground>
       <Container className="lg:px-0">
@@ -98,20 +101,24 @@ const OrganizationAsAuthor = () => {
                   <BodyRow key={org.id}>
                     <Td>{org.name}</Td>
                     <Td className="p-2 flex gap-2 items-center">
-                      <AiOutlineEdit
-                        className="cursor-pointer text-yellow-400 text-xl"
-                        onClick={() => {
-                          setSelectedRow({ ...org });
-                          openEditModal();
-                        }}
-                      />
-                      <AiOutlineDelete
-                        className="cursor-pointer text-orange-600  text-xl"
-                        onClick={() => {
-                          openConfirmDialog();
-                          setSelectedRow({ ...org });
-                        }}
-                      />
+                      <HasAccess requiredPermissions={["Author.Edit"]}>
+                        <AiOutlineEdit
+                          className="cursor-pointer text-yellow-400 text-xl"
+                          onClick={() => {
+                            setSelectedRow({ ...org });
+                            openEditModal();
+                          }}
+                        />
+                      </HasAccess>
+                      <HasAccess requiredPermissions={["Author.Delete"]}>
+                        <AiOutlineDelete
+                          className="cursor-pointer text-orange-600  text-xl"
+                          onClick={() => {
+                            openConfirmDialog();
+                            setSelectedRow({ ...org });
+                          }}
+                        />
+                      </HasAccess>
                     </Td>
                   </BodyRow>
                 );
@@ -127,21 +134,25 @@ const OrganizationAsAuthor = () => {
         title="Delete organization"
         text="Are you sure you want to delete this organization ?"
       ></DangerConfirmDialog>
-      <AddOrganizationModal
-        closeModal={close}
-        isOpen={isOpen}
-        refetch={() => {
-          refetch();
-        }}
-      />
-      <EditOrganizationModal
-        closeModal={closeEditModal}
-        isOpen={isEditModalOpen}
-        formData={selectedRow}
-        refetch={() => {
-          refetch();
-        }}
-      ></EditOrganizationModal>
+      <HasAccess requiredPermissions={["Author.Add"]}>
+        <AddOrganizationModal
+          closeModal={close}
+          isOpen={isOpen}
+          refetch={() => {
+            refetch();
+          }}
+        />
+      </HasAccess>
+      <HasAccess requiredPermissions={["Author.Edit"]}>
+        <EditOrganizationModal
+          closeModal={closeEditModal}
+          isOpen={isEditModalOpen}
+          formData={selectedRow}
+          refetch={() => {
+            refetch();
+          }}
+        />
+      </HasAccess>
     </>
   );
 };

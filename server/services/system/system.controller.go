@@ -31,13 +31,7 @@ func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
-	validateErr := acl.Validate(role.Permissions)
-	if validateErr != nil {
-		logger.Error(validateErr.Error(), slimlog.Function("SystemController.CreateRole"), slimlog.Error("validateErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Permissions doesn't not exists on this app."))
-		return
-	}
-
+	role.Permissions = acl.Validate(role.Permissions)
 	insertErr := ctrler.systemRepository.NewRole(role)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -58,12 +52,7 @@ func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
-	validateErr := acl.Validate(role.Permissions)
-	if validateErr != nil {
-		logger.Error(validateErr.Error(), slimlog.Function("SystemController.UpdateRole"), slimlog.Error("validateErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Permissions doesn't not exists on this app."))
-		return
-	}
+	role.Permissions = acl.Validate(role.Permissions)	
 	role.Id = id
 	updateErr := ctrler.systemRepository.UpdateRole(role)
 	if updateErr != nil {

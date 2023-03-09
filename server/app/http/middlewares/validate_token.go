@@ -40,4 +40,31 @@ func ValidateToken(ctx *gin.Context) {
 		return
 	}
 
+	id, hasId := claims["oid"]
+	roles, hasRoles := claims["roles"]
+	if !hasId {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	if hasRoles {
+		var requestorRole string = ""
+		//cant  typecast array of interface to array of string, this will be good 
+		//TODO: Refactor
+		roleArr, isRoleArray := roles.([]interface{})
+		if isRoleArray {
+			for _, r := range roleArr {
+				val, isString := r.(string)
+				// run first loop only
+				if isString {
+					requestorRole = val
+					break
+				}
+
+			}
+
+		}
+		ctx.Set("requestorRole", requestorRole)
+	}
+	ctx.Set("requestorId", id)
+
 }

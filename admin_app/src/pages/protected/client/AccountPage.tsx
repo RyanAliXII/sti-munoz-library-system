@@ -31,6 +31,7 @@ import { toast } from "react-toastify";
 import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
 import { SCOPES } from "@definitions/configs/msal/scopes";
+import HasAccess from "@components/auth/HasAccess";
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
 
@@ -83,6 +84,7 @@ const AccountPage = () => {
     debounceSearch(search, "", 500);
   };
   // sh!t implementation, will come back and fix this. this will be good for now.
+  //TODO: refactor.
   // POOP
   const [token, setToken] = useState("");
   const { instance } = useMsal();
@@ -114,15 +116,17 @@ const AccountPage = () => {
           ></Input>
         </div>
         <div>
-          <PrimaryButton
-            className="flex gap-1 items-center"
-            onClick={() => {
-              openImportModal();
-            }}
-          >
-            <TbFileImport className="text-lg" />
-            Import
-          </PrimaryButton>
+          <HasAccess requiredPermissions={["Account.Add"]}>
+            <PrimaryButton
+              className="flex gap-1 items-center"
+              onClick={() => {
+                openImportModal();
+              }}
+            >
+              <TbFileImport className="text-lg" />
+              Import
+            </PrimaryButton>
+          </HasAccess>
         </div>
       </div>
 
@@ -156,25 +160,27 @@ const AccountPage = () => {
             )}
           </Tbody>
         </Table>
-        {isImportModalOpen && (
-          <Modal
-            open={isImportModalOpen}
-            onClose={closeImportModal}
-            center
-            closeOnEsc
-            showCloseIcon={false}
-            classNames={{
-              modal: "w-9/12 lg:w-6/12",
-            }}
-          >
-            <UploadArea
-              refetch={() => {
-                refetch();
+        <HasAccess requiredPermissions={["Account.Add"]}>
+          {isImportModalOpen && (
+            <Modal
+              open={isImportModalOpen}
+              onClose={closeImportModal}
+              center
+              closeOnEsc
+              showCloseIcon={false}
+              classNames={{
+                modal: "w-9/12 lg:w-6/12",
               }}
-              token={token}
-            ></UploadArea>
-          </Modal>
-        )}
+            >
+              <UploadArea
+                refetch={() => {
+                  refetch();
+                }}
+                token={token}
+              ></UploadArea>
+            </Modal>
+          )}
+        </HasAccess>
       </Container>
     </>
   );

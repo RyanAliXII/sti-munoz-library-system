@@ -1,5 +1,3 @@
-import React from "react";
-
 type ProfileIconProps = {
   givenName: string;
   surname: string;

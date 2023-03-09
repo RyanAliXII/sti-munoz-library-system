@@ -29,6 +29,7 @@ import { useState } from "react";
 import EditRoleModal from "./EditRoleModal";
 import { NavLink } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
+import HasAccess from "@components/auth/HasAccess";
 
 const AccessControlPage = () => {
   const {
@@ -66,7 +67,9 @@ const AccessControlPage = () => {
       <ContainerNoBackground>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Access Control</h1>
-          <PrimaryButton onClick={openAddModal}>Create Role</PrimaryButton>
+          <HasAccess requiredPermissions={["AccessControl.CreateRole"]}>
+            <PrimaryButton onClick={openAddModal}>Create Role</PrimaryButton>
+          </HasAccess>
         </div>
       </ContainerNoBackground>
 
@@ -82,12 +85,14 @@ const AccessControlPage = () => {
               </small>
             </div>
             <div className="flex items-center gap-2 mr-5 text-blue-500 justify-self-end">
-              <NavLink
-                to={"/system/access-control/assign"}
-                className="text-xs font-semibold"
-              >
-                Start assigning role
-              </NavLink>
+              <HasAccess requiredPermissions={["AccessControl.AssignRole"]}>
+                <NavLink
+                  to={"/system/access-control/assign"}
+                  className="text-xs font-semibold"
+                >
+                  Start assigning role
+                </NavLink>
+              </HasAccess>
               <BsArrowRight className="font-semibold" />
             </div>
           </div>
@@ -107,19 +112,25 @@ const AccessControlPage = () => {
                 <BodyRow key={role.id}>
                   <Td> {role.name}</Td>
                   <Td className="p-2 flex gap-2 items-center">
-                    <AiOutlineEdit
-                      className="cursor-pointer text-yellow-400 text-xl"
-                      onClick={() => {
-                        setSelectedRole(role);
-                        openEditModal();
-                      }}
-                    />
-                    <AiOutlineDelete
-                      className="cursor-pointer text-orange-600  text-xl"
-                      onClick={() => {
-                        setSelectedRole(role);
-                      }}
-                    />
+                    <HasAccess requiredPermissions={["AccessControl.EditRole"]}>
+                      <AiOutlineEdit
+                        className="cursor-pointer text-yellow-400 text-xl"
+                        onClick={() => {
+                          setSelectedRole(role);
+                          openEditModal();
+                        }}
+                      />
+                    </HasAccess>
+                    <HasAccess
+                      requiredPermissions={["AccessControl.DeleteRole"]}
+                    >
+                      <AiOutlineDelete
+                        className="cursor-pointer text-orange-600  text-xl"
+                        onClick={() => {
+                          setSelectedRole(role);
+                        }}
+                      />
+                    </HasAccess>
                   </Td>
                 </BodyRow>
               );
@@ -127,15 +138,16 @@ const AccessControlPage = () => {
           </Tbody>
         </Table>
       </Container>
-      <AddRoleModal
-        isOpen={isAddModalOpen}
-        closeModal={closeAddModal}
-      ></AddRoleModal>
-      <EditRoleModal
-        closeModal={closeEditModal}
-        isOpen={isEditModalOpen}
-        formData={selectedRole}
-      ></EditRoleModal>
+      <HasAccess requiredPermissions={["AccessControl.CreateRole"]}>
+        <AddRoleModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+      </HasAccess>
+      <HasAccess requiredPermissions={["AccessControl.EditRole"]}>
+        <EditRoleModal
+          closeModal={closeEditModal}
+          isOpen={isEditModalOpen}
+          formData={selectedRole}
+        />
+      </HasAccess>
     </>
   );
 };

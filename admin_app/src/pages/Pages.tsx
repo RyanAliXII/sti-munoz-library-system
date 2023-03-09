@@ -21,40 +21,140 @@ import ReturnPage from "./protected/circulation/ReturnPage";
 import ReturnDetailPage from "./protected/circulation/ReturnDetailPage";
 import AccessControlPage from "./protected/system/access-control/AccessControlPage";
 import AssignRolePage from "./protected/system/AssignRole";
+import PermissionGate from "@components/auth/PermissionGate";
+import Page403 from "./error/Page403";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/books" element={<BookPage />}></Route>
-      <Route path="/books/accessions" element={<AccessionPage />}></Route>
-      <Route path="/books/new" element={<BookAddPage />} />
-      <Route path="/books/edit/:id" element={<BookEditPage />} />
-      <Route path="/books/accession" element={<Accession />} />
-      <Route path="/books/authors" element={<AuthorPage />} />
-      <Route path="/books/sections" element={<SectionPage />} />
-      <Route path="/books/publishers" element={<PublisherPage />} />
-      <Route path="/books/source-of-funds" element={<FundSourcePage />} />
-      <Route path="/inventory/audits" element={<AuditPage />} />
-      <Route path="/inventory/audits/:id" element={<AuditScanPage />} />
-      <Route path="/clients/accounts" element={<AccountPage />} />\
+      <Route
+        path="/books"
+        element={
+          <PermissionGate requiredPermissions={["Book.Read"]}>
+            <BookPage />
+          </PermissionGate>
+        }
+      ></Route>
+      <Route
+        path="/books/accessions"
+        element={
+          <PermissionGate requiredPermissions={["Accession.Read"]}>
+            <AccessionPage />
+          </PermissionGate>
+        }
+      ></Route>
+      <Route
+        path="/books/new"
+        element={
+          <PermissionGate requiredPermissions={["Book.Add"]}>
+            <BookAddPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/books/edit/:id"
+        element={
+          <PermissionGate requiredPermissions={["Book.Edit"]}>
+            <BookEditPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/books/authors"
+        element={
+          <PermissionGate requiredPermissions={["Author.Read"]}>
+            <AuthorPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/books/sections"
+        element={
+          <PermissionGate>
+            <SectionPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/books/publishers"
+        element={
+          <PermissionGate requiredPermissions={["Publisher.Read"]}>
+            <PublisherPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/books/source-of-funds"
+        element={
+          <PermissionGate requiredPermissions={["SOF.Read"]}>
+            <FundSourcePage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/inventory/audits"
+        element={
+          <PermissionGate>
+            <AuditPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/inventory/audits/:id"
+        element={
+          <PermissionGate>
+            <AuditScanPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/clients/accounts"
+        element={
+          <PermissionGate requiredPermissions={["Account.Read"]}>
+            <AccountPage />
+          </PermissionGate>
+        }
+      />
       <Route path="/circulation/checkout" element={<CheckoutPage />} />
       <Route path="/circulation/transactions" element={<ReturnPage />} />
-      <Route path="/system/access-control" element={<AccessControlPage />} />
+      <Route
+        path="/system/access-control"
+        element={
+          <PermissionGate requiredPermissions={["AccessControl.Read"]}>
+            <AccessControlPage />
+          </PermissionGate>
+        }
+      />
       <Route
         path="/system/access-control/assign"
-        element={<AssignRolePage />}
+        element={
+          <PermissionGate requiredPermissions={["AccessControl.AssignRole"]}>
+            <AssignRolePage />
+          </PermissionGate>
+        }
       />
       <Route
         path="/circulation/transactions/:id"
-        element={<ReturnDetailPage />}
+        element={
+          <PermissionGate>
+            <ReturnDetailPage />
+          </PermissionGate>
+        }
       ></Route>
-      <Route path="/circulation/checkout" element={<CheckoutPage />} />
+      <Route
+        path="/circulation/checkout"
+        element={
+          <PermissionGate>
+            <CheckoutPage />
+          </PermissionGate>
+        }
+      />
     </Route>
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
     </Route>
-    <Route path="*" element={<Page404 />}></Route>?
+    <Route path="/forbidden" element={<Page403 />}></Route>
+    <Route path="*" element={<Page404 />}></Route>
   </>
 );
 

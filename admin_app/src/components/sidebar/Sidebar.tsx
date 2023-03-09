@@ -3,13 +3,11 @@ import {
   SidebarNavigationItems,
   SidebarNavItem,
 } from "./SidebarNavigations.definition";
-import {
-  NavigationDropdownButton,
-  NavigationDropdown,
-} from "./NavigationDropdown";
+import { NavigationDropdown } from "./NavigationDropdown";
 import { useAuthContext } from "@contexts/AuthContext";
 import ProfileIcon from "@components/ProfileIcon";
 import LogoutButton from "@components/LogoutButton";
+import HasAccess from "@components/auth/HasAccess";
 const Sidebar = () => {
   const { user } = useAuthContext();
   return (
@@ -28,18 +26,27 @@ const Sidebar = () => {
         </div>
       </div>
       <div className="mt-11">
-        <NavigationItems />
+        <SidebarItems />
       </div>
     </div>
   );
 };
 
-const NavigationItems = () => {
+const SidebarItems = () => {
   return (
     <>
       {SidebarNavigationItems.map((item) => {
+        //if item has children navigation, render a nav with  drawer
         if (item.items.length > 0) {
-          return NavigationDrawer(item);
+          return (
+            <NavigationDrawer
+              items={item.items}
+              to={item.to}
+              icon={item.icon}
+              text={item.text}
+              key={item.text}
+            />
+          );
         }
         return (
           <NavLink
@@ -60,24 +67,21 @@ const NavigationItems = () => {
 };
 const NavigationDrawer = (item: SidebarNavItem) => {
   return (
-    <NavigationDropdown
-      key={item.text}
-      drawerButton={
-        <NavigationDropdownButton
-          icon={item.icon}
-          text={item.text ?? "NO TEXT"}
-        />
-      }
-    >
+    <NavigationDropdown key={item.text} icon={item.icon} text={item.text ?? ""}>
       {item.items.map((innerItem) => {
         return (
-          <NavLink
+          <HasAccess
+            requiredPermissions={innerItem.requiredPermissions ?? []}
             key={innerItem.text}
-            className={(active) => isNavActive(active.isActive)}
-            to={innerItem.to}
           >
-            <small className="ml-11">{innerItem.text}</small>
-          </NavLink>
+            <NavLink
+              key={innerItem.text}
+              className={(active) => isNavActive(active.isActive)}
+              to={innerItem.to}
+            >
+              <small className="ml-11">{innerItem.text}</small>
+            </NavLink>
+          </HasAccess>
         );
       })}
     </NavigationDropdown>

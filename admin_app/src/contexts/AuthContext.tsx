@@ -3,7 +3,7 @@ import { BaseProps } from "@definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
 import axios from "axios";
-import { Account, User } from "@definitions/types";
+import { Account, Role, User } from "@definitions/types";
 import {
   AccountInfo,
   EventType,
@@ -11,7 +11,6 @@ import {
   AuthenticationResult,
 } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
-import { verify } from "crypto";
 import axiosClient from "@definitions/configs/axios";
 
 export const AuthContext = createContext({} as AuthContextState);
@@ -23,6 +22,7 @@ export type AuthContextState = {
   setAuthenticated: Function;
   loading?: boolean;
   user: User;
+  hasPermissions: (requiredPermissions: string[]) => boolean;
 };
 
 export const AuthProvider = ({ children }: BaseProps) => {
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState({} as User);
   const [loading, setLoading] = useState(true);
-
+  const [permissions, setPermissions] = useState<string[]>([]);
   const useAccountFromStorage = async () => {
     try {
       if (msalClient.getAllAccounts().length > 0) {
@@ -45,8 +45,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         throw new Error("NO ACCOUNTS");
       }
     } catch (error) {
-      localStorage.clear();
-      setAuthenticated(false);
+      logout();
     }
   };
 
@@ -63,11 +62,12 @@ export const AuthProvider = ({ children }: BaseProps) => {
           surname: user.data.surname,
         };
         await verifyAccount(accountData);
+        await getRolePermissions();
         setAuthenticated(true);
         return;
       }
-    } catch {
-      throw new Error("cannot use Account");
+    } catch (error) {
+      throw error;
     }
   };
 
@@ -81,10 +81,61 @@ export const AuthProvider = ({ children }: BaseProps) => {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
       });
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to verify user.");
-      throw err;
+      throw error;
     }
+  };
+
+  const getRolePermissions = async () => {
+    try {
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: [SCOPES.library.access],
+      });
+
+      const { data: response } = await axiosClient.get(
+        `/accounts/roles/${tokens.account?.localAccountId}}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
+        }
+      );
+      if (!response.data.role) return;
+      const role: Role = response.data.role;
+      const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
+        (a, moduleName) => [...a, ...role.permissions[moduleName]],
+        []
+      );
+      setPermissions(permissionsArr);
+    } catch (error) {
+      console.error("Failed to fetch permissions.");
+      throw error;
+    }
+  };
+
+  const hasPermissions = (requredPermissions: string[]) => {
+    // if empty array is given, it means accessing module doesnt not require any permissions for access.
+    if (requredPermissions.length === 0) {
+      return true;
+    }
+    for (const p of requredPermissions) {
+      if (permissions.includes(p)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const logout = async () => {
+    const account = msalClient.getActiveAccount();
+    if (account) {
+      await msalClient.logout({
+        account: account,
+        logoutHint: account?.idTokenClaims?.login_hint,
+      });
+    }
+    localStorage.clear();
   };
 
   const fetchUser = async (accessToken: string) => {
@@ -136,7 +187,15 @@ export const AuthProvider = ({ children }: BaseProps) => {
     };
   }, []);
   return (
-    <AuthContext.Provider value={{ authenticated, setAuthenticated, user }}>
+    <AuthContext.Provider
+      value={{
+        authenticated,
+        setAuthenticated,
+        user,
+
+        hasPermissions,
+      }}
+    >
       {!loading ? children : <Loader />}
     </AuthContext.Provider>
   );

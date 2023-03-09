@@ -1,5 +1,6 @@
 package acl
 
+
 var Modules = []Module{
 	{
 		Name:        "Publisher",
@@ -10,7 +11,7 @@ var Modules = []Module{
 				Description: "User can view publisher.",
 			},
 			{
-				Name:        "Publisher.Update",
+				Name:        "Publisher.Edit",
 				Description: "User can update publisher.",
 			},
 			{
@@ -24,6 +25,28 @@ var Modules = []Module{
 		},
 	},
 	{
+		Name:        "Section",
+		DisplayText: "Section",
+		Permissions: []Permission{
+			{
+				Name:        "Section.Read",
+				Description: "User can update section.",
+			},
+			{
+				Name:        "Section.Edit",
+				Description: "User can update section.",
+			},
+			{
+				Name:        "Section.Delete",
+				Description: "User can delete section.",
+			},
+			{
+				Name:        "Section.Add",
+				Description: "User can add section.",
+			},
+		},
+	},
+	{
 		Name:        "Author",
 		DisplayText: "Author",
 
@@ -33,7 +56,7 @@ var Modules = []Module{
 				Description: "User can view author.",
 			},
 			{
-				Name:        "Author.Update",
+				Name:        "Author.Edit",
 				Description: "User can update author.",
 			},
 			{
@@ -55,7 +78,7 @@ var Modules = []Module{
 				Description: "User can view book.",
 			},
 			{
-				Name:        "Book.Update",
+				Name:        "Book.Edit",
 				Description: "User can update book",
 			},
 			{
@@ -77,7 +100,7 @@ var Modules = []Module{
 				Description: "User can view source of fund.",
 			},
 			{
-				Name:        "SOF.Update",
+				Name:        "SOF.Edit",
 				Description: "User can update source of fund.",
 			},
 			{
@@ -120,12 +143,24 @@ var Modules = []Module{
 		DisplayText: "Access Control",
 		Permissions: []Permission{
 			{
-				Name:        "AccessControl.Assign",
+				Name:        "AccessControl.Read",
+				Description: "User can view user roles and permission.",
+			},
+			{
+				Name:        "AccessControl.AssignRole",
 				Description: "User can assign role to user.",
 			},
 			{
 				Name:        "AccessControl.CreateRole",
 				Description: "User can create role.",
+			},
+			{
+				Name:        "AccessControl.EditRole",
+				Description: "User can edit role.",
+			},
+			{
+				Name:        "AccessControl.DeleteRole",
+				Description: "User can edit role.",
 			},
 		},
 	},
