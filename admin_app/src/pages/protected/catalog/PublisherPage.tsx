@@ -30,6 +30,7 @@ import Container, {
 import { useMsal } from "@azure/msal-react";
 import { useRequest } from "@hooks/useRequest";
 import { SCOPES } from "@definitions/configs/msal/scopes";
+import HasAccess from "@components/auth/HasAccess";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const { instance: msal } = useMsal();
@@ -98,7 +99,9 @@ const PublisherPage = () => {
       <ContainerNoBackground>
         <div className="flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Publishers</h1>
-          <PrimaryButton onClick={openAddModal}>New Publisher</PrimaryButton>
+          <HasAccess requiredPermissions={["Publisher.Add"]}>
+            <PrimaryButton onClick={openAddModal}>New Publisher</PrimaryButton>
+          </HasAccess>
         </div>
       </ContainerNoBackground>
       <Container className="lg:px-0">
@@ -117,20 +120,24 @@ const PublisherPage = () => {
                     <BodyRow key={publisher.id}>
                       <Td>{publisher.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <AiOutlineEdit
-                          className="cursor-pointer text-yellow-400 text-xl"
-                          onClick={() => {
-                            setSelectedRow({ ...publisher });
-                            openEditModal();
-                          }}
-                        />
-                        <AiOutlineDelete
-                          className="cursor-pointer text-orange-600  text-xl"
-                          onClick={() => {
-                            openConfirmDialog();
-                            setSelectedRow({ ...publisher });
-                          }}
-                        />
+                        <HasAccess requiredPermissions={["Publisher.Edit"]}>
+                          <AiOutlineEdit
+                            className="cursor-pointer text-yellow-400 text-xl"
+                            onClick={() => {
+                              setSelectedRow({ ...publisher });
+                              openEditModal();
+                            }}
+                          />
+                        </HasAccess>
+                        <HasAccess requiredPermissions={["Publisher.Delete"]}>
+                          <AiOutlineDelete
+                            className="cursor-pointer text-orange-600  text-xl"
+                            onClick={() => {
+                              openConfirmDialog();
+                              setSelectedRow({ ...publisher });
+                            }}
+                          />
+                        </HasAccess>
                       </Td>
                     </BodyRow>
                   );
@@ -140,12 +147,16 @@ const PublisherPage = () => {
           </div>
         </LoadingBoundary>
       </Container>
-      <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
-      <EditPublisherModal
-        closeModal={closeEditModal}
-        isOpen={isEditModalOpen}
-        formData={selectedRow}
-      />
+      <HasAccess requiredPermissions={["Publisher.Add"]}>
+        <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
+      </HasAccess>
+      <HasAccess requiredPermissions={["Publisher.Edit"]}>
+        <EditPublisherModal
+          closeModal={closeEditModal}
+          isOpen={isEditModalOpen}
+          formData={selectedRow}
+        />
+      </HasAccess>
       <DangerConfirmDialog
         close={closeConfirmDialog}
         isOpen={isConfirmDialogOpen}

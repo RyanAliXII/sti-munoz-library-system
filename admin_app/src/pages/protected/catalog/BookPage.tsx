@@ -34,6 +34,7 @@ import Container, {
 
 import { useRequest } from "@hooks/useRequest";
 import { SCOPES } from "@definitions/configs/msal/scopes";
+import HasAccess from "@components/auth/HasAccess";
 
 const BookPage = () => {
   const {
@@ -90,12 +91,14 @@ const BookPage = () => {
             <CustomSelect label="Section" />
           </div>
           <div className="w-32 mt-1">
-            <Link
-              to="/books/new"
-              className={`${ButtonClasses.PrimaryButtonDefaultClasslist} py-2.5`}
-            >
-              New Book
-            </Link>
+            <HasAccess requiredPermissions={["Book.Add"]}>
+              <Link
+                to="/books/new"
+                className={`${ButtonClasses.PrimaryButtonDefaultClasslist} py-2.5`}
+              >
+                New Book
+              </Link>
+            </HasAccess>
           </div>
         </div>
       </ContainerNoBackground>
@@ -150,7 +153,9 @@ const BookPage = () => {
                       }}
                     />
                     <Link to={`/books/edit/${book.id}`}>
-                      <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                      <HasAccess requiredPermissions={["Book.Edit"]}>
+                        <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                      </HasAccess>
                     </Link>
                   </Td>
                 </BodyRow>

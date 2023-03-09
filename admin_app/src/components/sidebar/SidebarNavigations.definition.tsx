@@ -3,19 +3,17 @@ import {
   MdManageAccounts,
   MdRotate90DegreesCcw,
 } from "react-icons/md";
-import { RiReservedLine } from "react-icons/ri";
-import { GrHomeOption, GrTransaction } from "react-icons/gr";
+
 import { RxDashboard } from "react-icons/rx";
-import { AiOutlineBook } from "react-icons/ai";
-import { BsBookshelf, BsListCheck } from "react-icons/bs";
-import { ImBooks } from "react-icons/im";
+
 import { ReactNode } from "react";
-import { CgArrowsExchange } from "react-icons/cg";
+
 import { FiBookOpen, FiSettings } from "react-icons/fi";
+
 export type SidebarNavItem = {
   to: string;
   text?: string;
-  items: SidebarNavItem[] | [];
+  items: SidebarNavItem[];
   requiredPermissions?: string[];
   icon?: ReactNode | JSX.Element | JSX.Element[];
 };
@@ -131,7 +129,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        requiredPermissions: ["AccessControl.Assign"],
+        requiredPermissions: ["AccessControl.AssignRole"],
         to: "/system/access-control/assign",
         text: "Assign Role",
         items: [],

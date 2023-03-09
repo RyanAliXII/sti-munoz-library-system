@@ -27,6 +27,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
+import HasAccess from "@components/auth/HasAccess";
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const FundSourcePage = () => {
   const {
@@ -89,7 +90,9 @@ const FundSourcePage = () => {
       <ContainerNoBackground>
         <div className="w-full flex gap-2 justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Source of Fund</h1>
-          <PrimaryButton onClick={openAddModal}>New Source</PrimaryButton>
+          <HasAccess requiredPermissions={["SOF.Add"]}>
+            <PrimaryButton onClick={openAddModal}>New Source</PrimaryButton>
+          </HasAccess>
         </div>
       </ContainerNoBackground>
       <Container className="lg:px-0">
@@ -107,20 +110,24 @@ const FundSourcePage = () => {
                   <BodyRow key={source.id}>
                     <Td>{source.name}</Td>
                     <Td className="p-2 flex gap-2 items-center">
-                      <AiOutlineEdit
-                        className="cursor-pointer text-yellow-400 text-xl"
-                        onClick={() => {
-                          setSelectedRow({ ...source });
-                          openEditModal();
-                        }}
-                      />
-                      <AiOutlineDelete
-                        className="cursor-pointer text-orange-600  text-xl"
-                        onClick={() => {
-                          openConfirmDialog();
-                          setSelectedRow({ ...source });
-                        }}
-                      />
+                      <HasAccess requiredPermissions={["SOF.Edit"]}>
+                        <AiOutlineEdit
+                          className="cursor-pointer text-yellow-400 text-xl"
+                          onClick={() => {
+                            setSelectedRow({ ...source });
+                            openEditModal();
+                          }}
+                        />
+                      </HasAccess>
+                      <HasAccess requiredPermissions={["SOF.Delete"]}>
+                        <AiOutlineDelete
+                          className="cursor-pointer text-orange-600  text-xl"
+                          onClick={() => {
+                            openConfirmDialog();
+                            setSelectedRow({ ...source });
+                          }}
+                        />
+                      </HasAccess>
                     </Td>
                   </BodyRow>
                 );
@@ -131,12 +138,16 @@ const FundSourcePage = () => {
 
         {/* </LoadingBoundar> */}
       </Container>
-      <AddSourceModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
-      <EditSourceModal
-        isOpen={isEditModalOpen}
-        closeModal={closeEditModal}
-        formData={selectedRow}
-      />
+      <HasAccess requiredPermissions={["SOF.Add"]}>
+        <AddSourceModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+      </HasAccess>
+      <HasAccess requiredPermissions={["SOF.Edit"]}>
+        <EditSourceModal
+          isOpen={isEditModalOpen}
+          closeModal={closeEditModal}
+          formData={selectedRow}
+        />
+      </HasAccess>
       <DangerConfirmDialog
         close={closeConfirmDialog}
         isOpen={isConfirmDialogOpen}

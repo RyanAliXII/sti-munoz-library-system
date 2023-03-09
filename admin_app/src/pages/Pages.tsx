@@ -54,7 +54,7 @@ const pages = createRoutesFromChildren(
       <Route
         path="/books/edit/:id"
         element={
-          <PermissionGate requiredPermissions={["Book.Update"]}>
+          <PermissionGate requiredPermissions={["Book.Edit"]}>
             <BookEditPage />
           </PermissionGate>
         }
@@ -128,7 +128,7 @@ const pages = createRoutesFromChildren(
       <Route
         path="/system/access-control/assign"
         element={
-          <PermissionGate requiredPermissions={["AccessControl.Assign"]}>
+          <PermissionGate requiredPermissions={["AccessControl.AssignRole"]}>
             <AssignRolePage />
           </PermissionGate>
         }

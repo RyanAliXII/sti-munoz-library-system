@@ -199,7 +199,7 @@ const EditRoleModal = ({
           </div>
 
           <div className="flex gap-2 mt-5">
-            <PrimaryButton>Create role</PrimaryButton>
+            <PrimaryButton>Update role</PrimaryButton>
             <LightOutlineButton
               type="button"
               onClick={() => {

@@ -3,10 +3,7 @@ import {
   SidebarNavigationItems,
   SidebarNavItem,
 } from "./SidebarNavigations.definition";
-import {
-  NavigationDropdownButton,
-  NavigationDropdown,
-} from "./NavigationDropdown";
+import { NavigationDropdown } from "./NavigationDropdown";
 import { useAuthContext } from "@contexts/AuthContext";
 import ProfileIcon from "@components/ProfileIcon";
 import LogoutButton from "@components/LogoutButton";
@@ -29,18 +26,27 @@ const Sidebar = () => {
         </div>
       </div>
       <div className="mt-11">
-        <NavigationItems />
+        <SidebarItems />
       </div>
     </div>
   );
 };
 
-const NavigationItems = () => {
+const SidebarItems = () => {
   return (
     <>
       {SidebarNavigationItems.map((item) => {
+        //if item has children navigation, render a nav with  drawer
         if (item.items.length > 0) {
-          return NavigationDrawer(item);
+          return (
+            <NavigationDrawer
+              items={item.items}
+              to={item.to}
+              icon={item.icon}
+              text={item.text}
+              key={item.text}
+            />
+          );
         }
         return (
           <NavLink
@@ -61,18 +67,13 @@ const NavigationItems = () => {
 };
 const NavigationDrawer = (item: SidebarNavItem) => {
   return (
-    <NavigationDropdown
-      key={item.text}
-      drawerButton={
-        <NavigationDropdownButton
-          icon={item.icon}
-          text={item.text ?? "NO TEXT"}
-        />
-      }
-    >
+    <NavigationDropdown key={item.text} icon={item.icon} text={item.text ?? ""}>
       {item.items.map((innerItem) => {
         return (
-          <HasAccess requiredPermissions={innerItem.requiredPermissions ?? []}>
+          <HasAccess
+            requiredPermissions={innerItem.requiredPermissions ?? []}
+            key={innerItem.text}
+          >
             <NavLink
               key={innerItem.text}
               className={(active) => isNavActive(active.isActive)}
