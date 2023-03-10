@@ -12,8 +12,8 @@ const Header = () => {
         <div className="w-full h-full flex justify-end gap-1">
           <div className="flex items-center">
             <ProfileIcon
-              givenName={user.firstname ?? ""}
-              surname={user.lastname ?? ""}
+              givenName={user.givenName ?? ""}
+              surname={user.surname ?? ""}
             ></ProfileIcon>
           </div>
           <div className="flex items-center relative text-left">
@@ -55,7 +55,7 @@ const Header = () => {
               <div className="py-1" role="none">
                 <div className="flex flex-col px-4 py-2 gap-1">
                   <strong className="font-medium">
-                    {user.firstname + " " + user.lastname}
+                    {user.givenName + " " + user.surname}
                   </strong>
                   <small>{user.email}</small>
                 </div>

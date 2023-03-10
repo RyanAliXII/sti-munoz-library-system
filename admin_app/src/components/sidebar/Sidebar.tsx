@@ -7,20 +7,20 @@ import { NavigationDropdown } from "./NavigationDropdown";
 import { useAuthContext } from "@contexts/AuthContext";
 import ProfileIcon from "@components/ProfileIcon";
 import LogoutButton from "@components/LogoutButton";
-import HasAccess from "@components/auth/HasAccess";
+
 const Sidebar = () => {
   const { user } = useAuthContext();
   return (
     <div className="flex flex-col gap-3 w-full mt-20  ">
       <div className="w-full flex px-2 gap-2">
         <ProfileIcon
-          givenName={user.firstname ?? ""}
-          surname={user.lastname ?? ""}
+          givenName={user.givenName ?? ""}
+          surname={user.surname ?? ""}
         ></ProfileIcon>
 
         <div className="flex flex-col overflow-hidden">
           <strong className="font-medium">
-            {user.firstname + " " + user.lastname}
+            {user.givenName + " " + user.surname}
           </strong>
           <small className="text-xs">{user.email}</small>
         </div>
@@ -66,23 +66,19 @@ const SidebarItems = () => {
   );
 };
 const NavigationDrawer = (item: SidebarNavItem) => {
+  const { hasPermissions } = useAuthContext();
   return (
     <NavigationDropdown key={item.text} icon={item.icon} text={item.text ?? ""}>
       {item.items.map((innerItem) => {
-        return (
-          <HasAccess
-            requiredPermissions={innerItem.requiredPermissions ?? []}
+        return hasPermissions(innerItem.requiredPermissions ?? []) ? (
+          <NavLink
             key={innerItem.text}
+            className={(active) => isNavActive(active.isActive)}
+            to={innerItem.to}
           >
-            <NavLink
-              key={innerItem.text}
-              className={(active) => isNavActive(active.isActive)}
-              to={innerItem.to}
-            >
-              <small className="ml-11">{innerItem.text}</small>
-            </NavLink>
-          </HasAccess>
-        );
+            <small className="ml-11">{innerItem.text}</small>
+          </NavLink>
+        ) : null;
       })}
     </NavigationDropdown>
   );
