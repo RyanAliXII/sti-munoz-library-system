@@ -29,6 +29,9 @@ import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { useRequest } from "@hooks/useRequest";
 
+import { useMsal } from "@azure/msal-react";
+import { SCOPES } from "@definitions/configs/msal/scopes";
+
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -39,10 +42,11 @@ const uppy = new Uppy({
 }).use(XHRUpload, {
   fieldName: "covers",
   bundle: true,
-  endpoint: `${BASE_URL_V1}/books/cover`,
+  headers: {},
+  endpoint: `${BASE_URL_V1}/books/covers`,
 });
-
 const BookAddForm = () => {
+  const { instance: msalInstance } = useMsal();
   const {
     isOpen: isAuthorSelectionOpen,
     close: closeAuthorSelection,
@@ -136,9 +140,23 @@ const BookAddForm = () => {
         ...parsedForm,
         authorNumber: parsedForm.authorNumber,
       }),
-    onSuccess: ({ data: response }) => {
+    onSuccess: async ({ data: response }) => {
       toast.success("Book has been added");
-      uppy.setMeta({ bookId: response.data.book.id });
+      if (!response?.data?.book?.id) {
+        uppy.cancelAll();
+        return;
+      }
+      const tokens = await msalInstance.acquireTokenSilent({
+        scopes: [SCOPES.library.access],
+      });
+      uppy.getPlugin("XHRUpload")?.setOptions({
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      });
+      uppy.setMeta({
+        bookId: response.data.book.id,
+      });
       uppy.upload().finally(() => {
         uppy.cancelAll();
       });
@@ -155,6 +173,7 @@ const BookAddForm = () => {
   const handleDescriptionInput = (content: string, editor: any) => {
     setFieldValue("description", content);
   };
+
   const numberOfSelectedAuthors =
     form.authors.people.length +
     form.authors.organizations.length +

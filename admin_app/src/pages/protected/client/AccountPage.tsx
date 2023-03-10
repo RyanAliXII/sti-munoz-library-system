@@ -22,16 +22,28 @@ import { TbFileImport } from "react-icons/tb";
 import { useSwitch } from "@hooks/useToggle";
 import Modal from "react-responsive-modal";
 import Uppy from "@uppy/core";
-import Dashboard from "@uppy/dashboard";
+
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 import XHRUpload from "@uppy/xhr-upload";
+import Dashboard from "@uppy/react/src/Dashboard";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { toast } from "react-toastify";
 import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
 import { SCOPES } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
+const uppy = new Uppy({
+  restrictions: {
+    allowedFileTypes: [".csv", ".xlsx"],
+    maxNumberOfFiles: 1,
+  },
+}).use(XHRUpload, {
+  headers: {
+    Authorization: `Bearer`,
+  },
+  endpoint: `${BASE_URL_V1}/accounts/bulk`,
+});
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
 
@@ -83,26 +95,7 @@ const AccountPage = () => {
     setSearchKeyWord(event.target.value);
     debounceSearch(search, "", 500);
   };
-  // sh!t implementation, will come back and fix this. this will be good for now.
-  //TODO: refactor.
-  // POOP
-  const [token, setToken] = useState("");
-  const { instance } = useMsal();
-  const getAccessToken = async () => {
-    const token = await instance.acquireTokenSilent({
-      scopes: [SCOPES.library.access],
-    });
 
-    setToken(token.accessToken);
-  };
-
-  useEffect(() => {
-    if (isImportModalOpen) {
-      getAccessToken();
-    }
-  }, [isImportModalOpen]);
-
-  // POOP
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex items-center gap-5">
@@ -176,7 +169,6 @@ const AccountPage = () => {
                 refetch={() => {
                   refetch();
                 }}
-                token={token}
               ></UploadArea>
             </Modal>
           )}
@@ -187,42 +179,63 @@ const AccountPage = () => {
 };
 type UploadAreaProps = {
   refetch: () => void;
-  token: string;
 };
-const UploadArea = ({ refetch, token }: UploadAreaProps) => {
+const UploadArea = ({ refetch }: UploadAreaProps) => {
+  const { instance: msalInstance } = useMsal();
+  const [numberOfUploadedFiles, setNumberOfUploadedFiles] = useState(0);
   useEffect(() => {
     const onSuccessUpload = () => {
       toast.success("Accounts have been imported.");
       refetch();
     };
-    const uppy = new Uppy({
-      restrictions: {
-        allowedFileTypes: [".csv", ".xlsx"],
-        maxNumberOfFiles: 1,
+    const addFile = () => {
+      setNumberOfUploadedFiles((prev) => prev + 1);
+    };
+    const removeFile = () => {
+      setNumberOfUploadedFiles((prev) => prev - 1);
+    };
+    uppy.on("file-added", addFile);
+    uppy.on("file-removed", removeFile);
+
+    uppy.on("upload-success", onSuccessUpload);
+    return () => {
+      uppy.off("upload-success", onSuccessUpload);
+      uppy.off("file-added", addFile);
+      uppy.off("file-removed", removeFile);
+      uppy.cancelAll();
+    };
+  }, []);
+  const importAccounts = async () => {
+    const tokens = await msalInstance.acquireTokenSilent({
+      scopes: [SCOPES.library.access],
+    });
+    uppy.getPlugin("XHRUpload")?.setOptions({
+      headers: {
+        Authorization: `Bearer ${tokens.accessToken}`,
       },
-    })
-      .use(Dashboard, {
-        inline: true,
-        target: "#uploadArea",
-        locale: {
+    });
+    await uppy.upload();
+  };
+
+  return (
+    <>
+      <Dashboard
+        uppy={uppy}
+        hideUploadButton={true}
+        locale={{
           strings: {
             browseFiles: " browse",
             dropPasteFiles: "Drop a .csv or xlsx, click to %{browse}",
           },
-        },
-      })
-      .use(XHRUpload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        endpoint: `${BASE_URL_V1}/accounts/bulk`,
-      });
-    uppy.on("upload-success", onSuccessUpload);
-    return () => {
-      uppy.off("upload-success", onSuccessUpload);
-      uppy.close();
-    };
-  }, []);
-  return <div id="uploadArea"></div>;
+        }}
+      ></Dashboard>
+
+      {numberOfUploadedFiles ? (
+        <PrimaryButton className="mt-6" onClick={importAccounts}>
+          Import accounts
+        </PrimaryButton>
+      ) : null}
+    </>
+  );
 };
 export default AccountPage;

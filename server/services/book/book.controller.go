@@ -125,6 +125,7 @@ func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
 	bindErr := ctx.ShouldBind(&body)
 
 	if bindErr != nil {
+		logger.Error(bindErr.Error())
 		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
 		return
 	}

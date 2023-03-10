@@ -628,6 +628,7 @@ func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.File
 	_, insertCoverErr := repo.db.Exec(query, args...)
 
 	if insertCoverErr != nil {
+		logger.Error(insertCoverErr.Error(), slimlog.Function("BookRepository.NewBookCover"), slimlog.Error("insertCoverErr"))
 		return insertCoverErr
 	}
 	return nil
