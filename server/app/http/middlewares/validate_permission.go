@@ -8,8 +8,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
-
 func ValidatePermissions(requiredPermissions []string)gin.HandlerFunc{
 	
 	return func (ctx * gin.Context)  {
