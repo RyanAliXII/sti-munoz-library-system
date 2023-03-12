@@ -147,9 +147,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
     localStorage.clear();
   };
 
-  useEffect(() => {
-    console.log("loading has been changed");
-  }, [setLoading]);
   const subscribeMsalEvent = () => {
     msalClient.enableAccountStorageEvents();
     const callbackId = msalClient.addEventCallback((message: EventMessage) => {
