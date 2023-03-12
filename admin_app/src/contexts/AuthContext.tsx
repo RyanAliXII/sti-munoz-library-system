@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
 
   const [user, setUser] = useState<Account>(userInitialData);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [permissions, setPermissions] = useState<string[]>([]);
 
   const useAccount = async () => {
@@ -59,9 +59,10 @@ export const AuthProvider = ({ children }: BaseProps) => {
       await verifyAccount(accountData);
       await getRolePermissions();
 
-      return;
+      return true;
     } catch (error) {
       logout();
+      return false;
     }
   };
   const fetchLoggedInUserData = async (accessToken: string) => {
@@ -145,19 +146,23 @@ export const AuthProvider = ({ children }: BaseProps) => {
     }
     localStorage.clear();
   };
+
+  useEffect(() => {
+    console.log("loading has been changed");
+  }, [setLoading]);
   const subscribeMsalEvent = () => {
     msalClient.enableAccountStorageEvents();
-    const callbackId = msalClient.addEventCallback(
-      async (message: EventMessage) => {
-        if (
-          message.eventType === EventType.INITIALIZE_START ||
-          message.eventType === EventType.LOGIN_SUCCESS
-        ) {
-          await useAccount();
-        }
-        setLoading(false);
+    const callbackId = msalClient.addEventCallback((message: EventMessage) => {
+      if (
+        message.eventType === EventType.INITIALIZE_START ||
+        message.eventType === EventType.LOGIN_SUCCESS
+      ) {
+        setLoading(true);
+        useAccount().finally(() => {
+          setLoading(false);
+        });
       }
-    );
+    });
     return callbackId;
   };
 
@@ -165,7 +170,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
     const id = subscribeMsalEvent();
     return () => {
       msalClient.disableAccountStorageEvents();
-
       if (!id) return;
       msalClient.removeEventCallback(id);
     };
