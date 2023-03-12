@@ -129,6 +129,20 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 	transaction.Commit()
 	return nil
 }
+func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
+
+	role := model.Role{}
+	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '{}') as permissions from system.account as ac
+		LEFT JOIN system.account_role as ar on ac.id = ar.account_id
+		LEFT JOIN system.role on ar.role_id = role.id
+		where ac.id = $1`
+
+	getErr := repo.db.Get(&role, query, accountId)
+	if getErr != nil {
+		logger.Error(getErr.Error(), slimlog.Function("SystemRepository.GetRoles"), slimlog.Error("getErr"))
+	}
+	return role, getErr
+}
 
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
@@ -141,4 +155,5 @@ type AccountRepositoryInterface interface {
 	SearchAccounts(filter Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
+	GetRoleByAccountId(accountId string) (model.Role, error)
 }

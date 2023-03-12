@@ -1,7 +1,7 @@
 package account
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -18,7 +18,6 @@ import (
 
 type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
-	systemRepository  repository.SystemRepositoryInterface
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
@@ -70,7 +69,7 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 		return
 	}
 
-	bytesFile, toBytesErr := ioutil.ReadAll(file)
+	bytesFile, toBytesErr := io.ReadAll(file)
 	var accounts []model.Account = make([]model.Account, 0)
 	if toBytesErr != nil {
 		logger.Error(toBytesErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("toBytesErr"))
@@ -150,7 +149,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 		}
 	}
 	//if no built-in permission fetch application assigned role from db
-	role, getRoleErr := ctrler.systemRepository.GetRoleByAccountId(accountId)
+	role, getRoleErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
 	if getRoleErr != nil {
 		ctx.JSON(httpresp.Fail500(
 			nil, "Unknown error occured."))
@@ -169,7 +168,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
-		systemRepository:  repository.NewSystemRepository(),
+		
 	}
 
 }

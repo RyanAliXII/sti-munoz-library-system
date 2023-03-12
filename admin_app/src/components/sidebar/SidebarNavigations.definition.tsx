@@ -136,27 +136,4 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       },
     ],
   },
-  // {
-  //   text: "Reservation",
-  //   to: "/",
-  //   icon: <BsListCheck className="text-xl" />,
-  //   items: [],
-  // },
-  // {
-  //   text: "Transaction",
-  //   to: "",
-  //   icon: <CgArrowsExchange className="text-xl" />,
-  //   items: [
-  //     {
-  //       text: "Transact",
-  //       to: "",
-  //       items: [],
-  //     },
-  //     {
-  //       text: "View Transaction",
-  //       to: "",
-  //       items: [],
-  //     },
-  //   ],
-  // },
 ];

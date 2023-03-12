@@ -3,7 +3,8 @@ package cutters
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
+
 	"os"
 	"strings"
 
@@ -109,7 +110,7 @@ func LoadFromJSON() map[string]int {
 		fmt.Println(jsonReadErr.Error())
 	}
 	defer jsonFile.Close()
-	jsonByte, _ := ioutil.ReadAll(jsonFile)
+	jsonByte, _ := io.ReadAll(jsonFile)
 
 	cutters := map[string]int{}
 	json.Unmarshal(jsonByte, &cutters)
@@ -123,7 +124,7 @@ func LoadGroupedArray() map[string][]map[string]interface{} {
 		fmt.Println(jsonReadErr.Error())
 	}
 	defer jsonFile.Close()
-	jsonByte, _ := ioutil.ReadAll(jsonFile)
+	jsonByte, _ := io.ReadAll(jsonFile)
 
 	cutters := make(map[string][]map[string]interface{})
 	json.Unmarshal(jsonByte, &cutters)
@@ -137,7 +138,7 @@ func LoadGroupedObjects() map[string]map[string]int {
 		fmt.Println(jsonReadErr.Error())
 	}
 	defer jsonFile.Close()
-	jsonByte, _ := ioutil.ReadAll(jsonFile)
+	jsonByte, _ := io.ReadAll(jsonFile)
 
 	cutters := make(map[string]map[string]int)
 	json.Unmarshal(jsonByte, &cutters)
@@ -151,7 +152,7 @@ func LoadWholeArray() []map[string]interface{} {
 		fmt.Println(jsonReadErr.Error())
 	}
 	defer jsonFile.Close()
-	jsonByte, _ := ioutil.ReadAll(jsonFile)
+	jsonByte, _ := io.ReadAll(jsonFile)
 
 	cutters := make([]map[string]interface{}, 0)
 	json.Unmarshal(jsonByte, &cutters)

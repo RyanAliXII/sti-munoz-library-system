@@ -40,20 +40,7 @@ func (repo *SystemRepository) GetRoles() []model.Role {
 	}
 	return roles
 }
-func (repo *SystemRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
 
-	role := model.Role{}
-	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '{}') as permissions from system.account as ac
-		LEFT JOIN system.account_role as ar on ac.id = ar.account_id
-		LEFT JOIN system.role on ar.role_id = role.id
-		where ac.id = $1`
-
-	getErr := repo.db.Get(&role, query, accountId)
-	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("SystemRepository.GetRoles"), slimlog.Error("getErr"))
-	}
-	return role, getErr
-}
 func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error {
 	dialect := goqu.Dialect("postgres")
 	rows := make([]goqu.Record, 0)
@@ -88,5 +75,5 @@ type SystemRepositoryInterface interface {
 	GetRoles() []model.Role
 	UpdateRole(role model.Role) error
 	AssignRole(accountRoles model.AccountRoles) error
-	GetRoleByAccountId(accountId string) (model.Role, error)
+	
 }

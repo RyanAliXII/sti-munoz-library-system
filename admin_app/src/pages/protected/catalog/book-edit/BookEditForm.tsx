@@ -26,6 +26,8 @@ import { buildS3Url } from "@definitions/configs/s3";
 import { useNavigate, useParams } from "react-router-dom";
 import { HttpStatusCode } from "axios";
 import { useRequest } from "@hooks/useRequest";
+import { SCOPES } from "@definitions/configs/msal/scopes";
+import { useMsal } from "@azure/msal-react";
 
 const uppy = new Uppy({
   restrictions: {
@@ -34,10 +36,9 @@ const uppy = new Uppy({
   },
 }).use(XHRUpload, {
   fieldName: "covers",
-
   bundle: true,
   method: "PUT",
-  endpoint: `${BASE_URL_V1}/books/cover`,
+  endpoint: `${BASE_URL_V1}/books/covers`,
 });
 
 const BookEditForm = () => {
@@ -66,7 +67,7 @@ const BookEditForm = () => {
     setFieldValue,
     registerFormGroup,
   } = useBookEditFormContext();
-
+  const { instance: msalInstance } = useMsal();
   const { Get, Put } = useRequest();
   const fetchPublishers = async () => {
     try {
@@ -139,7 +140,15 @@ const BookEditForm = () => {
       }),
     onSuccess: async () => {
       toast.success("Book has been updated.");
-      // if (!fileUploader) return;
+
+      const tokens = await msalInstance.acquireTokenSilent({
+        scopes: [SCOPES.library.access],
+      });
+      uppy.getPlugin("XHRUpload")?.setOptions({
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      });
       uppy.setMeta({ bookId: form.id });
       await uppy.upload();
     },
