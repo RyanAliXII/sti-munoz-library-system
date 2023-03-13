@@ -1,11 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content:[
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        INTER: ["Inter", "san-serif"],
+      },
+      backgroundImage: {
+        "hero-img": "url('./src/assets/images/hero.svg')",
+      },
+    },
   },
   plugins: [],
-}
+};
