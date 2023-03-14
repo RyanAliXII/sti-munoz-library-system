@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
 
   const [user, setUser] = useState<Account>(userInitialData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState<string[]>([]);
 
   const useAccount = async () => {
@@ -155,7 +155,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
         message.eventType === EventType.INITIALIZE_START ||
         message.eventType === EventType.LOGIN_SUCCESS
       ) {
-        setLoading(true);
         useAccount().finally(() => {
           setLoading(false);
         });
