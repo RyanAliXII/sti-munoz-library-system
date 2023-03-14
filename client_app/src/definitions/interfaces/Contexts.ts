@@ -1,7 +1,8 @@
-import {User} from '../configs/authConfig'
+import { Account } from "@definitions/types";
+
 export type AuthContextState = {
-    authenticated: boolean,
-    setAuthenticated: Function,
-    loading?:boolean,
-    user: User
-}
+  authenticated: boolean;
+  setAuthenticated: Function;
+  loading?: boolean;
+  user: Account;
+};

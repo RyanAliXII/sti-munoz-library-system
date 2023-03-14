@@ -8,12 +8,12 @@ type SocketProviderProps = {
   children?: ReactNode;
 };
 export const SocketProvider = ({ children }: SocketProviderProps) => {
-  const { user, authenticated } = useAuthContext();
+  const { user } = useAuthContext();
   useEffect(() => {
     document.title = "Admin";
-    if (!authenticated) return;
+
     const url = new URL("ws://localhost:5200/rt/ws");
-    url.searchParams.append("accountId", user.id);
+    url.searchParams.append("accountId", user.id ?? "");
     const socket = new WebSocket(url);
     socket.onopen = () => {
       console.debug("socket connected.");
@@ -21,6 +21,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     socket.onmessage = (message) => {
       toast.info(message.data);
     };
-  }, [authenticated]);
+
+    // return () => {
+    //   if (socket.OPEN) {
+    //     socket.close();
+    //   }
+    // };
+  }, []);
   return <SocketContext.Provider value={{}}>{children}</SocketContext.Provider>;
 };

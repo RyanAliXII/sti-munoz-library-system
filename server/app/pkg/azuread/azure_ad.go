@@ -12,42 +12,64 @@ import (
 )
 
 var logger = slimlog.GetInstance()
-var CLIENT_ID = os.Getenv("AZURE_AD_CLIENT")
-var TENANT_ID = os.Getenv("AZURE_AD_TENANT")
-var JWKS_URL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", TENANT_ID, CLIENT_ID)
-var APP_ID = os.Getenv("AZURE_APP_ID")
+
+
+var AdminAppClientId = os.Getenv("ADMIN_APP_CLIENT_ID")
+var AdminAppTenantId = os.Getenv("ADMIN_APP_TENANT_ID")
+var AdminAppId = os.Getenv("ADMIN_APP_ID")
+var AdminAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s",AdminAppTenantId , AdminAppClientId)
+
+var ClientAppClientId = os.Getenv("CLIENT_APP_CLIENT_ID")
+var ClientAppTenantId = os.Getenv("CLIENT_APP_TENANT_ID")
+var ClientAppId = os.Getenv("CLIENT_APP_ID")
+var ClientAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", ClientAppTenantId, ClientAppClientId)
 
 var GRAPH_API_AUD = ""
 var once sync.Once
 
-var jwks *keyfunc.JWKS
 
-func createJWKS() *keyfunc.JWKS {
+var jwks *keyfunc.MultipleJWKS
+
+func createJWKS() *keyfunc.MultipleJWKS {
 	const (
 		EVERY_HOUR   = time.Hour * 1
 		FIVE_MINUTES = time.Minute * 5
 		TEN_SECONDS  = time.Second * 10
 	)
-
-	instance, err := keyfunc.Get(JWKS_URL, keyfunc.Options{
-		RefreshInterval:   EVERY_HOUR,
-		RefreshTimeout:    TEN_SECONDS,
-		RefreshRateLimit:  FIVE_MINUTES,
-		RefreshUnknownKID: true,
-		RefreshErrorHandler: func(err error) {
-			logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+	instance, err := keyfunc.GetMultiple(map[string]keyfunc.Options{
+		 AdminAppJwksURL: {
+			RefreshInterval:   EVERY_HOUR,
+			RefreshTimeout:    TEN_SECONDS,
+			RefreshRateLimit:  FIVE_MINUTES,
+			RefreshUnknownKID: true,
+			RefreshErrorHandler: func(err error) {
+				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+			},
 		},
-	})
+		ClientAppJwksURL:{
+			RefreshInterval:   EVERY_HOUR,
+			RefreshTimeout:    TEN_SECONDS,
+			RefreshRateLimit:  FIVE_MINUTES,
+			RefreshUnknownKID: true,
+			RefreshErrorHandler: func(err error) {
+				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+			},
+		},
+		
+	}, keyfunc.MultipleOptions{} )
 
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Function("createJwksErr"))
 	}
 	return instance
 }
-func GetorCreateJWKSInstance() *keyfunc.JWKS {
-	once.Do(func() {
+
+func GetOrCreateJwksInstance() *keyfunc.MultipleJWKS{
+	once.Do( func() {
 		jwks = createJWKS()
 	})
 
 	return jwks
 }
+
+

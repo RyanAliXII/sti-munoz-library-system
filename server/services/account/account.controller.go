@@ -7,6 +7,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/acl"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -108,16 +109,45 @@ func (ctrler *AccountController) VerifyAccount(ctx *gin.Context) {
 func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	//get requestorId, the current login account id. claims from token passed by middleware.validateToken
 	requestorId, _ := ctx.Get("requestorId")
-	accountId, ok := requestorId.(string)
-	if !ok {
+	accountId, isAccountIdString := requestorId.(string)
+	if !isAccountIdString {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+
+	requestorApp, _ := ctx.Get("requestorApp")
+	app , isAppString := requestorApp.(string)
+	if !isAppString {
+		logger.Error("Invalid requestor app value.")
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+   // check if which app request comes from using aud from token.
+	accountRole := model.Role{}
+	if app == azuread.ClientAppId{
+		accountRole = model.Role{
+			Id: 0,
+			Name: "Libary Client",
+			Permissions: acl.BuiltInRoles.Client,
+		}
+		acl.StorePermissions(accountId, app, acl.BuiltInRoles.Client)
+		ctx.JSON(httpresp.Success200(gin.H{
+			"role": accountRole  ,
+		}, "Role has been fetched successfully."))
+		return 
+	}
+
+	if app != azuread.AdminAppId{
+		logger.Error("Cannot recognize requestor application.")
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
+	}
+
+
 	//requestorRole, this role was assigned from Azure Active Directory not from this app.
 	//The application assigned role will be ignored, if the user has assigned role from Azure Active Directory.
 	//This is acquired from token claims passed by middleware.validateToken
 	//value can be 'Root' or 'MIS'
-	accountRole := model.Role{}
 	requestorRole, hasRole := ctx.Get("requestorRole")
 	if hasRole {
 		role, isString := requestorRole.(string)
@@ -128,7 +158,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 					Name:        role,
 					Permissions: acl.BuiltInRoles.Root,
 				}
-				acl.StorePermissions(accountId,acl.BuiltInRoles.Root)
+				acl.StorePermissions(accountId,app, acl.BuiltInRoles.Root)
 				ctx.JSON(httpresp.Success200(gin.H{
 					"role": accountRole,
 				}, "Role has been fetched successfully."))
@@ -140,7 +170,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 					Name:        role,
 					Permissions: acl.BuiltInRoles.MIS,
 				}
-				acl.StorePermissions(accountId, acl.BuiltInRoles.MIS)
+				acl.StorePermissions(accountId,app,acl.BuiltInRoles.MIS)
 				ctx.JSON(httpresp.Success200(gin.H{
 					"role": accountRole,
 				}, "Role has been fetched successfully."))
@@ -160,7 +190,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return 
 	}
-	acl.StorePermissions(accountId, role.Permissions)
+	acl.StorePermissions(accountId,app,role.Permissions)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"role": role,
 	}, "Role has been fetched successfully."))

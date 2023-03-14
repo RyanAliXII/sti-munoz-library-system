@@ -1,109 +1,187 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { BaseProps } from "../definitions/interfaces/Props";
+import { BaseProps } from "@definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
-import { AuthContextState } from "../definitions/interfaces/Contexts";
-import Loader from "../components/Loader";
+import Loader from "@components/Loader";
 import axios from "axios";
-import { User } from "../definitions/configs/authConfig";
-import {
-  AccountInfo,
-  EventType,
-  EventMessage,
-  AuthenticationResult,
-} from "@azure/msal-browser";
+import { Account, Role } from "@definitions/types";
+import { EventType, EventMessage } from "@azure/msal-browser";
+import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
+import axiosClient from "@definitions/axios";
 
-export const AuthContext = createContext({} as AuthContextState);
+const userInitialData: Account = {
+  displayName: "",
+  email: "",
+  givenName: "",
+  surname: "",
+  id: " ",
+};
+
+export const AuthContext = createContext<AuthContextState>({
+  user: userInitialData,
+  hasPermissions: () => false,
+  permissions: [],
+  loading: true,
+});
 export const useAuthContext = () => {
   return useContext(AuthContext);
 };
+export type AuthContextState = {
+  loading?: boolean;
+  user: Account;
+  permissions: string[];
+  hasPermissions: (requiredPermissions: string[]) => boolean;
+};
+
 export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
-  const [authenticated, setAuthenticated] = useState(false);
-  const [user, setUser] = useState({
-    id: "",
-    email: "",
-    firstname: "",
-    lastname: "",
-  } as User);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<Account>(userInitialData);
+  const [loading, setLoading] = useState(false);
+  const [permissions, setPermissions] = useState<string[]>([]);
 
-  const useAccountFromStorage = async () => {
+  const useAccount = async () => {
     try {
-      if (msalClient.getAllAccounts().length > 0) {
-        const account = msalClient.getAllAccounts()[0];
-        const acquireTokenResp = await msalClient.acquireTokenSilent({
-          scopes: ["User.Read"],
-        });
-        await useAccount(account, acquireTokenResp.accessToken);
-      } else {
-        throw new Error("NO ACCOUNTS");
-      }
-    } catch (error) {
-      console.error(error);
-      setAuthenticated(false);
-    }
-  };
-  const useAccount = async (account: AccountInfo | null, accessToken = "") => {
-    if (account && accessToken.length > 0) {
+      if (msalClient.getAllAccounts().length === 0) throw "no accounts.";
+      const account = msalClient.getAllAccounts()[0];
       msalClient.setActiveAccount(account);
-      await fetchUser(accessToken);
-      setAuthenticated(true);
-      return;
-    }
-    setAuthenticated(false);
-  };
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: MS_GRAPH_SCOPE,
+      });
 
-  const fetchUser = async (accessToken: string) => {
+      const user = await fetchLoggedInUserData(tokens.accessToken);
+      const accountData: Account = {
+        id: user.data.id,
+        displayName: user.data.displayName,
+        email: user.data.mail,
+        givenName: user.data.givenName,
+        surname: user.data.surname,
+      };
+      await verifyAccount(accountData);
+      await getRolePermissions();
+      return true;
+    } catch (error) {
+      logout();
+      return false;
+    }
+  };
+  const fetchLoggedInUserData = async (accessToken: string) => {
+    const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    setUser({
+      email: response.data.mail,
+      givenName: response.data.givenName,
+      surname: response.data.surname,
+      id: response.data.id,
+      displayName: response.data.displayName,
+    });
+    return response;
+  };
+  const verifyAccount = async (account: Account) => {
     try {
-      const response = await axios.get("https://graph.microsoft.com/v1.0/me", {
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: [
+          "api://e8119d61-569d-4c7c-8783-e605e6ddeaef/Library.ClientAppAccess",
+        ],
+      });
+      await axiosClient.post("/accounts/verification", account, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${tokens.accessToken}`,
         },
       });
-      setUser({
-        email: response.data.mail,
-        firstname: response.data.givenName,
-        lastname: response.data.surname,
-        id: response.data.id,
-      });
     } catch (error) {
-      console.error(error);
-      setAuthenticated(false);
+      console.error("Failed to verify user.");
+      throw error;
     }
+  };
+
+  const getRolePermissions = async () => {
+    try {
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: [
+          "api://e8119d61-569d-4c7c-8783-e605e6ddeaef/Library.ClientAppAccess",
+        ],
+      });
+
+      const { data: response } = await axiosClient.get(
+        `/accounts/roles/${tokens.account?.localAccountId}}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
+        }
+      );
+      if (!response.data.role) return;
+      const role: Role = response.data.role;
+      const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
+        (a, moduleName) => [...a, ...role.permissions[moduleName]],
+        []
+      );
+      setPermissions(() => permissionsArr);
+    } catch (error) {
+      console.error("Failed to fetch permissions.");
+      throw error;
+    }
+  };
+
+  const hasPermissions = (requredPermissions: string[]) => {
+    // if empty array is given, it means accessing module doesnt not require any permissions for access.
+    if (requredPermissions.length === 0) {
+      return true;
+    }
+    for (const p of requredPermissions) {
+      if (permissions.includes(p)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const logout = async () => {
+    const account = msalClient.getActiveAccount();
+    if (account) {
+      await msalClient.logout({
+        account: account,
+        logoutHint: account?.idTokenClaims?.login_hint,
+      });
+    }
+    localStorage.clear();
   };
 
   const subscribeMsalEvent = () => {
     msalClient.enableAccountStorageEvents();
     const callbackId = msalClient.addEventCallback((message: EventMessage) => {
-      if (message.eventType === EventType.INITIALIZE_END) {
-        init();
-      }
-      if (message.eventType === EventType.LOGIN_SUCCESS) {
-        const payload: AuthenticationResult =
-          message.payload as AuthenticationResult;
-        useAccount(payload.account, payload.accessToken);
+      if (
+        message.eventType === EventType.INITIALIZE_START ||
+        message.eventType === EventType.LOGIN_SUCCESS
+      ) {
+        setLoading(true);
+        useAccount().finally(() => {
+          setLoading(false);
+        });
       }
     });
     return callbackId;
   };
-  const unsubscribeMsalEvent = (id: string | null) => {
-    msalClient.disableAccountStorageEvents();
-    if (id) {
-      msalClient.removeEventCallback(id);
-    }
-  };
-  const init = async () => {
-    await useAccountFromStorage();
-    setLoading(false);
-  };
+
   useEffect(() => {
     const id = subscribeMsalEvent();
     return () => {
-      unsubscribeMsalEvent(id);
+      msalClient.disableAccountStorageEvents();
+      if (!id) return;
+      msalClient.removeEventCallback(id);
     };
   }, []);
   return (
-    <AuthContext.Provider value={{ authenticated, setAuthenticated, user }}>
+    <AuthContext.Provider
+      value={{
+        hasPermissions,
+        permissions,
+        user,
+        loading,
+      }}
+    >
       {!loading ? children : <Loader />}
     </AuthContext.Provider>
   );

@@ -3,7 +3,7 @@ import { BaseProps } from "@definitions/props.definition";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
 import axios from "axios";
-import { Account, Role, User } from "@definitions/types";
+import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
@@ -91,8 +91,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
         },
       });
     } catch (error) {
+      console.log(error);
       console.error("Failed to verify user.");
-      throw error;
+      // throw error;
     }
   };
 

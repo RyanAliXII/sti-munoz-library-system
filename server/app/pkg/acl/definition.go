@@ -5,6 +5,7 @@ type Permission struct {
 	Description string `json:"description" db:"name"`
 }
 type Module struct {
+	Id int `json:"id"`
 	Name        string       `json:"name"`
 	DisplayText string       `json:"displayText"`
 	Permissions []Permission `json:"permissions"`

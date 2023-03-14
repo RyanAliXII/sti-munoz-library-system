@@ -16,7 +16,7 @@ const Header = ({ children }: BaseProps) => {
           <div className="flex items-center">
             <img
               className="rounded-full w-10 h-10"
-              src={`https://avatars.dicebear.com/api/initials/${user.firstname}${user.lastname}.svg?background=%230000ff`}
+              src={`https://avatars.dicebear.com/api/initials/${user.displayName}${user.surname}.svg?background=%230000ff`}
               alt="profile-image"
             ></img>
           </div>
@@ -59,7 +59,7 @@ const Header = ({ children }: BaseProps) => {
               <div className="py-1" role="none">
                 <div className="flex flex-col px-4 py-2 gap-1">
                   <small className="font-medium">
-                    {user.firstname + " " + user.lastname}
+                    {user.givenName + " " + user.surname}
                   </small>
                   <small>{user.email}</small>
                 </div>
@@ -91,9 +91,6 @@ const Header = ({ children }: BaseProps) => {
                   License
                 </a>
                 <LogoutButton />
-                {/* <form method="POST" action="#" role="none">
-                <button type="submit" className="text-gray-700 block w-full px-4 py-2 text-left text-sm" role="menuitem" tabIndex={-1} id="menu-item-3">Sign out</button>
-              </form> */}
               </div>
             </div>
           </div>
