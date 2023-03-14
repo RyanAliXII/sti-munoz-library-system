@@ -5,7 +5,11 @@ import Loader from "@components/Loader";
 import axios from "axios";
 import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
+import {
+  MS_GRAPH_SCOPE,
+  SCOPES,
+  apiScope,
+} from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
 
 const userInitialData: Account = {
@@ -83,7 +87,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const verifyAccount = async (account: Account) => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [apiScope("Account.Read")],
       });
       await axiosClient.post("/accounts/verification", account, {
         headers: {
@@ -91,16 +95,15 @@ export const AuthProvider = ({ children }: BaseProps) => {
         },
       });
     } catch (error) {
-      console.log(error);
       console.error("Failed to verify user.");
-      // throw error;
+      throw error;
     }
   };
 
   const getRolePermissions = async () => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [apiScope("AccessControl.Read")],
       });
 
       const { data: response } = await axiosClient.get(

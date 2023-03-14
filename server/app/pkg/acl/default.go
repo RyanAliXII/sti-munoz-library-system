@@ -23,7 +23,7 @@ var BuiltInRoles = BuiltIn{
 
 const (
 	Root = "Root"
-	MIS  = "All.Read"
+	MIS  = "ReadOnly.All"
 )
 
 func buildRootUserPermissions() map[string][]string {

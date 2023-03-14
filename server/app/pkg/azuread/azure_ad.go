@@ -24,6 +24,11 @@ var ClientAppTenantId = os.Getenv("CLIENT_APP_TENANT_ID")
 var ClientAppId = os.Getenv("CLIENT_APP_ID")
 var ClientAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", ClientAppTenantId, ClientAppClientId)
 
+
+var ClientId = os.Getenv("CLIENT_ID")
+var TenantId  = os.Getenv("TENANT_ID")
+var AppId = os.Getenv("APP_ID")
+
 var GRAPH_API_AUD = ""
 var once sync.Once
 

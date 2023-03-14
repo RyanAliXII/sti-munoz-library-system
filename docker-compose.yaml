@@ -31,6 +31,9 @@ services:
       CLIENT_APP_CLIENT_ID: ${CLIENT_APP_CLIENT_ID}
       CLIENT_APP_TENANT_ID: ${CLIENT_APP_TENANT_ID}
       CLIENT_APP_ID: ${CLIENT_APP_ID}
+      CLIENT_ID: ${API_APP_CLIENT_ID}
+      APP_ID: ${API_APP_ID}
+      TENANT_ID: ${API_APP_TENANT_ID}
     depends_on:
       - postgres
       - rabbitmq

@@ -33,8 +33,8 @@ import Container, {
 } from "@components/ui/container/Container";
 
 import { useRequest } from "@hooks/useRequest";
-import { SCOPES } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const BookPage = () => {
   const {
@@ -46,7 +46,9 @@ const BookPage = () => {
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get("/books/", {}, [SCOPES.book.read]);
+      const { data: response } = await Get("/books/", {}, [
+        apiScope("Book.Read"),
+      ]);
       return response?.data?.books ?? [];
     } catch (error) {
       console.error(error);

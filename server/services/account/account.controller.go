@@ -107,10 +107,11 @@ func (ctrler *AccountController) VerifyAccount(ctx *gin.Context) {
 
 }
 func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) {
-	//get requestorId, the current login account id. claims from token passed by middleware.validateToken
+	//get requestorId, the current login account id. claims from token passed by middleware.ValidateToken
 	requestorId, _ := ctx.Get("requestorId")
 	accountId, isAccountIdString := requestorId.(string)
 	if !isAccountIdString {
+		logger.Error("Invalid account id not string.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -118,13 +119,13 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 	requestorApp, _ := ctx.Get("requestorApp")
 	app , isAppString := requestorApp.(string)
 	if !isAppString {
-		logger.Error("Invalid requestor app value.")
+		logger.Error("Invalid requestor app value.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-   // check if which app request comes from using aud from token.
+   // check if which app request comes from using app id from token.
 	accountRole := model.Role{}
-	if app == azuread.ClientAppId{
+	if app == azuread.ClientAppClientId{
 		accountRole = model.Role{
 			Id: 0,
 			Name: "Libary Client",
@@ -137,8 +138,8 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 		return 
 	}
 
-	if app != azuread.AdminAppId{
-		logger.Error("Cannot recognize requestor application.")
+	if app != azuread.AdminAppClientId{
+		logger.Error("Cannot recognize requestor application.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return 
 	}
@@ -158,9 +159,9 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 					Name:        role,
 					Permissions: acl.BuiltInRoles.Root,
 				}
-				acl.StorePermissions(accountId,app, acl.BuiltInRoles.Root)
+				acl.StorePermissions(accountId, app, acl.BuiltInRoles.Root)
 				ctx.JSON(httpresp.Success200(gin.H{
-					"role": accountRole,
+					"role": accountRole,	
 				}, "Role has been fetched successfully."))
 				return
 			}
@@ -170,7 +171,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 					Name:        role,
 					Permissions: acl.BuiltInRoles.MIS,
 				}
-				acl.StorePermissions(accountId,app,acl.BuiltInRoles.MIS)
+				acl.StorePermissions(accountId, app, acl.BuiltInRoles.MIS)
 				ctx.JSON(httpresp.Success200(gin.H{
 					"role": accountRole,
 				}, "Role has been fetched successfully."))
@@ -187,6 +188,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 	}
 	// if no permission was assisgned to a user. don't give access to app.
 	if len(role.Permissions) == 0 {
+		logger.Error("User has no role and permissions to access the app.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return 
 	}

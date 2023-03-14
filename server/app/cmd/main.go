@@ -49,7 +49,6 @@ func main() {
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
 	logger.Info("Server starting")
-
 	r.Run(":5200")
 
 }

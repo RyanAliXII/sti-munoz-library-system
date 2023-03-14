@@ -41,9 +41,19 @@ func ValidateToken(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-
+	//if token audience is not for this app.
+	if aud != azuread.AppId{
+		 ctx.AbortWithStatus(http.StatusUnauthorized)
+		 return
+	}
+	appid, hasAppIdClaim := claims["appid"].(string)
+	if !hasAppIdClaim{
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
+	}
+	
 	// if tokens come from library client application
-	if aud == azuread.ClientAppId{
+	if appid == azuread.ClientAppClientId{
 		err := processClientApplicationToken(accessToken, ctx)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -53,7 +63,7 @@ func ValidateToken(ctx *gin.Context) {
 		return
 	}
 	//if tokens come from library admin application
-	if aud == azuread.AdminAppId{
+	if appid == azuread.AdminAppClientId{
 		err := processAdminApplicationToken(accessToken, ctx)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -62,7 +72,7 @@ func ValidateToken(ctx *gin.Context) {
 		ctx.Next()
 		return 
 	}
-	logger.Error("Invalid aud cannot determine if requeast comes from client application or admin application.", zap.String("aud", aud))
+	logger.Error("Invalid aud cannot determine if requeast comes from client application or admin application.", zap.String("aud", aud), zap.String("token", accessToken))
 	ctx.AbortWithStatus(http.StatusUnauthorized)
 
 }
@@ -81,7 +91,7 @@ func processClientApplicationToken (token string, ctx * gin.Context) error{
 	if !hasId {
 		return fmt.Errorf("tokens claims does not contain oid claim. %s", token)
 	}
-	ctx.Set("requestorApp", azuread.ClientAppId)
+	ctx.Set("requestorApp", azuread.ClientAppClientId)
 	ctx.Set("requestorRole","")
 	ctx.Set("requestorId", id)
 	return nil
@@ -117,7 +127,7 @@ func processAdminApplicationToken(token string, ctx * gin.Context)error{
 		}
 		ctx.Set("requestorRole", requestorRole)
 	}
-	ctx.Set("requestorApp", azuread.AdminAppId)
+	ctx.Set("requestorApp", azuread.AdminAppClientId)
 	ctx.Set("requestorId", id)
 	return nil
 
