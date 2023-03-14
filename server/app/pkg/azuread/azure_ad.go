@@ -12,24 +12,32 @@ import (
 )
 
 var logger = slimlog.GetInstance()
-var CLIENT_ID = os.Getenv("AZURE_AD_CLIENT")
-var TENANT_ID = os.Getenv("AZURE_AD_TENANT")
-var JWKS_URL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", TENANT_ID, CLIENT_ID)
-var APP_ID = os.Getenv("AZURE_APP_ID")
+
+
+var AdminAppClientId = os.Getenv("ADMIN_APP_CLIENT_ID")
+var AdminAppTenantId = os.Getenv("ADMIN_APP_TENANT_ID")
+var AdminAppId = os.Getenv("ADMIN_APP_ID")
+var AdminAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s",AdminAppTenantId , AdminAppClientId)
+
+var ClientAppClientId = os.Getenv("CLIENT_APP_CLIENT_ID")
+var ClientAppTenantId = os.Getenv("CLIENT_APP_TENANT_ID")
+var ClientAppId = os.Getenv("CLIENT_APP_ID")
+var ClientAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", ClientAppTenantId, ClientAppClientId)
 
 var GRAPH_API_AUD = ""
 var once sync.Once
 
-var jwks *keyfunc.JWKS
+var adminAppJwks *keyfunc.JWKS
+var clientAppJwks *keyfunc.JWKS
 
-func createJWKS() *keyfunc.JWKS {
+func createJWKS(url string) *keyfunc.JWKS {
 	const (
 		EVERY_HOUR   = time.Hour * 1
 		FIVE_MINUTES = time.Minute * 5
 		TEN_SECONDS  = time.Second * 10
 	)
 
-	instance, err := keyfunc.Get(JWKS_URL, keyfunc.Options{
+	instance, err := keyfunc.Get(url, keyfunc.Options{
 		RefreshInterval:   EVERY_HOUR,
 		RefreshTimeout:    TEN_SECONDS,
 		RefreshRateLimit:  FIVE_MINUTES,
@@ -44,10 +52,21 @@ func createJWKS() *keyfunc.JWKS {
 	}
 	return instance
 }
-func GetorCreateJWKSInstance() *keyfunc.JWKS {
+func GetorCreateAdminAppJWKSInstance() *keyfunc.JWKS {
 	once.Do(func() {
-		jwks = createJWKS()
+		adminAppJwks = createJWKS(AdminAppJwksURL)
+		
 	})
 
-	return jwks
+	return adminAppJwks
 }
+func GetorCreateClientAppJWKSInstance() *keyfunc.JWKS {
+	once.Do(func() {
+		clientAppJwks = createJWKS(ClientAppJwksURL)
+		
+	})
+
+	return clientAppJwks
+}
+
+

@@ -4,7 +4,20 @@ import { AiFillCalendar, AiOutlineSearch } from "react-icons/ai";
 
 import { SiBookstack } from "react-icons/si";
 import { RiFileList2Fill } from "react-icons/ri";
+import { useMsal } from "@azure/msal-react";
+import { loginRequest } from "@definitions/configs/msal/msal.config";
+import IsAuth from "@components/auth/IsAuth";
+import AuthIcon from "@components/AuthIcon";
 const Homepage = () => {
+  const { instance } = useMsal();
+  const signIn = async () => {
+    try {
+      await instance.loginRedirect(loginRequest);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <>
       <header className="h-16 border-b w-100 flex justify-around font-INTER">
@@ -30,9 +43,20 @@ const Homepage = () => {
           >
             Catalog
           </Link> */}
-          <button className="px-5 py-2 bg-blue-500 text-white rounded hover:bg-yellow-400 text-sm">
-            Sign In
-          </button>
+          <IsAuth
+            fallback={
+              <button
+                className="px-5 py-2 bg-blue-500 text-white rounded hover:bg-yellow-400 text-sm"
+                onClick={() => {
+                  signIn();
+                }}
+              >
+                Sign In
+              </button>
+            }
+          >
+            <AuthIcon></AuthIcon>
+          </IsAuth>
         </div>
       </header>
       <div className="hero flex justify-center mt-32 w-full">

@@ -7,6 +7,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/acl"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -108,10 +109,27 @@ func (ctrler *AccountController) VerifyAccount(ctx *gin.Context) {
 func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	//get requestorId, the current login account id. claims from token passed by middleware.validateToken
 	requestorId, _ := ctx.Get("requestorId")
-	accountId, ok := requestorId.(string)
-	if !ok {
+	accountId, isAccountIdString := requestorId.(string)
+	if !isAccountIdString {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
+	}
+	requestorApp, _ := ctx.Get("requestorApp")
+	app , isAppString := requestorApp.(string)
+	if !isAppString {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	if app == azuread.ClientAppClientId{
+		ctx.JSON(httpresp.Success200(gin.H{
+			"role": {},
+		}, "Role has been fetched successfully."))
+		return 
+	}
+	if app != azuread.AdminAppId{
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
 	}
 	//requestorRole, this role was assigned from Azure Active Directory not from this app.
 	//The application assigned role will be ignored, if the user has assigned role from Azure Active Directory.
