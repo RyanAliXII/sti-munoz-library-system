@@ -26,8 +26,8 @@ import { buildS3Url } from "@definitions/configs/s3";
 import { useNavigate, useParams } from "react-router-dom";
 import { HttpStatusCode } from "axios";
 import { useRequest } from "@hooks/useRequest";
-import { SCOPES } from "@definitions/configs/msal/scopes";
 import { useMsal } from "@azure/msal-react";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const uppy = new Uppy({
   restrictions: {
@@ -142,7 +142,7 @@ const BookEditForm = () => {
       toast.success("Book has been updated.");
 
       const tokens = await msalInstance.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [apiScope("Book.Cover.Edit")],
       });
       uppy.getPlugin("XHRUpload")?.setOptions({
         headers: {

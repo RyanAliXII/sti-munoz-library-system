@@ -1,5 +1,4 @@
 import { useMsal } from "@azure/msal-react";
-import { SCOPES } from "@definitions/configs/msal/scopes";
 import axios, { AxiosRequestConfig } from "axios";
 import { StatusCodes } from "http-status-codes";
 
@@ -35,7 +34,7 @@ export const useRequest = () => {
   ) => {
     try {
       const tokens = await instance.acquireTokenSilent({
-        scopes: [SCOPES.library.access, ...scopes],
+        scopes: scopes,
       });
       const response = request.post(url, data, {
         ...config,

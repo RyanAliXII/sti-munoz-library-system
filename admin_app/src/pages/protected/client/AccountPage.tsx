@@ -31,8 +31,8 @@ import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { toast } from "react-toastify";
 import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
-import { SCOPES } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -207,7 +207,7 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
   }, []);
   const importAccounts = async () => {
     const tokens = await msalInstance.acquireTokenSilent({
-      scopes: [SCOPES.library.access],
+      scopes: [apiScope("Account.Add")],
     });
     uppy.getPlugin("XHRUpload")?.setOptions({
       headers: {

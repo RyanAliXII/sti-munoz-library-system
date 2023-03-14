@@ -5,7 +5,7 @@ import Loader from "@components/Loader";
 import axios from "axios";
 import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
+import { MS_GRAPH_SCOPE } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/axios";
 
 const userInitialData: Account = {

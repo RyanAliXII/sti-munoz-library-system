@@ -1,5 +1,4 @@
 import { PopupRequest, Configuration } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE } from "./scopes";
 
 export const CLIENT_ID = "1b3617d9-7634-43f9-acf2-bd45c0b45ad6";
 export const API_CLIENT_ID = "770a2b1b-6004-4a51-94a8-cd008797ba92";
