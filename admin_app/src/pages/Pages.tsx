@@ -120,7 +120,7 @@ const pages = createRoutesFromChildren(
       <Route
         path="/system/access-control"
         element={
-          <PermissionGate requiredPermissions={["AccessControl.Read"]}>
+          <PermissionGate requiredPermissions={["AccessControl.Role.Read"]}>
             <AccessControlPage />
           </PermissionGate>
         }
@@ -128,7 +128,7 @@ const pages = createRoutesFromChildren(
       <Route
         path="/system/access-control/assign"
         element={
-          <PermissionGate requiredPermissions={["AccessControl.AssignRole"]}>
+          <PermissionGate requiredPermissions={["AccessControl.Role.Assign"]}>
             <AssignRolePage />
           </PermissionGate>
         }

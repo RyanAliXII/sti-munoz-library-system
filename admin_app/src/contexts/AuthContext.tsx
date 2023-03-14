@@ -5,11 +5,7 @@ import Loader from "@components/Loader";
 import axios from "axios";
 import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
-import {
-  MS_GRAPH_SCOPE,
-  SCOPES,
-  apiScope,
-} from "@definitions/configs/msal/scopes";
+import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
 
 const userInitialData: Account = {
@@ -103,7 +99,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const getRolePermissions = async () => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [apiScope("AccessControl.Read")],
+        scopes: [apiScope("AccessControl.Role.Read")],
       });
 
       const { data: response } = await axiosClient.get(

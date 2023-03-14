@@ -123,13 +123,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     icon: <FiSettings className="text-xl" />,
     items: [
       {
-        requiredPermissions: ["AccessControl.Read"],
+        requiredPermissions: ["AccessControl.Role.Read"],
         to: "/system/access-control/",
         text: "Role and Permission",
         items: [],
       },
       {
-        requiredPermissions: ["AccessControl.AssignRole"],
+        requiredPermissions: ["AccessControl.Role.Assign"],
         to: "/system/access-control/assign",
         text: "Assign Role",
         items: [],
