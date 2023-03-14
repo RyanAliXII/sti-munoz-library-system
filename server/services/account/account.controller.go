@@ -121,9 +121,16 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 		return
 	}
 
+
+	accountRole := model.Role{}
 	if app == azuread.ClientAppClientId{
+		accountRole = model.Role{
+			Id: 0,
+			Name: "Libary Client",
+			Permissions: acl.BuiltInRoles.Client,
+		}
 		ctx.JSON(httpresp.Success200(gin.H{
-			"role": {},
+			"role": accountRole  ,
 		}, "Role has been fetched successfully."))
 		return 
 	}
@@ -135,7 +142,7 @@ func (ctrler *AccountController) GetAccountRoleAndPermissions(ctx *gin.Context) 
 	//The application assigned role will be ignored, if the user has assigned role from Azure Active Directory.
 	//This is acquired from token claims passed by middleware.validateToken
 	//value can be 'Root' or 'MIS'
-	accountRole := model.Role{}
+	
 	requestorRole, hasRole := ctx.Get("requestorRole")
 	if hasRole {
 		role, isString := requestorRole.(string)

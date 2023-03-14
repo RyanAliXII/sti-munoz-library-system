@@ -2,7 +2,8 @@ package acl
 
 
 var Modules = []Module{
-	{
+	{	
+		Id: 1,
 		Name:        "Publisher",
 		DisplayText: "Publisher",
 		Permissions: []Permission{
@@ -25,6 +26,7 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id: 2,
 		Name:        "Section",
 		DisplayText: "Section",
 		Permissions: []Permission{
@@ -47,9 +49,9 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id: 3,
 		Name:        "Author",
 		DisplayText: "Author",
-
 		Permissions: []Permission{
 			{
 				Name:        "Author.Read",
@@ -70,6 +72,7 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id: 4,
 		Name:        "Book",
 		DisplayText: "Book",
 		Permissions: []Permission{
@@ -92,6 +95,7 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id:5,
 		Name:        "SOF",
 		DisplayText: "Source of Fund",
 		Permissions: []Permission{
@@ -114,6 +118,7 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id: 6,
 		Name:        "Account",
 		DisplayText: "Account",
 		Permissions: []Permission{
@@ -128,6 +133,7 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id: 7,
 		Name:        "Accession",
 		DisplayText: "Accession",
 
@@ -139,6 +145,7 @@ var Modules = []Module{
 		},
 	},
 	{
+		Id: 8,
 		Name:        "AccessControl",
 		DisplayText: "Access Control",
 		Permissions: []Permission{

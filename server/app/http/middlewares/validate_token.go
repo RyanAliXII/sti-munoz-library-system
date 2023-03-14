@@ -44,7 +44,6 @@ func ValidateToken(ctx *gin.Context) {
 
 	// if tokens come from library client application
 	if aud == azuread.ClientAppClientId{
-		fmt.Println("FROM CLIENT APP")
 		err := processClientApplicationToken(accessToken, ctx)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -55,7 +54,6 @@ func ValidateToken(ctx *gin.Context) {
 	}
 	//if tokens come from library admin application
 	if aud == azuread.AdminAppId{
-		fmt.Println("FROM ADMIN APP")
 		err := processAdminApplicationToken(accessToken, ctx)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)

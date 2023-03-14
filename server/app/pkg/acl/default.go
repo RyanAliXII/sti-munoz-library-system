@@ -5,11 +5,20 @@ import "strings"
 type BuiltIn struct {
 	Root map[string][]string
 	MIS  map[string][]string
+	Client  map[string][]string
 }
 
 var BuiltInRoles = BuiltIn{
 	Root: buildRootUserPermissions(),
 	MIS:  buildMISPermissions(),
+	Client: map[string][]string{
+		Modules[0].Name : {Modules[0].Permissions[0].Name},
+		Modules[1].Name : {Modules[1].Permissions[0].Name},
+		Modules[2].Name : {Modules[2].Permissions[0].Name},
+		Modules[3].Name : {Modules[3].Permissions[0].Name},
+		Modules[6].Name : {Modules[6].Permissions[0].Name},
+	},
+	
 }
 
 const (
