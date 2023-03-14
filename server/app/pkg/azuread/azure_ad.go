@@ -27,46 +27,49 @@ var ClientAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discove
 var GRAPH_API_AUD = ""
 var once sync.Once
 
-var adminAppJwks *keyfunc.JWKS
-var clientAppJwks *keyfunc.JWKS
 
-func createJWKS(url string) *keyfunc.JWKS {
+var jwks *keyfunc.MultipleJWKS
+
+func createJWKS() *keyfunc.MultipleJWKS {
 	const (
 		EVERY_HOUR   = time.Hour * 1
 		FIVE_MINUTES = time.Minute * 5
 		TEN_SECONDS  = time.Second * 10
 	)
-
-	instance, err := keyfunc.Get(url, keyfunc.Options{
-		RefreshInterval:   EVERY_HOUR,
-		RefreshTimeout:    TEN_SECONDS,
-		RefreshRateLimit:  FIVE_MINUTES,
-		RefreshUnknownKID: true,
-		RefreshErrorHandler: func(err error) {
-			logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+	instance, err := keyfunc.GetMultiple(map[string]keyfunc.Options{
+		 AdminAppJwksURL: {
+			RefreshInterval:   EVERY_HOUR,
+			RefreshTimeout:    TEN_SECONDS,
+			RefreshRateLimit:  FIVE_MINUTES,
+			RefreshUnknownKID: true,
+			RefreshErrorHandler: func(err error) {
+				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+			},
 		},
-	})
+		ClientAppJwksURL:{
+			RefreshInterval:   EVERY_HOUR,
+			RefreshTimeout:    TEN_SECONDS,
+			RefreshRateLimit:  FIVE_MINUTES,
+			RefreshUnknownKID: true,
+			RefreshErrorHandler: func(err error) {
+				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+			},
+		},
+		
+	}, keyfunc.MultipleOptions{} )
 
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Function("createJwksErr"))
 	}
 	return instance
 }
-func GetorCreateAdminAppJWKSInstance() *keyfunc.JWKS {
-	once.Do(func() {
-		adminAppJwks = createJWKS(AdminAppJwksURL)
-		
+
+func GetOrCreateJwksInstance() *keyfunc.MultipleJWKS{
+	once.Do( func() {
+		jwks = createJWKS()
 	})
 
-	return adminAppJwks
-}
-func GetorCreateClientAppJWKSInstance() *keyfunc.JWKS {
-	once.Do(func() {
-		clientAppJwks = createJWKS(ClientAppJwksURL)
-		
-	})
-
-	return clientAppJwks
+	return jwks
 }
 
 

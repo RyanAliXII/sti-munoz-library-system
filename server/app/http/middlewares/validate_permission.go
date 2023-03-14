@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/acl"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -24,7 +25,17 @@ func ValidatePermissions(requiredPermissions []string)gin.HandlerFunc{
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		permissions, getAccountPermissionsErr := acl.GetPermissionsByAccountId(accountId)
+
+		requestorApp, _ := ctx.Get("requestorApp")
+
+		app, isAppString := requestorApp.(string)
+		if !isAppString{
+			logger.Error("Requestor app is not string.", slimlog.Function("middlewares.ValidatePermissions"))
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+		}
+		
+
+		permissions, getAccountPermissionsErr := acl.GetPermissionsByAccountIdAndAppId(accountId, app)
 		if len(permissions) == 0 {
 			logger.Error("Account has no permissions.", zap.String("accountId", accountId))
 			ctx.AbortWithStatus(http.StatusUnauthorized)

@@ -43,7 +43,7 @@ func ValidateToken(ctx *gin.Context) {
 	}
 
 	// if tokens come from library client application
-	if aud == azuread.ClientAppClientId{
+	if aud == azuread.ClientAppId{
 		err := processClientApplicationToken(accessToken, ctx)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -70,7 +70,8 @@ func ValidateToken(ctx *gin.Context) {
 
 func processClientApplicationToken (token string, ctx * gin.Context) error{
 	claims := jwt.MapClaims{}
-	jwks := azuread.GetorCreateClientAppJWKSInstance()
+	jwks := azuread.GetOrCreateJwksInstance()
+
 	_, parseTokenErr := jwt.ParseWithClaims(token, &claims, jwks.Keyfunc)
 	if parseTokenErr != nil {
 		logger.Error(parseTokenErr.Error(), slimlog.Function("middlewares.ValidateToken.processClientApplicationToken"), slimlog.Error("parseTokenErr"))
@@ -88,7 +89,8 @@ func processClientApplicationToken (token string, ctx * gin.Context) error{
 
 func processAdminApplicationToken(token string, ctx * gin.Context)error{
 	claims := jwt.MapClaims{}
-	jwks := azuread.GetorCreateAdminAppJWKSInstance()
+	jwks := azuread.GetOrCreateJwksInstance()
+
 	_, parseTokenErr := jwt.ParseWithClaims(token, &claims, jwks.Keyfunc)
 	if parseTokenErr != nil {
 		logger.Error(parseTokenErr.Error(), slimlog.Function("middlewares.ValidateToken.processAdminApplicationToken"), slimlog.Error("parseTokenErr"))

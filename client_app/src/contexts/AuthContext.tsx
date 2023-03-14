@@ -99,7 +99,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const getRolePermissions = async () => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [
+          "api://e8119d61-569d-4c7c-8783-e605e6ddeaef/Library.ClientAppAccess",
+        ],
       });
 
       const { data: response } = await axiosClient.get(
