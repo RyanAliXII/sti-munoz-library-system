@@ -24,47 +24,61 @@ var ClientAppTenantId = os.Getenv("CLIENT_APP_TENANT_ID")
 var ClientAppId = os.Getenv("CLIENT_APP_ID")
 var ClientAppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", ClientAppTenantId, ClientAppClientId)
 
+var ClientId = os.Getenv("CLIENT_ID")
+var TenantId  = os.Getenv("TENANT_ID")
+var AppId = os.Getenv("APP_ID")
+var AppJwksURL = fmt.Sprintf("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s", TenantId, ClientId)
 var GRAPH_API_AUD = ""
 var once sync.Once
 
 
-var jwks *keyfunc.MultipleJWKS
+var jwks *keyfunc.JWKS
 
-func createJWKS() *keyfunc.MultipleJWKS {
+func createJWKS() *keyfunc.JWKS {
 	const (
 		EVERY_HOUR   = time.Hour * 1
 		FIVE_MINUTES = time.Minute * 5
 		TEN_SECONDS  = time.Second * 10
 	)
-	instance, err := keyfunc.GetMultiple(map[string]keyfunc.Options{
-		 AdminAppJwksURL: {
-			RefreshInterval:   EVERY_HOUR,
-			RefreshTimeout:    TEN_SECONDS,
-			RefreshRateLimit:  FIVE_MINUTES,
-			RefreshUnknownKID: true,
-			RefreshErrorHandler: func(err error) {
-				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
-			},
-		},
-		ClientAppJwksURL:{
-			RefreshInterval:   EVERY_HOUR,
-			RefreshTimeout:    TEN_SECONDS,
-			RefreshRateLimit:  FIVE_MINUTES,
-			RefreshUnknownKID: true,
-			RefreshErrorHandler: func(err error) {
-				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
-			},
-		},
-		
-	}, keyfunc.MultipleOptions{} )
+	// instance, err := keyfunc.GetMultiple(map[string]keyfunc.Options{
+	// 	 AdminAppJwksURL: {
+	// 		RefreshInterval:   EVERY_HOUR,
+	// 		RefreshTimeout:    TEN_SECONDS,
+	// 		RefreshRateLimit:  FIVE_MINUTES,
+	// 		RefreshUnknownKID: true,
+	// 		RefreshErrorHandler: func(err error) {
+	// 			logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+	// 		},
+	// 	},
+	// 	ClientAppJwksURL:{
+	// 		RefreshInterval:   EVERY_HOUR,
+	// 		RefreshTimeout:    TEN_SECONDS,
+	// 		RefreshRateLimit:  FIVE_MINUTES,
+	// 		RefreshUnknownKID: true,
+	// 		RefreshErrorHandler: func(err error) {
+	// 			logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+	// 		},
+	// 	},
 
+
+		
+	// }, keyfunc.MultipleOptions{} )
+	 instance, err := keyfunc.Get(AppJwksURL, keyfunc.Options{
+					RefreshInterval:   EVERY_HOUR,
+			RefreshTimeout:    TEN_SECONDS,
+			RefreshRateLimit:  FIVE_MINUTES,
+			RefreshUnknownKID: true,
+			RefreshErrorHandler: func(err error) {
+				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
+			},
+	 })
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Function("createJwksErr"))
 	}
 	return instance
 }
 
-func GetOrCreateJwksInstance() *keyfunc.MultipleJWKS{
+func GetOrCreateJwksInstance() *keyfunc.JWKS{
 	once.Do( func() {
 		jwks = createJWKS()
 	})

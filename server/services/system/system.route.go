@@ -13,4 +13,6 @@ func SystemRoutes(router *gin.RouterGroup) {
 	router.PUT("/roles/:id", middlewares.ValidateBody[RoleBody], ctrler.UpdateRole)
 	router.POST("/roles/accounts", middlewares.ValidateBody[AssignBody], ctrler.AssignRole)
 	router.GET("/roles", ctrler.GetRoles)
+	router.POST("/accounts/verification",middlewares.ValidateBody[AccountBody] ,ctrler.VerifyAccount)
+	router.POST("/accounts/roles", ctrler.GetAccountRoleAndPermissions)
 }

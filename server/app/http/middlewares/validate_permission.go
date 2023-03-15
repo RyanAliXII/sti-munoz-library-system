@@ -34,7 +34,6 @@ func ValidatePermissions(requiredPermissions []string)gin.HandlerFunc{
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		}
 		
-
 		permissions, getAccountPermissionsErr := acl.GetPermissionsByAccountIdAndAppId(accountId, app)
 		if len(permissions) == 0 {
 			logger.Error("Account has no permissions.", zap.String("accountId", accountId))

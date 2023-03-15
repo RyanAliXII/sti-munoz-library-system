@@ -17,12 +17,15 @@ import Container, {
 import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
   const fetchAccessions = async () => {
     try {
-      const { data: response } = await Get("/books/accessions");
+      const { data: response } = await Get("/books/accessions", {}, [
+        apiScope("Accession.Read"),
+      ]);
       return response?.data?.accessions ?? [];
     } catch {
       return [];

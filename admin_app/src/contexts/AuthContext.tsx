@@ -5,7 +5,7 @@ import Loader from "@components/Loader";
 import axios from "axios";
 import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
+import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
 
 const userInitialData: Account = {
@@ -83,28 +83,28 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const verifyAccount = async (account: Account) => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [apiScope("Account.Read")],
       });
-      await axiosClient.post("/accounts/verification", account, {
+      await axiosClient.post("/system/accounts/verification", account, {
         headers: {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
       });
     } catch (error) {
-      console.log(error);
       console.error("Failed to verify user.");
-      // throw error;
+      throw error;
     }
   };
 
   const getRolePermissions = async () => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [apiScope("AccessControl.Role.Read")],
       });
 
-      const { data: response } = await axiosClient.get(
-        `/accounts/roles/${tokens.account?.localAccountId}}`,
+      const { data: response } = await axiosClient.post(
+        "/system/accounts/roles",
+        {},
         {
           headers: {
             Authorization: `Bearer ${tokens.accessToken}`,

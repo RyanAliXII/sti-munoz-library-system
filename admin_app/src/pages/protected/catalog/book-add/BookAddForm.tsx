@@ -30,7 +30,7 @@ import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { useRequest } from "@hooks/useRequest";
 
 import { useMsal } from "@azure/msal-react";
-import { SCOPES } from "@definitions/configs/msal/scopes";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
@@ -147,7 +147,7 @@ const BookAddForm = () => {
         return;
       }
       const tokens = await msalInstance.acquireTokenSilent({
-        scopes: [SCOPES.library.access],
+        scopes: [apiScope("Book.Cover.Add")],
       });
       uppy.getPlugin("XHRUpload")?.setOptions({
         headers: {

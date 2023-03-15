@@ -63,6 +63,7 @@ func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error 
 	}
 	return insertErr
 }
+
 func NewSystemRepository() SystemRepositoryInterface {
 	db := postgresdb.GetOrCreateInstance()
 	return &SystemRepository{

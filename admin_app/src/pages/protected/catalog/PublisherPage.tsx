@@ -29,7 +29,7 @@ import Container, {
 } from "@components/ui/container/Container";
 import { useMsal } from "@azure/msal-react";
 import { useRequest } from "@hooks/useRequest";
-import { SCOPES } from "@definitions/configs/msal/scopes";
+import { SCOPES, apiScope } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
@@ -58,7 +58,7 @@ const PublisherPage = () => {
   const fetchPublisher = async () => {
     try {
       const { data: response } = await Get("/publishers/", {}, [
-        SCOPES.pulisher.delete,
+        apiScope("Publisher.Read"),
       ]);
       return response?.data?.publishers || [];
     } catch (error) {

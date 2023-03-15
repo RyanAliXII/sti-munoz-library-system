@@ -1,10 +1,12 @@
 package system
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	acl "github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/acl"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -15,6 +17,7 @@ import (
 
 type SystemController struct {
 	systemRepository repository.SystemRepositoryInterface
+	accountRepository repository.AccountRepositoryInterface
 }
 
 func (ctrler *SystemController) GetModules(ctx *gin.Context) {
@@ -82,9 +85,116 @@ func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Roles assigned successfully."))
 }
+func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
+	account := model.Account{}
+	bindingErr := ctx.ShouldBindBodyWith(&account, binding.JSON)
+	if bindingErr != nil {
+		logger.Error(bindingErr.Error(), slimlog.Function("AccountController.VerifyAccount"), slimlog.Error("bindingErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
+		return
+	}
+	verifyErr := ctrler.accountRepository.VerifyAndUpdateAccount(account)
+	if verifyErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Account verified."))
 
+}
+func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
+	//get requestorId, the current login account id. claims from token passed by middleware.ValidateToken
+	requestorId, _ := ctx.Get("requestorId")
+	accountId, isAccountIdString := requestorId.(string)
+	if !isAccountIdString {
+		logger.Error("Invalid account id not string.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	requestorApp, _ := ctx.Get("requestorApp")
+	app , isAppString := requestorApp.(string)
+	if !isAppString {
+		logger.Error("Invalid requestor app value.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+   // check if which app request comes from using app id from token.
+	accountRole := model.Role{}
+	if app == azuread.ClientAppClientId{
+		accountRole = model.Role{
+			Id: 0,
+			Name: "Libary Client",
+			Permissions: acl.BuiltInRoles.Client,
+		}
+		acl.StorePermissions(accountId, app, acl.BuiltInRoles.Client)
+		ctx.JSON(httpresp.Success200(gin.H{
+			"role": accountRole  ,
+		}, "Role has been fetched successfully."))
+		return 
+	}
+
+	if app != azuread.AdminAppClientId{
+		logger.Error("Cannot recognize requestor application.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
+	}
+
+
+	//requestorRole, this role was assigned from Azure Active Directory not from this app.
+	//The application assigned role will be ignored, if the user has assigned role from Azure Active Directory.
+	//This is acquired from token claims passed by middleware.validateToken
+	//value can be 'Root' or 'MIS'
+	requestorRole, hasRole := ctx.Get("requestorRole")
+	if hasRole {
+		role, isString := requestorRole.(string)
+		if isString {
+			if role == acl.Root {
+				accountRole = model.Role{
+					Id:          0,
+					Name:        role,
+					Permissions: acl.BuiltInRoles.Root,
+				}
+				acl.StorePermissions(accountId, app, acl.BuiltInRoles.Root)
+				ctx.JSON(httpresp.Success200(gin.H{
+					"role": accountRole,	
+				}, "Role has been fetched successfully."))
+				return
+			}
+			if role == acl.MIS {
+				accountRole = model.Role{
+					Id:          0,
+					Name:        role,
+					Permissions: acl.BuiltInRoles.MIS,
+				}
+				acl.StorePermissions(accountId, app, acl.BuiltInRoles.MIS)
+				ctx.JSON(httpresp.Success200(gin.H{
+					"role": accountRole,
+				}, "Role has been fetched successfully."))
+				return
+			}
+		}
+	}
+	//if no built-in permission fetch application assigned role from db
+	role, getRoleErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
+	if getRoleErr != nil {
+		ctx.JSON(httpresp.Fail500(
+			nil, "Unknown error occured."))
+		return
+	}
+	// if no permission was assisgned to a user. don't give access to app.
+	if len(role.Permissions) == 0 {
+		logger.Error("User has no role and permissions to access the app.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
+	}
+	acl.StorePermissions(accountId,app,role.Permissions)
+	ctx.JSON(httpresp.Success200(gin.H{
+		"role": role,
+	}, "Role has been fetched successfully."))
+}
 func NewSystemConctroller() SystemControllerInterface {
 	return &SystemController{
+		accountRepository: repository.NewAccountRepository(),
 		systemRepository: repository.NewSystemRepository(),
 	}
 }
@@ -95,4 +205,6 @@ type SystemControllerInterface interface {
 	GetRoles(ctx *gin.Context)
 	UpdateRole(ctx *gin.Context)
 	AssignRole(ctx *gin.Context)
+	GetAccountRoleAndPermissions(ctx * gin.Context)
+	VerifyAccount(ctx * gin.Context)
 }

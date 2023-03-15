@@ -5,7 +5,7 @@ import Loader from "@components/Loader";
 import axios from "axios";
 import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, SCOPES } from "@definitions/configs/msal/scopes";
+import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/axios";
 
 const userInitialData: Account = {
@@ -35,7 +35,7 @@ export type AuthContextState = {
 export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
   const [user, setUser] = useState<Account>(userInitialData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState<string[]>([]);
 
   const useAccount = async () => {
@@ -81,11 +81,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const verifyAccount = async (account: Account) => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [
-          "api://e8119d61-569d-4c7c-8783-e605e6ddeaef/Library.ClientAppAccess",
-        ],
+        scopes: [apiScope("Account.Read")],
       });
-      await axiosClient.post("/accounts/verification", account, {
+      await axiosClient.post("/system/accounts/verification", account, {
         headers: {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
@@ -99,13 +97,12 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const getRolePermissions = async () => {
     try {
       const tokens = await msalClient.acquireTokenSilent({
-        scopes: [
-          "api://e8119d61-569d-4c7c-8783-e605e6ddeaef/Library.ClientAppAccess",
-        ],
+        scopes: [apiScope("AccessControl.Role.Read")],
       });
 
-      const { data: response } = await axiosClient.get(
-        `/accounts/roles/${tokens.account?.localAccountId}}`,
+      const { data: response } = await axiosClient.post(
+        "/system/accounts/roles",
+        {},
         {
           headers: {
             Authorization: `Bearer ${tokens.accessToken}`,
@@ -156,7 +153,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
         message.eventType === EventType.INITIALIZE_START ||
         message.eventType === EventType.LOGIN_SUCCESS
       ) {
-        setLoading(true);
         useAccount().finally(() => {
           setLoading(false);
         });

@@ -150,23 +150,23 @@ var Modules = []Module{
 		DisplayText: "Access Control",
 		Permissions: []Permission{
 			{
-				Name:        "AccessControl.Read",
+				Name:        "AccessControl.Role.Read",
 				Description: "User can view user roles and permission.",
 			},
 			{
-				Name:        "AccessControl.AssignRole",
+				Name:        "AccessControl.Role.Assign",
 				Description: "User can assign role to user.",
 			},
 			{
-				Name:        "AccessControl.CreateRole",
+				Name:        "AccessControl.Role.Add",
 				Description: "User can create role.",
 			},
 			{
-				Name:        "AccessControl.EditRole",
+				Name:        "AccessControl.Role.Edit",
 				Description: "User can edit role.",
 			},
 			{
-				Name:        "AccessControl.DeleteRole",
+				Name:        "AccessControl.Role.Delete",
 				Description: "User can edit role.",
 			},
 		},

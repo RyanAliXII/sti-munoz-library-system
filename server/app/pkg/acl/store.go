@@ -15,8 +15,8 @@ var store = map[string]ApplicationPermissionStore{}
 
 
 func StorePermissions(accountId string, appId string ,permissions map[string][]string){
-
-	if appId == azuread.AdminAppId{
+	
+	if appId == azuread.AdminAppClientId{
 		val, hasStored := store[accountId]
 		if hasStored{
 			store[accountId] = ApplicationPermissionStore{
@@ -33,7 +33,7 @@ func StorePermissions(accountId string, appId string ,permissions map[string][]s
 	}
 
 
-	if appId == azuread.ClientAppId{
+	if appId == azuread.ClientAppClientId{
 		val, hasStored := store[accountId]
 		if hasStored{
 			store[accountId] = ApplicationPermissionStore{
@@ -59,7 +59,7 @@ func GetPermissionsByAccountIdAndAppId(accountId string, appId string)(map[strin
 	if !hasPermissions {
 		return  accountPermissionsMap ,fmt.Errorf("account permissions not found: %s", accountId )
 	}
-	if appId == azuread.AdminAppId{
+	if appId == azuread.AdminAppClientId{
 
 	for _, permissions := range accountPermissions.Admin {
 		for _, p := range permissions{
@@ -70,7 +70,7 @@ func GetPermissionsByAccountIdAndAppId(accountId string, appId string)(map[strin
 
 	}
 
-	if appId == azuread.ClientAppId{
+	if appId == azuread.ClientAppClientId{
 
 		for _, permissions := range accountPermissions.Client {
 			for _, p := range permissions{

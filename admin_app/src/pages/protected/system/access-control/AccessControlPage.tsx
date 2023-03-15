@@ -67,7 +67,7 @@ const AccessControlPage = () => {
       <ContainerNoBackground>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Access Control</h1>
-          <HasAccess requiredPermissions={["AccessControl.CreateRole"]}>
+          <HasAccess requiredPermissions={["AccessControl.Role.Add"]}>
             <PrimaryButton onClick={openAddModal}>Create Role</PrimaryButton>
           </HasAccess>
         </div>
@@ -85,7 +85,7 @@ const AccessControlPage = () => {
               </small>
             </div>
             <div className="flex items-center gap-2 mr-5 text-blue-500 justify-self-end">
-              <HasAccess requiredPermissions={["AccessControl.AssignRole"]}>
+              <HasAccess requiredPermissions={["AccessControl.Role.Assign"]}>
                 <NavLink
                   to={"/system/access-control/assign"}
                   className="text-xs font-semibold"
@@ -138,10 +138,10 @@ const AccessControlPage = () => {
           </Tbody>
         </Table>
       </Container>
-      <HasAccess requiredPermissions={["AccessControl.CreateRole"]}>
+      <HasAccess requiredPermissions={["AccessControl.Role.Add"]}>
         <AddRoleModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       </HasAccess>
-      <HasAccess requiredPermissions={["AccessControl.EditRole"]}>
+      <HasAccess requiredPermissions={["AccessControl.Role.Edit"]}>
         <EditRoleModal
           closeModal={closeEditModal}
           isOpen={isEditModalOpen}
