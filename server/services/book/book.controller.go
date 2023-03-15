@@ -86,7 +86,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"book": book,
-	}, "model.Book fetched."))
+	}, "Book fetched."))
 }
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 	accessions := ctrler.bookRepository.GetAccessions()
