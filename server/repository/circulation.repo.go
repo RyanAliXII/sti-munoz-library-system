@@ -61,7 +61,7 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 								  where book_id = book.id group by book_id
 								  ),'[]')
 		),																		 
-		'created_at',book.created_at),
+		'createdAt',book.created_at),
 		'isReturned', (case when bb.returned_at is null then false else true end) 							   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
