@@ -30,8 +30,7 @@ func ValidateToken(ctx *gin.Context) {
 	parser := jwt.NewParser()
 	claims := jwt.MapClaims{}
 	accessToken := authorizationHeader[1]
-	_,_, parseClaimsUnverifiedErr := parser.ParseUnverified(accessToken, claims )
-
+	_,_, parseClaimsUnverifiedErr := parser.ParseUnverified(accessToken, claims)
 	if parseClaimsUnverifiedErr != nil{
 		logger.Error(parseClaimsUnverifiedErr.Error(), slimlog.Function("middlewares.ValidateToken"), slimlog.Error("parseClaimsUnverified"))
 	}

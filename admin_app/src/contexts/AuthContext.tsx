@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       const tokens = await msalClient.acquireTokenSilent({
         scopes: [apiScope("Account.Read")],
       });
-      await axiosClient.post("/accounts/verification", account, {
+      await axiosClient.post("/system/accounts/verification", account, {
         headers: {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
@@ -102,8 +102,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
         scopes: [apiScope("AccessControl.Role.Read")],
       });
 
-      const { data: response } = await axiosClient.get(
-        `/accounts/roles/${tokens.account?.localAccountId}}`,
+      const { data: response } = await axiosClient.post(
+        "/system/accounts/roles",
+        {},
         {
           headers: {
             Authorization: `Bearer ${tokens.accessToken}`,
