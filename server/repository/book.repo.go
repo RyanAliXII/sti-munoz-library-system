@@ -141,54 +141,20 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 
 func (repo *BookRepository) Get() []model.Book {
 	var books []model.Book = make([]model.Book, 0)
-	query := `
-	SELECT book.id,title, isbn, 
+	query := `SELECT id, 
+	title, 
+	isbn, 
 	description, 
-	copies,
-	pages,
+	copies, pages,
 	cost_price,
 	edition,
-	year_published,
-	received_at,
-	ddc,
-	author_number,
-	book.created_at,
-	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
-	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
-	json_build_object(
-	'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-			  as authors
-			  FROM catalog.book_author
-			  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-			  where book_id = book.id
-			  group by book_id),'[]'),
-		
-	'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
-							 FROM catalog.org_book_author as oba 
-							 INNER JOIN catalog.organization as org on oba.org_id = org.id 
-							  where book_id = book.id group by book_id ),'[]'),
-		
-	'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
-						  FROM catalog.publisher_book_author as pba 
-						  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
-						  where book_id = book.id group by book_id
-						  ),'[]')
-	) as authors,
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
-	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
-	FROM catalog.book
-	INNER JOIN catalog.section on book.section_id = section.id
-	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
-	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
-	GROUP BY 
-	book.id,
-	source_of_fund.id,
-	section.id,
-	publisher.id
-	ORDER BY created_at DESC
-	`
+	year_published, 
+	received_at, 
+	ddc, 
+	author_number, 
+	created_at, 
+	fund_source, section, publisher, authors, accessions, covers FROM book_view
+	ORDER BY created_at DESC`
 	selectErr := repo.db.Select(&books, query)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
@@ -197,56 +163,20 @@ func (repo *BookRepository) Get() []model.Book {
 }
 func (repo *BookRepository) GetOne(id string) model.Book {
 	var book model.Book = model.Book{}
-	query := `
-	SELECT book.id,title, isbn, 
+	query := `SELECT id, 
+	title, 
+	isbn, 
 	description, 
-	copies,
-	pages,
+	copies, pages,
 	cost_price,
 	edition,
-	year_published,
-	received_at,
-	ddc,
-	author_number,
-	book.created_at,
-	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
-	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
-	json_build_object(
-	'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-			  as authors
-			  FROM catalog.book_author
-			  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-			  where book_id = book.id
-			  group by book_id),'[]'),
-		
-	'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
-							 FROM catalog.org_book_author as oba 
-							 INNER JOIN catalog.organization as org on oba.org_id = org.id 
-							  where book_id = book.id group by book_id ),'[]'),
-		
-	'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
-						  FROM catalog.publisher_book_author as pba 
-						  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
-						  where book_id = book.id group by book_id
-						  ),'[]')
-	) as authors,
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
-	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
-	FROM catalog.book
-	INNER JOIN catalog.section on book.section_id = section.id
-	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
-	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
-	Where book.id = $1
-	GROUP BY 
-	book.id,
-	source_of_fund.id,
-	section.id,
-	publisher.id
-	ORDER BY created_at DESC
-	LIMIT 1
-	`
+	year_published, 
+	received_at, 
+	ddc, 
+	author_number, 
+	created_at, 
+	fund_source, section, publisher, authors, accessions, covers FROM book_view
+	 where id = $1 ORDER BY created_at DESC`
 	selectErr := repo.db.Get(&book, query, id)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOne"), slimlog.Error("SelectErr"))
@@ -257,57 +187,14 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 
 	query := `
-	SELECT accession.id, accession.number, copy_number, 
+	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,
-	json_build_object(
-		'id', book.id,
-		'title', book.title,
-		'description', book.description,
-		'ddc', book.ddc,
-		'authorNumber', book.author_number,
-		'isbn', book.isbn,
-		'copies', book.copies,
-		'pages', book.pages,
-		'costPrice', book.cost_price,
-		'edition', book.edition,
-		'yearPublished', book.year_published,
-		'receivedAt', book.received_at,
-		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
-		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
-		'section', json_build_object('id', section.id, 'name', section.name),
-		'created_at',book.created_at,
-		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
-		'authors', json_build_object(
-			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-					  as authors
-					  FROM catalog.book_author
-					  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-					  where book_id = book.id
-					  group by book_id),'[]'),
-				
-			'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
-									 FROM catalog.org_book_author as oba 
-									 INNER JOIN catalog.organization as org on oba.org_id = org.id 
-									  where book_id = book.id group by book_id ),'[]'),
-				
-			'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
-								  FROM catalog.publisher_book_author as pba 
-								  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
-								  where book_id = book.id group by book_id
-								  ),'[]')
-		) 
-	  
-	) as book,
 	(CASE WHEN accession_number is null then false else true END) as is_checked_out
 	FROM get_accession_table() 
 	as accession 
-	INNER JOIN catalog.book on accession.book_id = book.id 
-	INNER JOIN catalog.section on book.section_id = section.id
-	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-	where accession.deleted_at is null
 	ORDER BY book.created_at DESC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query)
@@ -468,53 +355,20 @@ func (repo *BookRepository) Update(book model.Book) error {
 func (repo *BookRepository) Search(filter Filter) []model.Book {
 	var books []model.Book = make([]model.Book, 0)
 	query := `
-	SELECT book.id,title, isbn, 
+	SELECT id, 
+	title, 
+	isbn, 
 	description, 
-	copies,
-	pages,
+	copies, pages,
 	cost_price,
 	edition,
-	year_published,
-	received_at,
-	ddc,
-	author_number,
-	book.created_at,
-	json_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	json_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
-	json_build_object('id', publisher.id, 'name', publisher.name) as publisher,
-	json_build_object(
-	'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-			  as authors
-			  FROM catalog.book_author
-			  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-			  where book_id = book.id
-			  group by book_id),'[]'),
-		
-	'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
-							 FROM catalog.org_book_author as oba 
-							 INNER JOIN catalog.organization as org on oba.org_id = org.id 
-							  where book_id = book.id group by book_id ),'[]'),
-		
-	'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
-						  FROM catalog.publisher_book_author as pba 
-						  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
-						  where book_id = book.id group by book_id
-						  ),'[]')
-	) as authors,
-
-	COALESCE(json_agg(json_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number )), '[]') as accessions,
-	COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}') as covers
-	FROM catalog.book
-	INNER JOIN catalog.section on book.section_id = section.id
-	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
-	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
+	year_published, 
+	received_at, 
+	ddc, 
+	author_number, 
+	created_at, 
+	fund_source, section, publisher, authors, accessions, covers FROM book_view
 	WHERE search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
-	GROUP BY 
-	book.id,
-	source_of_fund.id,
-	section.id,
-	publisher.id
 	ORDER BY created_at DESC
 	LIMIT $2 OFFSET $3
 	`
@@ -529,60 +383,17 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 	query := `
-	SELECT accession.id, accession.number, copy_number, 
+	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,
-	json_build_object(
-		'id', book.id,
-		'title', book.title,
-		'description', book.description,
-		'ddc', book.ddc,
-		'authorNumber', book.author_number,
-		'isbn', book.isbn,
-		'copies', book.copies,
-		'pages', book.pages,
-		'costPrice', book.cost_price,
-		'edition', book.edition,
-		'yearPublished', book.year_published,
-		'receivedAt', book.received_at,
-		'fundSource', json_build_object('id', source_of_fund.id, 'name', source_of_fund.name),
-		'publisher', json_build_object('id', publisher.id, 'name', publisher.name),
-		'section', json_build_object('id', publisher.id, 'name', publisher.name),
-		'covers', COALESCE((SELECT array_agg(path) FROM catalog.book_cover where book_id = book.id), '{}'),
-		'created_at',book.created_at,
-		'authors', json_build_object(
-			'people', COALESCE((SELECT  json_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
-					  as authors
-					  FROM catalog.book_author
-					  INNER JOIN catalog.author on book_author.author_id = catalog.author.id
-					  where book_id = book.id
-					  group by book_id),'[]'),
-				
-			'organizations', COALESCE((SELECT json_agg(json_build_object('id', org.id, 'name', org.name)) 
-									 FROM catalog.org_book_author as oba 
-									 INNER JOIN catalog.organization as org on oba.org_id = org.id 
-									  where book_id = book.id group by book_id ),'[]'),
-				
-			'publishers', COALESCE((SELECT json_agg(json_build_object('id', pub.id, 'name', pub.name)) 
-								  FROM catalog.publisher_book_author as pba 
-								  INNER JOIN catalog.publisher as pub on pba.publisher_id = pub.id 
-								  where book_id = book.id group by book_id
-								  ),'[]')
-		) 
-		
-	) as book,
 	(CASE WHEN accession_number is null then false else true END) as is_checked_out
 	FROM get_accession_table() 
 	as accession 
-	INNER JOIN catalog.book on accession.book_id = book.id 
-	INNER JOIN catalog.section on book.section_id = section.id
-	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
     WHERE book.id = $1
 	ORDER BY book.created_at DESC
 	`
-
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionByBookId"), slimlog.Error("selectAccessionErr"))
