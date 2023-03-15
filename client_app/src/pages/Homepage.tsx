@@ -1,5 +1,5 @@
 import HeaderIcon from "@assets/images/library-icon.svg";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AiFillCalendar, AiOutlineSearch } from "react-icons/ai";
 
 import { SiBookstack } from "react-icons/si";
@@ -7,7 +7,7 @@ import { RiFileList2Fill } from "react-icons/ri";
 import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "@definitions/configs/msal/msal.config";
 import IsAuth from "@components/auth/IsAuth";
-import AuthIcon from "@components/AuthIcon";
+import ProfileDropdown from "@components/ProfileDropdown";
 const Homepage = () => {
   const { instance } = useMsal();
   const signIn = async () => {
@@ -25,14 +25,14 @@ const Homepage = () => {
         <nav className="h-full justify-self-end">
           <ul className="list-none flex gap-2 h-full items-center ">
             <li>
-              <NavLink to="/" className="font-light text-sm">
+              <Link to="/catalog" className="font-light text-sm">
                 Home
-              </NavLink>
+              </Link>
             </li>
             <li>
-              <NavLink to="/" className="font-light text-sm">
+              <Link to="/" className="font-light text-sm">
                 Library Policy
-              </NavLink>
+              </Link>
             </li>
           </ul>
         </nav>
@@ -55,7 +55,7 @@ const Homepage = () => {
               </button>
             }
           >
-            <AuthIcon></AuthIcon>
+            <ProfileDropdown></ProfileDropdown>
           </IsAuth>
         </div>
       </header>
@@ -73,7 +73,7 @@ const Homepage = () => {
           </p>
           <div className="mt-2 flex gap-2">
             <Link
-              to="/"
+              to="/catalog"
               className="px-5 py-3 rounded text-white bg-blue-500  hover:bg-yellow-300 text-sm"
             >
               <span className="inline">Browse catalog</span>

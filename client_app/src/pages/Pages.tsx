@@ -1,25 +1,27 @@
-import React from "react";
 import {
   Route,
   createBrowserRouter,
   createRoutesFromElements,
 } from "react-router-dom";
-import ProtectedRoutes from "../components/ProtectedRoutes";
-import Dashboard from "./Dashboard";
-import Profile from "./Profile";
-import PublicRoutes from "../components/PublicRoutes";
+import ProtectedRoutes from "@components/auth/ProtectedRoutes";
+import PublicRoutes from "@components/auth/PublicRoutes";
 import Login from "./Login";
 import Homepage from "./Homepage";
+import Search from "./protected/Search";
+import Catalog from "./protected/Catalog/Catalog";
+import CatalogBookView from "./protected/Catalog/CatalogBookView";
 
 const pages = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/" element={<Homepage />} />
       <Route element={<ProtectedRoutes />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<Search />}></Route>
+        <Route path="/catalog" element={<Catalog />}></Route>
+        <Route path="/catalog/:id" element={<CatalogBookView />}></Route>
       </Route>
+
       <Route element={<PublicRoutes restricted={true} />}>
+        <Route path="/" element={<Homepage />} />
         <Route path="/login" element={<Login />} />
       </Route>
     </>
