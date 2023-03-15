@@ -24,6 +24,7 @@ func main() {
 
 	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
 	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
+	
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
@@ -47,6 +48,7 @@ func main() {
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
 	logger.Info("Server starting")
+	
 	r.Run(":5200")
 
 }

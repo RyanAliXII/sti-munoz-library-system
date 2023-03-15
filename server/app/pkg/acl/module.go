@@ -92,6 +92,14 @@ var Modules = []Module{
 				Name:        "Book.Add",
 				Description: "User can add book.",
 			},
+			{
+				Name:        "Book.Cover.Add",
+				Description: "User can add book covers.",
+			},
+			{
+				Name:        "Book.Cover.Edit",
+				Description: "User can update book covers.",
+			},
 		},
 	},
 	{

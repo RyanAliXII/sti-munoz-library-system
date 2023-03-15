@@ -25,6 +25,7 @@ import Container, {
 } from "@components/ui/container/Container";
 import { Input } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,
@@ -40,7 +41,9 @@ const SectionPage = () => {
   const { Get } = useRequest();
   const fetchSections = async () => {
     try {
-      const { data: response } = await Get("/sections/");
+      const { data: response } = await Get("/sections/", {}, [
+        apiScope("Section.Read"),
+      ]);
       return response.data?.sections ?? [];
     } catch (error) {
       console.error(error);
@@ -125,7 +128,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const queryClient = useQueryClient();
   const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/sections/", form),
+    mutationFn: () => Post("/sections/", form, {}, [apiScope("Section.Add")]),
     onSuccess: () => {
       toast.success("New section added");
       queryClient.invalidateQueries(["sections"]);

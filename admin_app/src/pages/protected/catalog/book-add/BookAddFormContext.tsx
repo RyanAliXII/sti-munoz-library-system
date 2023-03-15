@@ -5,15 +5,7 @@ import React, { createContext, useContext, useState } from "react";
 import { NewBookSchemaValidation } from "../schema";
 
 export const BookAddFormContext = createContext({} as BookAddContextType);
-interface BookAddContextType extends UseFormType<Book> {
-  // removeAuthorAsBasisForAuthorNumber: () => void;
-  // selectAuthorForAuthorNumberGeneration: (author: PersonAuthor) => void;
-  // authorKeyFromGeneratedAuthorNumber: PersonAuthor | null;
-  // selectedAuthorNumberFromSelection: AuthorNumber;
-  // setAuthorKeyNumberFromSelection: (authorNumber: AuthorNumber) => void;
-  // unSelectAuthorNumberSelection: () => void;
-  // unSelectAuthorFromGeneratedAuthorNumber: () => void;
-}
+interface BookAddContextType extends UseFormType<Book> {}
 export const useBookAddFormContext = () => {
   return useContext(BookAddFormContext);
 };

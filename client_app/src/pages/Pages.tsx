@@ -19,9 +19,8 @@ const pages = createBrowserRouter(
         <Route path="/catalog" element={<Catalog />}></Route>
         <Route path="/catalog/:id" element={<CatalogBookView />}></Route>
       </Route>
-
+      <Route path="/" element={<Homepage />} />
       <Route element={<PublicRoutes restricted={true} />}>
-        <Route path="/" element={<Homepage />} />
         <Route path="/login" element={<Login />} />
       </Route>
     </>
