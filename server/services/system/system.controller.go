@@ -10,6 +10,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -89,7 +90,7 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 	account := model.Account{}
 	bindingErr := ctx.ShouldBindBodyWith(&account, binding.JSON)
 	if bindingErr != nil {
-		logger.Error(bindingErr.Error(), slimlog.Function("AccountController.VerifyAccount"), slimlog.Error("bindingErr"))
+		logger.Error(bindingErr.Error(), slimlog.Function("SystemController.VerifyAccount"), slimlog.Error("bindingErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
@@ -106,7 +107,7 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	requestorId, _ := ctx.Get("requestorId")
 	accountId, isAccountIdString := requestorId.(string)
 	if !isAccountIdString {
-		logger.Error("Invalid account id not string.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		logger.Error("Invalid account id not string.", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -114,7 +115,7 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	requestorApp, _ := ctx.Get("requestorApp")
 	app , isAppString := requestorApp.(string)
 	if !isAppString {
-		logger.Error("Invalid requestor app value.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		logger.Error("Invalid requestor app value.", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -134,7 +135,7 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	}
 
 	if app != azuread.AdminAppClientId{
-		logger.Error("Cannot recognize requestor application.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		logger.Error("Cannot recognize requestor application.", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return 
 	}
@@ -183,7 +184,7 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	}
 	// if no permission was assisgned to a user. don't give access to app.
 	if len(role.Permissions) == 0 {
-		logger.Error("User has no role and permissions to access the app.", slimlog.Function("AccountController.GetAccountRoleAndPermissions"))
+		logger.Error("User has no role and permissions to access the app.", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return 
 	}
@@ -191,6 +192,28 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{
 		"role": role,
 	}, "Role has been fetched successfully."))
+}
+func(ctrler * SystemController)GetAccountRoles(ctx * gin.Context){
+	accounts := ctrler.accountRepository.GetAccountsWithAssignedRoles()
+	ctx.JSON(httpresp.Success200(gin.H{
+		"accounts": accounts, 
+	}, "Accounts with assigned role fetched."))
+}
+
+func (ctrler * SystemController) RemoveRoleAssignment(ctx * gin.Context){
+	roleId, convertErr := strconv.Atoi(ctx.Param("id"))
+
+	if convertErr != nil{
+		logger.Error(convertErr.Error(), slimlog.Function("SystemController.RemoveRoleAssignment"), slimlog.Error("covertErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid role id."))
+		return
+	}
+	accountId, parseUUIDErr := uuid.Parse(ctx.Param("accountId"))
+	if parseUUIDErr != nil {
+		logger.Error(convertErr.Error(), slimlog.Function("SystemController.RemoveRoleAssignment"), slimlog.Error("parseUUIDErr"))
+	}
+	ctrler.systemRepository.RemoveRoleAssignment(roleId, accountId.String())
+	ctx.JSON(httpresp.Success200(nil, "Role assignment has been removed."))
 }
 func NewSystemConctroller() SystemControllerInterface {
 	return &SystemController{
@@ -207,4 +230,6 @@ type SystemControllerInterface interface {
 	AssignRole(ctx *gin.Context)
 	GetAccountRoleAndPermissions(ctx * gin.Context)
 	VerifyAccount(ctx * gin.Context)
+	GetAccountRoles(ctx * gin.Context)
+	RemoveRoleAssignment(ctx * gin.Context)
 }

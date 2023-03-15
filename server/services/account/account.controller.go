@@ -1,6 +1,7 @@
 package account
 
 import (
+	"fmt"
 	"io"
 	"strconv"
 
@@ -86,6 +87,13 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
+func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
+	accounts := ctrler.accountRepository.GetAccountsWithAssignedRoles()
+	fmt.Println(accounts)
+	ctx.JSON(httpresp.Success200(gin.H{
+		"accounts": accounts, 
+	}, "Accounts with assigned role fetched."))
+}
 
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
@@ -98,4 +106,5 @@ func NewAccountController() AccountControllerInterface {
 type AccountControllerInterface interface {
 	GetAccounts(ctx *gin.Context)
 	ImportAccount(ctx *gin.Context)
+	GetAccountRoles(ctx * gin.Context)
 }

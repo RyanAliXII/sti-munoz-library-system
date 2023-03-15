@@ -23,6 +23,7 @@ import AccessControlPage from "./protected/system/access-control/AccessControlPa
 import AssignRolePage from "./protected/system/AssignRole";
 import PermissionGate from "@components/auth/PermissionGate";
 import Page403 from "./error/Page403";
+import AssignedRolePage from "./protected/system/AssignedRolePage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -134,6 +135,14 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
+        path="/system/access-control/assignments"
+        element={
+          <PermissionGate requiredPermissions={["AccessControl.Role.Read"]}>
+            <AssignedRolePage />
+          </PermissionGate>
+        }
+      ></Route>
+      <Route
         path="/circulation/transactions/:id"
         element={
           <PermissionGate>
@@ -150,6 +159,7 @@ const pages = createRoutesFromChildren(
         }
       />
     </Route>
+
     <Route element={<PublicRoutes restricted={true} />}>
       <Route path="/" element={<Login />} />
     </Route>

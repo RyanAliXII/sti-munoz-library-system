@@ -63,7 +63,39 @@ func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error 
 	}
 	return insertErr
 }
+func(repo * SystemRepository) GetAccountsWithAssignedRoles() model.AccountRoles{
 
+	accountRoles := make(model.AccountRoles, 0)
+	query := `SELECT json_build_object('id', account.id, 
+	'givenName', account.given_name,
+	 'surname', account.surname, 
+	'displayName',account.display_name,
+	 'email', account.email) as account,
+	 json_build_object(
+	   'id', role.id,
+	   'name', role.name,
+	   'permissions', role.permissions
+	 ) as role
+	from system.account_role
+	INNER JOIN system.account on account_role.account_id = account.id
+	INNER JOIN system.role on account_role.role_id = role.id`
+
+	selectErr := repo.db.Select(&accountRoles, query)
+	if selectErr != nil{
+		logger.Error(selectErr.Error(), slimlog.Function("SystemRepository.GetAccountWithAssignedRoles"), slimlog.Error("getErr"))
+		
+	}
+	return accountRoles
+}
+func (repo * SystemRepository) RemoveRoleAssignment(roleId int , accountId string)error{
+
+	_, deleteErr := repo.db.Exec("DELETE FROM system.account_role where role_id = $1 AND account_id = $2", roleId, accountId)
+	if deleteErr != nil{
+		logger.Error(deleteErr.Error(), slimlog.Function("SystemRepository.RemoveRoleAssignments"), slimlog.Error("deleteErr"))
+		return deleteErr
+	}	
+	return nil
+}
 func NewSystemRepository() SystemRepositoryInterface {
 	db := postgresdb.GetOrCreateInstance()
 	return &SystemRepository{
@@ -76,5 +108,7 @@ type SystemRepositoryInterface interface {
 	GetRoles() []model.Role
 	UpdateRole(role model.Role) error
 	AssignRole(accountRoles model.AccountRoles) error
+	GetAccountsWithAssignedRoles() model.AccountRoles
+	RemoveRoleAssignment(roleId int , accountId string)error
 	
 }

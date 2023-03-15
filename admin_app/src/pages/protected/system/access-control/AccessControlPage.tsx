@@ -112,7 +112,9 @@ const AccessControlPage = () => {
                 <BodyRow key={role.id}>
                   <Td> {role.name}</Td>
                   <Td className="p-2 flex gap-2 items-center">
-                    <HasAccess requiredPermissions={["AccessControl.EditRole"]}>
+                    <HasAccess
+                      requiredPermissions={["AccessControl.Role.Edit"]}
+                    >
                       <AiOutlineEdit
                         className="cursor-pointer text-yellow-400 text-xl"
                         onClick={() => {
@@ -122,7 +124,7 @@ const AccessControlPage = () => {
                       />
                     </HasAccess>
                     <HasAccess
-                      requiredPermissions={["AccessControl.DeleteRole"]}
+                      requiredPermissions={["AccessControl.Role.Delete"]}
                     >
                       <AiOutlineDelete
                         className="cursor-pointer text-orange-600  text-xl"

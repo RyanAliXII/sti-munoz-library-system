@@ -134,6 +134,12 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Assign Role",
         items: [],
       },
+      {
+        requiredPermissions: ["AccessControl.Role.Read"],
+        to: "/system/access-control/assignments",
+        text: "Role Assignments",
+        items: [],
+      },
     ],
   },
 ];

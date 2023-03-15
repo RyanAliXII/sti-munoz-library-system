@@ -139,11 +139,34 @@ func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role,
 
 	getErr := repo.db.Get(&role, query, accountId)
 	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("SystemRepository.GetRoles"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), slimlog.Function("AccountRepository.GetRoleByAccountId"), slimlog.Error("getErr"))
 	}
 	return role, getErr
 }
+func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 
+	accountRoles := make(model.AccountRoles, 0)
+	query := `SELECT json_build_object('id', account.id, 
+	'givenName', account.given_name,
+	 'surname', account.surname, 
+	'displayName',account.display_name,
+	 'email', account.email) as account,
+	 json_build_object(
+	   'id', role.id,
+	   'name', role.name,
+	   'permissions', role.permissions
+	 ) as role
+	from system.account_role
+	INNER JOIN system.account on account_role.account_id = account.id
+	INNER JOIN system.role on account_role.role_id = role.id`
+
+	selectErr := repo.db.Select(&accountRoles, query)
+	if selectErr != nil{
+		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.GetRoles"), slimlog.Error("getErr"))
+		
+	}
+	return accountRoles
+}
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
@@ -156,4 +179,5 @@ type AccountRepositoryInterface interface {
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
 	GetRoleByAccountId(accountId string) (model.Role, error)
+	GetAccountsWithAssignedRoles() model.AccountRoles
 }
