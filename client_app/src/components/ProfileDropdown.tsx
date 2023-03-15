@@ -10,7 +10,7 @@ const ProfileDropdown = () => {
     <div className="flex items-center relative text-left">
       <div className="flex items-center">
         <img
-          className="rounded-full w-10 h-10"
+          className="rounded-full w-10"
           src={`https://avatars.dicebear.com/api/initials/${user.givenName}${user.surname}.svg?background=%230000ff`}
           alt="profile-image"
         ></img>
