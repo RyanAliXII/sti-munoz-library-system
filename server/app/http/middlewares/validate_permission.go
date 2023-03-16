@@ -14,14 +14,14 @@ func ValidatePermissions(requiredPermissions []string)gin.HandlerFunc{
 	return func (ctx * gin.Context)  {
 		id, hasId := ctx.Get("requestorId")
 		if !hasId{
-			logger.Error("Account id not found")
+			logger.Error("Account id not found", slimlog.Function("middlewares.ValidatePermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		accountId, isString := id.(string)
 
 		if !isString{
-			logger.Error("Account id not string")
+			logger.Error("Account id not string", slimlog.Function("middlewares.ValidatePermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -41,7 +41,7 @@ func ValidatePermissions(requiredPermissions []string)gin.HandlerFunc{
 			return
 		}
 		if getAccountPermissionsErr != nil{
-			logger.Error(getAccountPermissionsErr.Error())
+			logger.Error(getAccountPermissionsErr.Error(), slimlog.Function("middlewares.ValidatePermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}

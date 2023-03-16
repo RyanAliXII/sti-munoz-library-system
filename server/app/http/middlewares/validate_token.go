@@ -30,6 +30,12 @@ func ValidateToken(ctx *gin.Context) {
 	parser := jwt.NewParser()
 	claims := jwt.MapClaims{}
 	accessToken := authorizationHeader[1]
+
+	/*
+		Parse the token without verifying the signature.
+		The signature will be verified after the validation of aud and appid claims.
+		
+	*/
 	_,_, parseClaimsUnverifiedErr := parser.ParseUnverified(accessToken, claims)
 	if parseClaimsUnverifiedErr != nil{
 		logger.Error(parseClaimsUnverifiedErr.Error(), slimlog.Function("middlewares.ValidateToken"), slimlog.Error("parseClaimsUnverified"))

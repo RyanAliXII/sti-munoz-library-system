@@ -103,7 +103,7 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 
 }
 func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
-	//get requestorId, the current login account id. claims from token passed by middleware.ValidateToken
+	//get requestorId, the account id of a user. this is a claim from token passed by middleware.ValidateToken
 	requestorId, _ := ctx.Get("requestorId")
 	accountId, isAccountIdString := requestorId.(string)
 	if !isAccountIdString {
@@ -141,10 +141,19 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	}
 
 
-	//requestorRole, this role was assigned from Azure Active Directory not from this app.
-	//The application assigned role will be ignored, if the user has assigned role from Azure Active Directory.
-	//This is acquired from token claims passed by middleware.validateToken
-	//value can be 'Root' or 'MIS'
+	/*
+		The requestorRole was set and passed from middlewares.ValidateToken. It is acquired from access token claim named role.
+		This role was assigned from Azure Active Directory not from this app.
+		The application assigned role will be ignored, if the user has assigned role from Azure Active Directory.
+		Azure Active Directory role value can be 'Root' or 'ReadOnly.All' 
+	*/
+
+	/*
+		If user has role, The role's permissions will be stored in memory and will be access by 
+		middlewares.ValidatePermission for validating if certain user has access to a certain 
+		API endpoint.
+
+	*/
 	requestorRole, hasRole := ctx.Get("requestorRole")
 	if hasRole {
 		role, isString := requestorRole.(string)
@@ -175,7 +184,7 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 			}
 		}
 	}
-	//if no built-in permission fetch application assigned role from db
+	//if no assigned role from Azure Active Directory, Check the application assigned roles from database.
 	role, getRoleErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
 	if getRoleErr != nil {
 		ctx.JSON(httpresp.Fail500(

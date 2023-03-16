@@ -231,7 +231,8 @@ func (repo *BookRepository) Update(book model.Book) error {
 	}
 
 	//handle when book section has been updated.
-	//temporary implementation
+	//temporary implementation, might change later.
+	//TODO: 
 	if oldBookRecord.Section.Id != book.Section.Id {
 		newSection := model.Section{}
 		//get details about the section
