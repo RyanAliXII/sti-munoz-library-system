@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 
 export const useRequest = () => {
   const { instance } = useMsal();
+  console.log(instance.getActiveAccount());
   const request = axios.create({
     baseURL: "http://localhost:5200/api/1",
     withCredentials: true,

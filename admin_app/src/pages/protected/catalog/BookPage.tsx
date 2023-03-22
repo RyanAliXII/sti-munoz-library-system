@@ -23,7 +23,7 @@ import React, { useRef, useState } from "react";
 import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import QRCode from "react-qr-code";
-import jsonpack from "jsonpack";
+
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
@@ -232,6 +232,7 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
                   book={book}
                   accessionNumber={accession.number}
                   copyNumber={accession.copyNumber}
+                  accessionId={accession.id ?? ""}
                 ></CallNumber>
               );
             })}
@@ -319,15 +320,18 @@ const AuthorCard = ({ book }: CardProps) => {
 interface CallNumberProps extends CardProps {
   copyNumber: number;
   accessionNumber: number;
+  accessionId: string;
 }
-const CallNumber = ({ book, copyNumber, accessionNumber }: CallNumberProps) => {
-  const qrValue = jsonpack.pack(
-    JSON.stringify({ bookId: book.id, accessionNumber: accessionNumber })
-  );
+const CallNumber = ({
+  book,
+  copyNumber,
+  accessionNumber,
+  accessionId,
+}: CallNumberProps) => {
   return (
     <div className="flex border border-dashed border-gray-400  px-2 justify-center py-3">
       <div className="p-5">
-        <QRCode value={qrValue} className="w-16 h-16"></QRCode>
+        <QRCode value={accessionId} className="w-16 h-16"></QRCode>
       </div>
       <div className="w-32 h-28 border-gray-400 border border-dashed flex flex-col px-2">
         <span>{book.section.name?.substring(0, 3)}</span>

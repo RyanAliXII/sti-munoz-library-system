@@ -1,5 +1,5 @@
 import { Accession, Audit, Book } from "@definitions/types";
-import { useNavigate, useParams } from "react-router-dom";
+import { json, useNavigate, useParams } from "react-router-dom";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import jsonpack from "jsonpack";
@@ -18,6 +18,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
+import { BaseSyntheticEvent, useEffect, useRef } from "react";
 
 export interface AuditedAccession
   extends Omit<
@@ -71,11 +72,9 @@ const AuditScan = () => {
     queryKey: ["auditedBooks"],
   });
 
-  const sendBook = useMutation({
-    mutationFn: (qrResult: QrResult) =>
-      Post(
-        `/inventory/audits/${id}/books/${qrResult.bookId}/accessions/${qrResult.accessionNumber}`
-      ),
+  const sendBookCopy = useMutation({
+    mutationFn: (accessionId: string) =>
+      Post(`/inventory/audits/${id}`, { accessionId: accessionId }),
     onSuccess: () => {
       queryClient.invalidateQueries(["auditedBooks"]);
     },
@@ -85,11 +84,27 @@ const AuditScan = () => {
   });
   const onQRScan = (decodedText: string) => {
     let data: QrResult = jsonpack.unpack(decodedText);
-    sendBook.mutate(data);
+    // sendBook.mutate(data);
   };
 
   useQRScanner({ elementId: "reader", onScan: onQRScan });
+  const textArr = useRef<string[]>([]);
+  useEffect(() => {
+    const waitForEvent = (event: KeyboardEvent) => {
+      if (event.key != "Enter") {
+        textArr.current.push(event.key.toString());
+      } else {
+        const text = textArr.current.join("");
+        sendBookCopy.mutate(text.toString());
+        textArr.current = [];
+      }
+    };
+    window.addEventListener("keypress", waitForEvent);
 
+    return () => {
+      window.removeEventListener("keypress", waitForEvent);
+    };
+  }, []);
   return (
     <>
       <ContainerNoBackground>

@@ -1,8 +1,6 @@
 package inventory
 
 import (
-	"strconv"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -41,14 +39,14 @@ func (ctrler InventoryController) GetAuditedAccession(ctx *gin.Context) {
 }
 func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
 	auditId := ctx.Param("id")
-	bookId := ctx.Param("bookId")
-	accessionId := ctx.Param("accessionId")
-	parsedAccessionId, parseErr := strconv.Atoi(accessionId)
-	if parseErr != nil {
-		ctx.JSON(httpresp.Fail400(nil, "Invalid accession number."))
+	bookCopy := AuditBookCopyBody{} 
+	ctx.ShouldBindBodyWith(&bookCopy, binding.JSON)
+	scannErr := ctrler.inventoryRepository.AddToAudit(auditId, bookCopy.AccessionId)
+	if  scannErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctrler.inventoryRepository.AddToAudit(auditId, bookId, parsedAccessionId)
+	
 	ctx.JSON(httpresp.Success200(nil, "Book audited."))
 }
 
