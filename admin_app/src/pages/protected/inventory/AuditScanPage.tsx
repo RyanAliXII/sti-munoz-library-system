@@ -19,6 +19,7 @@ import Container, {
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
 import { BaseSyntheticEvent, useEffect, useRef } from "react";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 export interface AuditedAccession
   extends Omit<
@@ -67,7 +68,11 @@ const AuditScan = () => {
     }
   };
   const queryClient = useQueryClient();
-  const { data: auditedBooks } = useQuery<AuditedBooks[]>({
+  const {
+    data: auditedBooks,
+    isFetching,
+    isError,
+  } = useQuery<AuditedBooks[]>({
     queryFn: fetchAuditedBooks,
     queryKey: ["auditedBooks"],
   });
@@ -87,7 +92,7 @@ const AuditScan = () => {
     // sendBook.mutate(data);
   };
 
-  useQRScanner({ elementId: "reader", onScan: onQRScan });
+  // useQRScanner({ elementId: "reader", onScan: onQRScan });
   const textArr = useRef<string[]>([]);
   useEffect(() => {
     const waitForEvent = (event: KeyboardEvent) => {
@@ -107,70 +112,74 @@ const AuditScan = () => {
   }, []);
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">
-          Inventory: {audit?.name}
-        </h1>
-      </ContainerNoBackground>
-      <Container>
-        <div id="reader" className="w-96"></div>
-      </Container>
-      <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Book Title</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {auditedBooks?.map((book) => {
-              return (
-                <BodyRow key={book.id}>
-                  <Td className="border-r border-l">{book.title}</Td>
-                  <Td className="border-r">
-                    <Table>
-                      <Thead>
-                        <HeadingRow>
-                          <Th>Accession Number</Th>
-                          <Th>Copy Number</Th>
-                          <Th>Status</Th>
-                        </HeadingRow>
-                      </Thead>
-                      <Tbody>
-                        {book.accessions?.map((accession) => {
-                          return (
-                            <BodyRow key={`${book.id}_${accession.copyNumber}`}>
-                              <Td>{accession.number}</Td>
-                              <Td>Copy {accession.copyNumber}</Td>
+      <LoadingBoundary isLoading={isFetching} isError={isError}>
+        <ContainerNoBackground>
+          <h1 className="text-3xl font-bold text-gray-700">
+            Inventory: {audit?.name}
+          </h1>
+        </ContainerNoBackground>
+        <Container>
+          <div id="reader" className="w-96"></div>
+        </Container>
+        <Container>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th>Book Title</Th>
+                <Th></Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {auditedBooks?.map((book) => {
+                return (
+                  <BodyRow key={book.id}>
+                    <Td className="border-r border-l">{book.title}</Td>
+                    <Td className="border-r">
+                      <Table>
+                        <Thead>
+                          <HeadingRow>
+                            <Th>Accession Number</Th>
+                            <Th>Copy Number</Th>
+                            <Th>Status</Th>
+                          </HeadingRow>
+                        </Thead>
+                        <Tbody>
+                          {book.accessions?.map((accession) => {
+                            return (
+                              <BodyRow
+                                key={`${book.id}_${accession.copyNumber}`}
+                              >
+                                <Td>{accession.number}</Td>
+                                <Td>Copy {accession.copyNumber}</Td>
 
-                              <Td>
-                                {accession.isCheckedOut ? (
-                                  <span className="text-gray-400">
-                                    Book has been checked out
-                                  </span>
-                                ) : accession.isAudited ? (
-                                  <span className="text-green-400">
-                                    OK: Found
-                                  </span>
-                                ) : (
-                                  <span className="text-yellow-500">
-                                    Unscanned.
-                                  </span>
-                                )}
-                              </Td>
-                            </BodyRow>
-                          );
-                        })}
-                      </Tbody>
-                    </Table>
-                  </Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Container>
+                                <Td>
+                                  {accession.isCheckedOut ? (
+                                    <span className="text-gray-400">
+                                      Book has been checked out
+                                    </span>
+                                  ) : accession.isAudited ? (
+                                    <span className="text-green-400">
+                                      OK: Found
+                                    </span>
+                                  ) : (
+                                    <span className="text-yellow-500">
+                                      Unscanned.
+                                    </span>
+                                  )}
+                                </Td>
+                              </BodyRow>
+                            );
+                          })}
+                        </Tbody>
+                      </Table>
+                    </Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+      </LoadingBoundary>
     </>
   );
 };
