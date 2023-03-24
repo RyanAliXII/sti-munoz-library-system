@@ -13,5 +13,5 @@ func InventoryRoutes(router *gin.RouterGroup) {
 	router.PUT("/audits/:id", middlewares.ValidateBody[InventoryBody], controller.UpdateAudit)
 	router.GET("/audits/:id", controller.GetAuditById)
 	router.GET("/audits/:id/books", controller.GetAuditedAccession)
-	router.POST("/audits/:id/books/:bookId/accessions/:accessionId", controller.AddBookToAudit)
+	router.POST("/audits/:id", controller.AddBookToAudit)
 }

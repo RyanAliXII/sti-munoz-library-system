@@ -25,6 +25,7 @@ import Container, {
 } from "@components/ui/container/Container";
 import { Input } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 const AuditPage = () => {
   const {
@@ -52,60 +53,66 @@ const AuditPage = () => {
       return [];
     }
   };
-  const { data: audits } = useQuery<Audit[]>({
+  const {
+    data: audits,
+    isFetching,
+    isError,
+  } = useQuery<Audit[]>({
     queryFn: fetchAudits,
     queryKey: ["audits"],
   });
   return (
     <>
-      <ContainerNoBackground className="flex gap-2 justify-between">
-        <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
+      <LoadingBoundary isLoading={isFetching} isError={isError}>
+        <ContainerNoBackground className="flex gap-2 justify-between">
+          <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
 
-        <PrimaryButton type="button" onClick={openNewAuditModal}>
-          New Audit
-        </PrimaryButton>
-      </ContainerNoBackground>
+          <PrimaryButton type="button" onClick={openNewAuditModal}>
+            New Audit
+          </PrimaryButton>
+        </ContainerNoBackground>
 
-      <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Name</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {audits?.map((audit) => {
-              return (
-                <BodyRow key={audit.id}>
-                  <Td>{audit.name}</Td>
-                  <Td className="flex gap-5">
-                    <Link to={`/inventory/audits/${audit.id}`}>
-                      <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
-                    </Link>
-                    <AiOutlineEdit
-                      className="text-yellow-400  text-lg cursor-pointer"
-                      onClick={() => {
-                        setEditModalFormData({ ...audit });
-                        openEditAuditModal();
-                      }}
-                    ></AiOutlineEdit>
-                  </Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Container>
-      <NewAuditModal
-        closeModal={closeNewAuditModal}
-        isOpen={isNewAuditModalOpen}
-      ></NewAuditModal>
-      <EditAuditModal
-        closeModal={closeEditAuditModal}
-        isOpen={isEditAuditModalOpen}
-        formData={editModalFormData}
-      ></EditAuditModal>
+        <Container>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th>Name</Th>
+                <Th></Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {audits?.map((audit) => {
+                return (
+                  <BodyRow key={audit.id}>
+                    <Td>{audit.name}</Td>
+                    <Td className="flex gap-5">
+                      <Link to={`/inventory/audits/${audit.id}`}>
+                        <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
+                      </Link>
+                      <AiOutlineEdit
+                        className="text-yellow-400  text-lg cursor-pointer"
+                        onClick={() => {
+                          setEditModalFormData({ ...audit });
+                          openEditAuditModal();
+                        }}
+                      ></AiOutlineEdit>
+                    </Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+        <NewAuditModal
+          closeModal={closeNewAuditModal}
+          isOpen={isNewAuditModalOpen}
+        ></NewAuditModal>
+        <EditAuditModal
+          closeModal={closeEditAuditModal}
+          isOpen={isEditAuditModalOpen}
+          formData={editModalFormData}
+        ></EditAuditModal>
+      </LoadingBoundary>
     </>
   );
 };
