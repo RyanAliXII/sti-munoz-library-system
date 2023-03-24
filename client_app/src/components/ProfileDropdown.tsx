@@ -3,14 +3,14 @@ import LogoutButton from "./LogoutButton";
 import useToggle from "@hooks/useToggle";
 import { useAuthContext } from "@contexts/AuthContext";
 
-const AuthIcon = () => {
+const ProfileDropdown = () => {
   const { toggle, value: visible } = useToggle();
   const { user } = useAuthContext();
   return (
     <div className="flex items-center relative text-left">
       <div className="flex items-center">
         <img
-          className="rounded-full w-10 h-10"
+          className="rounded-full w-10"
           src={`https://avatars.dicebear.com/api/initials/${user.givenName}${user.surname}.svg?background=%230000ff`}
           alt="profile-image"
         ></img>
@@ -21,7 +21,7 @@ const AuthIcon = () => {
           onClick={() => {
             toggle();
           }}
-          className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700 shadow-sm"
+          className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700 "
           id="menu-button"
           aria-expanded="true"
           aria-haspopup="true"
@@ -93,4 +93,4 @@ const AuthIcon = () => {
   );
 };
 
-export default AuthIcon;
+export default ProfileDropdown;

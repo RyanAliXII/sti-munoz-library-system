@@ -9,6 +9,9 @@ import "./assets/css/tailwind.css";
 import { useEffect } from "react";
 
 import pages from "./pages/Pages";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 function App() {
   const msalInstance = new PublicClientApplication(msalConfig);
   useEffect(() => {
@@ -16,11 +19,13 @@ function App() {
   }, []);
 
   return (
-    <MsalProvider instance={msalInstance}>
-      <AuthProvider>
-        <RouterProvider router={pages} />
-      </AuthProvider>
-    </MsalProvider>
+    <QueryClientProvider client={queryClient}>
+      <MsalProvider instance={msalInstance}>
+        <AuthProvider>
+          <RouterProvider router={pages} />
+        </AuthProvider>
+      </MsalProvider>
+    </QueryClientProvider>
   );
 }
 

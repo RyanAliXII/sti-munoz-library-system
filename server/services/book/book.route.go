@@ -9,12 +9,41 @@ import (
 func BookRoutes(router *gin.RouterGroup) {
 
 	var controller BookControllerInterface = NewBookController()
-	router.POST("/", middlewares.ValidateBody[BookBody], controller.NewBook)
-	router.GET("/", controller.GetBooks)
-	router.POST("/covers", controller.UploadBookCover)
-	router.PUT("/covers", controller.UpdateBookCover)
-	router.GET("/accessions", controller.GetAccession)
-	router.GET("/:id", controller.GetBookById)
-	router.PUT("/:id", middlewares.ValidateBody[BookBody], controller.UpdateBook)
-	router.GET("/:id/accessions", controller.GetAccessionByBookId)
+	
+
+	router.GET("/", 
+	middlewares.ValidatePermissions([]string{"Book.Read"}),
+	controller.GetBooks)
+	
+	router.GET("/:id",
+	middlewares.ValidatePermissions([]string{"Book.Read"}),
+	controller.GetBookById)
+	
+	router.POST("/",
+	middlewares.ValidatePermissions([]string{"Book.Add"}),
+	middlewares.ValidateBody[BookBody], 
+	controller.NewBook)
+	
+	router.POST("/covers", 
+	middlewares.ValidatePermissions([]string{"Book.Cover.Add"}),
+	controller.UploadBookCover)
+	
+	router.PUT("/covers", 
+	middlewares.ValidatePermissions([]string{"Book.Cover.Edit"}),
+	controller.UpdateBookCover)
+
+	router.GET("/accessions", 
+	middlewares.ValidatePermissions([]string{"Accession.Read"}),
+	controller.GetAccession)
+
+	router.GET("/:id/accessions",
+	middlewares.ValidatePermissions([]string{"Accession.Read", "Book.Read"}),
+	controller.GetAccessionByBookId)
+
+	router.PUT("/:id", 
+	middlewares.ValidatePermissions([]string{"Book.Edit"}),
+	middlewares.ValidateBody[BookBody], 
+	controller.UpdateBook)
+	
+
 }

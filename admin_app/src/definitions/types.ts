@@ -56,7 +56,7 @@ export interface Book {
     organizations: Organization[];
     publishers: Publisher[];
   };
-  covers: [];
+  covers: string[];
   authorNumber: string;
   accessions: Accession[];
   createdAt: string; //iso-string date
