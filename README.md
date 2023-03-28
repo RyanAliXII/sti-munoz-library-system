@@ -12,7 +12,7 @@
 Clone the project
 
 ```bash
-  git clone https://github.com/RyanAliXII/STI-Munoz-Library-System.git
+  git clone https://github.com/RyanAliXII/sti-munoz-library-system.git
 ```
 
 Build containers
