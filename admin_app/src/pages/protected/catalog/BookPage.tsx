@@ -208,7 +208,7 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
         },
       }}
       classNames={{
-        modal: "w-11/12  lg:w-8/12  xl:w-5/12 xl: rounded h-[700px]",
+        modal: "w-11/12  lg:w-8/12  xl:w-5/12 xl: rounded h-[900-px]",
       }}
     >
       <div
