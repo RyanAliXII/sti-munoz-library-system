@@ -44,7 +44,7 @@ services:
     ports:
       - "5201:5201"
     volumes:
-      - ./admin_app/src:/node/dev/src
+      - ./admin_app/src:/node/dev/admin/src
     depends_on:
       - server
   client_app:
@@ -53,7 +53,7 @@ services:
     ports:
       - "5202:5202"
     volumes:
-      - ./client_app/src:/node/dev/src
+      - ./client_app/src:/node/dev/client/src
     depends_on:
       - server
   postgres:
