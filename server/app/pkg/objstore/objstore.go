@@ -2,6 +2,7 @@ package objstore
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 
@@ -22,6 +23,8 @@ var once sync.Once
 var client *minio.Client
 
 func createConnection() *minio.Client {
+	fmt.Println(ACCESS_KEY)
+	fmt.Println(SECRET_KEY)
 	ctx := context.Background()
 	client, initErr := minio.New(ENDPOINT, &minio.Options{
 		Creds:  credentials.NewStaticV4(ACCESS_KEY, SECRET_KEY, ""),
@@ -42,7 +45,7 @@ func createConnection() *minio.Client {
 		if errBucketExists == nil && exists {
 			logger.Info("Bucket has already existed.", zap.String("bucketName", BUCKET))
 		} else {
-			logger.Error("Unknown Error Occured while creating bucket.")
+			logger.Error(err.Error())
 		}
 	} else {
 		logger.Info("Bucket successfully created.", zap.String("bucketName", BUCKET))
