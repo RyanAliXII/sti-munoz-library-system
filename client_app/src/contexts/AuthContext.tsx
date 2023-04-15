@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       await getRolePermissions();
       return true;
     } catch (error) {
+      console.error(error);
       logout();
       return false;
     }

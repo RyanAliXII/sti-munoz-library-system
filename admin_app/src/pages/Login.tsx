@@ -11,7 +11,6 @@ const Login = () => {
       console.error(err);
     }
   };
-
   return (
     <div className="relative py-16 bg-gradient-to-br from-sky-50 to-gray-200">
       <div className="relative container m-auto px-6 text-gray-500 md:px-12 xl:px-40">

@@ -1,21 +1,108 @@
-version: '3.8'
+version: "3.8"
 services:
-  web_service:
-      container_name: web_service
-      image: testgoapp-prod
-      ports: 
-       - '8080:8080'
-      depends_on:
-        - mysql_db
-      environment:
-        - NODE_ENV=production
-  mysql_db: 
-    container_name: mysql_db
-    restart: always
-    image: mysql:8.0.30
+  server:
+    container_name: server
+    image: ryanali12/sti-munoz-library-server-prod
     ports:
-      - '3306:3306'
-    volumes:
-      - ./database:/var/lib/mysql
+      - "5200:5200"
+    # volumes:
+    #   - ./server:/go/prod
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MIGRATE: ${DB_DRIVER}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable
+      DB_DRIVER: ${DB_DRIVER}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_APP_URL: ${ADMIN_APP_URL}
+      CLIENT_APP_URL: ${CLIENT_APP_URL}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_PORT: ${MINIO_PORT}
+      ADMIN_APP_CLIENT_ID: ${ADMIN_APP_CLIENT_ID}
+      ADMIN_APP_TENANT_ID: ${ADMIN_APP_TENANT_ID}
+      ADMIN_APP_ID: ${ADMIN_APP_ID}
+      CLIENT_APP_CLIENT_ID: ${CLIENT_APP_CLIENT_ID}
+      CLIENT_APP_TENANT_ID: ${CLIENT_APP_TENANT_ID}
+      CLIENT_APP_ID: ${CLIENT_APP_ID}
+      CLIENT_ID: ${API_APP_CLIENT_ID}
+      APP_ID: ${API_APP_ID}
+      TENANT_ID: ${API_APP_TENANT_ID}
+    depends_on:
+      - postgres
+      - rabbitmq
+      - minio
+  admin_app:
+    container_name: admin_app
+    image: ryanali12/sti-munoz-library-admin-app-prod
+    ports:
+      - "5201:5201"
+    depends_on:
+      - server
+    environment:
+      ADMIN_APP_URL: ${ADMIN_APP_URL}
+      CLIENT_APP_URL: ${CLIENT_APP_URL}
+  client_app:
+    container_name: client_app
+    image: ryanali12/sti-munoz-library-client-app-prod
+    ports:
+      - "5202:5202"
+    depends_on:
+      - server
+  postgres:
+    container_name: postgres
+    restart: always
+    image: postgres:15.0-alpine
+    ports:
+      - "5203:5432"
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - postgres
+    volumes:
+      - ./pgadmin:/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5204:80"
+  rabbitmq:
+    image: rabbitmq:3.11.9-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5205:5672"
+      - "5206:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+  minio:
+    image: minio/minio
+    container_name: minio
+    restart: always
+    volumes:
+      - minio_storage:/data
+    ports:
+      - "5207:9000"
+      - "5208:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server --console-address ":9001" /data
+
+volumes:
+  minio_storage: {}

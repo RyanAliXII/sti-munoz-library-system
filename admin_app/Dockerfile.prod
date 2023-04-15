@@ -1,0 +1,23 @@
+FROM node:19-alpine3.16 as builder
+
+
+WORKDIR /node/prod/admin
+
+COPY . .
+
+RUN npm install && npm run build
+
+
+FROM nginx:1.23.4-alpine
+
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
+RUN rm -rf /usr/share/nginx/html/*
+
+COPY --from=builder /node/prod/admin/dist /usr/share/nginx/html
+
+ENV NODE_ENV=production
+
+EXPOSE 5201
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

@@ -14,7 +14,6 @@ const AdminBaseLayout = ({ children }: BaseProps) => {
           >
             <Sidebar />
           </div>
-
           <div className="flex-grow mt-10 lg:ml-56">{children}</div>
 
           {/* <*/}

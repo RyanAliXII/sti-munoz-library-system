@@ -1,11 +1,12 @@
 import { useMsal } from "@azure/msal-react";
+import { BASE_URL_V1 } from "@definitions/api.config";
 import axios, { AxiosRequestConfig } from "axios";
 import { StatusCodes } from "http-status-codes";
 
 export const useRequest = () => {
   const { instance } = useMsal();
   const request = axios.create({
-    baseURL: "http://localhost:5200/api/1",
+    baseURL: BASE_URL_V1,
     withCredentials: true,
   });
   request.interceptors.response.use(

@@ -47,6 +47,9 @@ services:
       - ./admin_app/src:/node/dev/admin/src
     depends_on:
       - server
+    environment:
+      ADMIN_APP_URL: ${ADMIN_APP_URL}
+      CLIENT_APP_URL: ${CLIENT_APP_URL}
   client_app:
     container_name: client_app
     image: ryanali12/sti-munoz-library-client-app

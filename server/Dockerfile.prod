@@ -1,20 +1,28 @@
 FROM golang:1.19.3-alpine3.16 as golang-builder
 
 WORKDIR /go/prod
-# ENV NODE_ENV production
+
 COPY . .
 
 RUN go mod download && \
-    go build -o ./app/cmd/main
-
-EXPOSE 8080
-
+    go build -o app/bin/main app/cmd/main.go    
+    
 FROM alpine:3.16
 WORKDIR /prod/
-COPY --from=golang-builder /go/prod/app/cmd/main ./app/cmd/
-COPY --from=golang-builder /go/prod/.env ./
 
-CMD [ "app/cmd/main" ]
+COPY --from=golang-builder /go/prod/app/db ./app/db/
+COPY --from=golang-builder /go/prod/app/bin/main ./app/bin/
+
+RUN wget -q https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz && \
+    tar -xf migrate.linux-amd64.tar.gz  && \
+    mv migrate /usr/local/bin/migrate &&\
+    rm migrate.linux-amd64.tar.gz && \
+    mkdir app/logs/
+    
+
+EXPOSE 5200
+
+CMD [ "app/bin/main" ]
 
 
 

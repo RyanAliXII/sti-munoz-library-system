@@ -27,13 +27,11 @@ import { Publisher } from "@definitions/types";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import { useMsal } from "@azure/msal-react";
 import { useRequest } from "@hooks/useRequest";
-import { SCOPES, apiScope } from "@definitions/configs/msal/scopes";
+import { apiScope } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
-  const { instance: msal } = useMsal();
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,

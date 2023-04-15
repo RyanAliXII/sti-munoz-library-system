@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
       return true;
     } catch (error) {
+      console.error(error);
       logout();
       return false;
     }
