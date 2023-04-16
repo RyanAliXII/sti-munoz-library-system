@@ -86,15 +86,15 @@ const OrganizationSelection = () => {
                 removeAuthor(org);
               }}
             >
-              <Td>
+              <Td className="flex gap-10 items-center">
                 <input
                   type="checkbox"
                   readOnly
                   className="h-4 w-4 border"
                   checked={isChecked}
                 />
+                {org.name}
               </Td>
-              <Td>{org.name}</Td>
             </BodyRow>
           );
         })}

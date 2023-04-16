@@ -27,6 +27,7 @@ import { PrimaryButton } from "@components/ui/button/Button";
 import axios from "axios";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 const PersonAsAuthor = () => {
   const {
     isOpen: isAddModalOpen,
@@ -77,7 +78,11 @@ const PersonAsAuthor = () => {
   const onConfirmDialog = () => {
     mutation.mutate();
   };
-  const { data: authors } = useQuery<PersonAuthor[]>({
+  const {
+    data: authors,
+    isError,
+    isFetching,
+  } = useQuery<PersonAuthor[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors"],
   });
@@ -90,54 +95,59 @@ const PersonAsAuthor = () => {
           </div>
         </ContainerNoBackground>
       </HasAccess>
-      <Container>
-        <div className="w-full">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Given name</Th>
-                <Th>Middle name/initial</Th>
-                <Th>Surname</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
+      <LoadingBoundary isError={isError} isLoading={isFetching}>
+        <Container>
+          <div className="w-full">
+            <Table>
+              <Thead>
+                <HeadingRow>
+                  <Th>Given name</Th>
+                  <Th>Middle name/initial</Th>
+                  <Th>Surname</Th>
+                  <Th></Th>
+                </HeadingRow>
+              </Thead>
 
-            <Tbody>
-              {authors?.map((author, index) => (
-                <AuthorTableRow
-                  author={author}
-                  openEditModal={() => {
-                    setSelectedRow({ ...author });
-                    openEditModal();
-                  }}
-                  openDialog={() => {
-                    setSelectedRow({ ...author });
-                    openConfirmDialog();
-                  }}
-                  key={author.id}
-                ></AuthorTableRow>
-              ))}
-            </Tbody>
-          </Table>
-        </div>
-        <HasAccess requiredPermissions={["Author.Add"]}>
-          <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
-        </HasAccess>
-        <HasAccess requiredPermissions={["Author.Edit"]}>
-          <EditAuthorModal
-            isOpen={isEditModalOpen}
-            formData={selectedRow}
-            closeModal={closeEditModal}
+              <Tbody>
+                {authors?.map((author, index) => (
+                  <AuthorTableRow
+                    author={author}
+                    openEditModal={() => {
+                      setSelectedRow({ ...author });
+                      openEditModal();
+                    }}
+                    openDialog={() => {
+                      setSelectedRow({ ...author });
+                      openConfirmDialog();
+                    }}
+                    key={author.id}
+                  ></AuthorTableRow>
+                ))}
+              </Tbody>
+            </Table>
+          </div>
+          <HasAccess requiredPermissions={["Author.Add"]}>
+            <AddAuthorModal
+              isOpen={isAddModalOpen}
+              closeModal={closeAddModal}
+            />
+          </HasAccess>
+          <HasAccess requiredPermissions={["Author.Edit"]}>
+            <EditAuthorModal
+              isOpen={isEditModalOpen}
+              formData={selectedRow}
+              closeModal={closeEditModal}
+            />
+          </HasAccess>
+          <DangerConfirmDialog
+            close={closeConfirmDialog}
+            isOpen={isConfirmDialogOpen}
+            title="Delete Author"
+            text="Are you sure that you want to delete this author?"
+            onConfirm={onConfirmDialog}
           />
-        </HasAccess>
-        <DangerConfirmDialog
-          close={closeConfirmDialog}
-          isOpen={isConfirmDialogOpen}
-          title="Delete Author"
-          text="Are you sure that you want to delete this author?"
-          onConfirm={onConfirmDialog}
-        />
-      </Container>
+        </Container>
+      </LoadingBoundary>
     </>
   );
 };

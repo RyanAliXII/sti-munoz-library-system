@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/dewey"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -25,7 +23,7 @@ func (repo *DDCRepository) Get(filter Filter) []dewey.DeweyDecimal {
 }
 func (repo *DDCRepository) SearchByName(filter Filter) []dewey.DeweyDecimal {
 	var deweys []dewey.DeweyDecimal = make([]dewey.DeweyDecimal, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT name, number from catalog.ddc WHERE name ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, `SELECT name, number from catalog.ddc where search_vector @@ (phraseto_tsquery('english', $1) :: text || ':*' ) :: tsquery LIMIT $2 OFFSET $3`,filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Search"))
 	}

@@ -63,15 +63,13 @@ const AuditPage = () => {
   });
   return (
     <>
+      <ContainerNoBackground className="flex gap-2 justify-between">
+        <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
+        <PrimaryButton type="button" onClick={openNewAuditModal}>
+          New Audit
+        </PrimaryButton>
+      </ContainerNoBackground>
       <LoadingBoundary isLoading={isFetching} isError={isError}>
-        <ContainerNoBackground className="flex gap-2 justify-between">
-          <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
-
-          <PrimaryButton type="button" onClick={openNewAuditModal}>
-            New Audit
-          </PrimaryButton>
-        </ContainerNoBackground>
-
         <Container>
           <Table>
             <Thead>
@@ -103,16 +101,16 @@ const AuditPage = () => {
             </Tbody>
           </Table>
         </Container>
-        <NewAuditModal
-          closeModal={closeNewAuditModal}
-          isOpen={isNewAuditModalOpen}
-        ></NewAuditModal>
-        <EditAuditModal
-          closeModal={closeEditAuditModal}
-          isOpen={isEditAuditModalOpen}
-          formData={editModalFormData}
-        ></EditAuditModal>
       </LoadingBoundary>
+      <NewAuditModal
+        closeModal={closeNewAuditModal}
+        isOpen={isNewAuditModalOpen}
+      ></NewAuditModal>
+      <EditAuditModal
+        closeModal={closeEditAuditModal}
+        isOpen={isEditAuditModalOpen}
+        formData={editModalFormData}
+      ></EditAuditModal>
     </>
   );
 };

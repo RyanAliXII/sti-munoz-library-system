@@ -10,20 +10,23 @@ const Search = () => {
       <div className="w-11/12 md:w-8/12" style={{ maxWidth: "826px" }}>
         <input
           type="text"
-          className="border w-full text-xs py-2 px-1 md:py-3 md:px-2 md:text-sm rounded text-gray-600 focus:outline-yellow-400"
+          className="input input-bordered w-full"
+          // className="border w-full text-xs py-2 px-1 md:py-3 md:px-2 md:text-sm rounded text-gray-600 focus:outline-yellow-400"
           placeholder=" Search Books"
         ></input>
       </div>
       <div className="flex gap-2">
         <button
           type="button"
-          className="py-1.5 px-4 text-xs bg-blue-500 text-white rounded md:py-2.5 md:px-5 md:text-sm"
+          className="btn btn-primary"
+          // className="py-1.5 px-4 text-xs bg-blue-500 text-white rounded md:py-2.5 md:px-5 md:text-sm"
         >
           Search
         </button>
         <Link
           to="/catalog"
-          className="py-1.5 px-4 text-xs border text-gray-400 rounded md:py-2.5 md:px-5 md:text-sm"
+          className="btn btn-outline"
+          // className="py-1.5 px-4 text-xs border text-gray-400 rounded md:py-2.5 md:px-5 md:text-sm"
         >
           Browse
         </Link>

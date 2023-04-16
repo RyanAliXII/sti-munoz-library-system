@@ -24,6 +24,7 @@ import { ErrorMsg } from "@definitions/var";
 import EditOrganizationModal from "./EditOrganizationModal";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -51,7 +52,12 @@ const OrganizationAsAuthor = () => {
       return [];
     }
   };
-  const { data: organizations, refetch } = useQuery<Organization[]>({
+  const {
+    data: organizations,
+    refetch,
+    isError,
+    isFetching,
+  } = useQuery<Organization[]>({
     queryKey: ["organizations"],
     queryFn: fetchOrganizations,
   });
@@ -86,47 +92,49 @@ const OrganizationAsAuthor = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <Container className="lg:px-0">
-        <div className="w-full">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Organization</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {organizations?.map((org) => {
-                return (
-                  <BodyRow key={org.id}>
-                    <Td>{org.name}</Td>
-                    <Td className="p-2 flex gap-2 items-center">
-                      <HasAccess requiredPermissions={["Author.Edit"]}>
-                        <AiOutlineEdit
-                          className="cursor-pointer text-yellow-400 text-xl"
-                          onClick={() => {
-                            setSelectedRow({ ...org });
-                            openEditModal();
-                          }}
-                        />
-                      </HasAccess>
-                      <HasAccess requiredPermissions={["Author.Delete"]}>
-                        <AiOutlineDelete
-                          className="cursor-pointer text-orange-600  text-xl"
-                          onClick={() => {
-                            openConfirmDialog();
-                            setSelectedRow({ ...org });
-                          }}
-                        />
-                      </HasAccess>
-                    </Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </div>
-      </Container>
+      <LoadingBoundary isError={isError} isLoading={isFetching}>
+        <Container className="lg:px-0">
+          <div className="w-full">
+            <Table>
+              <Thead>
+                <HeadingRow>
+                  <Th>Organization</Th>
+                  <Th></Th>
+                </HeadingRow>
+              </Thead>
+              <Tbody>
+                {organizations?.map((org) => {
+                  return (
+                    <BodyRow key={org.id}>
+                      <Td>{org.name}</Td>
+                      <Td className="p-2 flex gap-2 items-center">
+                        <HasAccess requiredPermissions={["Author.Edit"]}>
+                          <AiOutlineEdit
+                            className="cursor-pointer text-yellow-400 text-xl"
+                            onClick={() => {
+                              setSelectedRow({ ...org });
+                              openEditModal();
+                            }}
+                          />
+                        </HasAccess>
+                        <HasAccess requiredPermissions={["Author.Delete"]}>
+                          <AiOutlineDelete
+                            className="cursor-pointer text-orange-600  text-xl"
+                            onClick={() => {
+                              openConfirmDialog();
+                              setSelectedRow({ ...org });
+                            }}
+                          />
+                        </HasAccess>
+                      </Td>
+                    </BodyRow>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </div>
+        </Container>
+      </LoadingBoundary>
       <DangerConfirmDialog
         close={closeConfirmDialog}
         isOpen={isConfirmDialogOpen}

@@ -1,4 +1,4 @@
-import { PrimaryButton } from "@components/ui/button/Button";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -15,14 +15,15 @@ import { Publisher } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
+
 import { AiFillInfoCircle, AiOutlineRight } from "react-icons/ai";
 import { BsArrowRight } from "react-icons/bs";
 import { NavLink } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const PublisherAsAuthor = () => {
+  const { Get } = useRequest();
   const fetchPublisher = async () => {
-    const { Get } = useRequest();
     try {
       const { data: response } = await Get("/publishers/");
       return response?.data?.publishers || [];
@@ -33,7 +34,11 @@ const PublisherAsAuthor = () => {
     return [];
   };
 
-  const { data: publishers } = useQuery<Publisher[]>({
+  const {
+    data: publishers,
+    isError,
+    isFetching,
+  } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
     queryKey: ["publishers"],
   });
@@ -62,26 +67,28 @@ const PublisherAsAuthor = () => {
             </div>
           </div>
         </ContainerNoBackground>
-        <Container className="lg:px-0">
-          <div className="w-full">
-            <Table>
-              <Thead>
-                <HeadingRow>
-                  <Th>Publisher</Th>
-                </HeadingRow>
-              </Thead>
-              <Tbody>
-                {publishers?.map((publisher) => {
-                  return (
-                    <BodyRow key={publisher.id}>
-                      <Td>{publisher.name}</Td>
-                    </BodyRow>
-                  );
-                })}
-              </Tbody>
-            </Table>
-          </div>
-        </Container>
+        <LoadingBoundary isError={isError} isLoading={isFetching}>
+          <Container className="lg:px-0">
+            <div className="w-full">
+              <Table>
+                <Thead>
+                  <HeadingRow>
+                    <Th>Publisher</Th>
+                  </HeadingRow>
+                </Thead>
+                <Tbody>
+                  {publishers?.map((publisher) => {
+                    return (
+                      <BodyRow key={publisher.id}>
+                        <Td>{publisher.name}</Td>
+                      </BodyRow>
+                    );
+                  })}
+                </Tbody>
+              </Table>
+            </div>
+          </Container>
+        </LoadingBoundary>
       </div>
     </>
   );

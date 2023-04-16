@@ -1,3 +1,4 @@
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -17,6 +18,7 @@ import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { isError } from "lodash";
 import React, { useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { toast } from "react-toastify";
@@ -30,16 +32,20 @@ const AssignedRolePage = () => {
       const { data: response } = await Get("/system/roles/accounts", {}, [
         apiScope("AccessControl.Role.Read"),
       ]);
-      console.log(response);
       return response?.data?.accounts ?? [];
     } catch {
       return [];
     }
   };
 
-  const { data: accounts, refetch } = useQuery<AccountRole[]>({
+  const {
+    data: accounts,
+    refetch,
+    isFetching,
+    isError,
+  } = useQuery<AccountRole[]>({
     queryFn: fetchAccountWithAssignedRoles,
-    queryKey: ["accounts"],
+    queryKey: ["assignedAccounts"],
   });
 
   const confirmDelete = () => {
@@ -69,6 +75,10 @@ const AssignedRolePage = () => {
       <ContainerNoBackground>
         <h1 className="text-3xl font-bold">Assigned Roles</h1>
       </ContainerNoBackground>
+      <LoadingBoundary
+        isError={isError}
+        isLoading={isFetching}
+      ></LoadingBoundary>
       <Container>
         <Table>
           <Thead>

@@ -18,6 +18,7 @@ import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useBookEditFormContext } from "../BookEditFormContext";
 import { useRequest } from "@hooks/useRequest";
+import { toast } from "react-toastify";
 
 type BrowseTabProps = {
   modalRef: React.RefObject<HTMLDivElement>;
@@ -72,6 +73,7 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
     removeFieldError("authorNumber");
+    toast.info("Author number has been selected.");
   };
 
   return (

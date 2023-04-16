@@ -43,7 +43,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
         </div>
       </header>
       <div className="mt-3"> {children}</div>
-      <div className="fixed w-full h-16 bg-white border border-t border-gray-50 bottom-0 drop-shadow text-gray-600 md:hidden">
+      <div className="sticky w-full h-16 bg-white border border-t border-gray-50 bottom-0 drop-shadow text-gray-600 md:hidden">
         <nav className="h-full">
           <ul className="flex h-full  items-center justify-around">
             <li>

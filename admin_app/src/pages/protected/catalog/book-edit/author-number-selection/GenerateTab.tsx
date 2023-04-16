@@ -14,6 +14,7 @@ import {
 import { PrimaryButton } from "@components/ui/button/Button";
 import { useBookEditFormContext } from "../BookEditFormContext";
 import { useRequest } from "@hooks/useRequest";
+import { toast } from "react-toastify";
 
 const GenerateTab = () => {
   const { form, setFieldValue, removeFieldError } = useBookEditFormContext();
@@ -37,6 +38,7 @@ const GenerateTab = () => {
       `${authorNumber.surname.charAt(0)}${authorNumber.number}`
     );
     removeFieldError("authorNumber");
+    toast.info("Author number has been generated for title.");
   };
   const generateAuthorNumberByAuthor = async (
     givenName: string,
@@ -61,6 +63,7 @@ const GenerateTab = () => {
     );
 
     removeFieldError("authorNumber");
+    toast.info("Author number has been generated for author.");
   };
 
   const TITLE_CHARACTER_LIMIT = 25;

@@ -11,7 +11,7 @@ import LogoutButton from "@components/LogoutButton";
 const Sidebar = () => {
   const { user } = useAuthContext();
   return (
-    <div className="flex flex-col gap-3 w-full mt-20  ">
+    <div className="flex flex-col gap-3 w-full mt-20">
       <div className="w-full flex px-2 gap-2">
         <ProfileIcon
           givenName={user.givenName ?? ""}

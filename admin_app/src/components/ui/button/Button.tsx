@@ -6,6 +6,7 @@ export enum ButtonClasses {
   SecondaryButtonDefaultClasslist = "bg-yellow-400 p-2 text-sm rounded text-white font-semibold",
   LightButtonDefaultClasslist = "bg-gray-400 p-2 rounded text-sm text-white font-semibold",
   WarningButtonDefaultClasslist = "bg-orange-500 p-2  text-sm rounded text-white font-semibold",
+  PrimaryOutlineButtonClasslist = "bg-white p-2 border border-blue-500 text-blue-500 rounded",
   SecondaryOutlineButtonClasslist = "bg-white p-2 border border-yellow-500 text-yellow-500 rounded",
   LightOutlineButtonClasslist = "bg-white p-2 border border-gray-300  text-gray-500 rounded",
 }
@@ -68,6 +69,20 @@ export const LighButton: React.FC<ButtonProps> = (props: ButtonProps) => {
   );
 };
 
+export const PrimaryOutlineButton: React.FC<ButtonProps> = (
+  props: ButtonProps
+) => {
+  return (
+    <button
+      {...{
+        ...props,
+        className: `${ButtonClasses.PrimaryOutlineButtonClasslist} ${props?.className}`,
+      }}
+    >
+      {props.children}
+    </button>
+  );
+};
 export const SecondaryOutlineButton: React.FC<ButtonProps> = (
   props: ButtonProps
 ) => {

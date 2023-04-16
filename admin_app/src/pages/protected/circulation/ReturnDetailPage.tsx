@@ -35,6 +35,8 @@ import {
   BorrowingTransactionInitialValue,
 } from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
+import { BorrowStatuses } from "@internal/borrow-status";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -49,13 +51,18 @@ const TransactionByIdPage = () => {
     isOpen: isConfirmDialogOpen,
   } = useSwitch();
   const { id } = useParams();
-  const { Get, Patch, Post } = useRequest();
+  const { Get, Patch } = useRequest();
   const fetchTransaction = async () => {
     const { data: response } = await Get(`/circulation/transactions/${id}`);
     return response?.data?.transaction ?? BorrowingTransactionInitialValue;
   };
 
-  const { data: transaction, refetch } = useQuery<BorrowingTransaction>({
+  const {
+    data: transaction,
+    refetch,
+    isError,
+    isFetching,
+  } = useQuery<BorrowingTransaction>({
     queryFn: fetchTransaction,
     queryKey: ["transaction"],
     retry: false,
@@ -103,91 +110,101 @@ const TransactionByIdPage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Transaction: {id}</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Checked Out</h1>
       </ContainerNoBackground>
       <Container className="flex justify-between px-4 py-6">
-        <div>
-          <div className="flex gap-5">
-            <div>
-              <ProfileIcon givenName="test" surname="test"></ProfileIcon>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-gray-600 font-bold">
-                {transaction?.client.displayName}
-              </span>
-              <small className="text-gray-500">
-                {transaction?.client.email}
-              </small>
+        <LoadingBoundary isLoading={isFetching} isError={isError}>
+          <div>
+            <div className="flex gap-5">
+              <div>
+                <ProfileIcon givenName="test" surname="test"></ProfileIcon>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-600 font-bold">
+                  {transaction?.client.displayName}
+                </span>
+                <small className="text-gray-500">
+                  {transaction?.client.email}
+                </small>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex flex-col w-2/12 ">
-          <span className="font-bold text-gray-600">Due Date</span>
-          <span className="text-gray-500 text-sm">
-            {new Date(transaction?.dueDate ?? "").toLocaleDateString(
-              "default",
-              { month: "long", day: "2-digit", year: "numeric" }
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col w-3/12">
-          <span className="font-bold text-gray-600">Status</span>
-          <span className="text-gray-500 text-sm">{status}</span>
-        </div>
+          <div className="flex flex-col w-2/12 ">
+            <span className="font-bold text-gray-600">Due Date</span>
+            <span className="text-gray-500 text-sm">
+              {new Date(transaction?.dueDate ?? "").toLocaleDateString(
+                "default",
+                { month: "long", day: "2-digit", year: "numeric" }
+              )}
+            </span>
+          </div>
+          <div className="flex flex-col w-3/12">
+            <span className="font-bold text-gray-600">Status</span>
+            <span className="text-gray-500 text-sm">
+              {transaction?.isReturned
+                ? BorrowStatuses.Returned
+                : transaction?.isDue
+                ? BorrowStatuses.Overdue
+                : BorrowStatuses.CheckedOut}
+            </span>
+          </div>
+        </LoadingBoundary>
       </Container>
       <ContainerNoBackground className="px-4 py-6">
-        <Divider
-          heading="h2"
-          headingProps={{
-            className: "text-xl",
-          }}
-          hrProps={{
-            className: "mb-5",
-          }}
-        >
-          Borrowed Books
-        </Divider>
-        <Container className="mx-0 lg:w-full">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Title</Th>
-                <Th>Copy number</Th>
-                <Th>Accession number</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {transaction?.borrowedCopies?.map((accession) => {
-                return (
-                  <BodyRow key={`${accession.number}_${accession.bookId}`}>
-                    <Td>{accession.book.title}</Td>
-                    <Td>{accession.copyNumber}</Td>
-                    <Td>{accession.number}</Td>
-                    <Td>
-                      {accession.isReturned ? (
-                        <span className="px-1 py-1 border border-blue-400 rounded text-xs text-blue-400">
-                          Returned
-                        </span>
-                      ) : (
-                        <SecondaryOutlineButton
-                          className="flex gap-2"
-                          onClick={() => {
-                            setCopyToReturn({ ...accession });
-                            openConfirmDialog();
-                          }}
-                        >
-                          <IoReturnUpBackSharp className="text-lg" />
-                          Return Copy
-                        </SecondaryOutlineButton>
-                      )}
-                    </Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </Container>
+        <LoadingBoundary isLoading={isFetching} isError={isError}>
+          <Divider
+            heading="h2"
+            headingProps={{
+              className: "text-xl",
+            }}
+            hrProps={{
+              className: "mb-5",
+            }}
+          >
+            Borrowed Books
+          </Divider>
+          <Container className="mx-0 lg:w-full">
+            <Table>
+              <Thead>
+                <HeadingRow>
+                  <Th>Title</Th>
+                  <Th>Copy number</Th>
+                  <Th>Accession number</Th>
+                  <Th></Th>
+                </HeadingRow>
+              </Thead>
+              <Tbody>
+                {transaction?.borrowedCopies?.map((accession) => {
+                  return (
+                    <BodyRow key={`${accession.number}_${accession.bookId}`}>
+                      <Td>{accession.book.title}</Td>
+                      <Td>{accession.copyNumber}</Td>
+                      <Td>{accession.number}</Td>
+                      <Td>
+                        {accession.isReturned ? (
+                          <span className="px-1 py-1 border border-blue-400 rounded text-xs text-blue-400">
+                            Returned
+                          </span>
+                        ) : (
+                          <SecondaryOutlineButton
+                            className="flex gap-2"
+                            onClick={() => {
+                              setCopyToReturn({ ...accession });
+                              openConfirmDialog();
+                            }}
+                          >
+                            <IoReturnUpBackSharp className="text-lg" />
+                            Return Copy
+                          </SecondaryOutlineButton>
+                        )}
+                      </Td>
+                    </BodyRow>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </Container>
+        </LoadingBoundary>
       </ContainerNoBackground>
 
       {transaction?.isReturned ? (

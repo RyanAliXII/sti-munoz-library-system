@@ -30,6 +30,8 @@ import EditRoleModal from "./EditRoleModal";
 import { NavLink } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
 import HasAccess from "@components/auth/HasAccess";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { isError } from "lodash";
 
 const AccessControlPage = () => {
   const {
@@ -52,7 +54,11 @@ const AccessControlPage = () => {
       return [];
     }
   };
-  const { data: roles } = useQuery<Role[]>({
+  const {
+    data: roles,
+    isError,
+    isFetching,
+  } = useQuery<Role[]>({
     queryKey: ["roles"],
     queryFn: fetchRoles,
   });
@@ -98,48 +104,50 @@ const AccessControlPage = () => {
           </div>
         </div>
       </ContainerNoBackground>
-      <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Roles</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {roles?.map((role) => {
-              return (
-                <BodyRow key={role.id}>
-                  <Td> {role.name}</Td>
-                  <Td className="p-2 flex gap-2 items-center">
-                    <HasAccess
-                      requiredPermissions={["AccessControl.Role.Edit"]}
-                    >
-                      <AiOutlineEdit
-                        className="cursor-pointer text-yellow-400 text-xl"
-                        onClick={() => {
-                          setSelectedRole(role);
-                          openEditModal();
-                        }}
-                      />
-                    </HasAccess>
-                    <HasAccess
-                      requiredPermissions={["AccessControl.Role.Delete"]}
-                    >
-                      <AiOutlineDelete
-                        className="cursor-pointer text-orange-600  text-xl"
-                        onClick={() => {
-                          setSelectedRole(role);
-                        }}
-                      />
-                    </HasAccess>
-                  </Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Container>
+      <LoadingBoundary isError={isError} isLoading={isFetching}>
+        <Container>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th>Roles</Th>
+                <Th></Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {roles?.map((role) => {
+                return (
+                  <BodyRow key={role.id}>
+                    <Td> {role.name}</Td>
+                    <Td className="p-2 flex gap-2 items-center">
+                      <HasAccess
+                        requiredPermissions={["AccessControl.Role.Edit"]}
+                      >
+                        <AiOutlineEdit
+                          className="cursor-pointer text-yellow-400 text-xl"
+                          onClick={() => {
+                            setSelectedRole(role);
+                            openEditModal();
+                          }}
+                        />
+                      </HasAccess>
+                      <HasAccess
+                        requiredPermissions={["AccessControl.Role.Delete"]}
+                      >
+                        <AiOutlineDelete
+                          className="cursor-pointer text-orange-600  text-xl"
+                          onClick={() => {
+                            setSelectedRole(role);
+                          }}
+                        />
+                      </HasAccess>
+                    </Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+      </LoadingBoundary>
       <HasAccess requiredPermissions={["AccessControl.Role.Add"]}>
         <AddRoleModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       </HasAccess>

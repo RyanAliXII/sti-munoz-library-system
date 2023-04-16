@@ -88,15 +88,15 @@ const PublisherSelection = () => {
                 removeAuthor(publisher);
               }}
             >
-              <Td>
+              <Td className="flex items-center gap-10">
                 <input
                   type="checkbox"
                   readOnly
                   checked={isChecked}
                   className="h-4 w-4 border"
                 />
+                {publisher.name}
               </Td>
-              <Td>{publisher.name}</Td>
             </BodyRow>
           );
         })}
