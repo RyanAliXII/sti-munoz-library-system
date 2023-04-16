@@ -42,7 +42,12 @@ const CatalogBookView = () => {
     <div className="min-h-screen">
       <div className=" w-11/12 md:w-8/12 lg:w-5/12 rounded shadow border mx-auto p-4">
         <div className="w-full flex justify-center">
-          <img src={bookImg} className="w-44"></img>
+          <img
+            src={bookImg}
+            className="w-44"
+            style={{ maxHeight: "269px", maxWidth: "220px" }}
+            alt="book-image"
+          ></img>
         </div>
         <div className="mt-5">
           <h1 className="font-bold  text-3xl">{book?.title}</h1>
