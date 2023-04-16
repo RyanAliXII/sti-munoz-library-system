@@ -17,7 +17,7 @@ const Login = () => {
         <div className="m-auto md:w-8/12 lg:w-3/12 xl:w-5/12">
           <div
             className="rounded-xl bg-white shadow-xl"
-            style={{ height: "500px" }}
+            style={{ height: "460px" }}
           >
             <div className="p-6 sm:p-16">
               <div className="space-y-4">
@@ -27,7 +27,7 @@ const Login = () => {
                   className="w-10"
                   alt="tailus logo"
                 />
-                <h2 className="mb-8 text-2xl text-cyan-900 font-bold">
+                <h2 className="text-2xl text-cyan-900 font-bold">
                   Sign in to Manage
                   <br /> the Library
                 </h2>
@@ -36,7 +36,7 @@ const Login = () => {
                   resource.
                 </p>
               </div>
-              <div className="mt-16 grid space-y-4">
+              <div className="mt-8 grid space-y-4">
                 <button
                   className="group h-12 px-6 border-2 border-gray-300 rounded-full transition duration-300 
      hover:border-blue-400 focus:bg-blue-50 active:bg-blue-100"
