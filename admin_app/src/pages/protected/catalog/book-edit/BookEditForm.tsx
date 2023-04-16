@@ -170,7 +170,7 @@ const BookEditForm = () => {
     const { data: response } = await Get(`/books/${bookId}`);
     return response?.data?.book ?? {};
   };
-  const { isFetched } = useQuery<Book>({
+  useQuery<Book>({
     queryFn: fetchBook,
     queryKey: ["book"],
     staleTime: Infinity,

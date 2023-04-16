@@ -1,3 +1,15 @@
-.uppy-DashboardContent-bar{
+.uppy-DashboardContent-bar {
   z-index: 5 !important;
+}
+
+.tox .tox-editor-header {
+  z-index: 0 !important;
+}
+
+.react-datepicker {
+  z-index: 2 !important;
+}
+
+.react-datepicker__triangle {
+  z-index: 2 !important;
 }

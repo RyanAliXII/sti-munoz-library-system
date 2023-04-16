@@ -22,6 +22,7 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 	selectTransactionQuery := `
 	SELECT bt.id,
 	(case when bt.returned_at is null then false else true end) as is_returned,
+	(case when now() > bt.returned_at then true else false end) as is_due,
 	json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 	COALESCE(
@@ -55,6 +56,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	var transaction model.BorrowingTransaction = model.BorrowingTransaction{}
 	query := `SELECT bt.id,
 	(case when bt.returned_at is null then false else true end) as is_returned,
+	(case when now() > bt.returned_at then true else false end) as is_due,
 	json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 	COALESCE(

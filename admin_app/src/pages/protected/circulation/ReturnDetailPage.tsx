@@ -35,6 +35,7 @@ import {
   BorrowingTransactionInitialValue,
 } from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
+import { BorrowStatuses } from "@internal/borrow-status";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -103,7 +104,7 @@ const TransactionByIdPage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Transaction: {id}</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Checked Out</h1>
       </ContainerNoBackground>
       <Container className="flex justify-between px-4 py-6">
         <div>
@@ -132,7 +133,13 @@ const TransactionByIdPage = () => {
         </div>
         <div className="flex flex-col w-3/12">
           <span className="font-bold text-gray-600">Status</span>
-          <span className="text-gray-500 text-sm">{status}</span>
+          <span className="text-gray-500 text-sm">
+            {transaction?.isReturned
+              ? BorrowStatuses.Returned
+              : transaction?.isDue
+              ? BorrowStatuses.Overdue
+              : BorrowStatuses.CheckedOut}
+          </span>
         </div>
       </Container>
       <ContainerNoBackground className="px-4 py-6">

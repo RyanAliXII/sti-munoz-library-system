@@ -178,10 +178,6 @@ const BookPage = () => {
 interface PrintablesModalProps extends ModalProps {
   book: Book;
 }
-type PrintableAccession = Omit<
-  Accession,
-  "ddc" | " authorNumber" | "bookId" | "section" | "yearPublished" | "title"
->;
 export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
   closeModal,
   isOpen,
@@ -219,8 +215,13 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
         }}
       >
         <div className="flex flex-col w-full gap-2 mb-2 ">
+          <div className="w-full flex justify-center">
+            <small>Title card</small>
+          </div>
           <TitleCard book={book}></TitleCard>
-
+          <div className="w-full flex justify-center">
+            <small>Author card</small>
+          </div>
           <AuthorCard book={book}></AuthorCard>
         </div>
         <div className="flex justify-center">

@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS catalog.ddc
+DROP COLUMN IF EXISTS search_vector

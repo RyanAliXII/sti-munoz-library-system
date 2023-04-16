@@ -18,6 +18,7 @@ import { BaseSyntheticEvent, useRef, useState } from "react";
 import useDebounce from "@hooks/useDebounce";
 import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useRequest } from "@hooks/useRequest";
+import { toast } from "react-toastify";
 
 type DDC = {
   name: string;
@@ -118,6 +119,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   const selectDDC = (ddc: DDC) => {
     setForm((prevForm) => ({ ...prevForm, ddc: ddc.number }));
     removeFieldError("ddc");
+    toast.info(`${ddc.name} has been selected as classification.`);
   };
   return (
     <>

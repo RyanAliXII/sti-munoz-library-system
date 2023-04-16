@@ -36,19 +36,16 @@ const BorrowingTransactionPage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Return Book</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Checked Out</h1>
       </ContainerNoBackground>
-      {/* <Container>
-        <div className="w-5/12">
-          <Input type="text" label="Search" placeholder="Search.."></Input>
-        </div>
-      </Container> */}
+
       <Container>
         <Table>
           <Thead>
             <HeadingRow>
-              <Th>Transaction Id</Th>
               <Th>Client</Th>
+              <Th>Due Date</Th>
+              <Th>Status</Th>
               <Th></Th>
             </HeadingRow>
           </Thead>
@@ -62,8 +59,9 @@ const BorrowingTransactionPage = () => {
                     navigate(`/circulation/transactions/${transaction.id}`)
                   }
                 >
-                  <Td>{transaction.id}</Td>
                   <Td>{transaction.client.displayName}</Td>
+                  <Td>{new Date(transaction.dueDate).toLocaleDateString()}</Td>
+                  <Td></Td>
                   <Td>
                     <TimeAgo datetime={transaction.createdAt} />
                   </Td>

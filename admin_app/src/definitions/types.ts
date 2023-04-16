@@ -103,6 +103,7 @@ export type BorrowingTransaction = {
   borrowedCopies: BorrowedCopy[];
   remarks: string;
   isReturned: boolean;
+  isDue: boolean;
   dueDate: string; //iso-time-string
   createdAt: string; //iso-time-string
   returnedAt: string; //iso-time-string

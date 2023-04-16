@@ -14,6 +14,7 @@ type BorrowingTransaction struct {
 	DueDate        db.NullableTime `json:"dueDate" db:"due_date"`
 	ReturnedAt     db.NullableTime `json:"returnedAt" db:"returned_at"`
 	IsReturned     bool            `json:"isReturned" db:"is_returned"`
+	IsDue          bool            `json:"isDue" db:"is_due"`
 	Remarks        string          `json:"remarks" db:"remarks"`
 	CreatedAt      db.NullableTime `json:"createdAt" db:"created_at"`
 }
