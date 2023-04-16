@@ -173,16 +173,17 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               onChange={handleFormInput}
             />
           </div>
-          <div className="px-2">
-            <Input
-              className="h-5 w-5"
-              label="Different Accession"
-              error={errors?.hasOwnAccession}
+          <div className="flex items-center  gap-2">
+            <input
               type="checkbox"
+              className="w-5 h-5 ml-2"
               name="hasOwnAccession"
               checked={form.hasOwnAccession}
               onChange={handleFormInput}
-            />
+            ></input>
+            <label className="text-sm text-gray-500">
+              Separate Generated Accession Number
+            </label>
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton>Add section</PrimaryButton>
