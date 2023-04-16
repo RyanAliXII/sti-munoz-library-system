@@ -23,9 +23,9 @@ var ALPHABET_ARR []string = strings.Split(ALPHABET_STRING, "")
 
 type Cutters struct {
 	Default        map[string]int
-	GroupedArray   map[string][]map[string]interface{}
-	GroupedObjects map[string]map[string]int
-	DefaultArray   []map[string]interface{}
+	// GroupedArray   map[string][]map[string]interface{}
+	// GroupedObjects map[string]map[string]int
+	// DefaultArray   []map[string]interface{}
 }
 
 type AuthorNumber struct {
@@ -96,9 +96,9 @@ func (cutters *Cutters) GenerateCutterByTitle(title string) AuthorNumber {
 func NewCuttersTable() *Cutters {
 	return &Cutters{
 		Default:        data.CUTTERS_TABLE,
-		GroupedArray:   LoadGroupedArray(),
-		GroupedObjects: LoadGroupedObjects(),
-		DefaultArray:   LoadWholeArray(),
+		// GroupedArray:   LoadGroupedArray(),
+		// GroupedObjects: LoadGroupedObjects(),
+		// DefaultArray:   LoadWholeArray(),
 	}
 }
 

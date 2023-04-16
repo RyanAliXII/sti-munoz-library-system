@@ -41,16 +41,16 @@ func (repo *AuthorNumberRepository) Search(filter Filter) []model.AuthorNumber {
 	}
 	return table
 }
-func (repo *AuthorNumberRepository) GetGroupedArray() map[string][]map[string]interface{} {
-	return repo.cutters.GroupedArray
-}
+// func (repo *AuthorNumberRepository) GetGroupedArray() map[string][]map[string]interface{} {
+// 	return repo.cutters.GroupedArray
+// }
 
-func (repo *AuthorNumberRepository) GetGroupedObjects() map[string]map[string]int {
-	return repo.cutters.GroupedObjects
-}
-func (repo *AuthorNumberRepository) GetDefaultArray() []map[string]interface{} {
-	return repo.cutters.DefaultArray
-}
+// func (repo *AuthorNumberRepository) GetGroupedObjects() map[string]map[string]int {
+// 	return repo.cutters.GroupedObjects
+// }
+// func (repo *AuthorNumberRepository) GetDefaultArray() []map[string]interface{} {
+// 	return repo.cutters.DefaultArray
+// }
 
 func (repo *AuthorNumberRepository) Generate(firstname string, lastname string) cutters.AuthorNumber {
 	return repo.cutters.GenerateCutter(firstname, lastname)
@@ -72,7 +72,7 @@ type AuthorNumberRepositoryInterface interface {
 	Search(filter Filter) []model.AuthorNumber
 	Generate(firstname string, lastname string) cutters.AuthorNumber
 	GenerateByTitle(title string) cutters.AuthorNumber
-	GetGroupedArray() map[string][]map[string]interface{}
-	GetGroupedObjects() map[string]map[string]int
-	GetDefaultArray() []map[string]interface{}
+	// GetGroupedArray() map[string][]map[string]interface{}
+	// GetGroupedObjects() map[string]map[string]int
+	// GetDefaultArray() []map[string]interface{}
 }
