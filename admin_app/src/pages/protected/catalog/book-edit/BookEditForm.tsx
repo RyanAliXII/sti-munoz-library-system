@@ -1,5 +1,9 @@
 import { Input } from "@components/ui/form/Input";
-import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
+import {
+  PrimaryButton,
+  PrimaryOutlineButton,
+  SecondaryButton,
+} from "@components/ui/button/Button";
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect } from "react";
 
@@ -28,6 +32,8 @@ import { HttpStatusCode } from "axios";
 import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import AddPublisherModal from "./AddPublisherModal";
+import AddAuthorModal from "./AddAuthorModal";
 
 const uppy = new Uppy({
   restrictions: {
@@ -108,7 +114,16 @@ const BookEditForm = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
-
+  const {
+    isOpen: isAddPublisherModalOpen,
+    close: closeAddPublisherModal,
+    open: openAddPublisherModal,
+  } = useSwitch();
+  const {
+    isOpen: isAddAuthorModalOpen,
+    close: closeAddAuthorModal,
+    open: openAddAuthorModal,
+  } = useSwitch();
   const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
     removeFieldError("section.id");
@@ -209,283 +224,314 @@ const BookEditForm = () => {
     form.authors.organizations.length +
     form.authors.publishers.length;
   return (
-    <form onSubmit={submit}>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
-        <h1 className="text-2xl">General Information</h1>
-        <hr className="mb-5"></hr>
-        <FieldRow
-          fieldDetails="The title can be found in the cover of the book."
-          isRequired
-          label="Title"
-          ref={registerFormGroup("title")}
-        >
-          <Input
-            wrapperclass="flex flex-col "
-            error={errors?.title}
-            value={form.title}
-            onChange={handleFormInput}
-            placeholder="Book title"
-            name="title"
-          />
-        </FieldRow>
-        <FieldRow
-          fieldDetails="ISBN can be 13 or 9 characters."
-          isRequired={true}
-          label="ISBN"
-          ref={registerFormGroup("isbn")}
-        >
-          <Input
-            wrapperclass="flex flex-col "
-            error={errors?.isbn}
-            value={form.isbn}
-            onChange={handleFormInput}
-            placeholder="Book ISBN"
-            name="isbn"
-          />
-        </FieldRow>
-        <FieldRow label="Pages" ref={registerFormGroup("pages")}>
-          <Input
-            wrapperclass="flex flex-col"
-            error={errors?.pages}
-            type="number"
-            value={form.pages}
-            min={1}
-            onChange={handleFormInput}
-            placeholder="Number of pages"
-            name="pages"
-          />
-        </FieldRow>
-        <FieldRow
-          label="Section"
-          isRequired
-          fieldDetails="This refers to the book section or collection the book will be
-                added."
-          ref={registerFormGroup("section.value")}
-        >
-          <CustomSelect
-            wrapperclass="w-full flex flex-col"
-            onChange={handleSectionSelect}
-            value={form.section}
-            className="w-full"
-            getOptionLabel={(option) => option.name}
-            getOptionValue={(option) => option?.id?.toString() ?? ""}
-            error={errors?.section?.id}
-            options={sections}
-          />
-        </FieldRow>
-        <FieldRow
-          label="Publisher"
-          ref={registerFormGroup("publisher.value")}
-          isRequired
-        >
-          <CustomSelect
-            name="publisher"
-            wrapperclass="flex flex-col"
-            className="w-full"
-            onChange={handlePublisherSelect}
-            value={form.publisher}
-            getOptionLabel={(option) => option.name}
-            getOptionValue={(option) => option?.id?.toString() ?? ""}
-            error={errors?.publisher?.id}
-            options={publishers}
-          />
-        </FieldRow>
-        <FieldRow
-          isRequired
-          label="Source of Fund"
-          fieldDetails="This refers on how the book is acquired."
-          ref={registerFormGroup("fundSource.value")}
-        >
-          <CustomSelect
-            className="w-full"
-            name="fundSource"
-            wrapperclass="flex flex-col"
-            onChange={handleSourceSelect}
-            value={form.fundSource}
-            getOptionLabel={(option) => option.name}
-            getOptionValue={(option) => option?.id?.toString() ?? ""}
-            error={errors?.fundSource?.id}
-            options={sourceOfFunds}
-          />
-        </FieldRow>
-        <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
-          <Input
-            error={errors?.costPrice}
-            type="number"
-            value={form.costPrice}
-            onChange={handleFormInput}
-            placeholder="Book price"
-            name="costPrice"
-          />
-        </FieldRow>
-        <FieldRow label="Edition" ref={registerFormGroup("edition")}>
-          <Input
-            error={errors?.edition}
-            type="number"
-            value={form.edition}
-            onChange={handleFormInput}
-            placeholder="Book copies"
-            name="edition"
-          />
-        </FieldRow>
-        <FieldRow
-          isRequired
-          label="Year Published"
-          ref={registerFormGroup("yearPublished")}
-        >
-          <CustomDatePicker
-            wrapperclass="flex flex-col"
-            selected={new Date(form.yearPublished, 0, 24)}
-            onChange={(date) => {
-              if (!date?.getFullYear()) return;
-              setFieldValue("yearPublished", date.getFullYear());
-            }}
-            showYearPicker
-            dateFormat="yyyy"
-            yearItemNumber={9}
-          />
-        </FieldRow>
-        <FieldRow
-          isRequired
-          label="Date Received"
-          ref={registerFormGroup("receivedAt")}
-        >
-          <CustomDatePicker
-            onChange={(date) => {
-              if (!date) return;
-              setFieldValue("receivedAt", date.toISOString());
-            }}
-            selected={new Date(form.receivedAt)}
-          />
-        </FieldRow>
-        <FieldRow
-          label="Description"
-          fieldDetails="Brief Description of the book"
-        >
-          <Editor
-            apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
-            onEditorChange={handleDescriptionInput}
-            value={form.description}
-          />
-        </FieldRow>
-        <FieldRow label="Book Cover" fieldDetails="Add image cover of the book">
-          <Dashboard
-            uppy={uppy}
-            width={"100%"}
-            height={"450px"}
-            hideUploadButton={true}
-            hideCancelButton={true}
-            locale={{
-              strings: {
-                browseFiles: " browse",
-                dropPasteFiles: "Drop a book image cover, click to %{browse}",
-              },
-            }}
-            hideProgressAfterFinish={true}
-            hideRetryButton={true}
-          ></Dashboard>
-        </FieldRow>
-      </div>
-      <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
-        <h1 className="mt-10 text-2xl">Authors and Classification</h1>
-        <hr className="mb-5"></hr>
-        <div className="flex gap-3 mb-5 ">
-          <span
-            className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer font-semibold"
-            onClick={openAuthorSelection}
+    <>
+      <form onSubmit={submit}>
+        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
+          <h1 className="text-2xl">General Information</h1>
+          <hr className="mb-5"></hr>
+          <FieldRow
+            fieldDetails="The title can be found in the cover of the book."
+            isRequired
+            label="Title"
+            ref={registerFormGroup("title")}
           >
-            Select Authors
-          </span>
-        </div>
-        <div
-          className="mb-10 overflow-y-auto scroll-smooth"
-          style={{ maxHeight: "300px" }}
-        >
-          {numberOfSelectedAuthors === 0 ? (
-            <div className="flex items-center h-10 justify-center">
-              <small className="text-gray-400">No authors selected.</small>
-            </div>
-          ) : (
-            <SelectedAuthorsTable />
-          )}
-        </div>
-
-        <hr className="mb-5"></hr>
-
-        <FieldRow
-          fieldDetails="The book classification based on Dewey Decimal Classification"
-          isRequired
-          label="DDC"
-          ref={registerFormGroup("ddc")}
-        >
-          <div className="w-full h-full flex ">
             <Input
+              wrapperclass="flex flex-col "
+              error={errors?.title}
+              value={form.title}
+              onChange={handleFormInput}
+              placeholder="Book title"
+              name="title"
+            />
+          </FieldRow>
+          <FieldRow
+            fieldDetails="ISBN can be 13 or 9 characters."
+            isRequired={true}
+            label="ISBN"
+            ref={registerFormGroup("isbn")}
+          >
+            <Input
+              wrapperclass="flex flex-col "
+              error={errors?.isbn}
+              value={form.isbn}
+              onChange={handleFormInput}
+              placeholder="Book ISBN"
+              name="isbn"
+            />
+          </FieldRow>
+          <FieldRow label="Pages" ref={registerFormGroup("pages")}>
+            <Input
+              wrapperclass="flex flex-col"
+              error={errors?.pages}
               type="number"
-              wrapperclass="flex flex-col "
-              error={errors?.ddc}
-              value={form.ddc}
+              value={form.pages}
+              min={1}
               onChange={handleFormInput}
-              placeholder="DDC"
-              name="ddc"
+              placeholder="Number of pages"
+              name="pages"
             />
-            <SecondaryButton
-              type="button"
-              className="self-start ml-2"
-              onClick={openDDCSelection}
-            >
-              Browse
-            </SecondaryButton>
-          </div>
-        </FieldRow>
-        <FieldRow
-          label="Author number"
-          isRequired
-          fieldDetails="The author number based on C.A. Cutter's Three-Figure Author
-                Table"
-          ref={registerFormGroup("authorNumber")}
-        >
-          <div className="w-full h-full flex">
+          </FieldRow>
+          <FieldRow
+            label="Section"
+            isRequired
+            fieldDetails="This refers to the book section or collection the book will be
+                added."
+            ref={registerFormGroup("section.value")}
+          >
+            <CustomSelect
+              wrapperclass="w-full flex flex-col"
+              onChange={handleSectionSelect}
+              value={form.section}
+              className="w-full"
+              getOptionLabel={(option) => option.name}
+              getOptionValue={(option) => option?.id?.toString() ?? ""}
+              error={errors?.section?.id}
+              options={sections}
+            />
+          </FieldRow>
+          <FieldRow
+            label="Publisher"
+            ref={registerFormGroup("publisher.value")}
+            isRequired
+          >
+            <div className="flex">
+              <CustomSelect
+                name="publisher"
+                wrapperclass="flex-1"
+                onChange={handlePublisherSelect}
+                value={form.publisher}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option?.id?.toString() ?? ""}
+                error={errors?.publisher?.id}
+                options={publishers}
+              />
+              <PrimaryOutlineButton
+                className="text-sm ml-2"
+                type="button"
+                onClick={() => {
+                  openAddPublisherModal();
+                }}
+                style={{ maxHeight: "38px" }}
+              >
+                Add Publisher
+              </PrimaryOutlineButton>
+            </div>
+          </FieldRow>
+          <FieldRow
+            isRequired
+            label="Source of Fund"
+            fieldDetails="This refers on how the book is acquired."
+            ref={registerFormGroup("fundSource.value")}
+          >
+            <CustomSelect
+              className="w-full"
+              name="fundSource"
+              wrapperclass="flex flex-col"
+              onChange={handleSourceSelect}
+              value={form.fundSource}
+              getOptionLabel={(option) => option.name}
+              getOptionValue={(option) => option?.id?.toString() ?? ""}
+              error={errors?.fundSource?.id}
+              options={sourceOfFunds}
+            />
+          </FieldRow>
+          <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
             <Input
-              wrapperclass="flex flex-col "
-              error={errors?.authorNumber}
-              value={form.authorNumber}
+              error={errors?.costPrice}
+              type="number"
+              value={form.costPrice}
               onChange={handleFormInput}
-              placeholder="Author number"
-              name="authorNumber"
+              placeholder="Book price"
+              name="costPrice"
             />
-            <SecondaryButton
-              type="button"
-              className="self-start ml-2"
-              onClick={() => {
-                openAuthorNumberSelection();
+          </FieldRow>
+          <FieldRow label="Edition" ref={registerFormGroup("edition")}>
+            <Input
+              error={errors?.edition}
+              type="number"
+              value={form.edition}
+              onChange={handleFormInput}
+              placeholder="Book copies"
+              name="edition"
+            />
+          </FieldRow>
+          <FieldRow
+            isRequired
+            label="Year Published"
+            ref={registerFormGroup("yearPublished")}
+          >
+            <CustomDatePicker
+              wrapperclass="flex flex-col"
+              selected={new Date(form.yearPublished, 0, 24)}
+              onChange={(date) => {
+                if (!date?.getFullYear()) return;
+                setFieldValue("yearPublished", date.getFullYear());
               }}
-            >
-              Browse
-            </SecondaryButton>
-          </div>
-        </FieldRow>
-        <AuthorSelectionModal
-          closeModal={closeAuthorSelection}
-          isOpen={isAuthorSelectionOpen}
-        />
-        <DDCSelectionModal
-          closeModal={closeDDCSelection}
-          isOpen={isDDCSelectionOpen}
-        />
-        <AuthorNumberSelectionModal
-          closeModal={closeAuthorNumberSelection}
-          isOpen={isAuthorNumberSelectionOpen}
-        />
-      </div>
-
-      <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
-        <div>
-          <PrimaryButton className="ml-2 lg:ml-0" type="submit">
-            Update Book
-          </PrimaryButton>
+              showYearPicker
+              dateFormat="yyyy"
+              yearItemNumber={9}
+            />
+          </FieldRow>
+          <FieldRow
+            isRequired
+            label="Date Received"
+            ref={registerFormGroup("receivedAt")}
+          >
+            <CustomDatePicker
+              onChange={(date) => {
+                if (!date) return;
+                setFieldValue("receivedAt", date.toISOString());
+              }}
+              selected={new Date(form.receivedAt)}
+            />
+          </FieldRow>
+          <FieldRow
+            label="Description"
+            fieldDetails="Brief Description of the book"
+          >
+            <Editor
+              apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
+              onEditorChange={handleDescriptionInput}
+              value={form.description}
+            />
+          </FieldRow>
+          <FieldRow
+            label="Book Cover"
+            fieldDetails="Add image cover of the book"
+          >
+            <Dashboard
+              uppy={uppy}
+              width={"100%"}
+              height={"450px"}
+              hideUploadButton={true}
+              hideCancelButton={true}
+              locale={{
+                strings: {
+                  browseFiles: " browse",
+                  dropPasteFiles: "Drop a book image cover, click to %{browse}",
+                },
+              }}
+              hideProgressAfterFinish={true}
+              hideRetryButton={true}
+            ></Dashboard>
+          </FieldRow>
         </div>
-      </div>
-    </form>
+        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
+          <h1 className="mt-10 text-2xl">Authors and Classification</h1>
+          <hr className="mb-5"></hr>
+          <div className="flex gap-3 mb-5 ">
+            <a
+              className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer font-semibold"
+              onClick={openAuthorSelection}
+            >
+              Select Authors
+            </a>
+            <a
+              className=" text-yellow-500 text-sm cursor-pointer font-semibold"
+              onClick={openAddAuthorModal}
+            >
+              New Author
+            </a>
+          </div>
+          <div
+            className="mb-10 overflow-y-auto scroll-smooth"
+            style={{ maxHeight: "300px" }}
+          >
+            {numberOfSelectedAuthors === 0 ? (
+              <div className="flex items-center h-10 justify-center">
+                <small className="text-gray-400">No authors selected.</small>
+              </div>
+            ) : (
+              <SelectedAuthorsTable />
+            )}
+          </div>
+
+          <hr className="mb-5"></hr>
+
+          <FieldRow
+            fieldDetails="The book classification based on Dewey Decimal Classification"
+            isRequired
+            label="DDC"
+            ref={registerFormGroup("ddc")}
+          >
+            <div className="w-full h-full flex ">
+              <Input
+                type="number"
+                wrapperclass="flex flex-col "
+                error={errors?.ddc}
+                value={form.ddc}
+                onChange={handleFormInput}
+                placeholder="DDC"
+                name="ddc"
+              />
+              <SecondaryButton
+                type="button"
+                className="self-start ml-2"
+                onClick={openDDCSelection}
+              >
+                Browse
+              </SecondaryButton>
+            </div>
+          </FieldRow>
+          <FieldRow
+            label="Author number"
+            isRequired
+            fieldDetails="The author number based on C.A. Cutter's Three-Figure Author
+                Table"
+            ref={registerFormGroup("authorNumber")}
+          >
+            <div className="w-full h-full flex">
+              <Input
+                wrapperclass="flex flex-col "
+                error={errors?.authorNumber}
+                value={form.authorNumber}
+                onChange={handleFormInput}
+                placeholder="Author number"
+                name="authorNumber"
+              />
+              <SecondaryButton
+                type="button"
+                className="self-start ml-2"
+                onClick={() => {
+                  openAuthorNumberSelection();
+                }}
+              >
+                Browse
+              </SecondaryButton>
+            </div>
+          </FieldRow>
+          <AuthorSelectionModal
+            closeModal={closeAuthorSelection}
+            isOpen={isAuthorSelectionOpen}
+          />
+          <DDCSelectionModal
+            closeModal={closeDDCSelection}
+            isOpen={isDDCSelectionOpen}
+          />
+          <AuthorNumberSelectionModal
+            closeModal={closeAuthorNumberSelection}
+            isOpen={isAuthorNumberSelectionOpen}
+          />
+        </div>
+
+        <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
+          <div>
+            <PrimaryButton className="ml-2 lg:ml-0" type="submit">
+              Update Book
+            </PrimaryButton>
+          </div>
+        </div>
+      </form>
+
+      <AddPublisherModal
+        closeModal={closeAddPublisherModal}
+        isOpen={isAddPublisherModalOpen}
+      />
+      <AddAuthorModal
+        closeModal={closeAddAuthorModal}
+        isOpen={isAddAuthorModalOpen}
+      />
+    </>
   );
 };
 
