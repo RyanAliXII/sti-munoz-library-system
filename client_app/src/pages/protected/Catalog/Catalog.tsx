@@ -24,6 +24,9 @@ const Catalog = () => {
     queryFn: fetchBooks,
     queryKey: ["books"],
   });
+  const alertDev = () => {
+    window.alert("Feature still in development.");
+  };
   return (
     <div className="w-full  flex flex-col items-center mt-5 gap-3">
       <div
@@ -32,15 +35,8 @@ const Catalog = () => {
           maxWidth: "800px",
         }}
       >
-        <input
-          type="text"
-          className="border  text-xs py-2 px-1 md:py-3 md:px-2 md:text-sm rounded text-gray-600 focus:outline-yellow-400 flex-1"
-          placeholder=" Search Books"
-        ></input>
-        <button
-          type="button"
-          className="py-1.5 px-4 text-xs bg-blue-500 text-white rounded md:py-2.5 md:px-5 md:text-sm"
-        >
+        <input type="text" className="input input-bordered flex-1"></input>
+        <button type="button" className="btn btn-primary">
           Search
         </button>
       </div>
@@ -50,17 +46,29 @@ const Catalog = () => {
           maxWidth: "800px",
         }}
       >
-        <span className="py-2 px-5 border rounded-full text-xs md:text-sm cursor-pointer flex gap-1 items-center text-gray-500">
+        <span
+          className="py-2 px-5 border rounded-full text-xs md:text-sm cursor-pointer flex gap-1 items-center text-gray-500"
+          onClick={alertDev}
+        >
           <RiFilter3Fill />
           Filter
         </span>
-        <span className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer  text-blue-500 bg-blue-100">
+        <span
+          className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer  text-blue-500 bg-blue-100"
+          onClick={alertDev}
+        >
           Thesis
         </span>
-        <span className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer   text-blue-500 border-blue-100 border">
+        <span
+          className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer   text-blue-500 border-blue-100 border"
+          onClick={alertDev}
+        >
           Filipiniana
         </span>
-        <span className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer  text-blue-500 border-blue-100 border hidden md:block">
+        <span
+          className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer  text-blue-500 border-blue-100 border hidden md:block"
+          onClick={alertDev}
+        >
           Reference
         </span>
       </div>
@@ -81,7 +89,7 @@ const Catalog = () => {
         const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
         return (
           <div
-            className="w-11/12 md:w-7/12 lg:w-6/12 h-44 rounded shadow-sm  md:h-60 lg:h-64 border border-gray-100 p-4 flex gap-5"
+            className="w-11/12 md:w-7/12 lg:w-6/12 h-44 rounded shadow  md:h-60 lg:h-64 border border-gray-100 p-4 flex gap-5"
             style={{
               maxWidth: "800px",
             }}

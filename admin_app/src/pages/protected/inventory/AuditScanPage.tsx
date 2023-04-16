@@ -1,6 +1,6 @@
 import { Accession, Audit, Book } from "@definitions/types";
-import { json, useNavigate, useParams } from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { HiOutlineDocumentReport } from "react-icons/hi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import jsonpack from "jsonpack";
 import {
@@ -20,6 +20,8 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import { BaseSyntheticEvent, useEffect, useRef } from "react";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { PrimaryButton } from "@components/ui/button/Button";
+import { toast } from "react-toastify";
 
 export interface AuditedAccession
   extends Omit<
@@ -112,16 +114,22 @@ const AuditScan = () => {
   }, []);
   return (
     <>
-      <LoadingBoundary isLoading={isFetching} isError={isError}>
-        <ContainerNoBackground>
-          <h1 className="text-3xl font-bold text-gray-700">
-            Inventory: {audit?.name}
-          </h1>
-        </ContainerNoBackground>
-        <Container>
-          <div id="reader" className="w-96"></div>
-        </Container>
-        <Container>
+      <ContainerNoBackground>
+        <h1 className="text-3xl font-bold text-gray-700">
+          Inventory: {audit?.name}
+        </h1>
+      </ContainerNoBackground>
+      <ContainerNoBackground>
+        <PrimaryButton
+          className="mb-2 flex items-center"
+          onClick={() => {
+            toast.info("Feature is still in development.");
+          }}
+        >
+          <HiOutlineDocumentReport className="text-lg mr-2" />
+          Generate Report
+        </PrimaryButton>
+        <LoadingBoundary isLoading={isFetching} isError={isError}>
           <Table>
             <Thead>
               <HeadingRow>
@@ -178,8 +186,13 @@ const AuditScan = () => {
               })}
             </Tbody>
           </Table>
-        </Container>
-      </LoadingBoundary>
+          {(auditedBooks?.length ?? 0) === 0 ? (
+            <div className="w-full flex justify-center h-20 items-center">
+              <small>No books have been scanned.</small>
+            </div>
+          ) : null}
+        </LoadingBoundary>
+      </ContainerNoBackground>
     </>
   );
 };

@@ -6,10 +6,35 @@ module.exports = {
       fontFamily: {
         INTER: ["Inter", "san-serif"],
       },
-      backgroundImage: {
-        "hero-img": "url('./src/assets/images/hero.svg')",
-      },
+
+      backgroundImage: { "hero-img": "url('./src/assets/images/library.jpg')" },
     },
   },
-  plugins: [],
+
+  daisyui: {
+    themes: [
+      {
+        apptheme: {
+          primary: "#025BA7",
+
+          secondary: "#F7E71B",
+
+          accent: "#A1B9CA",
+
+          neutral: "#3D4451",
+
+          "base-100": "#FFFFFF",
+
+          info: "#3ABFF8",
+
+          success: "#36D399",
+
+          warning: "#fbbf24",
+
+          error: "#F87272",
+        },
+      },
+    ],
+  },
+  plugins: [require("daisyui")],
 };

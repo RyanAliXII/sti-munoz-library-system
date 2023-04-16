@@ -102,8 +102,8 @@ const PublisherPage = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <Container className="lg:px-0">
-        <LoadingBoundary isLoading={isLoading} isError={isError}>
+      <LoadingBoundary isLoading={isLoading} isError={isError}>
+        <Container className="lg:px-0">
           <div className="w-full">
             <Table>
               <Thead>
@@ -143,8 +143,8 @@ const PublisherPage = () => {
               </Tbody>
             </Table>
           </div>
-        </LoadingBoundary>
-      </Container>
+        </Container>
+      </LoadingBoundary>
       <HasAccess requiredPermissions={["Publisher.Add"]}>
         <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       </HasAccess>

@@ -17,6 +17,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
+import { BorrowStatuses } from "@internal/borrow-status";
 
 const BorrowingTransactionPage = () => {
   const { Get } = useRequest();
@@ -61,7 +62,13 @@ const BorrowingTransactionPage = () => {
                 >
                   <Td>{transaction.client.displayName}</Td>
                   <Td>{new Date(transaction.dueDate).toLocaleDateString()}</Td>
-                  <Td></Td>
+                  <Td>
+                    {transaction?.isReturned
+                      ? BorrowStatuses.Returned
+                      : transaction?.isDue
+                      ? BorrowStatuses.Overdue
+                      : BorrowStatuses.CheckedOut}
+                  </Td>
                   <Td>
                     <TimeAgo datetime={transaction.createdAt} />
                   </Td>

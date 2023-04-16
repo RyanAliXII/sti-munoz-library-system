@@ -28,6 +28,7 @@ import Container, {
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const FundSourcePage = () => {
   const {
@@ -81,7 +82,11 @@ const FundSourcePage = () => {
     }
   };
 
-  const { data: sources } = useQuery<Source[]>({
+  const {
+    data: sources,
+    isError,
+    isFetching,
+  } = useQuery<Source[]>({
     queryFn: fetchSources,
     queryKey: ["sources"],
   });
@@ -95,49 +100,49 @@ const FundSourcePage = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <Container className="lg:px-0">
-        <div className="w-full">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Source of fund</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {sources?.map((source) => {
-                return (
-                  <BodyRow key={source.id}>
-                    <Td>{source.name}</Td>
-                    <Td className="p-2 flex gap-2 items-center">
-                      <HasAccess requiredPermissions={["SOF.Edit"]}>
-                        <AiOutlineEdit
-                          className="cursor-pointer text-yellow-400 text-xl"
-                          onClick={() => {
-                            setSelectedRow({ ...source });
-                            openEditModal();
-                          }}
-                        />
-                      </HasAccess>
-                      <HasAccess requiredPermissions={["SOF.Delete"]}>
-                        <AiOutlineDelete
-                          className="cursor-pointer text-orange-600  text-xl"
-                          onClick={() => {
-                            openConfirmDialog();
-                            setSelectedRow({ ...source });
-                          }}
-                        />
-                      </HasAccess>
-                    </Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </div>
-
-        {/* </LoadingBoundar> */}
-      </Container>
+      <LoadingBoundary isLoading={isFetching} isError={isError}>
+        <Container className="lg:px-0">
+          <div className="w-full">
+            <Table>
+              <Thead>
+                <HeadingRow>
+                  <Th>Source of fund</Th>
+                  <Th></Th>
+                </HeadingRow>
+              </Thead>
+              <Tbody>
+                {sources?.map((source) => {
+                  return (
+                    <BodyRow key={source.id}>
+                      <Td>{source.name}</Td>
+                      <Td className="p-2 flex gap-2 items-center">
+                        <HasAccess requiredPermissions={["SOF.Edit"]}>
+                          <AiOutlineEdit
+                            className="cursor-pointer text-yellow-400 text-xl"
+                            onClick={() => {
+                              setSelectedRow({ ...source });
+                              openEditModal();
+                            }}
+                          />
+                        </HasAccess>
+                        <HasAccess requiredPermissions={["SOF.Delete"]}>
+                          <AiOutlineDelete
+                            className="cursor-pointer text-orange-600  text-xl"
+                            onClick={() => {
+                              openConfirmDialog();
+                              setSelectedRow({ ...source });
+                            }}
+                          />
+                        </HasAccess>
+                      </Td>
+                    </BodyRow>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </div>
+        </Container>
+      </LoadingBoundary>
       <HasAccess requiredPermissions={["SOF.Add"]}>
         <AddSourceModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       </HasAccess>

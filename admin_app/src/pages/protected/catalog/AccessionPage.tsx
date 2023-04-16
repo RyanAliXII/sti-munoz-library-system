@@ -18,6 +18,7 @@ import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
@@ -31,7 +32,11 @@ const AccessionPage = () => {
       return [];
     }
   };
-  const { data: accessions } = useQuery<DetailedAccession[]>({
+  const {
+    data: accessions,
+    isFetching,
+    isError,
+  } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessions,
     queryKey: ["accessions"],
   });
@@ -59,30 +64,32 @@ const AccessionPage = () => {
           <CustomSelect label="Section" />
         </div>
       </ContainerNoBackground>
-      <Container className="p-0 lg:p-0">
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Accession Number</Th>
-              <Th>Book Title</Th>
-              <Th>Section</Th>
-              <Th>Year Published</Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {accessions?.map((accession) => {
-              return (
-                <BodyRow key={`${accession.copyNumber}_${accession.bookId}`}>
-                  <Td>{accession.number}</Td>
-                  <Td>{accession.book.title}</Td>
-                  <Td>{accession.book.section.name}</Td>
-                  <Td>{accession.book.yearPublished}</Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Container>
+      <LoadingBoundary isError={isError} isLoading={isFetching}>
+        <Container className="p-0 lg:p-0">
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th>Accession Number</Th>
+                <Th>Book Title</Th>
+                <Th>Section</Th>
+                <Th>Year Published</Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {accessions?.map((accession) => {
+                return (
+                  <BodyRow key={`${accession.copyNumber}_${accession.bookId}`}>
+                    <Td>{accession.number}</Td>
+                    <Td>{accession.book.title}</Td>
+                    <Td>{accession.book.section.name}</Td>
+                    <Td>{accession.book.yearPublished}</Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+      </LoadingBoundary>
     </>
   );
 };

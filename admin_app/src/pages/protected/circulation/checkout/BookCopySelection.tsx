@@ -22,6 +22,7 @@ import { CheckoutForm } from "./CheckoutPage";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BorrowStatuses } from "@internal/borrow-status";
 import { useRequest } from "@hooks/useRequest";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -49,7 +50,12 @@ const BookCopySelectionModal = ({
     }
   };
 
-  const { data: accessions, refetch } = useQuery<DetailedAccession[]>({
+  const {
+    data: accessions,
+    refetch,
+    isError,
+    isFetching,
+  } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessionById,
     queryKey: ["bookAccessions"],
     initialData: [],
@@ -123,56 +129,60 @@ const BookCopySelectionModal = ({
         modal: "w-11/12 md:w-7/12 lg:w-9/12 rounded",
       }}
     >
-      <div>
-        <h1 className="mb-5 text-xl">{book.title}</h1>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th></Th>
-              <Th>Accession number</Th>
-              <Th>Copy number</Th>
-              <Th>Status</Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {accessions.map((accession) => {
-              const isAdded = selectedAccessionCopiesCache.hasOwnProperty(
-                `${accession.bookId}_${accession.number}`
-              );
-              return (
-                <BodyRow
-                  key={accession.number}
-                  className={
-                    accession.isCheckedOut
-                      ? "bg-gray-100 hover:bg-gray-100 cursor-pointer"
-                      : "cursor-pointer"
-                  }
-                  onClick={() => {
-                    handleCheckonRowClick(accession);
-                  }}
-                >
-                  <Td>
-                    <input
-                      type="checkbox"
-                      checked={isAdded}
-                      readOnly
-                      disabled={accession.isCheckedOut}
-                    />
-                  </Td>
-                  <Td>{accession.number}</Td>
-                  <Td>Copy {accession.copyNumber}</Td>
-                  <Td>
-                    {accession.isCheckedOut
-                      ? BorrowStatuses.CheckedOut
-                      : BorrowStatuses.Available}
-                  </Td>
-                </BodyRow>
-              );
-            })}
-            <BodyRow></BodyRow>
-          </Tbody>
-        </Table>
-      </div>
+      <LoadingBoundary isError={isError} isLoading={isFetching}>
+        {" "}
+        <div>
+          <h1 className="mb-5 text-xl">{book.title}</h1>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th></Th>
+                <Th>Accession number</Th>
+                <Th>Copy number</Th>
+                <Th>Status</Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {accessions.map((accession) => {
+                const isAdded = selectedAccessionCopiesCache.hasOwnProperty(
+                  `${accession.bookId}_${accession.number}`
+                );
+                return (
+                  <BodyRow
+                    key={accession.number}
+                    className={
+                      accession.isCheckedOut
+                        ? "bg-gray-100 hover:bg-gray-100 cursor-pointer"
+                        : "cursor-pointer"
+                    }
+                    onClick={() => {
+                      handleCheckonRowClick(accession);
+                    }}
+                  >
+                    <Td>
+                      <input
+                        type="checkbox"
+                        checked={isAdded}
+                        readOnly
+                        disabled={accession.isCheckedOut}
+                      />
+                    </Td>
+                    <Td>{accession.number}</Td>
+                    <Td>Copy {accession.copyNumber}</Td>
+                    <Td>
+                      {accession.isCheckedOut
+                        ? BorrowStatuses.CheckedOut
+                        : BorrowStatuses.Available}
+                    </Td>
+                  </BodyRow>
+                );
+              })}
+              <BodyRow></BodyRow>
+            </Tbody>
+          </Table>
+        </div>
+      </LoadingBoundary>
+
       <PrimaryButton className="mt-5" onClick={proceedToAdd}>
         Add changes
       </PrimaryButton>

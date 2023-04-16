@@ -33,6 +33,7 @@ import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -67,14 +68,15 @@ const AccountPage = () => {
     }
   };
   const queryClient = useQueryClient();
-  const { data, fetchNextPage, refetch } = useInfiniteQuery<Account[]>({
-    queryFn: fetchAccounts,
-    queryKey: ["accounts"],
-    refetchOnWindowFocus: false,
-    getNextPageParam: (_, allPages) => {
-      return allPages.length * 30;
-    },
-  });
+  const { data, fetchNextPage, refetch, isError, isFetching } =
+    useInfiniteQuery<Account[]>({
+      queryFn: fetchAccounts,
+      queryKey: ["accounts"],
+      refetchOnWindowFocus: false,
+      getNextPageParam: (_, allPages) => {
+        return allPages.length * 30;
+      },
+    });
   useScrollWatcher({
     element: window,
     onScrollEnd: () => {

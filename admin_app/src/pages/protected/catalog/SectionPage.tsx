@@ -66,8 +66,8 @@ const SectionPage = () => {
           <PrimaryButton onClick={openAddModal}>New Section</PrimaryButton>
         </div>
       </ContainerNoBackground>
-      <Container>
-        <LoadingBoundary isLoading={isLoading} isError={isError}>
+      <LoadingBoundary isLoading={isLoading} isError={isError}>
+        <Container>
           <div className="w-full">
             <Table>
               <Thead>
@@ -102,8 +102,8 @@ const SectionPage = () => {
               </Tbody>
             </Table>
           </div>
-        </LoadingBoundary>
-      </Container>
+        </Container>
+      </LoadingBoundary>
       <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditSectionModal isOpen={isEditModalOpen} closeModal={closeEditModal} />
     </>

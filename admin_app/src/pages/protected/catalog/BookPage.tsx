@@ -16,7 +16,7 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import { Accession, Book, ModalProps } from "@definitions/types";
+import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import React, { useRef, useState } from "react";
@@ -35,6 +35,7 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 const BookPage = () => {
   const {
@@ -64,13 +65,17 @@ const BookPage = () => {
     setSelectedBookForPrintingPrintables({ ...book });
     openPrintablesModal();
   };
-  const { data: books } = useQuery<Book[]>({
+  const {
+    data: books,
+    isError,
+    isFetching,
+  } = useQuery<Book[]>({
     queryFn: fetchBooks,
     queryKey: ["books"],
   });
   return (
     <>
-      <ContainerNoBackground className="flex gap-2 justify-between">
+      <ContainerNoBackground className="flex gap-2 justify-between px-0 mb-0 lg:mb-4">
         <div className="flex items-center">
           <h1 className="text-3xl font-bold text-gray-700">Books</h1>
         </div>
@@ -104,7 +109,7 @@ const BookPage = () => {
           </div>
         </div>
       </ContainerNoBackground>
-      <ContainerNoBackground className="flex gap-2 lg:hidden">
+      <ContainerNoBackground className="px-0 flex gap-2 lg:hidden">
         <div className="w-5/12">
           <Input type="text" label="Search" placeholder="Search.."></Input>
         </div>
@@ -123,49 +128,52 @@ const BookPage = () => {
           <CustomSelect label="Section" />
         </div>
       </ContainerNoBackground>
-      <Container className="lg:p-0">
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Title</Th>
-              {/* <Th className="hidden lg:block">ISBN</Th> */}
-              <Th>Copies</Th>
-              <Th>Year Published</Th>
-              <Th>Date Received</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {books?.map((book) => {
-              return (
-                <BodyRow key={book.id}>
-                  <Td>{book.title}</Td>
-                  {/* <Td className="hidden lg:block">{book.isbn}</Td> */}
-                  <Td>{book.copies}</Td>
-                  <Td>{book.yearPublished}</Td>
-                  <Td>
-                    {" "}
-                    <TimeAgo datetime={book.receivedAt}></TimeAgo>
-                  </Td>
-                  <Td className="flex gap-5">
-                    <AiOutlinePrinter
-                      className="text-blue-500 text-lg cursor-pointer "
-                      onClick={() => {
-                        setBookForPrintingAndOpenModal(book);
-                      }}
-                    />
-                    <Link to={`/books/edit/${book.id}`}>
-                      <HasAccess requiredPermissions={["Book.Edit"]}>
-                        <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
-                      </HasAccess>
-                    </Link>
-                  </Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Container>
+      <LoadingBoundary isLoading={isFetching} isError={isError}>
+        <Container className="lg:p-0">
+          {" "}
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Th>Title</Th>
+                {/* <Th className="hidden lg:block">ISBN</Th> */}
+                <Th>Copies</Th>
+                <Th>Year Published</Th>
+                <Th>Date Received</Th>
+                <Th></Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {books?.map((book) => {
+                return (
+                  <BodyRow key={book.id}>
+                    <Td>{book.title}</Td>
+                    {/* <Td className="hidden lg:block">{book.isbn}</Td> */}
+                    <Td>{book.copies}</Td>
+                    <Td>{book.yearPublished}</Td>
+                    <Td>
+                      {" "}
+                      <TimeAgo datetime={book.receivedAt}></TimeAgo>
+                    </Td>
+                    <Td className="flex gap-5">
+                      <AiOutlinePrinter
+                        className="text-blue-500 text-lg cursor-pointer "
+                        onClick={() => {
+                          setBookForPrintingAndOpenModal(book);
+                        }}
+                      />
+                      <Link to={`/books/edit/${book.id}`}>
+                        <HasAccess requiredPermissions={["Book.Edit"]}>
+                          <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                        </HasAccess>
+                      </Link>
+                    </Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+      </LoadingBoundary>
 
       <BookPrintablesModal
         closeModal={closePrintablesModal}
