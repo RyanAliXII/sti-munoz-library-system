@@ -19,12 +19,18 @@ type PublisherController struct {
 func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
-	insertErr := ctrler.publisherRepository.New(publisher)
+	id,insertErr := ctrler.publisherRepository.New(publisher)
+	
 	if insertErr != nil {
-		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
+		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
 		return
 	}
-	ctx.JSON(httpresp.Success200(gin.H{}, "model.Publisher added."))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"publisher":  gin.H{
+			"id":id,
+			"name":publisher.Name,
+		},
+	}, "model.Publisher added."))
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	var publishers []model.Publisher = ctrler.publisherRepository.Get()

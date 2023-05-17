@@ -178,7 +178,6 @@ func GenerateCutter(firstname string, lastname string) string {
 		}
 
 	}
-
 	var key string = caser.String(lastname)
 	for len(key) != 0 {
 		number := data.CUTTERS_TABLE[key]

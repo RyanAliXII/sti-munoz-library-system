@@ -7,7 +7,7 @@ module.exports = {
         INTER: ["Inter", "san-serif"],
       },
 
-      backgroundImage: { "hero-img": "url('./src/assets/images/library.jpg')" },
+      backgroundImage: { "hero-img": "url('/src/assets/images/library.jpg')" },
     },
   },
 

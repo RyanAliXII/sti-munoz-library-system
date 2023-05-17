@@ -28,12 +28,17 @@ func (repo *PublisherRepository) Get() []model.Publisher {
 	}
 	return publishers
 }
-func (repo *PublisherRepository) New(publisher model.Publisher) error {
-	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.publisher(name)VALUES(:name)", publisher)
+func (repo *PublisherRepository) New(publisher model.Publisher) (int64, error) {
+	result, insertErr := repo.db.Exec("INSERT INTO catalog.publisher(name)VALUES($1) RETURNING id", publisher.Name)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_PUBLISHER))
+		return 0, insertErr
 	}
-	return insertErr
+	id, idErr := result.LastInsertId()
+	if(idErr != nil ){
+		logger.Error((idErr.Error()))
+	}
+	return id, insertErr
 }
 func (repo *PublisherRepository) Delete(id int) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.publisher SET deleted_at = now() where id=$1")
@@ -77,7 +82,7 @@ func NewPublisherRepository() PublisherRepositoryInterface {
 
 type PublisherRepositoryInterface interface {
 	Get() []model.Publisher
-	New(publisher model.Publisher) error
+	New(publisher model.Publisher) (int64, error)
 	Delete(id int) error
 	Update(id int, publisher model.Publisher) error
 }
