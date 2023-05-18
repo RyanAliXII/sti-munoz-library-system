@@ -14,4 +14,7 @@ func CirculationRoutes(router *gin.RouterGroup) {
 	router.POST("/checkout", middlewares.ValidateBody[CheckoutBody], controller.Checkout)
 	router.PATCH("/transactions/:id", controller.ReturnBooksById)
 	router.PATCH("/transactions/:id/books/:bookId/accessions/:accessionNumber", controller.ReturnBookCopy)
+	router.POST("/bag",middlewares.ValidateToken, middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)
+	router.GET("/bag",middlewares.ValidateToken, controller.GetBagItems)
+	router.DELETE("/bag/:id",middlewares.ValidateToken, controller.DeleteItemFromBag)
 }

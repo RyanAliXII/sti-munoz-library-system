@@ -102,6 +102,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
                         readOnly={true}
                         className="h-4 w-4"
                         type="checkbox"
+                        disabled={isItemAlreadyAdded}
                         checked={selectedAccession?.id === accession.id}
                       />
                     </td>

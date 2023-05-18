@@ -16,3 +16,7 @@ type CheckoutAccessions struct {
 type ReturnBookBody struct {
 	Remarks string `json:"remarks"`
 }
+
+type BagItem struct {
+	AccessionId  string `json:"accessionId" binding:"required,uuid"`
+}

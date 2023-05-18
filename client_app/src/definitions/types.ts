@@ -127,7 +127,10 @@ export type Role = {
 };
 
 export type BagItem = {
+  id?: string;
   accessionId: string;
   accountId: string;
-  book?: Book;
+  accessionNumber: number;
+  copyNumber: number;
+  book: Book;
 };
