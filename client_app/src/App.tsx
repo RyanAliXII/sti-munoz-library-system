@@ -5,7 +5,7 @@ import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
 import msalConfig from "./definitions/configs/msal/msal.config";
 import "./assets/css/tailwind.css";
-
+import "react-responsive-modal/styles.css";
 import { useEffect } from "react";
 
 import pages from "./pages/Pages";
