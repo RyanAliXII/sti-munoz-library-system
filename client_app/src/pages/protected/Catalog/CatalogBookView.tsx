@@ -1,18 +1,20 @@
 import { BookInitialValue } from "@definitions/defaults";
 import { buildS3Url } from "@definitions/s3";
-import { Book } from "@definitions/types";
+import { BagItem, Book, DetailedAccession } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AiFillCalendar } from "react-icons/ai";
 import { MdPublish } from "react-icons/md";
 import { RiPagesLine } from "react-icons/ri";
 import { useNavigate, useParams } from "react-router-dom";
 import BookCopySelectionModal from "./BookCopySelectionModal";
 import { useSwitch } from "@hooks/useToggle";
+import { toast } from "react-toastify";
+import { useMemo } from "react";
 
 const CatalogBookView = () => {
   const { id } = useParams();
-  const { Get } = useRequest();
+  const { Get, Post } = useRequest();
   const fetchBookById = async () => {
     const { data: response } = await Get(`/books/${id}`);
     return response?.data?.book ?? BookInitialValue;
@@ -42,9 +44,46 @@ const CatalogBookView = () => {
     ...(publisherAuthors ?? []),
   ];
 
+  const queryClient = useQueryClient();
+  const addItemToBag = useMutation({
+    mutationFn: (item: { accessionId: string }) =>
+      Post("/circulation/bag", item),
+    onSuccess: () => {
+      toast.success("Item has been added to bag.");
+      queryClient.invalidateQueries(["bagItems"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured, Please try again later.");
+    },
+    onSettled: () => {
+      closeCopySelection();
+    },
+  });
   const reserve = () => {
     openCopySelection();
   };
+  const fetchBagItems = async () => {
+    try {
+      const response = await Get("/circulation/bag");
+      const { data } = response.data;
+      return data?.bag ?? [];
+    } catch (error) {
+      return [];
+    }
+  };
+
+  const onSelectCopy = (accession: DetailedAccession) => {
+    addItemToBag.mutate({ accessionId: accession.id ?? "" });
+  };
+  const { data: bagItems } = useQuery<BagItem[]>({
+    queryFn: fetchBagItems,
+    queryKey: ["bagItems"],
+    refetchOnWindowFocus: false,
+  });
+  const bagItemsIds = useMemo(
+    () => bagItems?.map((item) => item.accessionId ?? "") ?? [],
+    [bagItems]
+  );
   const bookImg =
     (book?.covers?.length ?? 0) > 0
       ? buildS3Url(book?.covers?.[0] ?? "")
@@ -132,6 +171,8 @@ const CatalogBookView = () => {
         book={book ?? BookInitialValue}
         isOpen={isCopySelectionOpen}
         closeModal={closeCopySelection}
+        bagItemIds={bagItemsIds}
+        onSelectCopy={onSelectCopy}
       />
     </>
   );

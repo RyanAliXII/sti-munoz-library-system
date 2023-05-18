@@ -2,17 +2,24 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { Book, DetailedAccession, ModalProps } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "react-responsive-modal";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
+  onSelectCopy: (accession: DetailedAccession) => void;
+  bagItemIds: string[];
 }
 const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
   book,
   isOpen,
   closeModal,
+  onSelectCopy,
+  bagItemIds,
 }) => {
+  const [selectedAccession, setSelectedAccession] =
+    useState<DetailedAccession | null>(null);
+
   const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
@@ -37,11 +44,14 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
   });
 
   useEffect(() => {
-    console.log("open");
     if (isOpen) {
       refetch();
+    } else {
+      setSelectedAccession(null);
     }
   }, [isOpen]);
+
+  if (!isOpen) return null;
   return (
     <Modal
       center
@@ -53,7 +63,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
       }}
     >
       <LoadingBoundary isLoading={isFetching} isError={isError}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto mb-3">
           <table className="table w-full">
             <thead>
               <tr>
@@ -65,21 +75,66 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
             </thead>
             <tbody>
               {accessions.map((accession) => {
+                const isItemAlreadyAdded = bagItemIds.includes(
+                  accession.id ?? ""
+                );
+
+                const trClass = isItemAlreadyAdded
+                  ? "cursor-pointer pointer-events-none hover disabled active"
+                  : " cursor-pointer hover";
+                const statusTdClass = isItemAlreadyAdded
+                  ? "text-gray-500 "
+                  : "text-success ";
                 return (
-                  <tr key={accession.id}>
+                  <tr
+                    key={accession.id}
+                    className={trClass}
+                    onClick={() => {
+                      if (selectedAccession?.id === accession.id) {
+                        setSelectedAccession(null);
+                        return;
+                      }
+                      setSelectedAccession(accession);
+                    }}
+                  >
                     <td>
-                      <input type="checkbox" />
+                      <input
+                        readOnly={true}
+                        className="h-4 w-4"
+                        type="checkbox"
+                        checked={selectedAccession?.id === accession.id}
+                      />
                     </td>
                     <td>{accession.number}</td>
                     <td>{accession.copyNumber}</td>
-                    <td>{}</td>
+                    <td className={statusTdClass}>
+                      {isItemAlreadyAdded ? "Already on Bag" : "Available"}
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
-        <button className="btn btn-primary">Done</button>
+        <button
+          className="btn btn-primary"
+          disabled={selectedAccession === null}
+          onClick={() => {
+            if (selectedAccession) {
+              onSelectCopy(selectedAccession);
+            }
+          }}
+        >
+          Proceed
+        </button>
+        <button
+          className="ml-1 btn btn-ghost"
+          onClick={() => {
+            closeModal();
+          }}
+        >
+          Cancel
+        </button>
       </LoadingBoundary>
     </Modal>
   );

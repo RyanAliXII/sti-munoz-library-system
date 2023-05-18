@@ -125,3 +125,9 @@ export type Role = {
   name: string;
   permissions: Record<string, string[]>;
 };
+
+export type BagItem = {
+  accessionId: string;
+  accountId: string;
+  book?: Book;
+};
