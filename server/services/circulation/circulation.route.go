@@ -17,4 +17,6 @@ func CirculationRoutes(router *gin.RouterGroup) {
 	router.POST("/bag",middlewares.ValidateToken, middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)
 	router.GET("/bag",middlewares.ValidateToken, controller.GetBagItems)
 	router.DELETE("/bag/:id",middlewares.ValidateToken, controller.DeleteItemFromBag)
+	router.PATCH("/bag/:id/checklist", middlewares.ValidateToken, controller.CheckItemFromBag)
+	router.PATCH("/bag/checklist", middlewares.ValidateToken, controller.CheckOrUncheckAllItems)
 }

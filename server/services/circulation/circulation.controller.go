@@ -160,6 +160,53 @@ func (ctrler * CirculationController) DeleteItemFromBag (ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Bag item has been deleted."))
 }
 
+func (ctrler * CirculationController)CheckItemFromBag(ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+	id := ctx.Param("id")
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	checkErr := ctrler.circulationRepository.CheckItemFromBag(model.BagItem{
+		Id: id,
+		AccountId: parsedAccountId,
+	})
+
+	if checkErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Bag item has been added to checklist."))
+}
+func (ctrler * CirculationController)CheckOrUncheckAllItems(ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	action := ctx.Query("action")
+
+	if action != "check" && action != "uncheck" {
+		ctx.JSON(httpresp.Fail400(nil, "invalid action."))
+		return 
+	}
+	parsedAccountId, isStr  := accountId.(string)
+
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	var checkErr error = nil
+	if(action == "check"){
+		checkErr = ctrler.circulationRepository.CheckAllItemsFromBag(parsedAccountId)
+	}
+	if(action == "uncheck"){
+		checkErr = ctrler.circulationRepository.UncheckAllItemsFromBag(parsedAccountId)
+	}
+	if checkErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Bag checklist has been updated."))
+}
+
 func NewCirculationController() CirculationControllerInterface {
 	return &CirculationController{
 		circulationRepository: repository.NewCirculationRepository(),
@@ -176,4 +223,6 @@ type CirculationControllerInterface interface {
 	ReturnBooksById(ctx *gin.Context)
 	ReturnBookCopy(ctx *gin.Context)
 	DeleteItemFromBag (ctx * gin.Context)
+	CheckItemFromBag(ctx * gin.Context)
+	CheckOrUncheckAllItems(ctx* gin.Context)
 }

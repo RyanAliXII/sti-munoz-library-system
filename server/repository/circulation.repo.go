@@ -200,13 +200,13 @@ func (repo * CirculationRepository) AddItemToBag(item model.BagItem) error{
 }
 func (repo * CirculationRepository) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	items := make([]model.BagItem, 0)
-	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, book.json_format as book FROM circulation.bag
+	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked, book.json_format as book FROM circulation.bag
 	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
 	INNER JOIN book_view as book on accession.book_id = book.id
 	where bag.account_id = $1`
 	selectErr := repo.db.Select(&items, query, accountId,)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetItemsFromBagByAccountId"), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetItemsFromBagByAccountId"), slimlog.Error("selectErr"))
 	}
 	return items
 }
@@ -215,9 +215,37 @@ func (repo * CirculationRepository) DeleteItemFromBag(item model.BagItem) error 
 	query:= `DELETE FROM circulation.bag where id = $1 and  account_id = $2`
 	_, deleteErr:= repo.db.Exec(query,  item.Id, item.AccountId )
 	if deleteErr!= nil {
-		logger.Error(deleteErr.Error(), slimlog.Function("CirculationRepository.DeleteItemFromBag"), slimlog.Error("SelectErr"))
+		logger.Error(deleteErr.Error(), slimlog.Function("CirculationRepository.DeleteItemFromBag"), slimlog.Error("deleteErr"))
 	}
 	return deleteErr
+}
+func(repo * CirculationRepository)CheckItemFromBag(item model.BagItem) error {
+
+	query := `UPDATE circulation.bag set is_checked = not is_checked where id = $1 and account_id =  $2`
+
+	_, updateErr := repo.db.Exec(query, item.Id, item.AccountId)
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.CheckItemFromBag"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
+func (repo * CirculationRepository)CheckAllItemsFromBag(accountId string) error {
+	
+	query := `UPDATE circulation.bag set is_checked = true where account_id =  $1`
+	_, updateErr := repo.db.Exec(query, accountId)
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.CheckAllItemsFromBag"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
+func (repo * CirculationRepository)UncheckAllItemsFromBag(accountId string) error {
+	
+	query := `UPDATE circulation.bag set is_checked = false where account_id =  $1`
+	_, updateErr := repo.db.Exec(query, accountId)
+	if updateErr != nil {
+		logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.CheckAllItemsFromBag"), slimlog.Error("updateErr"))
+	}
+	return updateErr
 }
 func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
@@ -234,4 +262,7 @@ type CirculationRepositoryInterface interface {
 	AddItemToBag(model.BagItem) error
 	GetItemsFromBagByAccountId(accountId string) []model.BagItem
 	DeleteItemFromBag(item model.BagItem) error
+	CheckItemFromBag(item model.BagItem) error
+	CheckAllItemsFromBag(accountId string) error
+	UncheckAllItemsFromBag(accountId string) error
 }

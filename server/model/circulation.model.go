@@ -56,4 +56,5 @@ type BagItem struct {
 	AccessionNumber int `json:"accessionNumber" db:"number"`
 	CopyNumber int `json:"copyNumber" db:"copy_number"`
 	Book BookJSON `json:"book" db:"book"`
+	IsChecked bool `json:"isChecked" db:"is_checked"`
 }

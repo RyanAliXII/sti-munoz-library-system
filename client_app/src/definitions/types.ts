@@ -133,4 +133,5 @@ export type BagItem = {
   accessionNumber: number;
   copyNumber: number;
   book: Book;
+  isChecked: boolean;
 };
