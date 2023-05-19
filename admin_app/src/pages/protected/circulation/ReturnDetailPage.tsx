@@ -37,6 +37,7 @@ import {
 import { useRequest } from "@hooks/useRequest";
 import { BorrowStatuses } from "@internal/borrow-status";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const {
@@ -53,7 +54,11 @@ const TransactionByIdPage = () => {
   const { id } = useParams();
   const { Get, Patch } = useRequest();
   const fetchTransaction = async () => {
-    const { data: response } = await Get(`/circulation/transactions/${id}`);
+    const { data: response } = await Get(
+      `/circulation/transactions/${id}`,
+      {},
+      [apiScope("Checkout.Read")]
+    );
     return response?.data?.transaction ?? BorrowingTransactionInitialValue;
   };
 
@@ -72,9 +77,14 @@ const TransactionByIdPage = () => {
   });
   const returnBooks = useMutation({
     mutationFn: (remarks: string) =>
-      Patch(`/circulation/transactions/${id}`, {
-        remarks: remarks,
-      }),
+      Patch(
+        `/circulation/transactions/${id}`,
+        {
+          remarks: remarks,
+        },
+        {},
+        [apiScope("Checkout.Edit")]
+      ),
     onError: () => {
       toast.error(ErrorMsg.Update);
     },

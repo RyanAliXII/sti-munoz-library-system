@@ -24,6 +24,7 @@ import { AssignRoleFormSchemaValidation } from "./schema";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 type AssignForm = {
   account: Account;
@@ -43,10 +44,12 @@ const AssignRolePage = () => {
       },
     ]);
   };
-  const { Get } = useRequest();
+  const { Get, Post } = useRequest();
   const fetchRoles = async () => {
     try {
-      const { data: response } = await Get("/system/roles");
+      const { data: response } = await Get("/system/roles", {}, [
+        apiScope("AccessControl.Role.Read"),
+      ]);
       return response?.data?.roles ?? [];
     } catch {
       return [];
@@ -81,11 +84,13 @@ const AssignRolePage = () => {
       console.log(error);
     }
   };
-  const { Post } = useRequest();
+
   const assignRole = useMutation({
     mutationKey: ["roles"],
     mutationFn: (formData: AssignForm) =>
-      Post("/system/roles/accounts", formData),
+      Post("/system/roles/accounts", formData, {}, [
+        apiScope("AccessControl.Role.Assign"),
+      ]),
     onSuccess: (response) => {
       console.log(response);
       toast.success("Roles has been assigned successfully.");

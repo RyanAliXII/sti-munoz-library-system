@@ -25,7 +25,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
             </li>
             <li>
               <NavLink to="/bag" className={isHeaderNavActive}>
-                Reserves
+                Bag
               </NavLink>
             </li>
             <li>

@@ -22,6 +22,7 @@ import { BaseSyntheticEvent, useEffect, useRef } from "react";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { PrimaryButton } from "@components/ui/button/Button";
 import { toast } from "react-toastify";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 export interface AuditedAccession
   extends Omit<
@@ -42,7 +43,9 @@ const AuditScan = () => {
   const { id } = useParams();
   const { Get, Post } = useRequest();
   const fetchAudit = async () => {
-    const { data: response } = await Get(`/inventory/audits/${id}`);
+    const { data: response } = await Get(`/inventory/audits/${id}`, {}, [
+      apiScope("Audit.Read"),
+    ]);
     return response?.data?.audit ?? {};
   };
   const navigate = useNavigate();
@@ -63,7 +66,9 @@ const AuditScan = () => {
 
   const fetchAuditedBooks = async () => {
     try {
-      const { data: response } = await Get(`inventory/audits/${id}/books`);
+      const { data: response } = await Get(`inventory/audits/${id}/books`, {}, [
+        apiScope("Audit.Read"),
+      ]);
       return response?.data?.audits ?? [];
     } catch {
       return [];
@@ -81,7 +86,9 @@ const AuditScan = () => {
 
   const sendBookCopy = useMutation({
     mutationFn: (accessionId: string) =>
-      Post(`/inventory/audits/${id}`, { accessionId: accessionId }),
+      Post(`/inventory/audits/${id}`, { accessionId: accessionId }, {}, [
+        apiScope("Audit.Add"),
+      ]),
     onSuccess: () => {
       queryClient.invalidateQueries(["auditedBooks"]);
     },

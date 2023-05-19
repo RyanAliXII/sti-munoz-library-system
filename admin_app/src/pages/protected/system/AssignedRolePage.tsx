@@ -57,7 +57,9 @@ const AssignedRolePage = () => {
   const deleteRoleAssignment = useMutation({
     mutationFn: (assignment: AccountRole) =>
       Delete(
-        `/system/roles/${assignment.role.id}/accounts/${assignment.account.id}`
+        `/system/roles/${assignment.role.id}/accounts/${assignment.account.id}`,
+        {},
+        [apiScope("AccessControl.Role.Delete")]
       ),
     onSuccess(data, variables, context) {
       toast.success("Role assignment has been removed.");

@@ -28,6 +28,7 @@ import axios from "axios";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const PersonAsAuthor = () => {
   const {
     isOpen: isAddModalOpen,
@@ -52,7 +53,9 @@ const PersonAsAuthor = () => {
   const { Get, Delete } = useRequest();
   const fetchAuthors = async () => {
     try {
-      const { data: response } = await Get("/authors/");
+      const { data: response } = await Get("/authors/", {}, [
+        apiScope("Author.Read"),
+      ]);
       return response.data.authors ?? [];
     } catch (error) {
       toast.error(ErrorMsg.Get);

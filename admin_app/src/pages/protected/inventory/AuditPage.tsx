@@ -26,6 +26,7 @@ import Container, {
 import { Input } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const AuditPage = () => {
   const {
@@ -47,7 +48,9 @@ const AuditPage = () => {
   const { Get } = useRequest();
   const fetchAudits = async () => {
     try {
-      const { data: response } = await Get("/inventory/audits");
+      const { data: response } = await Get("/inventory/audits", {}, [
+        apiScope("Audit.Read"),
+      ]);
       return response?.data?.audits ?? [];
     } catch {
       return [];
@@ -138,7 +141,7 @@ const NewAuditModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { Post } = useRequest();
   const newAudit = useMutation({
     mutationFn: (parsedForm: NewAuditForm) =>
-      Post("/inventory/audits", parsedForm),
+      Post("/inventory/audits", parsedForm, {}, [apiScope("Audit.Add")]),
     onSuccess: () => {
       toast.success("New audit has been added.");
       queryClient.invalidateQueries(["audits"]);

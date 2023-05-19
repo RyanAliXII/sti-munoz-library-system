@@ -29,6 +29,7 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const FundSourcePage = () => {
   const {
@@ -55,7 +56,10 @@ const FundSourcePage = () => {
   const queryClient = useQueryClient();
   const { Get, Delete } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Delete(`/source-of-funds/${selectedRow.id}/`),
+    mutationFn: () =>
+      Delete(`/source-of-funds/${selectedRow.id}/`, {}, [
+        apiScope("SOF.Delete"),
+      ]),
     onSuccess: () => {
       toast.success("Source deleted.");
       queryClient.invalidateQueries(["sources"]);
@@ -74,7 +78,9 @@ const FundSourcePage = () => {
 
   const fetchSources = async () => {
     try {
-      const { data: response } = await Get("/source-of-funds/");
+      const { data: response } = await Get("/source-of-funds/", {}, [
+        apiScope("SOF.Read"),
+      ]);
       return response.data.sources ?? [];
     } catch (error) {
       console.error(error);
@@ -173,7 +179,8 @@ const AddSourceModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { Post } = useRequest();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => Post("/source-of-funds/", form),
+    mutationFn: () =>
+      Post("/source-of-funds/", form, {}, [apiScope("SOF.Add")]),
     onSuccess: () => {
       toast.success("New source has been added.");
       queryClient.invalidateQueries(["sources"]);
@@ -247,7 +254,8 @@ const EditSourceModal: React.FC<EditModalProps<Source>> = ({
   }, [formData]);
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => Put(`/source-of-funds/${formData.id}/`, form),
+    mutationFn: () =>
+      Put(`/source-of-funds/${formData.id}/`, form, {}, [apiScope("SOF.Edit")]),
     onSuccess: () => {
       toast.success("Source has been updated");
       queryClient.invalidateQueries(["sources"]);

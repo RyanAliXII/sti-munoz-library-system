@@ -13,11 +13,14 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const BagPage = () => {
   const { Get, Delete, Patch } = useRequest();
   const fetchBagItems = async () => {
     try {
-      const response = await Get("/circulation/bag");
+      const response = await Get("/circulation/bag", {}, [
+        apiScope("Bag.Read"),
+      ]);
       const { data } = response.data;
       return data?.bag ?? [];
     } catch (error) {
@@ -43,7 +46,10 @@ const BagPage = () => {
 
   const queryClient = useQueryClient();
   const deleteItemFromBag = useMutation({
-    mutationFn: () => Delete(`/circulation/bag/${selectedItem?.id}`),
+    mutationFn: () =>
+      Delete(`/circulation/bag/${selectedItem?.id}`, {}, [
+        apiScope("Bag.Delete"),
+      ]),
     onSuccess: () => {
       toast.success("Book has been removed.");
       queryClient.invalidateQueries(["bagItems"]);
@@ -59,7 +65,8 @@ const BagPage = () => {
   };
 
   const checkItem = useMutation({
-    mutationFn: (id: string) => Patch(`/circulation/bag/${id}/checklist`),
+    mutationFn: (id: string) =>
+      Patch(`/circulation/bag/${id}/checklist`, {}, {}, [apiScope("Bag.Edit")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -69,7 +76,9 @@ const BagPage = () => {
   });
   const updateChecklist = useMutation({
     mutationFn: (action: "check" | "uncheck") =>
-      Patch(`/circulation/bag/checklist?action=${action}`),
+      Patch(`/circulation/bag/checklist?action=${action}`, {}, {}, [
+        apiScope("Bag.Edit"),
+      ]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },

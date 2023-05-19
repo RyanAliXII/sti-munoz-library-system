@@ -66,7 +66,7 @@ const PublisherPage = () => {
   };
   const queryClient = useQueryClient();
   const deletePublisher = useMutation({
-    mutationFn: () => Delete(`/publishers/${selectedRow.id}/`),
+    mutationFn: () => Delete(`/publishers/${selectedRow.id}/`, {}, [apiScope("Publisher.Delete")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["publishers"]);
       toast.success("Publisher deleted.");

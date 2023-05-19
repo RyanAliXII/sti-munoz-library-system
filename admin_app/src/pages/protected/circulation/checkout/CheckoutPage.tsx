@@ -33,6 +33,7 @@ import Divider from "@components/ui/divider/Divider";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { BookInitialValue } from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 export type CheckoutForm = {
   client: Account;
   accessions: DetailedAccession[];
@@ -115,11 +116,16 @@ const CheckoutPage = () => {
   const { Post } = useRequest();
   const submitCheckout = useMutation({
     mutationFn: (formData: CheckoutForm) =>
-      Post("/circulation/checkout", {
-        clientId: formData.client.id,
-        accessions: formData.accessions,
-        dueDate: formData.dueDate,
-      }),
+      Post(
+        "/circulation/checkout",
+        {
+          clientId: formData.client.id,
+          accessions: formData.accessions,
+          dueDate: formData.dueDate,
+        },
+        {},
+        [apiScope("Checkout.Add")]
+      ),
     onSuccess: () => {
       toast.success("Books has been checkout successfully.");
     },

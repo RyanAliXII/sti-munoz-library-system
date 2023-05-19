@@ -25,6 +25,7 @@ import EditOrganizationModal from "./EditOrganizationModal";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -46,7 +47,9 @@ const OrganizationAsAuthor = () => {
   const { Get, Delete } = useRequest();
   const fetchOrganizations = async () => {
     try {
-      const { data: response } = await Get("/authors/organizations");
+      const { data: response } = await Get("/authors/organizations", {}, [
+        apiScope("Author.Read"),
+      ]);
       return response?.data?.organizations || [];
     } catch {
       return [];
