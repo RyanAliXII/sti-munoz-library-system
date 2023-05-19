@@ -125,3 +125,13 @@ export type Role = {
   name: string;
   permissions: Record<string, string[]>;
 };
+
+export type BagItem = {
+  id?: string;
+  accessionId: string;
+  accountId: string;
+  accessionNumber: number;
+  copyNumber: number;
+  book: Book;
+  isChecked: boolean;
+};

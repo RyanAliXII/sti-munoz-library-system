@@ -3,7 +3,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { ImBooks } from "react-icons/im";
 import { RiUserFill } from "react-icons/ri";
-import { BsFillBookmarkFill } from "react-icons/bs";
+import { GiLightBackpack } from "react-icons/gi";
 import { MdEvent } from "react-icons/md";
 import { AiOutlineSearch } from "react-icons/ai";
 import ProfileDropdown from "@components/ProfileDropdown";
@@ -24,7 +24,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/" className={isHeaderNavActive}>
+              <NavLink to="/bag" className={isHeaderNavActive}>
                 Reserves
               </NavLink>
             </li>
@@ -39,7 +39,9 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
           <ProfileDropdown />
         </div>
       </header>
+
       <div className=" min-h-screen"> {children}</div>
+
       <div className="sticky w-full h-16 bg-white border border-t border-gray-50 bottom-0 drop-shadow text-gray-600 md:hidden">
         <nav className="h-full">
           <ul className="flex h-full  items-center justify-around">
@@ -59,8 +61,13 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink to={"/catalog"} className="text-xl">
-                <BsFillBookmarkFill />
+              <NavLink
+                to={"/bag"}
+                className={(nav) =>
+                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                }
+              >
+                <GiLightBackpack />
               </NavLink>
             </li>
             <li>

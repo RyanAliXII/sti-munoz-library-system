@@ -47,3 +47,14 @@ func (copies *BorrowedCopies) Scan(value interface{}) error {
 func (copies BorrowedCopies) Value(value interface{}) (driver.Value, error) {
 	return copies, nil
 }
+
+
+type BagItem struct {
+	Id string `json:"id" db:"id"`
+	AccessionId  string `json:"accessionId" db:"accession_id"`
+	AccountId string `json:"accountId" db:"account_id"`
+	AccessionNumber int `json:"accessionNumber" db:"number"`
+	CopyNumber int `json:"copyNumber" db:"copy_number"`
+	Book BookJSON `json:"book" db:"book"`
+	IsChecked bool `json:"isChecked" db:"is_checked"`
+}

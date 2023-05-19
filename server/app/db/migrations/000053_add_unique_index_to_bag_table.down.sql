@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS bag_account_accession_unique_idx;

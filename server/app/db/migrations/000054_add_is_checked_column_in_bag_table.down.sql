@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS circulation.bag
+DROP COLUMN IF EXISTS is_checked;

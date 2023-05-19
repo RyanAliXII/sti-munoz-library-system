@@ -110,6 +110,103 @@ func (ctrler *CirculationController) ReturnBookCopy(ctx *gin.Context) {
 
 	ctx.JSON(httpresp.Success200(nil, "Book copy has been returned."))
 }
+
+func (ctrler * CirculationController) AddBagItem (ctx * gin.Context){
+  
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	item := model.BagItem{}
+	ctx.ShouldBindBodyWith(&item, binding.JSON)
+	item.AccountId = parsedAccountId
+     addItemErr := ctrler.circulationRepository.AddItemToBag(item)
+	 if(addItemErr != nil){
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	 }
+	ctx.JSON(httpresp.Success200(nil, "Bag item has been fetched."))
+}
+func(ctrler  * CirculationController) GetBagItems (ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	items := ctrler.circulationRepository.GetItemsFromBagByAccountId(parsedAccountId)
+	ctx.JSON(httpresp.Success200(gin.H{
+			"bag": items}, "Bag items has been fetched."))
+}
+func (ctrler * CirculationController) DeleteItemFromBag (ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+	id := ctx.Param("id")
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	deleteErr := ctrler.circulationRepository.DeleteItemFromBag(model.BagItem{
+		Id: id,
+		AccountId: parsedAccountId,
+	})
+
+	if deleteErr != nil{
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Bag item has been deleted."))
+}
+
+func (ctrler * CirculationController)CheckItemFromBag(ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+	id := ctx.Param("id")
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	checkErr := ctrler.circulationRepository.CheckItemFromBag(model.BagItem{
+		Id: id,
+		AccountId: parsedAccountId,
+	})
+
+	if checkErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Bag item has been added to checklist."))
+}
+func (ctrler * CirculationController)CheckOrUncheckAllItems(ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	action := ctx.Query("action")
+
+	if action != "check" && action != "uncheck" {
+		ctx.JSON(httpresp.Fail400(nil, "invalid action."))
+		return 
+	}
+	parsedAccountId, isStr  := accountId.(string)
+
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	var checkErr error = nil
+	if(action == "check"){
+		checkErr = ctrler.circulationRepository.CheckAllItemsFromBag(parsedAccountId)
+	}
+	if(action == "uncheck"){
+		checkErr = ctrler.circulationRepository.UncheckAllItemsFromBag(parsedAccountId)
+	}
+	if checkErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Bag checklist has been updated."))
+}
+
 func NewCirculationController() CirculationControllerInterface {
 	return &CirculationController{
 		circulationRepository: repository.NewCirculationRepository(),
@@ -121,6 +218,11 @@ type CirculationControllerInterface interface {
 	GetTransactionBooks(ctx *gin.Context)
 	GetTransactionById(ctx *gin.Context)
 	Checkout(ctx *gin.Context)
+	GetBagItems(ctx  *gin.Context)
+	AddBagItem(ctx *gin.Context )
 	ReturnBooksById(ctx *gin.Context)
 	ReturnBookCopy(ctx *gin.Context)
+	DeleteItemFromBag (ctx * gin.Context)
+	CheckItemFromBag(ctx * gin.Context)
+	CheckOrUncheckAllItems(ctx* gin.Context)
 }
