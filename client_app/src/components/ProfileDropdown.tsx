@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import LogoutButton from "./LogoutButton";
 import useToggle from "@hooks/useToggle";
 import { useAuthContext } from "@contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const ProfileDropdown = () => {
   const { toggle, value: visible } = useToggle();
@@ -59,15 +60,9 @@ const ProfileDropdown = () => {
             </small>
             <small>{user.email}</small>
           </div>
-          <a
-            href="#"
-            className="text-gray-700 block px-4 py-2 text-sm"
-            role="menuitem"
-            tabIndex={-1}
-            id="menu-item-0"
-          >
-            Account settings
-          </a>
+          <Link to="/profile" className="text-gray-700 block px-4 py-2 text-sm">
+            Profile
+          </Link>
           <a
             href="#"
             className="text-gray-700 block px-4 py-2 text-sm"
