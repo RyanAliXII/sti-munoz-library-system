@@ -86,6 +86,16 @@ const BagPage = () => {
       toast.error("Unknown error occured, Please try again later.");
     },
   });
+  const deleteCheckedItems = useMutation({
+    mutationFn: () =>
+      Delete("/circulation/bag/checklist", {}, [apiScope("Bag.Delete")]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bagItems"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured, Please try again later.");
+    },
+  });
   const isAllItemSelected = useMemo(
     () => bagItems?.every((item) => item.isChecked == true),
     [bagItems]
@@ -133,6 +143,9 @@ const BagPage = () => {
             <button
               className="btn btn-error btn-outline"
               disabled={!hasSelectedItems ?? false}
+              onClick={() => {
+                deleteCheckedItems.mutate();
+              }}
             >
               Delete
             </button>

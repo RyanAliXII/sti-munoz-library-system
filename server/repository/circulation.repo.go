@@ -247,6 +247,14 @@ func (repo * CirculationRepository)UncheckAllItemsFromBag(accountId string) erro
 	}
 	return updateErr
 }
+func (repo * CirculationRepository) DeleteAllCheckedItems(accountId string) error {
+	query:= `DELETE FROM circulation.bag where is_checked = true and  account_id = $1`
+	_, deleteErr:= repo.db.Exec(query,  accountId)
+	if deleteErr!= nil {
+		logger.Error(deleteErr.Error(), slimlog.Function("CirculationRepository.DeleteAllCheckedItems"), slimlog.Error("deleteErr"))
+	}
+	return deleteErr
+}
 func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
 		db: postgresdb.GetOrCreateInstance(),
@@ -265,4 +273,5 @@ type CirculationRepositoryInterface interface {
 	CheckItemFromBag(item model.BagItem) error
 	CheckAllItemsFromBag(accountId string) error
 	UncheckAllItemsFromBag(accountId string) error
+	DeleteAllCheckedItems(accountId string) error
 }
