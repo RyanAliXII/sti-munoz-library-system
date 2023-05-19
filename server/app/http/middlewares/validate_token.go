@@ -77,7 +77,7 @@ func ValidateToken(ctx *gin.Context) {
 		ctx.Next()
 		return 
 	}
-	logger.Error("Invalid aud cannot determine if requeast comes from client application or admin application.", zap.String("aud", aud), zap.String("token", accessToken))
+	logger.Error("Invalid aud cannot determine if request comes from client application or admin application.", zap.String("aud", aud), zap.String("token", accessToken))
 	ctx.AbortWithStatus(http.StatusUnauthorized)
 
 }
