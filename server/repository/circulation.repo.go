@@ -5,8 +5,8 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/google/uuid"
@@ -255,6 +255,52 @@ func (repo * CirculationRepository) DeleteAllCheckedItems(accountId string) erro
 	}
 	return deleteErr
 }
+func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error {
+	items := make([]model.BagItem, 0)
+	transaction, transactErr := repo.db.Beginx()
+	if transactErr != nil {
+		transaction.Rollback()
+		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("transactErr"))
+		return transactErr
+	}
+	query:= `SELECT bag.id, bag.account_id, bag.accession_id FROM circulation.bag
+	 where bag.account_id = $1`
+	selectErr := transaction.Select(&items, query, accountId)
+	if selectErr != nil {
+		transaction.Rollback()
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("selectErr"))
+		return selectErr
+	}
+	dialect := goqu.Dialect("postgres")
+	var itemsToCheckout []goqu.Record = make([]goqu.Record, 0)
+	for _, item := range items{
+		itemsToCheckout = append(itemsToCheckout, goqu.Record{
+			"accession_id": item.AccessionId,
+			"account_id": item.AccountId,
+			"status":  status.OnlineBorrowStatuses.Pending,
+		})
+	}
+	checkoutDS  := dialect.From(goqu.T("online_borrowed_book").Schema("circulation")).Prepared(true).Insert().Rows(itemsToCheckout)
+	checkoutQuery, checkoutArgs, _ := checkoutDS.ToSQL()
+	_, insertCheckoutErr := transaction.Exec(checkoutQuery, checkoutArgs...)
+
+	if insertCheckoutErr != nil {
+		transaction.Rollback()
+		logger.Error(insertCheckoutErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("insertCheckoutErr"))
+		return insertCheckoutErr
+	}
+	_, deleteCheckedItemsFromBagErr := transaction.Exec("DELETE FROM circulation.bag where account_id = $1 and is_checked = true" , accountId)
+	if deleteCheckedItemsFromBagErr != nil {
+		transaction.Rollback()
+		logger.Error(deleteCheckedItemsFromBagErr.Error(),  slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("deleteCheckedItemsFromBagErr"))
+		return deleteCheckedItemsFromBagErr
+	}
+	transaction.Commit()
+	return nil
+}
+
+
+
 func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
 		db: postgresdb.GetOrCreateInstance(),
@@ -274,4 +320,5 @@ type CirculationRepositoryInterface interface {
 	CheckAllItemsFromBag(accountId string) error
 	UncheckAllItemsFromBag(accountId string) error
 	DeleteAllCheckedItems(accountId string) error
+	CheckoutCheckedItems(accountId string) error
 }

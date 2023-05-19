@@ -221,6 +221,22 @@ func (ctrler * CirculationController) DeleteAllCheckedItems (ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Bag checked item has been deleted."))
 }
+
+func (ctrler * CirculationController) CheckoutCheckedItems(ctx *gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	checkoutErr := ctrler.circulationRepository.CheckoutCheckedItems(parsedAccountId)
+	if checkoutErr != nil{
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Books has been checked out."))
+} 
 func NewCirculationController() CirculationControllerInterface {
 	return &CirculationController{
 		circulationRepository: repository.NewCirculationRepository(),
@@ -240,4 +256,5 @@ type CirculationControllerInterface interface {
 	CheckItemFromBag(ctx * gin.Context)
 	CheckOrUncheckAllItems(ctx* gin.Context)
 	DeleteAllCheckedItems (ctx * gin.Context)
+	CheckoutCheckedItems(ctx *gin.Context)
 }

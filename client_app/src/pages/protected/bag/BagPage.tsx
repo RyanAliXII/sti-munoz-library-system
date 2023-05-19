@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 const BagPage = () => {
-  const { Get, Delete, Patch } = useRequest();
+  const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
     try {
       const response = await Get("/circulation/bag", {}, [
@@ -28,9 +28,14 @@ const BagPage = () => {
     }
   };
   const {
-    isOpen: isConfirmDialogOpen,
-    close: closeConfirmDialog,
-    open: openConfirmDialog,
+    isOpen: isConfirmDeleteDialogOpen,
+    close: closeConfirmDeleteDialog,
+    open: openConfirmDeleteDialog,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmCheckoutDialogOpen,
+    close: closeConfirmCheckoutDialog,
+    open: openConfirmCheckoutDialog,
   } = useSwitch();
 
   const {
@@ -60,10 +65,13 @@ const BagPage = () => {
   });
 
   const onConfirmDelete = () => {
-    closeConfirmDialog();
+    closeConfirmDeleteDialog();
     deleteItemFromBag.mutate();
   };
-
+  const onConfirmCheckout = () => {
+    closeConfirmCheckoutDialog();
+    checkout.mutate();
+  };
   const checkItem = useMutation({
     mutationFn: (id: string) =>
       Patch(`/circulation/bag/${id}/checklist`, {}, {}, [apiScope("Bag.Edit")]),
@@ -105,6 +113,19 @@ const BagPage = () => {
     [bagItems]
   );
 
+  const checkout = useMutation({
+    mutationFn: () =>
+      Post("/circulation/checklist/checkout", {}, {}, [
+        apiScope("Book.Checkout"),
+      ]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bagItems"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured, Please try again later.");
+    },
+  });
+
   return (
     <>
       <div
@@ -137,7 +158,13 @@ const BagPage = () => {
             </span>
           </div>
           <div className="flex h-full items-center gap-2">
-            <button className="btn btn-primary" disabled={!hasSelectedItems}>
+            <button
+              className="btn btn-primary"
+              disabled={!hasSelectedItems}
+              onClick={() => {
+                openConfirmCheckoutDialog();
+              }}
+            >
               Checkout
             </button>
             <button
@@ -213,7 +240,7 @@ const BagPage = () => {
                     role="button"
                     onClick={() => {
                       setSelectedItem(item);
-                      openConfirmDialog();
+                      openConfirmDeleteDialog();
                     }}
                   />
                 </div>
@@ -223,11 +250,18 @@ const BagPage = () => {
         </LoadingBoundary>
       </div>
       <DangerConfirmDialog
-        isOpen={isConfirmDialogOpen}
-        close={closeConfirmDialog}
+        isOpen={isConfirmDeleteDialogOpen}
+        close={closeConfirmDeleteDialog}
         title="Remove Item!"
         onConfirm={onConfirmDelete}
         text="Are you sure you want to remove book from your bag?"
+      />
+      <ConfirmDialog
+        isOpen={isConfirmCheckoutDialogOpen}
+        close={closeConfirmCheckoutDialog}
+        title="Checkout Item!"
+        onConfirm={onConfirmCheckout}
+        text="Are you sure you want to checkout selected books?"
       />
     </>
   );
