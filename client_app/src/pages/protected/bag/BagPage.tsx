@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import noData from "@assets/images/no-data.svg";
 const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
@@ -129,55 +130,57 @@ const BagPage = () => {
   return (
     <>
       <div
-        className=" flex flex-col mx-auto gap-2"
+        className=" flex flex-col mx-auto gap-2  "
         style={{
           maxWidth: "800px",
         }}
       >
-        <div className="w-full h-16 border p-5 flex justify-between">
-          <div className="flex h-full items-center gap-2">
-            <input
-              type="checkbox"
-              className="w-5 h-5"
-              disabled={bagItems?.length === 0}
-              checked={
-                bagItems?.length === 0 ? false : isAllItemSelected ?? false
-              }
-              onChange={() => {
-                if (isAllItemSelected) {
-                  updateChecklist.mutate("uncheck");
-                  return;
+        {(bagItems?.length ?? 0) > 0 && (
+          <div className="w-full h-16 border p-5 flex justify-between mt-1 rounded">
+            <div className="flex h-full items-center gap-2">
+              <input
+                type="checkbox"
+                className="w-5 h-5"
+                disabled={bagItems?.length === 0}
+                checked={
+                  bagItems?.length === 0 ? false : isAllItemSelected ?? false
                 }
-                updateChecklist.mutate("check");
-              }}
-            />
-            <span>
-              {isAllItemSelected && bagItems?.length != 0
-                ? "Unselect All"
-                : "Select All"}
-            </span>
+                onChange={() => {
+                  if (isAllItemSelected) {
+                    updateChecklist.mutate("uncheck");
+                    return;
+                  }
+                  updateChecklist.mutate("check");
+                }}
+              />
+              <span>
+                {isAllItemSelected && bagItems?.length != 0
+                  ? "Unselect All"
+                  : "Select All"}
+              </span>
+            </div>
+            <div className="flex h-full items-center gap-2">
+              <button
+                className="btn btn-primary"
+                disabled={!hasSelectedItems}
+                onClick={() => {
+                  openConfirmCheckoutDialog();
+                }}
+              >
+                Checkout
+              </button>
+              <button
+                className="btn btn-error btn-outline"
+                disabled={!hasSelectedItems ?? false}
+                onClick={() => {
+                  deleteCheckedItems.mutate();
+                }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
-          <div className="flex h-full items-center gap-2">
-            <button
-              className="btn btn-primary"
-              disabled={!hasSelectedItems}
-              onClick={() => {
-                openConfirmCheckoutDialog();
-              }}
-            >
-              Checkout
-            </button>
-            <button
-              className="btn btn-error btn-outline"
-              disabled={!hasSelectedItems ?? false}
-              onClick={() => {
-                deleteCheckedItems.mutate();
-              }}
-            >
-              Delete
-            </button>
-          </div>
-        </div>
+        )}
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           {bagItems?.map((item) => {
             let bookCover;
@@ -190,7 +193,7 @@ const BagPage = () => {
 
             return (
               <div
-                className="w-full h-44 rounded shadow  md:h-60 lg:h-64 border border-gray-100 p-4 flex justify-between"
+                className="w-full h-32 rounded shadow  border border-gray-100 p-4 flex justify-between "
                 style={{
                   maxWidth: "800px",
                 }}
@@ -210,7 +213,7 @@ const BagPage = () => {
                     </div>
                     <img
                       src={bookCover}
-                      className="w-28 md:w-44 lg:w-56"
+                      className="w-14 "
                       style={{
                         maxWidth: "120px",
                         maxHeight: "150px",
@@ -263,6 +266,17 @@ const BagPage = () => {
         onConfirm={onConfirmCheckout}
         text="Are you sure you want to checkout selected books?"
       />
+      {bagItems?.length === 0 && (
+        <div className="flex items-center flex-col gap-10 mt-24">
+          <h1 className="text-4xl text-center font-bold  text-gray-400">
+            YOUR BAG IS EMPTY
+          </h1>
+          <img src={noData} className="w-72" alt="No data"></img>
+          <Link to={"/catalog"} className="btn btn-primary">
+            Browse Catalog
+          </Link>
+        </div>
+      )}
     </>
   );
 };
