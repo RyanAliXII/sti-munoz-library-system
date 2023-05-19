@@ -31,7 +31,7 @@ import { NavLink } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { isError } from "lodash";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const AccessControlPage = () => {
   const {
@@ -48,7 +48,9 @@ const AccessControlPage = () => {
   const { Get } = useRequest();
   const fetchRoles = async () => {
     try {
-      const { data: response } = await Get("/system/roles");
+      const { data: response } = await Get("/system/roles", {}, [
+        apiScope("AccessControl.Role.Read"),
+      ]);
       return response?.data?.roles ?? [];
     } catch {
       return [];

@@ -14,6 +14,8 @@ import React, { BaseSyntheticEvent, useEffect, useMemo, useRef } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { RoleSchemaValidation } from "../schema";
+import AccessControlPage from "./AccessControlPage";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const EditRoleModal = ({
   closeModal,
@@ -52,7 +54,9 @@ const EditRoleModal = ({
   const queryClient = useQueryClient();
   const fetchModules = async () => {
     try {
-      const { data: response } = await Get("/system/modules");
+      const { data: response } = await Get("/system/modules", {}, [
+        apiScope("AccessControl.Role.Edit"),
+      ]);
       return response?.data?.modules ?? [];
     } catch (error) {
       console.log(error);

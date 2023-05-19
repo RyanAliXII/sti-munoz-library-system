@@ -18,12 +18,15 @@ import Container, {
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
 import { BorrowStatuses } from "@internal/borrow-status";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const BorrowingTransactionPage = () => {
   const { Get } = useRequest();
   const fetchTransactions = async () => {
     try {
-      const { data: response } = await Get("/circulation/transactions");
+      const { data: response } = await Get("/circulation/transactions", {}, [
+        apiScope("Checkout.Read"),
+      ]);
       return response?.data?.transactions ?? [];
     } catch {
       return [];

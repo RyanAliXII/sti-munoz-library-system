@@ -56,12 +56,16 @@ const AccountPage = () => {
   const { Get } = useRequest();
   const fetchAccounts = async ({ pageParam = 0 }) => {
     try {
-      const { data: response } = await Get("/accounts/", {
-        params: {
-          offset: pageParam,
-          keyword: searchKeyword,
+      const { data: response } = await Get(
+        "/accounts/",
+        {
+          params: {
+            offset: pageParam,
+            keyword: searchKeyword,
+          },
         },
-      });
+        [apiScope("Account.Read")]
+      );
       return response?.data?.accounts ?? [];
     } catch {
       return [];

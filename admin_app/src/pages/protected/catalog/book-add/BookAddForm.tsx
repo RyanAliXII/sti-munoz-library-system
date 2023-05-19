@@ -92,7 +92,9 @@ const BookAddForm = () => {
   const { Get, Post } = useRequest();
   const fetchPublishers = async () => {
     try {
-      const { data: response } = await Get("/publishers/");
+      const { data: response } = await Get("/publishers/", {}, [
+        apiScope("Publisher.Read"),
+      ]);
       return response.data?.publishers ?? [];
     } catch (error) {
       console.log(error);
@@ -101,7 +103,9 @@ const BookAddForm = () => {
   };
   const fetchSourceofFunds = async () => {
     try {
-      const { data: response } = await Get("/source-of-funds/");
+      const { data: response } = await Get("/source-of-funds/", {}, [
+        apiScope("SOF.Read"),
+      ]);
       return response.data?.sources ?? [];
     } catch (error) {
       console.log(error);
@@ -110,7 +114,9 @@ const BookAddForm = () => {
   };
   const fetchSections = async () => {
     try {
-      const { data: response } = await Get("/sections/");
+      const { data: response } = await Get("/sections/", {}, [
+        apiScope("Section.Read"),
+      ]);
       return response.data?.sections ?? [];
     } catch (error) {
       console.log(error);
@@ -153,10 +159,15 @@ const BookAddForm = () => {
 
   const newBook = useMutation({
     mutationFn: (parsedForm: Book) =>
-      Post("/books/", {
-        ...parsedForm,
-        authorNumber: parsedForm.authorNumber,
-      }),
+      Post(
+        "/books/",
+        {
+          ...parsedForm,
+          authorNumber: parsedForm.authorNumber,
+        },
+        {},
+        [apiScope("Book.Add")]
+      ),
     onSuccess: async ({ data: response }) => {
       toast.success("Book has been added");
       if (!response?.data?.book?.id) {

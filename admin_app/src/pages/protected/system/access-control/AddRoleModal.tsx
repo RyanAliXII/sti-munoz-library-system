@@ -14,6 +14,7 @@ import React, { BaseSyntheticEvent, Ref, useMemo, useRef } from "react";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { RoleSchemaValidation } from "../schema";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const { Get, Post } = useRequest();
@@ -47,7 +48,9 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const queryClient = useQueryClient();
   const fetchPermissions = async () => {
     try {
-      const { data: response } = await Get("/system/modules");
+      const { data: response } = await Get("/system/modules", {}, [
+        apiScope("AccessControl.Role.Read"),
+      ]);
       return response?.data?.modules ?? [];
     } catch (error) {
       console.log(error);
@@ -55,7 +58,8 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     }
   };
   const createRole = useMutation({
-    mutationFn: (role: Role) => Post("/system/roles", role),
+    mutationFn: (role: Role) =>
+      Post("/system/roles", role, {}, [apiScope("AccessControl.Role.Add")]),
     onSuccess: () => {
       toast.success("Role has been created Successfully");
       queryClient.invalidateQueries(["roles"]);

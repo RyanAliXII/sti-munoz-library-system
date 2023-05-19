@@ -11,6 +11,7 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
+import { apiScope } from "@definitions/configs/msal/scopes";
 import { Publisher } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
@@ -25,7 +26,9 @@ const PublisherAsAuthor = () => {
   const { Get } = useRequest();
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await Get("/publishers/");
+      const { data: response } = await Get("/publishers/", {}, [
+        apiScope("Publisher.Read"),
+      ]);
       return response?.data?.publishers || [];
     } catch (error) {
       console.error(error);
