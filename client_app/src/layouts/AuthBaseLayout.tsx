@@ -10,9 +10,6 @@ import ProfileDropdown from "@components/ProfileDropdown";
 const AuthBaseLayout = ({ children }: BaseProps) => {
   return (
     <div className="font-INTER">
-      <header className="w-full h-16 text-center md:hidden">
-        <h1 className="font-bold text-blue-500 py-3">Search</h1>
-      </header>
       <header className="w-full h-16 border-b border hidden md:flex justify-end">
         <nav className="h-full mr-10">
           <ul className="h-full flex items-center gap-4 mr-5">
@@ -42,7 +39,9 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
           <ProfileDropdown />
         </div>
       </header>
-      <div className="mt-3 min-h-screen"> {children}</div>
+
+      <div className=" min-h-screen"> {children}</div>
+
       <div className="sticky w-full h-16 bg-white border border-t border-gray-50 bottom-0 drop-shadow text-gray-600 md:hidden">
         <nav className="h-full">
           <ul className="flex h-full  items-center justify-around">
