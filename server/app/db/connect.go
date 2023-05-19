@@ -17,7 +17,6 @@ func Connect() *sqlx.DB {
 	DB_NAME := os.Getenv("DB_NAME")
 
 	CONNECTION_STRING := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", HOST, PORT, USERNAME, PASSWORD, DB_NAME)
-	fmt.Println(CONNECTION_STRING)
 	connection, connectErr := sqlx.Connect(DRIVER, CONNECTION_STRING)
 
 	if connectErr != nil {
