@@ -2,7 +2,6 @@ package objstore
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sync"
 
@@ -23,8 +22,6 @@ var once sync.Once
 var client *minio.Client
 
 func createConnection() *minio.Client {
-	fmt.Println(ACCESS_KEY)
-	fmt.Println(SECRET_KEY)
 	ctx := context.Background()
 	client, initErr := minio.New(ENDPOINT, &minio.Options{
 		Creds:  credentials.NewStaticV4(ACCESS_KEY, SECRET_KEY, ""),
