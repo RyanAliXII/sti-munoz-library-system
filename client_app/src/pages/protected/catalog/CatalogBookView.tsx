@@ -94,6 +94,19 @@ const CatalogBookView = () => {
     [bagItems]
   );
 
+  const initializeItem = () => {
+    if ((book?.accessions?.length ?? 1) > 1) {
+      openCopySelection();
+    } else {
+      const accession = book?.accessions[0];
+      if (!bagItemsIds.includes(accession?.id ?? "")) {
+        addItemToBag.mutate({ accessionId: accession?.id ?? "" });
+      } else {
+        toast.info("Item already is already on your bag.");
+      }
+    }
+  };
+
   const bookImg =
     (book?.covers?.length ?? 0) > 0
       ? buildS3Url(book?.covers?.[0] ?? "")
@@ -119,9 +132,9 @@ const CatalogBookView = () => {
             <button className="btn btn-primary w-full mb-2">Checkout</button>
             <button
               className="btn btn-primary btn-outline w-full"
-              onClick={openCopySelection}
+              onClick={initializeItem}
             >
-              Reserve
+              Add to Bag
             </button>
           </div>
           <div className="mt-5">

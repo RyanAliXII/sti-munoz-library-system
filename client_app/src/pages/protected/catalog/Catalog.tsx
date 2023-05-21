@@ -36,7 +36,10 @@ const Catalog = () => {
         }}
       >
         <input type="text" className="input input-bordered flex-1"></input>
-        <button type="button" className="btn btn-primary">
+        <button
+          type="button"
+          className="bg-primary text-sm py-1 px-3 lg:px-5 rounded text-base-100"
+        >
           Search
         </button>
       </div>
@@ -87,6 +90,10 @@ const Catalog = () => {
         const orgAuthors = book?.authors.organizations?.map((org) => org.name);
         const publisherAuthors = book?.authors.publishers.map((p) => p.name);
         const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
+        const isBookAvailable = book.accessions.some(
+          (a) => a.isAvailable === true
+        );
+
         return (
           <div
             className="w-11/12 md:w-7/12 lg:w-6/12 h-44 rounded shadow  md:h-60 lg:h-64 border border-gray-100 p-4 flex gap-5"
@@ -121,7 +128,12 @@ const Catalog = () => {
               <p className="text-xs md:text-sm lg:text-base text-gray-500">
                 {book.section.name} - {book.ddc} - {book.authorNumber}
               </p>
-              <p className="text-xs md:text-sm text-green-400">Available</p>
+              {isBookAvailable && (
+                <p className="text-xs md:text-sm text-success">Available</p>
+              )}
+              {!isBookAvailable && (
+                <p className="text-xs md:text-sm text-warning">Unavailable</p>
+              )}
             </div>
           </div>
         );

@@ -57,7 +57,6 @@ const BagPage = () => {
         apiScope("Bag.Delete"),
       ]),
     onSuccess: () => {
-      toast.success("Book has been removed.");
       queryClient.invalidateQueries(["bagItems"]);
     },
     onError: () => {
@@ -268,11 +267,11 @@ const BagPage = () => {
       />
       {bagItems?.length === 0 && (
         <div className="flex items-center flex-col gap-10 mt-24">
-          <h1 className="text-4xl text-center font-bold  text-gray-400">
+          <h1 className="text-2xl lg:text-4xl text-center font-bold  text-gray-400">
             YOUR BAG IS EMPTY
           </h1>
-          <img src={noData} className="w-72" alt="No data"></img>
-          <Link to={"/catalog"} className="btn btn-primary">
+          <img src={noData} className="w-44 lg:w-72" alt="No data"></img>
+          <Link to={"/catalog"} className="btn btn-primary text-sm">
             Browse Catalog
           </Link>
         </div>
