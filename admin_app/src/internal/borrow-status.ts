@@ -15,6 +15,13 @@ export enum OnlineBorrowStatuses {
   Rejected = "rejected",
   Cancelled = "cancelled",
 }
+export type OnlineBorrowStatus =
+  | "pending"
+  | "Approved"
+  | "checked-out"
+  | "returned"
+  | "rejected"
+  | "Cancelled";
 
 export const checkStatus = (
   returnedDateISO: string,

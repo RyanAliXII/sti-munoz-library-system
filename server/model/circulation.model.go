@@ -24,7 +24,8 @@ type BorrowedCopies []struct {
 	Number     int             `json:"number" db:"number"`
 	BookId     string          `json:"bookId" db:"book_id"`
 	CopyNumber int             `json:"copyNumber" db:"copy_number"`
-	IsReturned bool            `json:"isReturned" db:"is_returned"`
+	IsReturned bool            `json:"isReturned"
+	 db:"is_returned"`
 	ReturnedAt db.NullableTime `json:"returnedAt"`
 	Book       BookJSON        `json:"book"`
 }
@@ -57,4 +58,15 @@ type BagItem struct {
 	CopyNumber int `json:"copyNumber" db:"copy_number"`
 	Book BookJSON `json:"book" db:"book"`
 	IsChecked bool `json:"isChecked" db:"is_checked"`
+}
+
+
+type OnlineBorrowedBook struct {
+	Id string `json:"id" db:"id"`
+	AccessionId  string `json:"accessionId" db:"accession_id"`
+	AccountId string `json:"accountId" db:"account_id"`
+	AccessionNumber int `json:"accessionNumber" db:"number"`
+	CopyNumber int `json:"copyNumber" db:"copy_number"`
+	Book BookJSON `json:"book" db:"book"`
+	Status string `json:"status" db:"status"`
 }

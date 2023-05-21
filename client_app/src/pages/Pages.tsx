@@ -13,23 +13,22 @@ import CatalogBookView from "./protected/catalog/CatalogBookView";
 import Page404 from "./error/Page404";
 import BagPage from "./protected/bag/BagPage";
 import ProfilePage from "./protected/profile/ProfilePage";
-
+import CheckedOutBookPage from "./protected/checked_out/CheckedOutBookPage";
 
 const pages = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route element={<ProtectedRoutes />}>
-
         <Route path="/search" element={<Search />} />
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/catalog/:id" element={<CatalogBookView />} />
         <Route path="/bag" element={<BagPage />} />
 
-        <Route path="/search" element={<Search />}></Route>
-        <Route path="/catalog" element={<Catalog />}></Route>
-        <Route path="/catalog/:id" element={<CatalogBookView />}></Route>
-        <Route path="/profile" element={<ProfilePage />}></Route>
-
+        <Route path="/search" element={<Search />} />
+        <Route path="/catalog" element={<Catalog />} />
+        <Route path="/catalog/:id" element={<CatalogBookView />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/checked-out/" element={<CheckedOutBookPage />} />
       </Route>
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />

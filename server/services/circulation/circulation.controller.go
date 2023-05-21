@@ -237,6 +237,22 @@ func (ctrler * CirculationController) CheckoutCheckedItems(ctx *gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Books has been checked out."))
 } 
+func (ctrler  * CirculationController) GetOnlineBorrowedBooks(ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+    status := ctx.Query("status")
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+
+	borrowedBooks := ctrler.circulationRepository.GetOnlineBorrowedBooksByAccountIDAndStatus(parsedAccountId, status)
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowedBooks": borrowedBooks,
+	}, "Borrowed books fetched."))
+
+
+}
 func NewCirculationController() CirculationControllerInterface {
 	return &CirculationController{
 		circulationRepository: repository.NewCirculationRepository(),
@@ -257,4 +273,5 @@ type CirculationControllerInterface interface {
 	CheckOrUncheckAllItems(ctx* gin.Context)
 	DeleteAllCheckedItems (ctx * gin.Context)
 	CheckoutCheckedItems(ctx *gin.Context)
+	GetOnlineBorrowedBooks(ctx * gin.Context)
 }

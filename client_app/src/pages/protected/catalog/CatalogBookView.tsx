@@ -93,13 +93,24 @@ const CatalogBookView = () => {
     () => bagItems?.map((item) => item.accessionId ?? "") ?? [],
     [bagItems]
   );
-
+  const isBookAvailable = book?.accessions.some((a) => a.isAvailable === true);
+  const isBookCopiesAlreadyOnTheBag = book?.accessions.every((a) =>
+    bagItemsIds.includes(a.id ?? "")
+  );
   const initializeItem = () => {
-    if ((book?.accessions?.length ?? 1) > 1) {
+    if (
+      (book?.accessions?.length ?? 1) > 1 &&
+      isBookAvailable &&
+      !isBookCopiesAlreadyOnTheBag
+    ) {
       openCopySelection();
     } else {
       const accession = book?.accessions[0];
-      if (!bagItemsIds.includes(accession?.id ?? "")) {
+      if (
+        !bagItemsIds.includes(accession?.id ?? "") &&
+        isBookAvailable &&
+        !isBookCopiesAlreadyOnTheBag
+      ) {
         addItemToBag.mutate({ accessionId: accession?.id ?? "" });
       } else {
         toast.info("Item already is already on your bag.");
@@ -114,7 +125,7 @@ const CatalogBookView = () => {
 
   return (
     <>
-      <div className="min-h-screen">
+      <div className="min-h-screen mt-3">
         <div className="w-11/12 md:w-8/12 lg:w-5/12 rounded shadow border mx-auto p-4">
           <div className="w-full flex justify-center">
             <img
@@ -129,9 +140,9 @@ const CatalogBookView = () => {
             <span>By {authors.join(",")} </span>
           </div>
           <div className="w-full mt-2">
-            <button className="btn btn-primary w-full mb-2">Checkout</button>
             <button
-              className="btn btn-primary btn-outline w-full"
+              className="btn btn-primary  w-full"
+              disabled={!isBookAvailable || isBookCopiesAlreadyOnTheBag}
               onClick={initializeItem}
             >
               Add to Bag

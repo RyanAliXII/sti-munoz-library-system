@@ -298,7 +298,19 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 	transaction.Commit()
 	return nil
 }
-
+func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(accountId string, status string) []model.OnlineBorrowedBook{
+	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
+	query:= `SELECT obb.id, obb.account_id, obb.accession_id, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
+	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	where obb.account_id = $1 and status = $2
+	`
+	selectErr := repo.db.Select(&borrowedBooks, query, accountId, status)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetItemsFromBagByAccountId"), slimlog.Error("selectErr"))
+	}
+	return borrowedBooks
+}
 
 
 func NewCirculationRepository() CirculationRepositoryInterface {
@@ -321,4 +333,5 @@ type CirculationRepositoryInterface interface {
 	UncheckAllItemsFromBag(accountId string) error
 	DeleteAllCheckedItems(accountId string) error
 	CheckoutCheckedItems(accountId string) error
+	GetOnlineBorrowedBooksByAccountIDAndStatus(accountId string, status string)[]model.OnlineBorrowedBook
 }
