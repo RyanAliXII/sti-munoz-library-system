@@ -69,4 +69,6 @@ type OnlineBorrowedBook struct {
 	CopyNumber int `json:"copyNumber" db:"copy_number"`
 	Book BookJSON `json:"book" db:"book"`
 	Status string `json:"status" db:"status"`
+	DueDate db.NullableTime `json:"dueDate" db:"due_date"`
+	Client         AccountJSON     `json:"client" db:"client"`
 }

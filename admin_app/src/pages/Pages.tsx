@@ -23,6 +23,8 @@ import AssignRolePage from "./protected/system/AssignRole";
 import PermissionGate from "@components/auth/PermissionGate";
 import Page403 from "./error/Page403";
 import AssignedRolePage from "./protected/system/AssignedRolePage";
+import OnlineBorrowedBookPage from "./protected/circulation/OnlineBorrowedBookPage";
+import OnlineBorrowBookViewPage from "./protected/circulation/OnlineBorrowedBookViewPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -157,6 +159,14 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
+      <Route
+        path="/circulation/online-borrowed-books"
+        element={<OnlineBorrowedBookPage />}
+      ></Route>
+      <Route
+        path="/circulation/online-borrowed-books/:id"
+        element={<OnlineBorrowBookViewPage />}
+      ></Route>
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>

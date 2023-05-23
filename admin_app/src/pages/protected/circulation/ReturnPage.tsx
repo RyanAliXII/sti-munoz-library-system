@@ -40,7 +40,7 @@ const BorrowingTransactionPage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Checked Out</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Borrowed Books</h1>
       </ContainerNoBackground>
 
       <Container>

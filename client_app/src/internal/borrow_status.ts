@@ -3,7 +3,6 @@ export enum OnlineBorrowStatuses {
   Approved = "approved",
   CheckedOut = "checked-out",
   Returned = "returned",
-  Rejected = "rejected",
   Cancelled = "cancelled",
 }
 export type OnlineBorrowStatus =
@@ -11,7 +10,6 @@ export type OnlineBorrowStatus =
   | "approved"
   | "checked-out"
   | "returned"
-  | "rejected"
   | "cancelled";
 
 export const StatusText = {

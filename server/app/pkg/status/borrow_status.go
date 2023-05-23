@@ -5,7 +5,6 @@ package status
 	Approved string
 	CheckedOut string
 	Returned string
-	Rejected string
 	Cancelled string
  }
 
@@ -14,6 +13,5 @@ var OnlineBorrowStatuses = onlineBorrowStatusesStruct {
 	Approved: "approved",
 	CheckedOut: "checked-out",
 	Returned: "returned",
-	Rejected: "rejected",
 	Cancelled: "cancelled",
 }

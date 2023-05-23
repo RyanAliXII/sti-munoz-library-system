@@ -12,16 +12,41 @@ export enum OnlineBorrowStatuses {
   Approved = "approved",
   CheckedOut = "checked-out",
   Returned = "returned",
-  Rejected = "rejected",
   Cancelled = "cancelled",
 }
 export type OnlineBorrowStatus =
   | "pending"
-  | "Approved"
+  | "approved"
   | "checked-out"
   | "returned"
-  | "rejected"
-  | "Cancelled";
+  | "cancelled";
+
+export const STATUSES_OPTIONS = [
+  {
+    value: "all",
+    label: "All",
+  },
+  {
+    value: "pending",
+    label: "Pending",
+  },
+  {
+    value: "approved",
+    label: "Approved",
+  },
+  {
+    value: "checked-out",
+    label: "Checked Out",
+  },
+  {
+    value: "cancelled",
+    label: "Cancelled",
+  },
+  {
+    value: "returned",
+    label: "Returned",
+  },
+];
 
 export const checkStatus = (
   returnedDateISO: string,

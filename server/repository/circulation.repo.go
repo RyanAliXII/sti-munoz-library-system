@@ -300,17 +300,88 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(accountId string, status string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
+	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
 	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	where obb.account_id = $1 and status = $2
+	ORDER BY obb.created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId, status)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetItemsFromBagByAccountId"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBooksByAccountIdAndStatus"), slimlog.Error("selectErr"))
 	}
 	return borrowedBooks
 }
+func (repo * CirculationRepository) GetOnlineBorrowedBookByStatus( status string) []model.OnlineBorrowedBook{
+	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
+	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
+	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
+	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	INNER JOIN system.account on obb.account_id = system.account.id
+	where status = $1
+	ORDER BY obb.created_at desc
+	`
+	selectErr := repo.db.Select(&borrowedBooks, query, status)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBookByStatus"), slimlog.Error("selectErr"))
+	}
+	return borrowedBooks
+}
+func (repo * CirculationRepository) GetAllOnlineBorrowedBooks() []model.OnlineBorrowedBook{
+	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
+	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
+	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
+	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	INNER JOIN system.account on obb.account_id = system.account.id
+	ORDER BY obb.created_at desc
+	`
+	selectErr := repo.db.Select(&borrowedBooks, query)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBookByStatus"), slimlog.Error("selectErr"))
+	}
+	return borrowedBooks
+}
+func (repo * CirculationRepository) GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook{
+	borrowedBook := model.OnlineBorrowedBook{}
+	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
+	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
+	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	INNER JOIN system.account on obb.account_id = system.account.id
+	where obb.id = $1
+	ORDER BY obb.created_at desc
+	`
+	getErr := repo.db.Get(&borrowedBook, query, id)
+
+	if getErr != nil {
+		logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBookById"), slimlog.Error("getErr"))
+	}
+	return borrowedBook
+}
+
+
+func (repo * CirculationRepository) UpdateBorrowRequestStatus(id string,  status string) error{
+	query:= `Update circulation.online_borrowed_book SET status = $1 where id = $2`
+	_, updateErr := repo.db.Exec(query, status, id )
+	if(updateErr != nil){
+		logger.Error(updateErr.Error(),  slimlog.Function("CirculationRepository.UpdateBorrowRequestStatus"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
+
+func (repo * CirculationRepository) UpdateBorrowRequestStatusAndDueDate(borrowedBook model.OnlineBorrowedBook ) error{
+	query:= `Update circulation.online_borrowed_book SET status = $1, due_date = $2 where id = $3`
+	_, updateErr := repo.db.Exec(query, borrowedBook.Status, borrowedBook.DueDate, borrowedBook.Id)
+	if(updateErr != nil){
+		logger.Error(updateErr.Error(),  slimlog.Function("CirculationRepository.UpdateBorrowRequestStatusAndDueDate"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
+
+
+
 
 
 func NewCirculationRepository() CirculationRepositoryInterface {
@@ -334,4 +405,9 @@ type CirculationRepositoryInterface interface {
 	DeleteAllCheckedItems(accountId string) error
 	CheckoutCheckedItems(accountId string) error
 	GetOnlineBorrowedBooksByAccountIDAndStatus(accountId string, status string)[]model.OnlineBorrowedBook
+	GetOnlineBorrowedBookByStatus( status string) []model.OnlineBorrowedBook
+	GetAllOnlineBorrowedBooks() []model.OnlineBorrowedBook
+	UpdateBorrowRequestStatus(id string,  status string) error
+	UpdateBorrowRequestStatusAndDueDate(borrowedBook model.OnlineBorrowedBook ) error
+	GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
 }

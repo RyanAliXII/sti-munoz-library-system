@@ -104,7 +104,7 @@ const CheckedOutBookPage = () => {
               bookCover = buildS3Url(book.covers[0]);
             }
             return (
-              <div className="h-54 shadow">
+              <div className="h-54 shadow" key={borrowedCopy.accessionId}>
                 <div className="p-2 border border-b text-green-700">
                   <small className="text-xs lg:text-sm">
                     {activeTab === OnlineBorrowStatuses.Pending &&

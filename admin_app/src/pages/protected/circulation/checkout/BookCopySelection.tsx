@@ -109,6 +109,7 @@ const BookCopySelectionModal = ({
       setSelectedAccessions((prevSelected) => [
         ...prevSelected,
         {
+          isAvailable: true,
           book: book,
           bookId: book.id ?? "",
           copyNumber: accession.copyNumber,
