@@ -250,9 +250,14 @@ func (ctrler  * CirculationController) GetOnlineBorrowedBooks(ctx * gin.Context)
 	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
 	 return
 	}
-
+	var borrowedBooks []model.OnlineBorrowedBook
     if parsedRequestorApp == azuread.ClientAppClientId{
-		borrowedBooks := ctrler.circulationRepository.GetOnlineBorrowedBooksByAccountIDAndStatus(parsedAccountId, status)
+
+		if(status == "all"){
+			borrowedBooks = ctrler.circulationRepository.GetOnlineBorrowedBooksByAccountID(parsedAccountId)
+		}else{
+			borrowedBooks = ctrler.circulationRepository.GetOnlineBorrowedBooksByAccountIDAndStatus(parsedAccountId, status)
+		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"borrowedBooks": borrowedBooks,
 		}, "Borrowed books fetched."))
@@ -260,7 +265,7 @@ func (ctrler  * CirculationController) GetOnlineBorrowedBooks(ctx * gin.Context)
 	}
 
 	if parsedRequestorApp == azuread.AdminAppClientId{
-		var borrowedBooks []model.OnlineBorrowedBook
+		
 		
 		if(status == "all"){
 			borrowedBooks = ctrler.circulationRepository.GetAllOnlineBorrowedBooks()

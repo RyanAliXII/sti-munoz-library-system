@@ -28,7 +28,7 @@ const pages = createBrowserRouter(
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/catalog/:id" element={<CatalogBookView />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/checked-out/" element={<CheckedOutBookPage />} />
+        <Route path="/online/borrowed-books" element={<CheckedOutBookPage />} />
       </Route>
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />

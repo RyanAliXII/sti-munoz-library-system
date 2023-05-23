@@ -77,7 +77,7 @@ const Catalog = () => {
       </div>
 
       {books?.map((book) => {
-        let bookCover;
+        let bookCover = "";
         if (book.covers.length > 0) {
           bookCover = buildS3Url(book.covers[0]);
         }
@@ -100,15 +100,27 @@ const Catalog = () => {
             key={book.id}
           >
             <div className="flex items-center justify-center">
-              <img
-                src={bookCover}
-                alt="book-cover"
-                className="w-28 md:w-44 lg:w-56 object-scale-down"
-                style={{
-                  maxWidth: "120px",
-                  maxHeight: "150px",
-                }}
-              ></img>
+              {(bookCover?.length ?? 0) > 0 ? (
+                <img
+                  src={bookCover}
+                  alt="book-cover"
+                  className="w-28 md:w-44 lg:w-56 object-scale-down"
+                  style={{
+                    maxWidth: "120px",
+                    maxHeight: "150px",
+                  }}
+                />
+              ) : (
+                <div
+                  className="w-28 md:w-44 lg:w-56 h-56 bg-gray-200 flex items-center justify-center"
+                  style={{
+                    maxWidth: "120px",
+                    maxHeight: "150px",
+                  }}
+                >
+                  <small className="font-bold text-xs">NO COVER</small>
+                </div>
+              )}
             </div>
             <div className="flex flex-col justify-center p-2  ">
               <Link

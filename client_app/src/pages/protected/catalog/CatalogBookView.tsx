@@ -117,23 +117,31 @@ const CatalogBookView = () => {
       }
     }
   };
-
-  const bookImg =
-    (book?.covers?.length ?? 0) > 0
-      ? buildS3Url(book?.covers?.[0] ?? "")
-      : "https://media.istockphoto.com/id/1357365823/vector/default-image-icon-vector-missing-picture-page-for-website-design-or-mobile-app-no-photo.jpg?s=612x612&w=0&k=20&c=PM_optEhHBTZkuJQLlCjLz-v3zzxp-1mpNQZsdjrbns=";
-
+  if (!book) return null;
+  let bookCover = "";
+  if ((book.covers.length ?? 0) > 0) {
+    bookCover = buildS3Url(book.covers[0]);
+  }
   return (
     <>
       <div className="min-h-screen mt-3">
         <div className="w-11/12 md:w-8/12 lg:w-5/12 rounded shadow border mx-auto p-4">
-          <div className="w-full flex justify-center">
-            <img
-              src={bookImg}
-              className="w-44"
-              style={{ maxHeight: "269px", maxWidth: "220px" }}
-              alt="book-image"
-            ></img>
+          <div className="w-full flex justify-center bg-gray-100 p-2 rounded">
+            {bookCover.length > 1 ? (
+              <img
+                src={bookCover}
+                className="w-44 object-scale-down"
+                style={{ maxHeight: "269px", maxWidth: "220px" }}
+                alt="book-image"
+              ></img>
+            ) : (
+              <div
+                className="w-44 h-60 flex items-center justify-center "
+                style={{ maxHeight: "269px", maxWidth: "220px" }}
+              >
+                <small className="font-bold">NO COVER</small>
+              </div>
+            )}
           </div>
           <div className="mt-5">
             <h1 className="font-bold text-3xl">{book?.title}</h1>

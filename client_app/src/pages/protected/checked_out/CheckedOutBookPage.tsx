@@ -15,8 +15,8 @@ import { Link } from "react-router-dom";
 
 const CheckedOutBookPage = () => {
   const { Get } = useRequest();
-  const [activeTab, setActiveTab] = useState<OnlineBorrowStatus>("pending");
-  const fetchBorrowedBooks = async (activeTab: OnlineBorrowStatus) => {
+  const [activeTab, setActiveTab] = useState<OnlineBorrowStatus | "all">("all");
+  const fetchBorrowedBooks = async (activeTab: OnlineBorrowStatus | "all") => {
     try {
       const response = await Get(
         "/circulation/online/borrowed-books",
@@ -44,7 +44,15 @@ const CheckedOutBookPage = () => {
   });
   return (
     <div className="mt-3 container mx-auto px-2" style={{ maxWidth: "800px" }}>
-      <div className="tabs mt-5 w-full ">
+      <div className="tabs mt-5  ">
+        <a
+          className={isTabActive(activeTab, "all")}
+          onClick={() => {
+            setActiveTab("all");
+          }}
+        >
+          All
+        </a>
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.Pending)}
           onClick={() => {
@@ -98,11 +106,12 @@ const CheckedOutBookPage = () => {
               <div className="h-54 shadow" key={borrowedCopy.accessionId}>
                 <div className="p-2 border border-b text-green-700">
                   <small className="text-xs lg:text-sm">
-                    {activeTab === OnlineBorrowStatuses.Pending &&
+                    {borrowedCopy.status === OnlineBorrowStatuses.Pending &&
                       StatusText.Pending}
-                    {activeTab === OnlineBorrowStatuses.Approved &&
+                    {borrowedCopy.status === OnlineBorrowStatuses.Approved &&
                       StatusText.Approved}
-                    {activeTab === OnlineBorrowStatuses.CheckedOut && (
+                    {borrowedCopy.status ===
+                      OnlineBorrowStatuses.CheckedOut && (
                       <>
                         {`${StatusText.CheckedOut} Please return the book on `}
                         <span className="underline underline-offset-2">
@@ -110,9 +119,9 @@ const CheckedOutBookPage = () => {
                         </span>
                       </>
                     )}
-                    {activeTab === OnlineBorrowStatuses.Returned &&
+                    {borrowedCopy.status === OnlineBorrowStatuses.Returned &&
                       StatusText.Returned}
-                    {activeTab === OnlineBorrowStatuses.Cancelled &&
+                    {borrowedCopy.status === OnlineBorrowStatuses.Cancelled &&
                       StatusText.Cancelled}
                   </small>
                 </div>
@@ -166,11 +175,11 @@ const CheckedOutBookPage = () => {
   );
 };
 const isTabActive = (
-  activeTab: OnlineBorrowStatus,
-  tab: OnlineBorrowStatus
+  activeTab: OnlineBorrowStatus | "all",
+  tab: OnlineBorrowStatus | "all"
 ) => {
   return activeTab === tab
-    ? "tab flex tab-bordered flex-1 tab-active"
-    : "tab tab-bordered flex-1 ";
+    ? "tab  tab-bordered tab-active"
+    : "tab tab-bordered ";
 };
 export default CheckedOutBookPage;

@@ -137,6 +137,7 @@ export type BagItem = {
   copyNumber: number;
   book: Book;
   isChecked: boolean;
+  isAvailable: boolean;
 };
 
 export type OnlineBorrowedBook = {

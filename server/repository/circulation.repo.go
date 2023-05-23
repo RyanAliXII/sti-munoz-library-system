@@ -200,9 +200,13 @@ func (repo * CirculationRepository) AddItemToBag(item model.BagItem) error{
 }
 func (repo * CirculationRepository) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	items := make([]model.BagItem, 0)
-	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked, book.json_format as book FROM circulation.bag
+	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked, book.json_format as book,	
+	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available FROM circulation.bag
 	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
 	INNER JOIN book_view as book on accession.book_id = book.id
+	LEFT JOIN circulation.borrowed_book 
+	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
 	where bag.account_id = $1`
 	selectErr := repo.db.Select(&items, query, accountId,)
 	if selectErr != nil {
@@ -263,8 +267,14 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("transactErr"))
 		return transactErr
 	}
-	query:= `SELECT bag.id, bag.account_id, bag.accession_id FROM circulation.bag
-	 where bag.account_id = $1`
+	query:= `
+	SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked FROM circulation.bag
+	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
+	LEFT JOIN circulation.borrowed_book 
+	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
+	where (CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) = true AND bag.account_id = $1 AND bag.is_checked = true
+	`
 	selectErr := transaction.Select(&items, query, accountId)
 	if selectErr != nil {
 		transaction.Rollback()
@@ -272,8 +282,12 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 		return selectErr
 	}
 	dialect := goqu.Dialect("postgres")
+	deleteDS := dialect.From(goqu.T("bag").Schema("circulation")).Delete()
 	var itemsToCheckout []goqu.Record = make([]goqu.Record, 0)
 	for _, item := range items{
+		deleteDS = deleteDS.Where(goqu.Ex{
+				"id": item.Id,
+		})
 		itemsToCheckout = append(itemsToCheckout, goqu.Record{
 			"accession_id": item.AccessionId,
 			"account_id": item.AccountId,
@@ -289,7 +303,9 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 		logger.Error(insertCheckoutErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("insertCheckoutErr"))
 		return insertCheckoutErr
 	}
-	_, deleteCheckedItemsFromBagErr := transaction.Exec("DELETE FROM circulation.bag where account_id = $1 and is_checked = true" , accountId)
+
+
+	_, deleteCheckedItemsFromBagErr := transaction.Exec("Delete from circulation.bag  where account_id = $1 and is_checked = true", accountId)
 	if deleteCheckedItemsFromBagErr != nil {
 		transaction.Rollback()
 		logger.Error(deleteCheckedItemsFromBagErr.Error(),  slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("deleteCheckedItemsFromBagErr"))
@@ -309,6 +325,20 @@ func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(a
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId, status)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBooksByAccountIdAndStatus"), slimlog.Error("selectErr"))
+	}
+	return borrowedBooks
+}
+func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountID(accountId string) []model.OnlineBorrowedBook{
+	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
+	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
+	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	where obb.account_id = $1 
+	ORDER BY obb.created_at desc
+	`
+	selectErr := repo.db.Select(&borrowedBooks, query, accountId)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBooksByAccountId"), slimlog.Error("selectErr"))
 	}
 	return borrowedBooks
 }
@@ -421,4 +451,5 @@ type CirculationRepositoryInterface interface {
 	UpdateBorrowRequestStatusAndDueDate(borrowedBook model.OnlineBorrowedBook ) error
 	GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
 	UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error
+	GetOnlineBorrowedBooksByAccountID(accountId string) []model.OnlineBorrowedBook
 }

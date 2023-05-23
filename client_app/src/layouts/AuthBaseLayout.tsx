@@ -2,7 +2,7 @@ import { BaseProps } from "@definitions/props.definition";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { ImBooks } from "react-icons/im";
-import { RiUserFill } from "react-icons/ri";
+import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
 import { GiLightBackpack } from "react-icons/gi";
 import { MdEvent } from "react-icons/md";
 import { AiOutlineSearch } from "react-icons/ai";
@@ -12,7 +12,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
     <div className="font-INTER">
       <header className="w-full h-16 border-b border hidden md:flex justify-end">
         <nav className="h-full mr-10">
-          <ul className="h-full flex items-center gap-4 mr-5">
+          <ul className="h-full flex items-center gap-7 mr-5">
             <li>
               <NavLink to="/search" className={isHeaderNavActive}>
                 Search
@@ -29,8 +29,11 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/" className={isHeaderNavActive}>
-                Schedule Event
+              <NavLink
+                to="/online/borrowed-books"
+                className={isHeaderNavActive}
+              >
+                Borrowed Books
               </NavLink>
             </li>
           </ul>
@@ -57,7 +60,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
                   nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
                 }
               >
-                <ImBooks />
+                <RiFileList2Fill />
               </NavLink>
             </li>
             <li>
@@ -71,12 +74,22 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink to={"/catalog"} className="text-2xl">
-                <MdEvent />
+              <NavLink
+                to={"/online/borrowed-books"}
+                className={(nav) =>
+                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                }
+              >
+                <ImBooks />
               </NavLink>
             </li>
             <li>
-              <NavLink to={"/catalog"} className="text-2xl">
+              <NavLink
+                to={"/profile"}
+                className={(nav) =>
+                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                }
+              >
                 <RiUserFill />
               </NavLink>
             </li>

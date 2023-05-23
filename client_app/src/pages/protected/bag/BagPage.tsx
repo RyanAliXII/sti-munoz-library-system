@@ -3,7 +3,7 @@ import { BagItem } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BsTrashFill } from "react-icons/bs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ordinal from "ordinal";
 import {
   ConfirmDialog,
@@ -46,7 +46,6 @@ const BagPage = () => {
   } = useQuery<BagItem[]>({
     queryFn: fetchBagItems,
     queryKey: ["bagItems"],
-    refetchOnWindowFocus: false,
   });
   const [selectedItem, setSelectedItem] = useState<BagItem>();
 
@@ -113,6 +112,7 @@ const BagPage = () => {
     [bagItems]
   );
 
+  const navigate = useNavigate();
   const checkout = useMutation({
     mutationFn: () =>
       Post("/circulation/checklist/checkout", {}, {}, [
@@ -120,6 +120,8 @@ const BagPage = () => {
       ]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
+      toast.success("Book has been checked out.");
+      navigate("/online/borrowed-books");
     },
     onError: () => {
       toast.error("Unknown error occured, Please try again later.");
@@ -139,7 +141,7 @@ const BagPage = () => {
             <div className="flex h-full items-center gap-2">
               <input
                 type="checkbox"
-                className="w-5 h-5"
+                className="lg:w-4 lg:h-4"
                 disabled={bagItems?.length === 0}
                 checked={
                   bagItems?.length === 0 ? false : isAllItemSelected ?? false
@@ -152,7 +154,8 @@ const BagPage = () => {
                   updateChecklist.mutate("check");
                 }}
               />
-              <span>
+
+              <span className="text-xs lg:text-sm">
                 {isAllItemSelected && bagItems?.length != 0
                   ? "Unselect All"
                   : "Select All"}
@@ -160,7 +163,7 @@ const BagPage = () => {
             </div>
             <div className="flex h-full items-center gap-2">
               <button
-                className="btn btn-primary"
+                className="text-xs lg:text-sm p-2 bg-primary text-white rounded disabled:opacity-50"
                 disabled={!hasSelectedItems}
                 onClick={() => {
                   openConfirmCheckoutDialog();
@@ -169,7 +172,7 @@ const BagPage = () => {
                 Checkout
               </button>
               <button
-                className="btn btn-error btn-outline"
+                className="text-xs lg:text-sm p-2 bg-error text-white rounded disabled:opacity-50"
                 disabled={!hasSelectedItems ?? false}
                 onClick={() => {
                   deleteCheckedItems.mutate();
@@ -182,14 +185,11 @@ const BagPage = () => {
         )}
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           {bagItems?.map((item) => {
-            let bookCover;
+            let bookCover = "";
             if (item.book.covers.length > 0) {
               bookCover = buildS3Url(item.book.covers[0]);
-            } else {
-              bookCover =
-                "https://media.istockphoto.com/id/1357365823/vector/default-image-icon-vector-missing-picture-page-for-website-design-or-mobile-app-no-photo.jpg?s=612x612&w=0&k=20&c=PM_optEhHBTZkuJQLlCjLz-v3zzxp-1mpNQZsdjrbns=";
             }
-
+            const unavailableClass = !item.isAvailable ? "opacity-50 " : "";
             return (
               <div
                 className="w-full h-32 rounded shadow  border border-gray-100 p-4 flex justify-between "
@@ -201,50 +201,87 @@ const BagPage = () => {
                 <div className="flex gap-5">
                   <div className="flex items-center justify-center gap-5">
                     <div>
-                      <input
-                        type="checkbox"
-                        className="h-6 w-6"
-                        checked={item.isChecked ?? false}
-                        onChange={() => {
-                          checkItem.mutate(item.id ?? "");
+                      {item.isAvailable ? (
+                        <input
+                          type="checkbox"
+                          className="lg:h-4 lg:w-4"
+                          checked={item.isChecked ?? false}
+                          onChange={() => {
+                            checkItem.mutate(item.id ?? "");
+                          }}
+                        />
+                      ) : (
+                        <div className="h-5 w-5"></div>
+                      )}
+                    </div>
+                    {bookCover.length > 0 ? (
+                      <img
+                        src={bookCover}
+                        alt="book-cover"
+                        className={"w-14 " + unavailableClass}
+                        style={{
+                          maxWidth: "120px",
+                          maxHeight: "150px",
                         }}
                       />
-                    </div>
-                    <img
-                      src={bookCover}
-                      className="w-14 "
-                      style={{
-                        maxWidth: "120px",
-                        maxHeight: "150px",
-                      }}
-                    ></img>
+                    ) : (
+                      <div
+                        className={
+                          "w-14 bg-gray-300 no-cover h-20 " + unavailableClass
+                        }
+                        style={{
+                          maxWidth: "120px",
+                          maxHeight: "150px",
+                        }}
+                      ></div>
+                    )}
                   </div>
                   <div className="flex flex-col justify-center p-2  ">
                     <Link
                       to={`/catalog/${item.book.id}`}
-                      className="text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500"
+                      className={
+                        "text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500 " +
+                        unavailableClass
+                      }
                     >
                       {item.book.title}
                     </Link>
 
-                    <p className="text-xs md:text-sm lg:text-base text-gray-500">
+                    <p
+                      className={
+                        "text-xs md:text-sm lg:text-base text-gray-500 " +
+                        unavailableClass
+                      }
+                    >
                       {item.book.section.name} - {item.book.ddc} -{" "}
                       {item.book.authorNumber}
                     </p>
-                    <p className="text-xs md:text-sm lg:text-base text-gray-500">
+                    <p
+                      className={
+                        "text-xs md:text-sm lg:text-base text-gray-500 " +
+                        unavailableClass
+                      }
+                    >
                       {ordinal(item.copyNumber)} - Copy
                     </p>
+                    {!item.isAvailable && (
+                      <small className="text-sm text-warning">
+                        Unavailable
+                      </small>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col justify-center p-2  ">
-                  <BsTrashFill
-                    className="text-xl text-error mr-5 cursor-pointer"
-                    role="button"
-                    onClick={() => {
-                      setSelectedItem(item);
-                      openConfirmDeleteDialog();
-                    }}
-                  />
+                  {
+                    <BsTrashFill
+                      className="lg:text-xl text-error mr-5 cursor-pointer"
+                      role="button"
+                      onClick={() => {
+                        setSelectedItem(item);
+                        openConfirmDeleteDialog();
+                      }}
+                    />
+                  }
                 </div>
               </div>
             );
