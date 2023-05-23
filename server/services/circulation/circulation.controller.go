@@ -1,13 +1,13 @@
 package circulation
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -287,12 +287,11 @@ func (ctrler  * CirculationController) GetOnlineBorrowedBook(ctx * gin.Context){
 
 }
 func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
-	 body := UpdateStatusOrDueDateBody{}
+	 body := UpdateBorrowRequestPartialBody{}
 	 borrowRequestId := ctx.Param("id")
 	 var updateErr error
-	 fmt.Println(body)
 	 ctx.ShouldBindBodyWith(&body, binding.JSON)
-	 if !body.DueDate.IsZero() {
+	 if !body.DueDate.IsZero() && body.Status == status.OnlineBorrowStatuses.CheckedOut {
 		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatusAndDueDate(model.OnlineBorrowedBook{
 			Id: borrowRequestId,
 			Status: body.Status,
@@ -300,15 +299,33 @@ func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
 				Time: body.DueDate,
 			},
 		})
-	 }else{
-		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatus(borrowRequestId, body.Status)
+		if updateErr != nil{
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
+		return 
 	 }
-     
-	 if updateErr != nil{
+	 if  body.Status == status.OnlineBorrowStatuses.Returned {
+		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatusAndRemarks(model.OnlineBorrowedBook{
+			Id: borrowRequestId,
+			Status: body.Status,
+			Remarks: body.Remarks,
+		})
+		if updateErr != nil{
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
+		return 
+	 }
+	updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatus(borrowRequestId, body.Status)
+	if updateErr != nil{
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
-	 ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
+
+	ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
 		 
 }
 func NewCirculationController() CirculationControllerInterface {

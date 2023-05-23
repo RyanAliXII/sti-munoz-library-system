@@ -3,17 +3,35 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
+import {
+  ConfirmDialog,
+  DangerConfirmDialog,
+  PromptTextAreaDialog,
+} from "@components/ui/dialog/Dialog";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { buildS3Url } from "@definitions/configs/s3";
 import { OnlineBorrowedBook } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { useQuery } from "@tanstack/react-query";
+import { useSwitch } from "@hooks/useToggle";
+import {
+  OnlineBorrowStatus,
+  OnlineBorrowStatuses,
+} from "@internal/borrow-status";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ordinal from "ordinal";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import DueDateInputModal from "./DueDateInputModal";
+import {
+  ApprovedActionsButtons,
+  CheckedOutActionsButtons,
+  PendingActionsButtons,
+} from "./BorrowRequestActions";
 
 const OnlineBorrowBookViewPage = () => {
   const { id } = useParams();
-  const { Get } = useRequest();
+  const { Get, Patch } = useRequest();
   const navigate = useNavigate();
   const fetchBorrowedBook = async () => {
     const { data: response } = await Get(
@@ -37,6 +55,103 @@ const OnlineBorrowBookViewPage = () => {
       navigate("/void");
     },
   });
+  const {
+    isOpen: isDueDateInputModalOpen,
+    close: closeInputDueDateModal,
+    open: openInputDueDateModal,
+  } = useSwitch();
+  const {
+    isOpen: isApprovalConfirmationDialogOpen,
+    close: closeApprovalConfirmationDialog,
+    open: openApprovalConfirmationDialog,
+  } = useSwitch();
+
+  const {
+    isOpen: isCancelConfirmationDialogOpen,
+    close: closeCancelConfirmationDialog,
+    open: openCancelConfirmationDialog,
+  } = useSwitch();
+  const {
+    isOpen: isRemarkPromptOpen,
+    close: closeRemarkPrompt,
+    open: openRemarkPrompt,
+  } = useSwitch();
+  const queryClient = useQueryClient();
+  const [selectedBorrowedBook, setSelectedBorrowedBook] =
+    useState<OnlineBorrowedBook>();
+  const updateBorrowRequest = useMutation({
+    mutationFn: (updateBody: {
+      id: string;
+      status: OnlineBorrowStatus;
+      dueDate?: string;
+      remarks?: string;
+    }) =>
+      Patch(
+        `/circulation/online/borrowed-books/${updateBody.id}`,
+        updateBody,
+        {},
+        [apiScope("Checkout.Edit")]
+      ),
+    onSuccess: () => {
+      toast.success("Borrow request has been updated.");
+      queryClient.invalidateQueries(["borrowedBook"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured. Please try again later.");
+    },
+    onSettled: () => {
+      closeApprovalConfirmationDialog();
+      closeCancelConfirmationDialog();
+    },
+  });
+
+  const initializeApproval = (borrowedBook: OnlineBorrowedBook) => {
+    openApprovalConfirmationDialog();
+    setSelectedBorrowedBook(borrowedBook);
+  };
+  const initializeCancellation = (borrowedBook: OnlineBorrowedBook) => {
+    openCancelConfirmationDialog();
+    setSelectedBorrowedBook(borrowedBook);
+  };
+
+  const onConfirmApproval = () => {
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Approved,
+    });
+  };
+  const onConfirmCancel = () => {
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Cancelled,
+    });
+  };
+
+  const initializeCheckout = (borrowedBook: OnlineBorrowedBook) => {
+    openInputDueDateModal();
+    setSelectedBorrowedBook(borrowedBook);
+  };
+  const initializeReturn = (borrowedBook: OnlineBorrowedBook) => {
+    openRemarkPrompt();
+    setSelectedBorrowedBook(borrowedBook);
+  };
+
+  const onConfirmReturn = (remarks: string) => {
+    closeRemarkPrompt();
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Returned,
+      remarks: remarks,
+    });
+  };
+  const onConfirmDueDate = (date: string) => {
+    closeInputDueDateModal();
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.CheckedOut,
+      dueDate: date,
+    });
+  };
   const book = borrowedBook?.book;
   let bookCover = "";
   if ((book?.covers?.length ?? 0) > 0) {
@@ -49,7 +164,7 @@ const OnlineBorrowBookViewPage = () => {
   const orgAuthors = book?.authors.organizations?.map((org) => org.name) ?? [];
   const publisherAuthors = book?.authors.publishers.map((p) => p.name) ?? [];
   const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
-
+  if (!borrowedBook) return null;
   return (
     <>
       <ContainerNoBackground>
@@ -117,7 +232,7 @@ const OnlineBorrowBookViewPage = () => {
           </div>
           <div className="flex flex-col justify-center p-2  ">
             <Link
-              to={`/catalog/${book?.id}`}
+              to={`/books/edit/${book?.id}`}
               className="text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500"
             >
               {book?.title}
@@ -129,13 +244,65 @@ const OnlineBorrowBookViewPage = () => {
               Published in {book?.yearPublished}
             </p>
             <p className="text-xs md:text-sm lg:text-base text-gray-500">
-              {book?.section.name} - {book?.ddc} - {book?.authorNumber} -
+              {book?.section.name} - {book?.ddc} - {book?.authorNumber} - {""}
               {ordinal(borrowedBook?.copyNumber ?? 0)} Copy - Accession(
               {borrowedBook?.accessionNumber})
             </p>
           </div>
         </div>
       </Container>
+      <ContainerNoBackground>
+        {borrowedBook.status === "pending" && (
+          <PendingActionsButtons
+            borrowedBook={borrowedBook}
+            initializeApproval={initializeApproval}
+            initializeCancellation={initializeCancellation}
+          />
+        )}
+        {borrowedBook.status === "approved" && (
+          <ApprovedActionsButtons
+            borrowedBook={borrowedBook}
+            initializeCheckout={initializeCheckout}
+            initializeCancellation={initializeCancellation}
+          />
+        )}
+        {borrowedBook.status === "checked-out" && (
+          <CheckedOutActionsButtons
+            borrowedBook={borrowedBook}
+            initializeReturn={initializeReturn}
+            initializeCancellation={initializeCancellation}
+          />
+        )}
+      </ContainerNoBackground>
+      <DueDateInputModal
+        closeModal={closeInputDueDateModal}
+        isOpen={isDueDateInputModalOpen}
+        onConfirmDate={onConfirmDueDate}
+      />
+      <ConfirmDialog
+        title="Approve Borrow Request!"
+        text="Are you sure you want to approve borrow request?"
+        isOpen={isApprovalConfirmationDialogOpen}
+        close={closeApprovalConfirmationDialog}
+        onConfirm={onConfirmApproval}
+      ></ConfirmDialog>
+      <DangerConfirmDialog
+        title="Cancel Borrow Request!"
+        text="Are you sure you want to cancel borrow request?"
+        isOpen={isCancelConfirmationDialogOpen}
+        close={closeCancelConfirmationDialog}
+        onConfirm={onConfirmCancel}
+      ></DangerConfirmDialog>
+
+      <PromptTextAreaDialog
+        close={closeRemarkPrompt}
+        isOpen={isRemarkPromptOpen}
+        label="Remarks"
+        proceedBtnText="Save"
+        title="Return Remarks"
+        placeholder="Eg. Returned with no damage or Damage."
+        onProceed={onConfirmReturn}
+      ></PromptTextAreaDialog>
     </>
   );
 };

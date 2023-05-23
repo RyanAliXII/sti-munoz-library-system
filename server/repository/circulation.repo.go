@@ -356,7 +356,7 @@ func (repo * CirculationRepository) GetAllOnlineBorrowedBookById(id string) mode
 	getErr := repo.db.Get(&borrowedBook, query, id)
 
 	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBookById"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBookBy"), slimlog.Error("getErr"))
 	}
 	return borrowedBook
 }
@@ -379,6 +379,16 @@ func (repo * CirculationRepository) UpdateBorrowRequestStatusAndDueDate(borrowed
 	}
 	return updateErr
 }
+func (repo * CirculationRepository) UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error{
+	query:= `Update circulation.online_borrowed_book SET status = $1, remarks = $2 where id = $3`
+	_, updateErr := repo.db.Exec(query, borrowedBook.Status, borrowedBook.Remarks, borrowedBook.Id)
+	if(updateErr != nil){
+		logger.Error(updateErr.Error(),  slimlog.Function("CirculationRepository.UpdateBorrowRequestStatusAndDueDate"), slimlog.Error("updateErr"))
+	}
+	return updateErr
+}
+
+
 
 
 
@@ -410,4 +420,5 @@ type CirculationRepositoryInterface interface {
 	UpdateBorrowRequestStatus(id string,  status string) error
 	UpdateBorrowRequestStatusAndDueDate(borrowedBook model.OnlineBorrowedBook ) error
 	GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
+	UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error
 }

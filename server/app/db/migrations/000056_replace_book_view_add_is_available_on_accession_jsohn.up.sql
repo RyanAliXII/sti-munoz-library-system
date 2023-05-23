@@ -82,7 +82,7 @@
 	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and (obb.status != 'returned' OR obb.status != 'cancelled')
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'cancelled' and obb.status != 'returned'
 	GROUP BY 
 	book.id,
 	source_of_fund.id,

@@ -80,9 +80,6 @@ const Catalog = () => {
         let bookCover;
         if (book.covers.length > 0) {
           bookCover = buildS3Url(book.covers[0]);
-        } else {
-          bookCover =
-            "https://media.istockphoto.com/id/1357365823/vector/default-image-icon-vector-missing-picture-page-for-website-design-or-mobile-app-no-photo.jpg?s=612x612&w=0&k=20&c=PM_optEhHBTZkuJQLlCjLz-v3zzxp-1mpNQZsdjrbns=";
         }
         const peopleAuthors = book?.authors.people?.map(
           (author) => `${author.givenName} ${author.surname}`
@@ -105,7 +102,8 @@ const Catalog = () => {
             <div className="flex items-center justify-center">
               <img
                 src={bookCover}
-                className="w-28 md:w-44 lg:w-56"
+                alt="book-cover"
+                className="w-28 md:w-44 lg:w-56 object-scale-down"
                 style={{
                   maxWidth: "120px",
                   maxHeight: "150px",

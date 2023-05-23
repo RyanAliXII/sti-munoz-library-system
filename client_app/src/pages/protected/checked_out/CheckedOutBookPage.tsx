@@ -10,9 +10,8 @@ import {
 } from "@internal/borrow_status";
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { text } from "stream/consumers";
 
 const CheckedOutBookPage = () => {
   const { Get } = useRequest();
@@ -86,14 +85,6 @@ const CheckedOutBookPage = () => {
         >
           Cancelled
         </a>
-        <a
-          className={isTabActive(activeTab, OnlineBorrowStatuses.Rejected)}
-          onClick={() => {
-            setActiveTab(OnlineBorrowStatuses.Rejected);
-          }}
-        >
-          Rejected
-        </a>
       </div>
       <div className=" flex flex-col mx-auto gap-4 py-5 ">
         <LoadingBoundary isError={isError} isLoading={isFetching}>
@@ -111,8 +102,18 @@ const CheckedOutBookPage = () => {
                       StatusText.Pending}
                     {activeTab === OnlineBorrowStatuses.Approved &&
                       StatusText.Approved}
-                    {activeTab === OnlineBorrowStatuses.CheckedOut &&
-                      StatusText.CheckedOut}
+                    {activeTab === OnlineBorrowStatuses.CheckedOut && (
+                      <>
+                        {`${StatusText.CheckedOut} Please return the book on `}
+                        <span className="underline underline-offset-2">
+                          {new Date(borrowedCopy.dueDate ?? "").toDateString()}
+                        </span>
+                      </>
+                    )}
+                    {activeTab === OnlineBorrowStatuses.Returned &&
+                      StatusText.Returned}
+                    {activeTab === OnlineBorrowStatuses.Cancelled &&
+                      StatusText.Cancelled}
                   </small>
                 </div>
 
@@ -122,7 +123,7 @@ const CheckedOutBookPage = () => {
                       {bookCover.length > 0 && (
                         <img
                           src={bookCover}
-                          className="w-24 h-24 rounded object-fill"
+                          className="w-24 h-24 rounded object-scale-down"
                         ></img>
                       )}
                       {bookCover.length == 0 && (
@@ -145,12 +146,15 @@ const CheckedOutBookPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center justify-end justify-self-end">
-                    <a
-                      role="button"
-                      className="text-xs text-error lg:text-sm mr-2"
-                    >
-                      Cancel{" "}
-                    </a>
+                    {(borrowedCopy.status === "pending" ||
+                      borrowedCopy.status === "approved") && (
+                      <a
+                        role="button"
+                        className="text-xs text-error lg:text-sm mr-2"
+                      >
+                        Cancel
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

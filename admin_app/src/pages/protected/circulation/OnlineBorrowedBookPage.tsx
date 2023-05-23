@@ -10,15 +10,13 @@ import {
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { BorrowingTransaction, OnlineBorrowedBook } from "@definitions/types";
-import TimeAgo from "timeago-react";
-import { useNavigate } from "react-router-dom";
+import { OnlineBorrowedBook } from "@definitions/types";
+
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
 import {
-  BorrowStatuses,
   OnlineBorrowStatus,
   OnlineBorrowStatuses,
   STATUSES_OPTIONS,
@@ -35,12 +33,14 @@ import { useSwitch } from "@hooks/useToggle";
 import {
   ConfirmDialog,
   DangerConfirmDialog,
+  PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
 import { toast } from "react-toastify";
 import {
   ApprovedActions,
   CheckedOutActions,
   PendingActions,
+  ReturnedCancelledActions,
 } from "./BorrowRequestActions";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 
@@ -62,8 +62,13 @@ const OnlineBorrowedBookPage = () => {
     close: closeCancelConfirmationDialog,
     open: openCancelConfirmationDialog,
   } = useSwitch();
+  const {
+    isOpen: isRemarkPromptOpen,
+    close: closeRemarkPrompt,
+    open: openRemarkPrompt,
+  } = useSwitch();
   const [statusFiter, setStatusFilter] = useState<OnlineBorrowStatus | "all">(
-    "all"
+    (localStorage.getItem("statusFilter") as OnlineBorrowStatus) ?? "all"
   );
   const fetchBorrowedBooks = async (status: OnlineBorrowStatus | "all") => {
     try {
@@ -98,6 +103,7 @@ const OnlineBorrowedBookPage = () => {
       id: string;
       status: OnlineBorrowStatus;
       dueDate?: string;
+      remarks?: string;
     }) =>
       Patch(
         `/circulation/online/borrowed-books/${updateBody.id}`,
@@ -144,8 +150,21 @@ const OnlineBorrowedBookPage = () => {
     openInputDueDateModal();
     setSelectedBorrowedBook(borrowedBook);
   };
-  const initializeReturn = (borrowedBooks: OnlineBorrowedBook) => {};
+  const initializeReturn = (borrowedBook: OnlineBorrowedBook) => {
+    openRemarkPrompt();
+    setSelectedBorrowedBook(borrowedBook);
+  };
+
+  const onConfirmReturn = (remarks: string) => {
+    closeRemarkPrompt();
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Returned,
+      remarks: remarks,
+    });
+  };
   const onConfirmDueDate = (date: string) => {
+    closeInputDueDateModal();
     updateBorrowRequest.mutate({
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.CheckedOut,
@@ -180,6 +199,7 @@ const OnlineBorrowedBookPage = () => {
             <CustomSelect
               label="Status"
               onChange={(option) => {
+                localStorage.setItem("statusFilter", option?.value ?? "all");
                 setStatusFilter((option?.value ?? "all") as OnlineBorrowStatus);
               }}
               options={STATUSES_OPTIONS}
@@ -237,6 +257,10 @@ const OnlineBorrowedBookPage = () => {
                           initializeCancellation={initializeCancellation}
                         />
                       )}
+                      {(bb.status === "cancelled" ||
+                        bb.status === "returned") && (
+                        <ReturnedCancelledActions borrowedBook={bb} />
+                      )}
                     </BodyRow>
                   );
                 })}
@@ -264,6 +288,16 @@ const OnlineBorrowedBookPage = () => {
         close={closeCancelConfirmationDialog}
         onConfirm={onConfirmCancel}
       ></DangerConfirmDialog>
+
+      <PromptTextAreaDialog
+        close={closeRemarkPrompt}
+        isOpen={isRemarkPromptOpen}
+        label="Remarks"
+        proceedBtnText="Save"
+        title="Return Remarks"
+        placeholder="Eg. Returned with no damage or Damage."
+        onProceed={onConfirmReturn}
+      ></PromptTextAreaDialog>
     </>
   );
 };

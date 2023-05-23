@@ -19,4 +19,5 @@ export const StatusText = {
     "The book that you have requested has been approved. You can now get the book on the library.",
   CheckedOut: "The book has been handed to you by the librarian.",
   Returned: "The book has been returned.",
+  Cancelled: "Book borrow request has been declined or cancelled.",
 };

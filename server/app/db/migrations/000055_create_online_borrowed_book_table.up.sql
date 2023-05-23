@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS circulation.online_borrowed_book(
        accession_id UUID,
        status varchar(50),
        due_date timestamptz,
+       remarks text DEFAULT '',
        created_at timestamptz DEFAULT NOW(),
        FOREIGN KEY(account_id) REFERENCES system.account(id)
 )
