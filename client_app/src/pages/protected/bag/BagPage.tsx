@@ -104,14 +104,18 @@ const BagPage = () => {
     },
   });
   const isAllItemSelected = useMemo(
-    () => bagItems?.every((item) => item.isChecked == true),
+    () => bagItems?.every((item) => item.isChecked),
     [bagItems]
   );
   const hasSelectedItems = useMemo(
-    () => bagItems?.some((item) => item.isChecked == true),
+    () => bagItems?.some((item) => item.isChecked && item.isAvailable),
     [bagItems]
   );
-
+  const hasAvailableItems = useMemo(
+    () => bagItems?.some((item) => item.isAvailable),
+    [bagItems]
+  );
+  const disabledClass = !hasAvailableItems ? "opacity-50 " : "";
   const navigate = useNavigate();
   const checkout = useMutation({
     mutationFn: () =>
@@ -142,7 +146,7 @@ const BagPage = () => {
               <input
                 type="checkbox"
                 className="lg:w-4 lg:h-4"
-                disabled={bagItems?.length === 0}
+                disabled={bagItems?.length === 0 || !hasAvailableItems}
                 checked={
                   bagItems?.length === 0 ? false : isAllItemSelected ?? false
                 }
@@ -155,7 +159,7 @@ const BagPage = () => {
                 }}
               />
 
-              <span className="text-xs lg:text-sm">
+              <span className={"text-xs lg:text-sm " + disabledClass}>
                 {isAllItemSelected && bagItems?.length != 0
                   ? "Unselect All"
                   : "Select All"}
