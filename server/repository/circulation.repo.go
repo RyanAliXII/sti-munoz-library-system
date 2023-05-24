@@ -281,25 +281,25 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("selectErr"))
 		return selectErr
 	}
+	if len(items) == 0{
+		transaction.Rollback()
+		return nil
+	}
 	dialect := goqu.Dialect("postgres")
 	deleteDS := dialect.From(goqu.T("bag").Schema("circulation")).Delete()
 	var itemsToCheckout []goqu.Record = make([]goqu.Record, 0)
-
+	var itemIdsToDelete []string =  make([]string, 0)
 	
 	for _, item := range items{
-		deleteDS = deleteDS.Where(goqu.ExOr{
-				"id": item.Id,
-		})
+		
+		itemIdsToDelete =  append(itemIdsToDelete, item.Id)
 		itemsToCheckout = append(itemsToCheckout, goqu.Record{
 			"accession_id": item.AccessionId,
 			"account_id": item.AccountId,
 			"status":  status.OnlineBorrowStatuses.Pending,
 		})
 	}
-	if len(itemsToCheckout) == 0 {
-		transaction.Rollback()
-		return nil
-	}
+	deleteDS = deleteDS.Where(goqu.C("id").In(itemIdsToDelete))
 	checkoutDS  := dialect.From(goqu.T("online_borrowed_book").Schema("circulation")).Prepared(true).Insert().Rows(itemsToCheckout)
 	checkoutQuery, checkoutArgs, _ := checkoutDS.ToSQL()
 	_, insertCheckoutErr := transaction.Exec(checkoutQuery, checkoutArgs...)
