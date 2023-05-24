@@ -1,3 +1,5 @@
+import { OnlineBorrowStatus } from "@internal/borrow_status";
+
 export type User = {
   firstname?: string;
   lastname?: string;
@@ -69,6 +71,7 @@ export type Accession = {
   id?: string;
   number: number;
   copyNumber: number;
+  isAvailable: boolean;
 };
 
 export interface DetailedAccession extends Accession {
@@ -134,4 +137,16 @@ export type BagItem = {
   copyNumber: number;
   book: Book;
   isChecked: boolean;
+  isAvailable: boolean;
+};
+
+export type OnlineBorrowedBook = {
+  id?: string;
+  accessionId: string;
+  accountId: string;
+  accessionNumber: number;
+  copyNumber: number;
+  book: Book;
+  status: OnlineBorrowStatus;
+  dueDate: string | null; //timestamp
 };

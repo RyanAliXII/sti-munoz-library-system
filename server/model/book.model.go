@@ -65,12 +65,14 @@ type Accession struct {
 	CopyNumber   int      `json:"copyNumber" db:"copy_number"`
 	BookId       string   `json:"bookId" db:"book_id" copier:"BookId"`
 	IsCheckedOut bool     `json:"isCheckedOut" db:"is_checked_out"`
+	IsAvailable  bool     `json:"isAvailable" db:"is_available"`
 	Book         BookJSON `json:"book" db:"book"`
 }
 
 type AccessionsJSON []struct {
 	Id         string `json:"id"`
 	Number     int    `json:"number" db:"number"`
+	IsAvailable  bool  `json:"isAvailable" db:"is_available"`
 	CopyNumber int    `json:"copyNumber" db:"copy_number"`
 }
 

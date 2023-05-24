@@ -20,3 +20,9 @@ type ReturnBookBody struct {
 type BagItem struct {
 	AccessionId  string `json:"accessionId" binding:"required,uuid"`
 }
+
+type UpdateBorrowRequestPartialBody struct {
+	Status string `json:"status" binding:"required,oneof=pending approved checked-out returned cancelled"`
+	Remarks string `json: "remarks" binding:"omitempty"`
+	DueDate time.Time `json:"dueDate" binding:"omitempty"`
+}

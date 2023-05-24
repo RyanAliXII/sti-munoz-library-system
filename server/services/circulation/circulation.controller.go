@@ -3,8 +3,11 @@ package circulation
 import (
 	"strconv"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -221,6 +224,115 @@ func (ctrler * CirculationController) DeleteAllCheckedItems (ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Bag checked item has been deleted."))
 }
+
+func (ctrler * CirculationController) CheckoutCheckedItems(ctx *gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	checkoutErr := ctrler.circulationRepository.CheckoutCheckedItems(parsedAccountId)
+	if checkoutErr != nil{
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Books has been checked out."))
+} 
+func (ctrler  * CirculationController) GetOnlineBorrowedBooks(ctx * gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+	requestorApp, hasRequestorApp := ctx.Get("requestorApp")
+	parsedRequestorApp, isRequestorAppStr  := requestorApp.(string)
+    status := ctx.Query("status")
+	if(!hasAccountId  || !isStr || !hasRequestorApp || !isRequestorAppStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	var borrowedBooks []model.OnlineBorrowedBook
+    if parsedRequestorApp == azuread.ClientAppClientId{
+
+		if(status == "all"){
+			borrowedBooks = ctrler.circulationRepository.GetOnlineBorrowedBooksByAccountID(parsedAccountId)
+		}else{
+			borrowedBooks = ctrler.circulationRepository.GetOnlineBorrowedBooksByAccountIDAndStatus(parsedAccountId, status)
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"borrowedBooks": borrowedBooks,
+		}, "Borrowed books fetched."))
+			return 
+	}
+
+	if parsedRequestorApp == azuread.AdminAppClientId{
+		
+		
+		if(status == "all"){
+			borrowedBooks = ctrler.circulationRepository.GetAllOnlineBorrowedBooks()
+		}else{
+			borrowedBooks = ctrler.circulationRepository.GetOnlineBorrowedBookByStatus(status)
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"borrowedBooks": borrowedBooks,
+		}, "Borrowed books fetched."))
+			return 
+	}
+	ctx.JSON(httpresp.Fail500(nil, "Borrowed books fetched."))
+	
+
+}
+
+func (ctrler  * CirculationController) GetOnlineBorrowedBook(ctx * gin.Context){
+	id := ctx.Param("id")
+	borrowedBook := ctrler.circulationRepository.GetAllOnlineBorrowedBookById(id)	
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowedBook": borrowedBook,
+	}, "Borrowed Book has been fetched."))
+
+
+}
+func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
+	 body := UpdateBorrowRequestPartialBody{}
+	 borrowRequestId := ctx.Param("id")
+	 var updateErr error
+	 ctx.ShouldBindBodyWith(&body, binding.JSON)
+	 if !body.DueDate.IsZero() && body.Status == status.OnlineBorrowStatuses.CheckedOut {
+		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatusAndDueDate(model.OnlineBorrowedBook{
+			Id: borrowRequestId,
+			Status: body.Status,
+			DueDate: db.NullableTime{
+				Time: body.DueDate,
+			},
+		})
+		if updateErr != nil{
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
+		return 
+	 }
+	 if  body.Status == status.OnlineBorrowStatuses.Returned {
+		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatusAndRemarks(model.OnlineBorrowedBook{
+			Id: borrowRequestId,
+			Status: body.Status,
+			Remarks: body.Remarks,
+		})
+		if updateErr != nil{
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
+		return 
+	 }
+	updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatus(borrowRequestId, body.Status)
+	if updateErr != nil{
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+
+	ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
+		 
+}
 func NewCirculationController() CirculationControllerInterface {
 	return &CirculationController{
 		circulationRepository: repository.NewCirculationRepository(),
@@ -240,4 +352,8 @@ type CirculationControllerInterface interface {
 	CheckItemFromBag(ctx * gin.Context)
 	CheckOrUncheckAllItems(ctx* gin.Context)
 	DeleteAllCheckedItems (ctx * gin.Context)
+	CheckoutCheckedItems(ctx *gin.Context)
+	GetOnlineBorrowedBooks(ctx * gin.Context)
+	UpdateStatusOrDueDate(ctx * gin.Context)
+	GetOnlineBorrowedBook(ctx * gin.Context)
 }

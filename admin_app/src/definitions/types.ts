@@ -1,4 +1,4 @@
-import { isReturned } from "@internal/borrow-status";
+import { OnlineBorrowStatus, isReturned } from "@internal/borrow-status";
 
 export type User = {
   firstname?: string;
@@ -71,6 +71,7 @@ export type Accession = {
   id?: string;
   number: number;
   copyNumber: number;
+  isAvailable: boolean;
 };
 
 export interface DetailedAccession extends Accession {
@@ -131,4 +132,15 @@ export type Role = {
 export type AccountRole = {
   account: Account;
   role: Role;
+};
+export type OnlineBorrowedBook = {
+  id?: string;
+  accessionId: string;
+  accountId: string;
+  accessionNumber: number;
+  copyNumber: number;
+  book: Book;
+  status: OnlineBorrowStatus;
+  dueDate: string | null; //timestamp
+  client: Account;
 };

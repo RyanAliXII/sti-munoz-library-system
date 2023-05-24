@@ -188,13 +188,15 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id,
-	(CASE WHEN accession_number is null then false else true END) as is_checked_out
+	accession.book_id, obb.accession_id,
+	(CASE WHEN bb.accession_number is null then false else true END) as is_checked_out,
+	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available
 	FROM get_accession_table() 
 	as accession 
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
 	ORDER BY book.created_at DESC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query)
@@ -386,13 +388,15 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,
-	(CASE WHEN accession_number is null then false else true END) as is_checked_out
+	(CASE WHEN bb.accession_number is null then false else true END) as is_checked_out,
+	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available
 	FROM get_accession_table() 
 	as accession 
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-    WHERE book.id = $1
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
+	WHERE book.id = $1
 	ORDER BY book.created_at DESC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)

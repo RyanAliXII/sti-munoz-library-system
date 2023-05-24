@@ -1,4 +1,5 @@
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
 import { Book, DetailedAccession, ModalProps } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +24,9 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
   const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
-      const { data: response } = await Get(`/books/${book.id}/accessions`);
+      const { data: response } = await Get(`/books/${book.id}/accessions`, {}, [
+        apiScope("Accession.Read"),
+      ]);
       return response?.data?.accessions ?? [];
     } catch {
       return [];
@@ -78,13 +81,15 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
                 const isItemAlreadyAdded = bagItemIds.includes(
                   accession.id ?? ""
                 );
-
-                const trClass = isItemAlreadyAdded
-                  ? "cursor-pointer pointer-events-none hover disabled active"
-                  : " cursor-pointer hover";
-                const statusTdClass = isItemAlreadyAdded
-                  ? "text-gray-500 "
-                  : "text-success ";
+                const isAvailable = accession.isAvailable;
+                const trClass =
+                  isItemAlreadyAdded || !isAvailable
+                    ? "cursor-pointer pointer-events-none hover disabled active"
+                    : " cursor-pointer hover";
+                const statusTdClass =
+                  isItemAlreadyAdded || !isAvailable
+                    ? "text-gray-500"
+                    : "text-success ";
                 return (
                   <tr
                     key={accession.id}
@@ -102,14 +107,16 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
                         readOnly={true}
                         className="h-4 w-4"
                         type="checkbox"
-                        disabled={isItemAlreadyAdded}
+                        disabled={isItemAlreadyAdded || !isAvailable}
                         checked={selectedAccession?.id === accession.id}
                       />
                     </td>
                     <td>{accession.number}</td>
                     <td>{accession.copyNumber}</td>
                     <td className={statusTdClass}>
-                      {isItemAlreadyAdded ? "Already on Bag" : "Available"}
+                      {isItemAlreadyAdded || !isAvailable
+                        ? "Unavailable"
+                        : "Available"}
                     </td>
                   </tr>
                 );

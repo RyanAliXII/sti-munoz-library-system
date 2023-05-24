@@ -120,14 +120,17 @@ const TransactionByIdPage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Checked Out</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Borrowed Book</h1>
       </ContainerNoBackground>
       <Container className="flex justify-between px-4 py-6">
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           <div>
             <div className="flex gap-5">
               <div>
-                <ProfileIcon givenName="test" surname="test"></ProfileIcon>
+                <ProfileIcon
+                  givenName={transaction?.client.givenName ?? ""}
+                  surname={transaction?.client.surname ?? ""}
+                ></ProfileIcon>
               </div>
               <div className="flex flex-col">
                 <span className="text-gray-600 font-bold">

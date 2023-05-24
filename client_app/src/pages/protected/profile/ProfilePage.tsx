@@ -26,27 +26,34 @@ const ProfilePage = () => {
   };
   return (
     <div className="lg:w-8/12 mx-auto">
-      <div className="w-full h-56 bg-blue-500 relative">
-        <div
-          className="h-44 w-44 absolute  border rounded-full bg-black left-5"
-          style={{ bottom: "-50px" }}
-        ></div>
+      <div className="w-full h-56 bg-gray-300 relative">
+        <img
+          src={`https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`}
+          className="h-36 w-36 absolute  border rounded-full bg-black left-5"
+          style={{ bottom: "-55px" }}
+        ></img>
       </div>
-      <div className="flex justify-between flex-col  w-full px-6 mt-16">
+      <div className="flex justify-between flex-col w-full px-9 mt-16">
         <div>
           <div>
-            <h1 className="text-2xl font-bold ">
+            <h1 className="lg:text-xl font-bold ">
               {user.givenName} {user.surname}
             </h1>
-            <h2 className="text-lg text-gray-500">{user.email}</h2>
+            <h2 className="lg:text-lg text-gray-500">{user.email}</h2>
           </div>
         </div>
         <div className="flex flex-col mt-10 items-center gap-3">
           <div ref={qrRef}>
-            <QRCode value={user?.id ?? "none"} className="w-32 h-32" />
+            <QRCode
+              value={user?.id ?? "none"}
+              className="w-28 h-28 lg:w-32 lg:h-32"
+            />
           </div>
           <div>
-            <button className="btn btn-primary" onClick={downloadQRCode}>
+            <button
+              className="text-sm p-2.5 bg-primary rounded text-white"
+              onClick={downloadQRCode}
+            >
               Download QR
             </button>
           </div>
