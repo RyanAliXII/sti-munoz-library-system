@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -87,6 +89,12 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	return transaction
 }
 func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.NullableDate, accessions []model.Accession) error {
+	settings := repo.settingRepository.Get()
+	if settings.DuePenalty.Value == 0 {
+		settingsErr := fmt.Errorf("due penalty value is 0")
+		logger.Error(settingsErr.Error(), slimlog.Function("CirculationRepository.NewTransaction"), slimlog.Error("DuePenaltySettings"))
+		return settingsErr
+	}
 	transactionId := uuid.NewString()
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
@@ -94,8 +102,8 @@ func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.Nu
 		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.NewTransaction"), slimlog.Error("transactErr"))
 		return transactErr
 	}
-	query := `INSERT INTO circulation.borrow_transaction (id, account_id, due_date) VALUES($1,$2,$3)`
-	insertTransactionResult, insertTransactionErr := transaction.Exec(query, transactionId, clientId, dueDate)
+	query := `INSERT INTO circulation.borrow_transaction (id, account_id, due_date, penalty_on_past_due) VALUES($1,$2,$3,$4)`
+	insertTransactionResult, insertTransactionErr := transaction.Exec(query, transactionId, clientId, dueDate, settings.DuePenalty.Value)
 
 	if insertTransactionErr != nil {
 		transaction.Rollback()
@@ -260,8 +268,14 @@ func (repo * CirculationRepository) DeleteAllCheckedItems(accountId string) erro
 	return deleteErr
 }
 func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error {
-	items := make([]model.BagItem, 0)
+
 	settings := repo.settingRepository.Get()
+	if settings.DuePenalty.Value == 0 {
+		settingsErr := fmt.Errorf("due penalty value is 0")
+		logger.Error(settingsErr.Error(), slimlog.Function("CirculationRepository.CheckoutCheckedItems"), slimlog.Error("DuePenaltySettings"))
+		return settingsErr
+	}
+	items := make([]model.BagItem, 0)
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		transaction.Rollback()
