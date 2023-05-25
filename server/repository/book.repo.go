@@ -188,7 +188,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id, obb.accession_id,
+	accession.book_id,
 	(CASE WHEN bb.accession_number is null then false else true END) as is_checked_out,
 	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available
 	FROM get_accession_table() 
@@ -201,7 +201,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query)
 	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccession"), slimlog.Error("selectAccessionErr"))
+		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessions"), slimlog.Error("selectAccessionErr"))
 		return accessions
 	}
 	return accessions

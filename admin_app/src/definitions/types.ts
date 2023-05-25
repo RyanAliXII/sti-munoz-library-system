@@ -144,3 +144,13 @@ export type OnlineBorrowedBook = {
   dueDate: string | null; //timestamp
   client: Account;
 };
+
+export interface SettingsField<T> {
+  id: string;
+  label: string;
+  description: string;
+  value: T;
+}
+export type Settings = {
+  "app.due-penalty": SettingsField<number>;
+};

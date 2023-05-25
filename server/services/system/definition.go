@@ -23,3 +23,15 @@ type AccountBody struct {
 	Surname     string `json:"surname" binding:"required"`
 	Email       string `json:"email" binding:"required,email"`
 }
+
+
+type SettingsValueBody struct {
+	DuePenalty SettingsFieldIntBody `json:"app.due-penalty" binding:"required,dive"`
+}
+type SettingsFieldIntBody struct {
+	Id string `json:"id" binding:"required"`
+	Label string `json:"label"  binding:"required"`
+	Description string `json:"description"  binding:"required"`
+	Value int `json:"value"  binding:"required,gte=0"`
+
+}

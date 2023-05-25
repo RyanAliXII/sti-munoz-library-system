@@ -25,6 +25,7 @@ import Page403 from "./error/Page403";
 import AssignedRolePage from "./protected/system/AssignedRolePage";
 import OnlineBorrowedBookPage from "./protected/circulation/OnlineBorrowedBookPage";
 import OnlineBorrowBookViewPage from "./protected/circulation/OnlineBorrowedBookViewPage";
+import SettingsPage from "./protected/system/settings/SettingsPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -142,7 +143,8 @@ const pages = createRoutesFromChildren(
             <AssignedRolePage />
           </PermissionGate>
         }
-      ></Route>
+      />
+      <Route path="/system/settings" element={<SettingsPage />} />
       <Route
         path="/circulation/transactions/:id"
         element={
@@ -150,7 +152,7 @@ const pages = createRoutesFromChildren(
             <ReturnDetailPage />
           </PermissionGate>
         }
-      ></Route>
+      />
       <Route
         path="/circulation/checkout"
         element={
@@ -162,11 +164,11 @@ const pages = createRoutesFromChildren(
       <Route
         path="/circulation/online-borrowed-books"
         element={<OnlineBorrowedBookPage />}
-      ></Route>
+      />
       <Route
         path="/circulation/online-borrowed-books/:id"
         element={<OnlineBorrowBookViewPage />}
-      ></Route>
+      />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>
