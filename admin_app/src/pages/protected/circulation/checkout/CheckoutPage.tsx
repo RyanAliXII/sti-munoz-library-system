@@ -254,7 +254,7 @@ const CheckoutPage = () => {
             name="dueDate"
             error={errors?.dueDate}
             minDate={new Date()}
-            value={new Date(checkout.dueDate).toLocaleDateString()}
+            value={new Date(checkout.dueDate).toDateString()}
             onChange={(date) => {
               if (!date) return;
               const dateValue = `${date.getFullYear()}-${

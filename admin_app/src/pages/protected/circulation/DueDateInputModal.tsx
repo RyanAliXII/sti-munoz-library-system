@@ -42,7 +42,7 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
                 name="dueDate"
                 placeholderText="Select due date"
                 minDate={new Date()}
-                value={dueDate}
+                value={new Date(dueDate).toDateString()}
                 selected={new Date(dueDate)}
                 onChange={(date) => {
                   if (!date) return;
