@@ -24,7 +24,7 @@ const SettingsPage = () => {
       const response = await Get("/system/settings", {}, []);
       const { data } = response.data;
       console.log(data);
-      return data?.settings?.value;
+      return data?.settings;
     } catch (error) {
       return {
         settings: {

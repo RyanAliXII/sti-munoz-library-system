@@ -14,6 +14,7 @@ import (
 
 type CirculationRepository struct {
 	db *sqlx.DB
+	settingRepository  SettingsRepositoryInterface
 }
 
 func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingTransaction {
@@ -260,6 +261,7 @@ func (repo * CirculationRepository) DeleteAllCheckedItems(accountId string) erro
 }
 func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error {
 	items := make([]model.BagItem, 0)
+	settings := repo.settingRepository.Get()
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		transaction.Rollback()
@@ -296,6 +298,7 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 			"accession_id": item.AccessionId,
 			"account_id": item.AccountId,
 			"status":  status.OnlineBorrowStatuses.Pending,
+			"penalty_on_past_due": settings.DuePenalty.Value,
 		})
 	}
 	deleteDS = deleteDS.Where(goqu.C("id").In(itemIdsToDelete))
@@ -437,6 +440,7 @@ func (repo * CirculationRepository) UpdateBorrowRequestStatusAndRemarks(borrowed
 func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
 		db: postgresdb.GetOrCreateInstance(),
+		settingRepository: NewSettingsRepository(),
 	}
 }
 
