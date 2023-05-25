@@ -12,7 +12,7 @@ func CirculationRoutes(router *gin.RouterGroup) {
 	router.GET("/transactions/:id", controller.GetTransactionById)
 	router.GET("/transactions/:id/books", controller.GetTransactionBooks)
 	router.POST("/checkout", middlewares.ValidateBody[CheckoutBody], controller.Checkout)
-	router.PATCH("/transactions/:id", controller.ReturnBooksById)
+	router.PATCH("/transactions/:id",middlewares.ValidateToken ,controller.ReturnBooksById)
 	router.PATCH("/transactions/:id/books/:bookId/accessions/:accessionNumber", controller.ReturnBookCopy)
 	router.POST("/bag",middlewares.ValidateToken, middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)
 	router.GET("/bag",middlewares.ValidateToken, controller.GetBagItems)

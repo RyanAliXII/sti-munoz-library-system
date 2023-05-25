@@ -1,11 +1,13 @@
 package circulation
 
-import "time"
+import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+)
 
 type CheckoutBody struct {
 	ClientId   string               `json:"clientId" binding:"required,uuid"`
 	Accessions []CheckoutAccessions `json:"accessions" binding:"required,min=1,dive"`
-	DueDate    time.Time            `json:"dueDate" binding:"required"`
+	DueDate    db.NullableDate           `json:"dueDate" binding:"required"`
 }
 
 type CheckoutAccessions struct {
@@ -23,6 +25,6 @@ type BagItem struct {
 
 type UpdateBorrowRequestPartialBody struct {
 	Status string `json:"status" binding:"required,oneof=pending approved checked-out returned cancelled"`
-	Remarks string `json: "remarks" binding:"omitempty"`
-	DueDate time.Time `json:"dueDate" binding:"omitempty"`
+	Remarks string `json:"remarks" binding:"omitempty"`
+	DueDate db.NullableDate `json:"dueDate" binding:"omitempty"`
 }

@@ -35,15 +35,15 @@ func main() {
 		AllowCredentials: true,
 	}))
 	objstore.GetorCreateInstance()
+	
 	r.GET("/", func(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "Hello from server",
+			"message": "HELLO",
 			"time":    time.Now(),
 		})
 	})
 	
-
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
 	logger.Info("Server starting")

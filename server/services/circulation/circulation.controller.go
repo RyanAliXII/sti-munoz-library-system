@@ -3,7 +3,6 @@ package circulation
 import (
 	"strconv"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -296,13 +295,11 @@ func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
 	 borrowRequestId := ctx.Param("id")
 	 var updateErr error
 	 ctx.ShouldBindBodyWith(&body, binding.JSON)
-	 if !body.DueDate.IsZero() && body.Status == status.OnlineBorrowStatuses.CheckedOut {
+	 if  body.Status == status.OnlineBorrowStatuses.CheckedOut {
 		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatusAndDueDate(model.OnlineBorrowedBook{
 			Id: borrowRequestId,
 			Status: body.Status,
-			DueDate: db.NullableTime{
-				Time: body.DueDate,
-			},
+			DueDate: body.DueDate,
 		})
 		if updateErr != nil{
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))

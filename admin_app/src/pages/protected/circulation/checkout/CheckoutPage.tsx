@@ -254,11 +254,15 @@ const CheckoutPage = () => {
             name="dueDate"
             error={errors?.dueDate}
             minDate={new Date()}
+            value={new Date(checkout.dueDate).toDateString()}
             onChange={(date) => {
               if (!date) return;
+              const dateValue = `${date.getFullYear()}-${
+                date.getMonth() + 1
+              }-${date.getDate()}`;
               setForm((prevForm) => ({
                 ...prevForm,
-                dueDate: date.toISOString(),
+                dueDate: dateValue,
               }));
             }}
             selected={new Date(checkout.dueDate)}
