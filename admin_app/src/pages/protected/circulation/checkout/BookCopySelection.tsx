@@ -121,7 +121,10 @@ const BookCopySelectionModal = ({
       removeCopy(book.id, accession.number);
     }
   };
-
+  const hasAvailableCopies = useMemo(
+    () => accessions.some((a) => a.isAvailable),
+    [accessions]
+  );
   if (!isOpen) return null;
   return (
     <Modal
@@ -155,7 +158,7 @@ const BookCopySelectionModal = ({
                   <BodyRow
                     key={accession.number}
                     className={
-                      accession.isCheckedOut
+                      !accession.isAvailable
                         ? "bg-gray-100 hover:bg-gray-100 cursor-pointer"
                         : "cursor-pointer"
                     }
@@ -168,13 +171,13 @@ const BookCopySelectionModal = ({
                         type="checkbox"
                         checked={isAdded}
                         readOnly
-                        disabled={accession.isCheckedOut}
+                        disabled={!accession.isAvailable}
                       />
                     </Td>
                     <Td>{accession.number}</Td>
                     <Td>Copy {accession.copyNumber}</Td>
                     <Td>
-                      {accession.isCheckedOut
+                      {!accession.isAvailable
                         ? BorrowStatuses.CheckedOut
                         : BorrowStatuses.Available}
                     </Td>
@@ -187,7 +190,11 @@ const BookCopySelectionModal = ({
         </div>
       </LoadingBoundary>
 
-      <PrimaryButton className="mt-5" onClick={proceedToAdd}>
+      <PrimaryButton
+        className="mt-5"
+        onClick={proceedToAdd}
+        disabled={!hasAvailableCopies}
+      >
         Add changes
       </PrimaryButton>
       <LighButton className="ml-2" onClick={closeModal}>

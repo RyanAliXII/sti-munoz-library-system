@@ -1,8 +1,7 @@
 package repository
 
 import (
-	"time"
-
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
@@ -86,7 +85,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	}
 	return transaction
 }
-func (repo *CirculationRepository) NewTransaction(clientId string, dueDate time.Time, accessions []model.Accession) error {
+func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.NullableDate, accessions []model.Accession) error {
 	transactionId := uuid.NewString()
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
@@ -444,7 +443,7 @@ func NewCirculationRepository() CirculationRepositoryInterface {
 type CirculationRepositoryInterface interface {
 	GetBorrowingTransactions() []model.BorrowingTransaction
 	GetBorrowingTransactionById(id string) model.BorrowingTransaction
-	NewTransaction(clientId string, dueDate time.Time, accession []model.Accession) error
+	NewTransaction(clientId string, dueDate db.NullableDate, accession []model.Accession) error
 	ReturnBooksByTransactionId(id string, remarks string) error
 	ReturnBookCopy(transactionId string, bookId string, accessionNumber int) error
 	AddItemToBag(model.BagItem) error
