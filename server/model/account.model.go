@@ -52,7 +52,13 @@ func (account AccountJSON) Value(value interface{}) (driver.Value, error) {
 
 type AccountMetadata struct {
 	TotalPenalty float64 `json:"totalPenalty"`
-
+	WalkInCheckedOutBooks int `json:"walkInCheckedOutBooks"`
+	WalkInReturnedBooks int `json:"walkInReturnedBooks"`
+	OnlinePendingBooks int `json:"onlinePendingBooks"`
+	OnlineApprovedBooks int `json:"onlineApprovedBooks"`
+	OnlineCheckedOutBooks int `json:"onlineCheckedOutBooks"`
+	OnlineReturnedBooks int `json:"onlineReturnedBooks"`
+	OnlineCancelledBooks int `json:"onlineCancelledBooks"`
 }
 func (meta *AccountMetadata) Scan(value interface{}) error {
 	val, valid := value.([]byte)

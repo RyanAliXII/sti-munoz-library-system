@@ -11,11 +11,27 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
-const CheckedOutBookPage = () => {
+const BorrowedBooksPage = () => {
+  const [seachParams, setSearchParam] = useSearchParams();
   const { Get } = useRequest();
-  const [activeTab, setActiveTab] = useState<OnlineBorrowStatus | "all">("all");
+  let initialStatus = seachParams.get("status");
+  const STATUSES = [
+    "all",
+    "pending",
+    "approved",
+    "checked-out",
+    "cancelled",
+    "returned",
+  ];
+  const [activeTab, setActiveTab] = useState<OnlineBorrowStatus | "all">(
+    !initialStatus
+      ? "all"
+      : STATUSES.includes(initialStatus)
+      ? (initialStatus as OnlineBorrowStatus)
+      : "all"
+  );
   const fetchBorrowedBooks = async (activeTab: OnlineBorrowStatus | "all") => {
     try {
       const response = await Get(
@@ -42,12 +58,14 @@ const CheckedOutBookPage = () => {
     queryFn: () => fetchBorrowedBooks(activeTab),
     queryKey: ["borrowedBooks", activeTab],
   });
+
   return (
     <div className="mt-3 container mx-auto px-2" style={{ maxWidth: "800px" }}>
       <div className="tabs mt-5  ">
         <a
           className={isTabActive(activeTab, "all")}
           onClick={() => {
+            setSearchParam({ status: "all" });
             setActiveTab("all");
           }}
         >
@@ -56,6 +74,7 @@ const CheckedOutBookPage = () => {
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.Pending)}
           onClick={() => {
+            setSearchParam({ status: OnlineBorrowStatuses.Pending });
             setActiveTab(OnlineBorrowStatuses.Pending);
           }}
         >
@@ -64,6 +83,7 @@ const CheckedOutBookPage = () => {
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.Approved)}
           onClick={() => {
+            setSearchParam({ status: OnlineBorrowStatuses.Approved });
             setActiveTab(OnlineBorrowStatuses.Approved);
           }}
         >
@@ -72,6 +92,7 @@ const CheckedOutBookPage = () => {
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.CheckedOut)}
           onClick={() => {
+            setSearchParam({ status: OnlineBorrowStatuses.CheckedOut });
             setActiveTab(OnlineBorrowStatuses.CheckedOut);
           }}
         >
@@ -80,6 +101,7 @@ const CheckedOutBookPage = () => {
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.Returned)}
           onClick={() => {
+            setSearchParam({ status: OnlineBorrowStatuses.Returned });
             setActiveTab(OnlineBorrowStatuses.Returned);
           }}
         >
@@ -88,6 +110,7 @@ const CheckedOutBookPage = () => {
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.Cancelled)}
           onClick={() => {
+            setSearchParam({ status: OnlineBorrowStatuses.Cancelled });
             setActiveTab(OnlineBorrowStatuses.Cancelled);
           }}
         >
@@ -103,7 +126,7 @@ const CheckedOutBookPage = () => {
               bookCover = buildS3Url(book.covers[0]);
             }
             return (
-              <div className="h-54 shadow" key={borrowedCopy.accessionId}>
+              <div className="h-54 shadow" key={borrowedCopy.id}>
                 <div className="p-2 border border-b text-green-700">
                   <small className="text-xs lg:text-sm">
                     {borrowedCopy.status === OnlineBorrowStatuses.Pending &&
@@ -182,4 +205,4 @@ const isTabActive = (
     ? "tab  tab-bordered tab-active"
     : "tab tab-bordered ";
 };
-export default CheckedOutBookPage;
+export default BorrowedBooksPage;
