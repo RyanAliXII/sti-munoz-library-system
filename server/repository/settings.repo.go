@@ -12,7 +12,7 @@ type SettingsRepository struct {
 	db *sqlx.DB
 }
 
-func(repo * SettingsRepository) Get()model.Settings{
+func(repo * SettingsRepository) Get()model.SettingsValue{
 
 	settings := model.Settings{}
 	query := `SELECT value from system.settings limit 1`;
@@ -21,16 +21,17 @@ func(repo * SettingsRepository) Get()model.Settings{
 		logger.Error(getErr.Error(), slimlog.Function("SettingsRepository.Get"), slimlog.Error("getErr"))
 	}
 
-	return settings
+	return settings.Value
 }
 func NewSettingsRepository ()  SettingsRepositoryInterface{
 
 	return &SettingsRepository{
 		db:      postgresdb.GetOrCreateInstance(),
+		
 	}
 }
 
 type SettingsRepositoryInterface interface {
-	Get()model.Settings
+	Get() model.SettingsValue
 
 }

@@ -91,6 +91,9 @@ export type Account = {
   surname: string;
   givenName: string;
   email: string;
+  metaData: {
+    totalPenalty: number;
+  };
 };
 
 export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {
@@ -143,4 +146,14 @@ export type OnlineBorrowedBook = {
   status: OnlineBorrowStatus;
   dueDate: string | null; //timestamp
   client: Account;
+};
+
+export interface SettingsField<T> {
+  id: string;
+  label: string;
+  description: string;
+  value: T;
+}
+export type Settings = {
+  "app.due-penalty": SettingsField<number>;
 };

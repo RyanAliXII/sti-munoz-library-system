@@ -41,7 +41,6 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
                 popperProps={{ strategy: "fixed" }}
                 name="dueDate"
                 placeholderText="Select due date"
-                minDate={new Date()}
                 value={new Date(dueDate).toDateString()}
                 selected={new Date(dueDate)}
                 onChange={(date) => {

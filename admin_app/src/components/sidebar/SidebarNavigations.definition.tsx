@@ -101,12 +101,17 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     icon: <MdRotate90DegreesCcw className="text-xl" />,
     items: [
       {
-        text: "Return",
+        text: "Online Borrowed Books",
+        to: "/circulation/online-borrowed-books",
+        items: [],
+      },
+      {
+        text: "Borrowed Books",
         to: "/circulation/transactions",
         items: [],
       },
       {
-        text: "Checkout",
+        text: "Borrow Book",
         to: "/circulation/checkout",
         items: [],
       },
@@ -138,6 +143,11 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         requiredPermissions: ["AccessControl.Role.Read"],
         to: "/system/access-control/assignments",
         text: "Role Assignments",
+        items: [],
+      },
+      {
+        to: "/system/settings",
+        text: "Settings",
         items: [],
       },
     ],

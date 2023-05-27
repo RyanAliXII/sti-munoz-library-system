@@ -17,6 +17,7 @@ type SettingsValue struct {
 
 
 type SettingsFieldInt struct {
+	Id string `json:"id"`
 	Label string `json:"label"`
 	Description string `json:"description"`
 	Value int `json:"value"`

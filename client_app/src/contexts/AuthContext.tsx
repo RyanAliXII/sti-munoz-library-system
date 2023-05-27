@@ -14,6 +14,9 @@ const userInitialData: Account = {
   givenName: "",
   surname: "",
   id: " ",
+  metaData: {
+    totalPenalty: 0,
+  },
 };
 
 export const AuthContext = createContext<AuthContextState>({
@@ -48,7 +51,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       });
 
       const user = await fetchLoggedInUserData(tokens.accessToken);
-      const accountData: Account = {
+      const accountData: Omit<Account, "metaData"> = {
         id: user.data.id,
         displayName: user.data.displayName,
         email: user.data.mail,
@@ -70,57 +73,46 @@ export const AuthProvider = ({ children }: BaseProps) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    setUser({
-      email: response.data.mail,
-      givenName: response.data.givenName,
-      surname: response.data.surname,
-      id: response.data.id,
-      displayName: response.data.displayName,
-    });
     return response;
   };
-  const verifyAccount = async (account: Account) => {
-    try {
-      const tokens = await msalClient.acquireTokenSilent({
-        scopes: [apiScope("Account.Read")],
-      });
-      await axiosClient.post("/system/accounts/verification", account, {
+  const verifyAccount = async (account: Omit<Account, "metaData">) => {
+    const tokens = await msalClient.acquireTokenSilent({
+      scopes: [apiScope("Account.Read")],
+    });
+    const response = await axiosClient.post(
+      "/system/accounts/verification",
+      account,
+      {
         headers: {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
-      });
-    } catch (error) {
-      console.error("Failed to verify user.");
-      throw error;
-    }
+      }
+    );
+    const { data } = response.data;
+    setUser(data.account);
   };
 
   const getRolePermissions = async () => {
-    try {
-      const tokens = await msalClient.acquireTokenSilent({
-        scopes: [apiScope("AccessControl.Role.Read")],
-      });
+    const tokens = await msalClient.acquireTokenSilent({
+      scopes: [apiScope("AccessControl.Role.Read")],
+    });
 
-      const { data: response } = await axiosClient.post(
-        "/system/accounts/roles",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${tokens.accessToken}`,
-          },
-        }
-      );
-      if (!response.data.role) return;
-      const role: Role = response.data.role;
-      const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
-        (a, moduleName) => [...a, ...role.permissions[moduleName]],
-        []
-      );
-      setPermissions(() => permissionsArr);
-    } catch (error) {
-      console.error("Failed to fetch permissions.");
-      throw error;
-    }
+    const { data: response } = await axiosClient.post(
+      "/system/accounts/roles",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      }
+    );
+    if (!response.data.role) return;
+    const role: Role = response.data.role;
+    const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
+      (a, moduleName) => [...a, ...role.permissions[moduleName]],
+      []
+    );
+    setPermissions(() => permissionsArr);
   };
 
   const hasPermissions = (requredPermissions: string[]) => {
