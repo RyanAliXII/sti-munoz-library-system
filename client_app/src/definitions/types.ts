@@ -93,6 +93,13 @@ export type Account = {
   email: string;
   metaData: {
     totalPenalty: number;
+    walkInCheckedOutBooks: number;
+    walkInReturnedBooks: number;
+    onlinePendingBooks: number;
+    onlineApprovedBooks: number;
+    onlineCheckedOutBooks: number;
+    onlineReturnedBooks: number;
+    onlineCancelledBooks: number;
   };
 };
 

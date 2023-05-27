@@ -13,7 +13,7 @@ import CatalogBookView from "./protected/catalog/CatalogBookView";
 import Page404 from "./error/Page404";
 import BagPage from "./protected/bag/BagPage";
 import ProfilePage from "./protected/profile/ProfilePage";
-import CheckedOutBookPage from "./protected/checked_out/CheckedOutBookPage";
+import BorrowedBooksPage from "./protected/borrowed_books/BorrowedBookPage";
 
 const pages = createBrowserRouter(
   createRoutesFromElements(
@@ -28,7 +28,7 @@ const pages = createBrowserRouter(
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/catalog/:id" element={<CatalogBookView />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/online/borrowed-books" element={<CheckedOutBookPage />} />
+        <Route path="/borrowed-books" element={<BorrowedBooksPage />} />
       </Route>
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />

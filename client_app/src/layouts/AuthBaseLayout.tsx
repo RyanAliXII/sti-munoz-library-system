@@ -29,10 +29,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink
-                to="/online/borrowed-books"
-                className={isHeaderNavActive}
-              >
+              <NavLink to="/borrowed-books" className={isHeaderNavActive}>
                 Borrowed Books
               </NavLink>
             </li>
