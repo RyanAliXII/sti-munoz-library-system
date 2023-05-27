@@ -91,6 +91,9 @@ export type Account = {
   surname: string;
   givenName: string;
   email: string;
+  metaData: {
+    totalPenalty: number;
+  };
 };
 
 export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {

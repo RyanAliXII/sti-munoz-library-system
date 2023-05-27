@@ -13,7 +13,7 @@ type Account struct {
 	GivenName   string          `json:"givenName" db:"given_name" csv:"givenName"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
 	Email       string          `json:"email" db:"email" csv:"mail"`
-	SearchRank  float64         `json:"-" db:"search_rank"`
+	AccountMetadata AccountMetadata `json:"metaData" db:"meta_data"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
 }
@@ -26,6 +26,9 @@ type AccountRoles []struct {
 	Account AccountJSON `json:"account" db:"account"`
 	Role    RoleJSON    `json:"role" db:"role"`
 }
+
+
+
 func (account *AccountJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	INITIAL_DATA_ON_ERROR := AccountJSON{
@@ -44,4 +47,29 @@ func (account *AccountJSON) Scan(value interface{}) error {
 }
 func (account AccountJSON) Value(value interface{}) (driver.Value, error) {
 	return account, nil
+}
+
+
+type AccountMetadata struct {
+	TotalPenalty float64 `json:"totalPenalty"`
+
+}
+func (meta *AccountMetadata) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+	INITIAL_DATA_ON_ERROR := AccountMetadata{
+		TotalPenalty: 0,
+	}
+	if valid {
+		unmarshalErr := json.Unmarshal(val, meta)
+		if unmarshalErr != nil {
+			*meta = INITIAL_DATA_ON_ERROR
+		}
+	} else {
+		*meta = INITIAL_DATA_ON_ERROR
+	}
+	return nil
+
+}
+func (meta AccountMetadata) Value(value interface{}) (driver.Value, error) {
+	return meta, nil
 }

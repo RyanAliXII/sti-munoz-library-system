@@ -100,7 +100,10 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Account verified."))
+	acccount := ctrler.accountRepository.GetAccountById(account.Id)
+	ctx.JSON(httpresp.Success200(gin.H{
+		"account":acccount,
+	}, "Account verified.",))
 
 }
 func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {

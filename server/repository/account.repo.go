@@ -20,7 +20,7 @@ type AccountRepository struct {
 }
 
 func (repo *AccountRepository) GetAccounts(filter Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, surname FROM system.account LIMIT $1 OFFSET $2`
+	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view LIMIT $1 OFFSET $2`
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -29,16 +29,25 @@ func (repo *AccountRepository) GetAccounts(filter Filter) []model.Account {
 	}
 	return accounts
 }
+func (repo *AccountRepository) GetAccountById(id string) model.Account {
+	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view where id = $1 LIMIT 1`
+	account := model.Account{}
+
+	getErr := repo.db.Get(&account, query, id)
+	if getErr != nil {
+		logger.Error(getErr.Error(), slimlog.Function("AccountRepository.GetAccountById"), slimlog.Error("getErr"))
+	}
+	return account
+}
 
 func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
 	query := `
 			SELECT id, email, 
 			display_name, 
-			given_name, surname, 
-			(  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
-			) as search_rank
-			FROM system.account where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
-			ORDER BY search_rank DESC
+			given_name, surname,meta_data
+			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
+			ORDER BY (  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
+			) DESC
 			LIMIT $2
 			OFFSET $3
 		`
@@ -50,6 +59,8 @@ func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
 	}
 	return accounts
 }
+
+
 func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 	var accountRows []goqu.Record = make([]goqu.Record, 0)
 	dialect := goqu.Dialect("postgres")
@@ -180,4 +191,6 @@ type AccountRepositoryInterface interface {
 	VerifyAndUpdateAccount(account model.Account) error
 	GetRoleByAccountId(accountId string) (model.Role, error)
 	GetAccountsWithAssignedRoles() model.AccountRoles
+	GetAccountById(id string) model.Account
+	
 }

@@ -22,7 +22,7 @@ func SystemRoutes(router *gin.RouterGroup) {
 	ctrler.RemoveRoleAssignment,
 	)
 	router.GET("/roles",middlewares.ValidateToken, ctrler.GetRoles)
-	router.POST("/accounts/verification",middlewares.ValidateBody[AccountBody] ,ctrler.VerifyAccount)
+	router.POST("/accounts/verification",middlewares.ValidateToken, middlewares.ValidateBody[AccountBody] ,ctrler.VerifyAccount)
 	router.POST("/accounts/roles",middlewares.ValidateToken, ctrler.GetAccountRoleAndPermissions)
 	router.GET("/settings", middlewares.ValidateToken, ctrler.GetAppSettings)
 }
