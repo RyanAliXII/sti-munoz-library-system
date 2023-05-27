@@ -1,6 +1,7 @@
 DROP VIEW IF EXISTS borrowed_book_view;
 CREATE OR REPLACE VIEW borrowed_book_view as 
 SELECT bt.id,
+	bt.account_id,
 	(case when bt.returned_at is null then false else true end) as is_returned,
 	(case when now() > bt.returned_at then true else false end) as is_due,
 	
