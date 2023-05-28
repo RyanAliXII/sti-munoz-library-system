@@ -69,7 +69,7 @@ type OnlineBorrowedBook struct {
 	CopyNumber int `json:"copyNumber" db:"copy_number"`
 	Book BookJSON `json:"book" db:"book"`
 	Status string `json:"status" db:"status"`
-	Penalty float64 `json:"penalty"db:"penalty"`
+	Penalty float64 `json:"penalty" db:"penalty"`
 	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
 	Remarks string `json:"remarks" db:"remarks"`
 	Client         AccountJSON     `json:"client" db:"client"`

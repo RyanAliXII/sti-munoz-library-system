@@ -290,7 +290,7 @@ func (ctrler  * CirculationController) GetOnlineBorrowedBook(ctx * gin.Context){
 
 
 }
-func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
+func (ctrler * CirculationController) UpdatePatchBorrowRequest(ctx * gin.Context){
 	 body := UpdateBorrowRequestPartialBody{}
 	 borrowRequestId := ctx.Param("id")
 	 var updateErr error
@@ -318,6 +318,7 @@ func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 			return
 		}
+		
 		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
 		return 
 	 }
@@ -351,6 +352,6 @@ type CirculationControllerInterface interface {
 	DeleteAllCheckedItems (ctx * gin.Context)
 	CheckoutCheckedItems(ctx *gin.Context)
 	GetOnlineBorrowedBooks(ctx * gin.Context)
-	UpdateStatusOrDueDate(ctx * gin.Context)
+	UpdatePatchBorrowRequest(ctx * gin.Context)
 	GetOnlineBorrowedBook(ctx * gin.Context)
 }

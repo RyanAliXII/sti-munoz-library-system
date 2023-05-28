@@ -58,11 +58,6 @@ const OnlineBorrowedBookPage = () => {
   } = useSwitch();
 
   const {
-    isOpen: isCancelConfirmationDialogOpen,
-    close: closeCancelConfirmationDialog,
-    open: openCancelConfirmationDialog,
-  } = useSwitch();
-  const {
     isOpen: isRemarkPromptOpen,
     close: closeRemarkPrompt,
     open: openRemarkPrompt,
@@ -130,10 +125,6 @@ const OnlineBorrowedBookPage = () => {
     onError: () => {
       toast.error("Unknown error occured. Please try again later.");
     },
-    onSettled: () => {
-      closeApprovalConfirmationDialog();
-      closeCancelConfirmationDialog();
-    },
   });
 
   const initializeApproval = (borrowedBook: OnlineBorrowedBook) => {
@@ -146,15 +137,18 @@ const OnlineBorrowedBookPage = () => {
   };
 
   const onConfirmApproval = () => {
+    closeApprovalConfirmationDialog();
     updateBorrowRequest.mutate({
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.Approved,
     });
   };
-  const onConfirmCancel = () => {
+  const onConfirmCancel = (remarks: string) => {
+    closeCancellationRemarkPrompt();
     updateBorrowRequest.mutate({
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.Cancelled,
+      remarks: remarks,
     });
   };
   const initializeUnreturn = (borrowedBook: OnlineBorrowedBook) => {
@@ -309,13 +303,6 @@ const OnlineBorrowedBookPage = () => {
         close={closeApprovalConfirmationDialog}
         onConfirm={onConfirmApproval}
       ></ConfirmDialog>
-      <DangerConfirmDialog
-        title="Cancel Borrow Request!"
-        text="Are you sure you want to cancel borrow request?"
-        isOpen={isCancelConfirmationDialogOpen}
-        close={closeCancelConfirmationDialog}
-        onConfirm={onConfirmCancel}
-      ></DangerConfirmDialog>
 
       <PromptTextAreaDialog
         close={closeRemarkPrompt}
@@ -334,7 +321,7 @@ const OnlineBorrowedBookPage = () => {
         proceedBtnText="Save"
         title="Cancellation Remarks"
         placeholder="Eg. Cancellation reason"
-        onProceed={onConfirmReturn}
+        onProceed={onConfirmCancel}
       />
       <PromptTextAreaDialog
         close={closeUnreturnedRemarkPrompt}

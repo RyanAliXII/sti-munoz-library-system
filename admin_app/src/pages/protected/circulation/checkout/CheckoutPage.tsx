@@ -40,12 +40,22 @@ export type CheckoutForm = {
   dueDate: string;
 };
 
-const CLIENT_INITIAL_DATA = {
+const CLIENT_INITIAL_DATA: Account = {
   displayName: "",
   email: "",
   givenName: "",
   surname: "",
   id: "",
+  metaData: {
+    onlineApprovedBooks: 0,
+    onlineCancelledBooks: 0,
+    onlineCheckedOutBooks: 0,
+    onlinePendingBooks: 0,
+    onlineReturnedBooks: 0,
+    totalPenalty: 0,
+    walkInCheckedOutBooks: 0,
+    walkInReturnedBooks: 0,
+  },
 };
 const CheckoutPage = () => {
   const getDate5DaysFromNow = (): Date => {

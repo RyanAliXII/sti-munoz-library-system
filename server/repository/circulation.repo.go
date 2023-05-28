@@ -432,13 +432,17 @@ func (repo * CirculationRepository) UpdateBorrowRequestStatusAndDueDate(borrowed
 	return updateErr
 }
 func (repo * CirculationRepository) UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error{
+
 	query:= `Update circulation.online_borrowed_book SET status = $1, remarks = $2 where id = $3`
 	_, updateErr := repo.db.Exec(query, borrowedBook.Status, borrowedBook.Remarks, borrowedBook.Id)
 	if(updateErr != nil){
 		logger.Error(updateErr.Error(),  slimlog.Function("CirculationRepository.UpdateBorrowRequestStatusAndDueDate"), slimlog.Error("updateErr"))
 	}
+	
 	return updateErr
 }
+
+func (repo * CirculationRepository )AddPenaltyForDelayedReturns ()
 
 
 

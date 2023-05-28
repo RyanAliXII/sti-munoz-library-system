@@ -76,14 +76,21 @@ const OnlineBorrowBookViewPage = () => {
   } = useSwitch();
 
   const {
-    isOpen: isCancelConfirmationDialogOpen,
-    close: closeCancelConfirmationDialog,
-    open: openCancelConfirmationDialog,
-  } = useSwitch();
-  const {
     isOpen: isRemarkPromptOpen,
     close: closeRemarkPrompt,
     open: openRemarkPrompt,
+  } = useSwitch();
+
+  const {
+    isOpen: isUnreturnedRemarkPrompOpen,
+    close: closeUnreturnedRemarkPrompt,
+    open: openUnreturnedRemarkPrompt,
+  } = useSwitch();
+
+  const {
+    isOpen: isCancellationRemarkPromptOpen,
+    close: closeCancellationRemarkPrompt,
+    open: openCancellationRemarkPrompt,
   } = useSwitch();
   const queryClient = useQueryClient();
   const [selectedBorrowedBook, setSelectedBorrowedBook] =
@@ -108,10 +115,6 @@ const OnlineBorrowBookViewPage = () => {
     onError: () => {
       toast.error("Unknown error occured. Please try again later.");
     },
-    onSettled: () => {
-      closeApprovalConfirmationDialog();
-      closeCancelConfirmationDialog();
-    },
   });
 
   const initializeApproval = (borrowedBook: OnlineBorrowedBook) => {
@@ -119,11 +122,12 @@ const OnlineBorrowBookViewPage = () => {
     setSelectedBorrowedBook(borrowedBook);
   };
   const initializeCancellation = (borrowedBook: OnlineBorrowedBook) => {
-    openCancelConfirmationDialog();
+    openCancellationRemarkPrompt();
     setSelectedBorrowedBook(borrowedBook);
   };
 
   const onConfirmApproval = () => {
+    closeApprovalConfirmationDialog();
     updateBorrowRequest.mutate({
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.Approved,
@@ -186,6 +190,20 @@ const OnlineBorrowBookViewPage = () => {
 
     toggleEditMode();
   };
+  const initializeUnreturn = (borrowedBook: OnlineBorrowedBook) => {
+    openUnreturnedRemarkPrompt();
+    setSelectedBorrowedBook(borrowedBook);
+  };
+
+  const onConfirmUnreturn = (remarks: string) => {
+    closeUnreturnedRemarkPrompt();
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Unreturned,
+      remarks: remarks,
+    });
+  };
+
   const orgAuthors = book?.authors.organizations?.map((org) => org.name) ?? [];
   const publisherAuthors = book?.authors.publishers.map((p) => p.name) ?? [];
   const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
@@ -291,52 +309,52 @@ const OnlineBorrowBookViewPage = () => {
             </div>
           </div>
         </Container>
-        {borrowedBook.status === "returned" ||
+        {(borrowedBook.status === "returned" ||
           borrowedBook.status === "cancelled" ||
-          (borrowedBook.status === "unreturned" && (
-            <ContainerNoBackground className="p-2">
-              <div className="mb-1">
-                <label className="text-sm">Remarks</label>
-              </div>
-              <textarea
-                className="w-full resize-none border h-40 p-2 disabled:pointer-events-none focus:outline-none disabled:opacity-90
+          borrowedBook.status === "unreturned") && (
+          <ContainerNoBackground className="p-2">
+            <div className="mb-1">
+              <label className="text-sm">Remarks</label>
+            </div>
+            <textarea
+              className="w-full resize-none border h-40 p-2 disabled:pointer-events-none focus:outline-none disabled:opacity-90
           "
-                onChange={(e) => {
-                  setRemarks(e.target.value);
-                }}
-                value={remarks}
-                disabled={!isEditMode}
-              ></textarea>
-              <div className="flex w-full justify-end gap-2 h-10">
-                {!isEditMode && (
-                  <SecondaryButton
-                    className="flex gap-1 items-center"
-                    onClick={toggleEditMode}
-                  >
-                    <AiOutlineEdit className="text-lg" />
-                    Edit
-                  </SecondaryButton>
-                )}
-                {isEditMode && (
-                  <LightOutlineButton
-                    className="flex gap-1 items-center"
-                    onClick={toggleEditMode}
-                  >
-                    <AiOutlineEdit className="text-lg" />
-                    Cancel
-                  </LightOutlineButton>
-                )}
-                <PrimaryButton
+              onChange={(e) => {
+                setRemarks(e.target.value);
+              }}
+              value={remarks}
+              disabled={!isEditMode}
+            ></textarea>
+            <div className="flex w-full justify-end gap-2 h-10">
+              {!isEditMode && (
+                <SecondaryButton
                   className="flex gap-1 items-center"
-                  disabled={!isEditMode}
-                  onClick={updateRemarks}
+                  onClick={toggleEditMode}
                 >
-                  <AiOutlineSave className="text-lg" />
-                  Save
-                </PrimaryButton>
-              </div>
-            </ContainerNoBackground>
-          ))}
+                  <AiOutlineEdit className="text-lg" />
+                  Edit
+                </SecondaryButton>
+              )}
+              {isEditMode && (
+                <LightOutlineButton
+                  className="flex gap-1 items-center"
+                  onClick={toggleEditMode}
+                >
+                  <AiOutlineEdit className="text-lg" />
+                  Cancel
+                </LightOutlineButton>
+              )}
+              <PrimaryButton
+                className="flex gap-1 items-center"
+                disabled={!isEditMode}
+                onClick={updateRemarks}
+              >
+                <AiOutlineSave className="text-lg" />
+                Save
+              </PrimaryButton>
+            </div>
+          </ContainerNoBackground>
+        )}
         <ContainerNoBackground>
           {borrowedBook.status === "pending" && (
             <PendingActionsButtons
@@ -354,6 +372,7 @@ const OnlineBorrowBookViewPage = () => {
           )}
           {borrowedBook.status === "checked-out" && (
             <CheckedOutActionsButtons
+              initializeUnreturn={initializeUnreturn}
               borrowedBook={borrowedBook}
               initializeReturn={initializeReturn}
               initializeCancellation={initializeCancellation}
@@ -372,13 +391,6 @@ const OnlineBorrowBookViewPage = () => {
           close={closeApprovalConfirmationDialog}
           onConfirm={onConfirmApproval}
         ></ConfirmDialog>
-        <DangerConfirmDialog
-          title="Cancel Borrow Request!"
-          text="Are you sure you want to cancel borrow request?"
-          isOpen={isCancelConfirmationDialogOpen}
-          close={closeCancelConfirmationDialog}
-          onConfirm={onConfirmCancel}
-        ></DangerConfirmDialog>
 
         <PromptTextAreaDialog
           close={closeRemarkPrompt}
@@ -389,6 +401,24 @@ const OnlineBorrowBookViewPage = () => {
           placeholder="Eg. Returned with no damage or Damage."
           onProceed={onConfirmReturn}
         ></PromptTextAreaDialog>
+        <PromptTextAreaDialog
+          close={closeCancellationRemarkPrompt}
+          isOpen={isCancellationRemarkPromptOpen}
+          label="Remarks"
+          proceedBtnText="Save"
+          title="Cancellation Remarks"
+          placeholder="Eg. Cancellation reason"
+          onProceed={onConfirmCancel}
+        />
+        <PromptTextAreaDialog
+          close={closeUnreturnedRemarkPrompt}
+          isOpen={isUnreturnedRemarkPrompOpen}
+          label="Remarks"
+          proceedBtnText="Save"
+          title="Unreturn Remarks"
+          placeholder="Eg. reason for not returning book."
+          onProceed={onConfirmUnreturn}
+        />
       </LoadingBoundary>
     </>
   );

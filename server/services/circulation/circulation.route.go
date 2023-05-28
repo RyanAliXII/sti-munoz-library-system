@@ -23,5 +23,5 @@ func CirculationRoutes(router *gin.RouterGroup) {
 	router.POST("/checklist/checkout", middlewares.ValidateToken, controller.CheckoutCheckedItems )
 	router.GET("/online/borrowed-books", middlewares.ValidateToken, controller.GetOnlineBorrowedBooks)
 	router.GET("/online/borrowed-books/:id", middlewares.ValidateToken, controller.GetOnlineBorrowedBook)
-	router.PATCH("/online/borrowed-books/:id", middlewares.ValidateToken, middlewares.ValidateBody[UpdateBorrowRequestPartialBody], controller.UpdateStatusOrDueDate)
+	router.PATCH("/online/borrowed-books/:id", middlewares.ValidateToken, middlewares.ValidateBody[UpdateBorrowRequestPartialBody], controller.UpdatePatchBorrowRequest)
 }
