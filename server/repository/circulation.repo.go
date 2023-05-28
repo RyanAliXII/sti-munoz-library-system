@@ -214,7 +214,7 @@ func (repo * CirculationRepository) GetItemsFromBagByAccountId(accountId string)
 	INNER JOIN book_view as book on accession.book_id = book.id
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
 	where bag.account_id = $1`
 	selectErr := repo.db.Select(&items, query, accountId,)
 	if selectErr != nil {
@@ -287,7 +287,7 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
 	where (CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) = true AND bag.account_id = $1 AND bag.is_checked = true
 	`
 	selectErr := transaction.Select(&items, query, accountId)

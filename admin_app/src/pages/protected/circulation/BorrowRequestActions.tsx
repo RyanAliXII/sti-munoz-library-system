@@ -3,6 +3,7 @@ import { Td } from "@components/ui/table/Table";
 import { OnlineBorrowedBook } from "@definitions/types";
 import Tippy from "@tippyjs/react";
 import { AiFillCheckCircle, AiOutlineEye } from "react-icons/ai";
+import { BsFillQuestionDiamondFill } from "react-icons/bs";
 import { FaHandHolding } from "react-icons/fa";
 import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -21,6 +22,7 @@ interface ApproveActionProps extends ActionsProps {
 }
 interface CheckedOutActionProps extends ActionsProps {
   initializeReturn: (ob: OnlineBorrowedBook) => void;
+  initializeUnreturn: (ob: OnlineBorrowedBook) => void;
   initializeCancellation: (ob: OnlineBorrowedBook) => void;
 }
 export const PendingActions: React.FC<PendingActionsProps> = ({
@@ -129,6 +131,7 @@ export const CheckedOutActions: React.FC<CheckedOutActionProps> = ({
   borrowedBook,
   initializeCancellation,
   initializeReturn,
+  initializeUnreturn,
 }) => {
   return (
     <Td className="flex gap-2">
@@ -155,6 +158,19 @@ export const CheckedOutActions: React.FC<CheckedOutActionProps> = ({
           }}
         >
           <MdOutlineKeyboardReturn
+            className="
+                          text-lg"
+          />
+        </button>
+      </Tippy>
+      <Tippy content="Mark Book as Unreturned">
+        <button
+          className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
+          onClick={() => {
+            initializeUnreturn(borrowedBook);
+          }}
+        >
+          <BsFillQuestionDiamondFill
             className="
                           text-lg"
           />
@@ -276,6 +292,7 @@ export const CheckedOutActionsButtons: React.FC<CheckedOutActionProps> = ({
   borrowedBook,
   initializeCancellation,
   initializeReturn,
+  initializeUnreturn,
 }) => {
   return (
     <div className="flex gap-2">
@@ -292,16 +309,15 @@ export const CheckedOutActionsButtons: React.FC<CheckedOutActionProps> = ({
         Mark as Returned
       </button>
       <button
-        className="flex  border p-3  rounded  bg-green-600 text-white gap-2 items-center"
+        className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
         onClick={() => {
-          initializeReturn(borrowedBook);
+          initializeUnreturn(borrowedBook);
         }}
       >
-        <MdOutlineKeyboardReturn
+        <BsFillQuestionDiamondFill
           className="
                           text-lg"
         />
-        Mark as Returned
       </button>
       <button
         className="flex border p-3  rounded  bg-red-500 text-white gap-1 items-center"

@@ -308,7 +308,7 @@ func (ctrler * CirculationController) UpdateStatusOrDueDate(ctx * gin.Context){
 		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
 		return 
 	 }
-	 if  body.Status == status.OnlineBorrowStatuses.Returned {
+	 if  len(body.Remarks) > 0 {
 		updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatusAndRemarks(model.OnlineBorrowedBook{
 			Id: borrowRequestId,
 			Status: body.Status,

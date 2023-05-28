@@ -67,6 +67,18 @@ const OnlineBorrowedBookPage = () => {
     close: closeRemarkPrompt,
     open: openRemarkPrompt,
   } = useSwitch();
+
+  const {
+    isOpen: isUnreturnedRemarkPrompOpen,
+    close: closeUnreturnedRemarkPrompt,
+    open: openUnreturnedRemarkPrompt,
+  } = useSwitch();
+
+  const {
+    isOpen: isCancellationRemarkPromptOpen,
+    close: closeCancellationRemarkPrompt,
+    open: openCancellationRemarkPrompt,
+  } = useSwitch();
   const [statusFiter, setStatusFilter] = useState<OnlineBorrowStatus | "all">(
     (localStorage.getItem("statusFilter") as OnlineBorrowStatus) ?? "all"
   );
@@ -129,7 +141,7 @@ const OnlineBorrowedBookPage = () => {
     setSelectedBorrowedBook(borrowedBook);
   };
   const initializeCancellation = (borrowedBook: OnlineBorrowedBook) => {
-    openCancelConfirmationDialog();
+    openCancellationRemarkPrompt();
     setSelectedBorrowedBook(borrowedBook);
   };
 
@@ -144,6 +156,10 @@ const OnlineBorrowedBookPage = () => {
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.Cancelled,
     });
+  };
+  const initializeUnreturn = (borrowedBook: OnlineBorrowedBook) => {
+    openUnreturnedRemarkPrompt();
+    setSelectedBorrowedBook(borrowedBook);
   };
 
   const initializeCheckout = (borrowedBook: OnlineBorrowedBook) => {
@@ -169,6 +185,15 @@ const OnlineBorrowedBookPage = () => {
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.CheckedOut,
       dueDate: date,
+    });
+  };
+
+  const onConfirmUnreturn = (remarks: string) => {
+    closeUnreturnedRemarkPrompt();
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Unreturned,
+      remarks: remarks,
     });
   };
 
@@ -198,6 +223,7 @@ const OnlineBorrowedBookPage = () => {
           <div className="w-3/12 hidden lg:block mb-4 ">
             <CustomSelect
               label="Status"
+              getOptionLabel={(val) => val.label}
               onChange={(option) => {
                 localStorage.setItem("statusFilter", option?.value ?? "all");
                 setStatusFilter((option?.value ?? "all") as OnlineBorrowStatus);
@@ -254,11 +280,13 @@ const OnlineBorrowedBookPage = () => {
                         <CheckedOutActions
                           initializeReturn={initializeReturn}
                           borrowedBook={bb}
+                          initializeUnreturn={initializeUnreturn}
                           initializeCancellation={initializeCancellation}
                         />
                       )}
                       {(bb.status === "cancelled" ||
-                        bb.status === "returned") && (
+                        bb.status === "returned" ||
+                        bb.status === "unreturned") && (
                         <ReturnedCancelledActions borrowedBook={bb} />
                       )}
                     </BodyRow>
@@ -297,7 +325,26 @@ const OnlineBorrowedBookPage = () => {
         title="Return Remarks"
         placeholder="Eg. Returned with no damage or Damage."
         onProceed={onConfirmReturn}
-      ></PromptTextAreaDialog>
+      />
+
+      <PromptTextAreaDialog
+        close={closeCancellationRemarkPrompt}
+        isOpen={isCancellationRemarkPromptOpen}
+        label="Remarks"
+        proceedBtnText="Save"
+        title="Cancellation Remarks"
+        placeholder="Eg. Cancellation reason"
+        onProceed={onConfirmReturn}
+      />
+      <PromptTextAreaDialog
+        close={closeUnreturnedRemarkPrompt}
+        isOpen={isUnreturnedRemarkPrompOpen}
+        label="Remarks"
+        proceedBtnText="Save"
+        title="Unreturn Remarks"
+        placeholder="Eg. reason for not returning book."
+        onProceed={onConfirmUnreturn}
+      />
     </>
   );
 };

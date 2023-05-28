@@ -291,50 +291,52 @@ const OnlineBorrowBookViewPage = () => {
             </div>
           </div>
         </Container>
-        {borrowedBook.status === "returned" && (
-          <ContainerNoBackground className="p-2">
-            <div className="mb-1">
-              <label className="text-sm">Remarks</label>
-            </div>
-            <textarea
-              className="w-full resize-none border h-40 p-2 disabled:pointer-events-none focus:outline-none disabled:opacity-90
+        {borrowedBook.status === "returned" ||
+          borrowedBook.status === "cancelled" ||
+          (borrowedBook.status === "unreturned" && (
+            <ContainerNoBackground className="p-2">
+              <div className="mb-1">
+                <label className="text-sm">Remarks</label>
+              </div>
+              <textarea
+                className="w-full resize-none border h-40 p-2 disabled:pointer-events-none focus:outline-none disabled:opacity-90
           "
-              onChange={(e) => {
-                setRemarks(e.target.value);
-              }}
-              value={remarks}
-              disabled={!isEditMode}
-            ></textarea>
-            <div className="flex w-full justify-end gap-2 h-10">
-              {!isEditMode && (
-                <SecondaryButton
-                  className="flex gap-1 items-center"
-                  onClick={toggleEditMode}
-                >
-                  <AiOutlineEdit className="text-lg" />
-                  Edit
-                </SecondaryButton>
-              )}
-              {isEditMode && (
-                <LightOutlineButton
-                  className="flex gap-1 items-center"
-                  onClick={toggleEditMode}
-                >
-                  <AiOutlineEdit className="text-lg" />
-                  Cancel
-                </LightOutlineButton>
-              )}
-              <PrimaryButton
-                className="flex gap-1 items-center"
+                onChange={(e) => {
+                  setRemarks(e.target.value);
+                }}
+                value={remarks}
                 disabled={!isEditMode}
-                onClick={updateRemarks}
-              >
-                <AiOutlineSave className="text-lg" />
-                Save
-              </PrimaryButton>
-            </div>
-          </ContainerNoBackground>
-        )}
+              ></textarea>
+              <div className="flex w-full justify-end gap-2 h-10">
+                {!isEditMode && (
+                  <SecondaryButton
+                    className="flex gap-1 items-center"
+                    onClick={toggleEditMode}
+                  >
+                    <AiOutlineEdit className="text-lg" />
+                    Edit
+                  </SecondaryButton>
+                )}
+                {isEditMode && (
+                  <LightOutlineButton
+                    className="flex gap-1 items-center"
+                    onClick={toggleEditMode}
+                  >
+                    <AiOutlineEdit className="text-lg" />
+                    Cancel
+                  </LightOutlineButton>
+                )}
+                <PrimaryButton
+                  className="flex gap-1 items-center"
+                  disabled={!isEditMode}
+                  onClick={updateRemarks}
+                >
+                  <AiOutlineSave className="text-lg" />
+                  Save
+                </PrimaryButton>
+              </div>
+            </ContainerNoBackground>
+          ))}
         <ContainerNoBackground>
           {borrowedBook.status === "pending" && (
             <PendingActionsButtons

@@ -24,7 +24,7 @@ type BagItem struct {
 }
 
 type UpdateBorrowRequestPartialBody struct {
-	Status string `json:"status" binding:"required,oneof=pending approved checked-out returned cancelled"`
+	Status string `json:"status" binding:"required,oneof=pending approved checked-out returned cancelled unreturned"`
 	Remarks string `json:"remarks" binding:"omitempty"`
 	DueDate db.NullableDate `json:"dueDate" binding:"omitempty"`
 }
