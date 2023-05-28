@@ -136,7 +136,7 @@ const BorrowedBooksPage = () => {
                     {borrowedCopy.status ===
                       OnlineBorrowStatuses.CheckedOut && (
                       <>
-                        {`${StatusText.CheckedOut} Please return the book on `}
+                        {`${StatusText.CheckedOut} Please return on `}
                         <span className="underline underline-offset-2">
                           {new Date(borrowedCopy.dueDate ?? "").toDateString()}
                         </span>
@@ -175,6 +175,21 @@ const BorrowedBooksPage = () => {
                       <p className="text-xs md:text-sm lg:text-base text-gray-500">
                         {ordinal(borrowedCopy.copyNumber)} - Copy
                       </p>
+
+                      {borrowedCopy.penalty > 0 &&
+                        borrowedCopy.status ===
+                          OnlineBorrowStatuses.CheckedOut && (
+                          <small className="text-xs md:text-sm text-error">
+                            You are past due. Penalty:{" "}
+                            <strong>
+                              PHP{" "}
+                              {borrowedCopy.penalty.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </strong>
+                          </small>
+                        )}
                     </div>
                   </div>
                   <div className="flex items-center justify-end justify-self-end">

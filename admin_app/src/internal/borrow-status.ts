@@ -19,7 +19,8 @@ export type OnlineBorrowStatus =
   | "approved"
   | "checked-out"
   | "returned"
-  | "cancelled";
+  | "cancelled"
+  | "unreturned";
 
 export const STATUSES_OPTIONS = [
   {

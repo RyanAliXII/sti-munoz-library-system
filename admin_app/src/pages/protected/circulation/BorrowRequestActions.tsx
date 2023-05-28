@@ -291,7 +291,18 @@ export const CheckedOutActionsButtons: React.FC<CheckedOutActionProps> = ({
         />
         Mark as Returned
       </button>
-
+      <button
+        className="flex  border p-3  rounded  bg-green-600 text-white gap-2 items-center"
+        onClick={() => {
+          initializeReturn(borrowedBook);
+        }}
+      >
+        <MdOutlineKeyboardReturn
+          className="
+                          text-lg"
+        />
+        Mark as Returned
+      </button>
       <button
         className="flex border p-3  rounded  bg-red-500 text-white gap-1 items-center"
         onClick={() => {

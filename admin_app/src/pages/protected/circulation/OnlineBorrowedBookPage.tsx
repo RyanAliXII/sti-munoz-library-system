@@ -225,7 +225,7 @@ const OnlineBorrowedBookPage = () => {
                 {borrowedBooks?.map((bb) => {
                   const book = bb.book;
                   return (
-                    <BodyRow key={bb.accessionId}>
+                    <BodyRow key={bb.id}>
                       <Td className="font-bold">{bb.client.displayName}</Td>
                       <Td className="font-bold">{book.title}</Td>
 

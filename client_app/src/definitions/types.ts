@@ -157,6 +157,7 @@ export type OnlineBorrowedBook = {
   accessionNumber: number;
   copyNumber: number;
   book: Book;
+  penalty: number;
   status: OnlineBorrowStatus;
   dueDate: string | null; //timestamp
 };

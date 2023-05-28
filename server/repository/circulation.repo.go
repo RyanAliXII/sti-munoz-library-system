@@ -343,12 +343,17 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(accountId string, status string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	where obb.account_id = $1 and status = $2
-	ORDER BY obb.created_at desc
+
+	query := `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks
+	FROM online_borrowed_book_view
+	 where account_id = $1 and status = $2
+	ORDER BY created_at desc
 	`
+	// query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
+	// INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
+	// INNER JOIN book_view as book on accession.book_id = book.id 
+	
+	// `
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId, status)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBooksByAccountIdAndStatus"), slimlog.Error("selectErr"))
@@ -357,11 +362,10 @@ func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(a
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountID(accountId string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	where obb.account_id = $1 
-	ORDER BY obb.created_at desc
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks
+	FROM online_borrowed_book_view
+	where account_id = $1
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId)
 	if selectErr != nil {
@@ -371,13 +375,10 @@ func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountID(accountId 
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBookByStatus( status string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	INNER JOIN system.account on obb.account_id = system.account.id
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
+	FROM online_borrowed_book_view
 	where status = $1
-	ORDER BY obb.created_at desc
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query, status)
 	if selectErr != nil {
@@ -387,12 +388,9 @@ func (repo * CirculationRepository) GetOnlineBorrowedBookByStatus( status string
 }
 func (repo * CirculationRepository) GetAllOnlineBorrowedBooks() []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	INNER JOIN system.account on obb.account_id = system.account.id
-	ORDER BY obb.created_at desc
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
+	FROM online_borrowed_book_view
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query)
 	if selectErr != nil {
@@ -402,13 +400,10 @@ func (repo * CirculationRepository) GetAllOnlineBorrowedBooks() []model.OnlineBo
 }
 func (repo * CirculationRepository) GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook{
 	borrowedBook := model.OnlineBorrowedBook{}
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	INNER JOIN system.account on obb.account_id = system.account.id
-	where obb.id = $1
-	ORDER BY obb.created_at desc
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
+	FROM online_borrowed_book_view
+	where id = $1
+	ORDER BY created_at desc
 	`
 	getErr := repo.db.Get(&borrowedBook, query, id)
 

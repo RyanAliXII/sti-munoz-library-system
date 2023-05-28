@@ -150,6 +150,8 @@ export type OnlineBorrowedBook = {
   accessionNumber: number;
   copyNumber: number;
   book: Book;
+  penalty: number;
+  remarks: string;
   status: OnlineBorrowStatus;
   dueDate: string | null; //timestamp
   client: Account;
