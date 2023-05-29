@@ -166,3 +166,14 @@ export interface SettingsField<T> {
 export type Settings = {
   "app.due-penalty": SettingsField<number>;
 };
+
+export type Penalty = {
+  id?: string;
+  description: string;
+  amount: number;
+  accountId: string;
+  account: Account;
+  isSettled: boolean;
+  settledAt: string | null; //iso-time-string
+  createdAt: string; //iso-time-string
+};

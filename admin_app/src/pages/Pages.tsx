@@ -26,6 +26,7 @@ import AssignedRolePage from "./protected/system/AssignedRolePage";
 import OnlineBorrowedBookPage from "./protected/circulation/OnlineBorrowedBookPage";
 import OnlineBorrowBookViewPage from "./protected/circulation/OnlineBorrowedBookViewPage";
 import SettingsPage from "./protected/system/settings/SettingsPage";
+import PenaltyPage from "./protected/circulation/penalty/PenaltyPage";
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -169,6 +170,7 @@ const pages = createRoutesFromChildren(
         path="/circulation/online-borrowed-books/:id"
         element={<OnlineBorrowBookViewPage />}
       />
+      <Route path="/circulation/penalties" element={<PenaltyPage />} />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>
