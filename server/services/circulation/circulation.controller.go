@@ -1,6 +1,7 @@
 package circulation
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -283,7 +284,7 @@ func (ctrler  * CirculationController) GetOnlineBorrowedBooks(ctx * gin.Context)
 
 func (ctrler  * CirculationController) GetOnlineBorrowedBook(ctx * gin.Context){
 	id := ctx.Param("id")
-	borrowedBook := ctrler.circulationRepository.GetAllOnlineBorrowedBookById(id)	
+	borrowedBook := ctrler.circulationRepository.GetOnlineBorrowedBookById(id)	
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowedBook": borrowedBook,
 	}, "Borrowed Book has been fetched."))
@@ -318,10 +319,17 @@ func (ctrler * CirculationController) UpdatePatchBorrowRequest(ctx * gin.Context
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 			return
 		}
-		
+		fmt.Println("ADDING PENALTY")
+		addPenaltyErr := ctrler.circulationRepository.AddPenaltyOnlineBorrowedBook(borrowRequestId)
+		fmt.Println(" PENALTY ADDED")
+		if addPenaltyErr != nil{
+					ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+					return
+		}
 		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
 		return 
 	 }
+	 
 	updateErr = ctrler.circulationRepository.UpdateBorrowRequestStatus(borrowRequestId, body.Status)
 	if updateErr != nil{
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))

@@ -309,7 +309,7 @@ export const CheckedOutActionsButtons: React.FC<CheckedOutActionProps> = ({
         Mark as Returned
       </button>
       <button
-        className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
+        className="flex items-center border p-2 gap-2  rounded bg-white text-orange-500 border-orange-500"
         onClick={() => {
           initializeUnreturn(borrowedBook);
         }}
@@ -318,6 +318,7 @@ export const CheckedOutActionsButtons: React.FC<CheckedOutActionProps> = ({
           className="
                           text-lg"
         />
+        Mark as Unreturned
       </button>
       <button
         className="flex border p-3  rounded  bg-red-500 text-white gap-1 items-center"

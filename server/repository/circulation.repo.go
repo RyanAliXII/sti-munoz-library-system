@@ -398,7 +398,7 @@ func (repo * CirculationRepository) GetAllOnlineBorrowedBooks() []model.OnlineBo
 	}
 	return borrowedBooks
 }
-func (repo * CirculationRepository) GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook{
+func (repo * CirculationRepository) GetOnlineBorrowedBookById(id string) model.OnlineBorrowedBook{
 	borrowedBook := model.OnlineBorrowedBook{}
 	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
 	FROM online_borrowed_book_view
@@ -442,7 +442,59 @@ func (repo * CirculationRepository) UpdateBorrowRequestStatusAndRemarks(borrowed
 	return updateErr
 }
 
-func (repo * CirculationRepository )AddPenaltyForDelayedReturns ()
+func (repo * CirculationRepository )AddPenaltyOnlineBorrowedBook (id string) error{
+	transaction, transactErr := repo.db.Beginx()
+
+	if transactErr != nil {
+		transaction.Rollback()
+		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyForDelayedReturnOfOnlineBorrowedBook "), slimlog.Error("transactErr"), )
+		return transactErr
+	} 
+	borrowedBook := model.OnlineBorrowedBook{}
+	getQuery := `
+	SELECT id, account_id, accession_id, due_date, number, copy_number, status, book,  
+	case when (now()::date - due_date) < 0 then 0 else (now()::date - due_date) end * penalty_on_past_due as penalty,
+	remarks, client
+	FROM online_borrowed_book_view
+	where id = $1 and status in ('returned', 'unreturned')
+	ORDER BY created_at desc
+	LIMIT 1
+	`
+	
+	getErr := transaction.Get(&borrowedBook, getQuery, id)
+	fmt.Println(borrowedBook)
+	if getErr != nil {
+		transaction.Rollback()
+		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyForDelayedReturnOfOnlineBorrowedBook "), slimlog.Error("getEr") )
+		return getErr
+	}
+	if len(borrowedBook.Id) > 0 && borrowedBook.Penalty > 0 {
+	
+	description := fmt.Sprintf(`
+This to inform you that you have been penalized for delayed return of the book.
+				
+Book Details:
+Title: %s
+Due Date: %s
+Penalty: %.2f
+
+We kindly remind you to promptly return the book and settle the penalty to avoid any further consequences. 
+Please note that failing to return library materials on time disrupts the borrowing system and may inconvenience other library users.
+If you have any questions or require assistance, please contact our library staff. Thank you for your immediate attention to this matter.`,
+		borrowedBook.Book.Title,  borrowedBook.DueDate, borrowedBook.Penalty) 
+		
+	
+		insertQuery := "INSERT INTO circulation.penalty(description, amount, account_id) VALUES($1, $2, $3)"
+		_, insertErr := transaction.Exec(insertQuery, description, borrowedBook.Penalty, borrowedBook.AccountId)
+		if insertErr != nil{
+			transaction.Rollback()
+			logger.Error(insertErr.Error(),slimlog.Function("CirculationRepository.AddPenaltyForDelayedReturnOfOnlineBorrowedBook "), slimlog.Error("insertErr") )
+			return insertErr
+		}
+	}
+	transaction.Commit()
+	return nil
+}
 
 
 
@@ -476,7 +528,9 @@ type CirculationRepositoryInterface interface {
 	GetAllOnlineBorrowedBooks() []model.OnlineBorrowedBook
 	UpdateBorrowRequestStatus(id string,  status string) error
 	UpdateBorrowRequestStatusAndDueDate(borrowedBook model.OnlineBorrowedBook ) error
-	GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
+	GetOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
 	UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error
 	GetOnlineBorrowedBooksByAccountID(accountId string) []model.OnlineBorrowedBook
+	AddPenaltyOnlineBorrowedBook(id string) error
+	
 }
