@@ -27,7 +27,7 @@ func(repo * PenaltyRepository) GetPenalties()[]model.Penalty{
 		display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as account,
 		(case when settled_at is not null then true else false end) as is_settled
 		FROM circulation.penalty inner join system.account on penalty.account_id = account.id
-		ORDER BY created_at`
+		ORDER BY created_at DESC`
 	
 	selectErr := repo.db.Select(&penalties, query)
 	if selectErr != nil {

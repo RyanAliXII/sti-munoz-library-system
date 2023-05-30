@@ -343,7 +343,7 @@ func (ctrler * CirculationController) UpdatePatchBorrowRequest(ctx * gin.Context
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 			return
 		}
-		if body.Status == status.OnlineBorrowStatuses.Returned && body.Status == status.OnlineBorrowStatuses.Unreturned{
+		if body.Status == status.OnlineBorrowStatuses.Returned || body.Status == status.OnlineBorrowStatuses.Unreturned{
 			 ctrler.circulationRepository.AddPenaltyOnlineBorrowedBook(borrowRequestId)
 		
 		}
