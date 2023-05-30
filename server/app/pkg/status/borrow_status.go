@@ -19,5 +19,16 @@ var OnlineBorrowStatuses = onlineBorrowStatusesStruct {
  
 }
 
+type borrowStatusesStruct struct{
+	Returned string
+	Cancelled string
+	Unreturned string
+ }
 
+var BorrowStatuses = borrowStatusesStruct {
+	Returned: "returned",
+	Cancelled: "cancelled",
+	Unreturned: "unreturned",
+ 
+}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -65,53 +66,50 @@ func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Checkout success."))
 }
 
-func (ctrler *CirculationController) ReturnBooksById(ctx *gin.Context) {
 
-	id := ctx.Param("id")
-	_, idParseErr := uuid.Parse(id)
-	body := ReturnBookBody{
-		Remarks: "",
-	}
+func (ctrler * CirculationController)UpdateBorrowedBookStatus(ctx * gin.Context) {
 
-	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	if idParseErr != nil {
-		logger.Error(idParseErr.Error(), slimlog.Function("CirculationController.ReturnBooksById"), zap.String("id", id))
-		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
-		return
-	}
-
-	returnErr := ctrler.circulationRepository.ReturnBooksByTransactionId(id, body.Remarks)
-	if returnErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
-
-	ctx.JSON(httpresp.Success200(nil, "Books returned successfully."))
-}
-func (ctrler *CirculationController) ReturnBookCopy(ctx *gin.Context) {
-	transactionId := ctx.Param("id")
-	_, transactionIdParseErr := uuid.Parse(transactionId)
+	transactionId := ctx.Param("transactionId")
 	bookId := ctx.Param("bookId")
-	_, bookIdParseErr := uuid.Parse(bookId)
-	accessionNumberParam := ctx.Param("accessionNumber")
-	accessionNumber, numberConvErr := strconv.Atoi(accessionNumberParam)
+	accessionNumber := ctx.Param("number")
+	body := UpdateBorrowedBookPartialBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
 
-	if numberConvErr != nil {
-		ctx.JSON(httpresp.Fail404(nil, "Invalid url params."))
-		return
+	parsedAccessionNumber,parseErr  := strconv.Atoi(accessionNumber)
+	if parseErr != nil {
+        ctx.JSON(httpresp.Fail400(nil, "Invalid accession number"))
+        return
 	}
-	if transactionIdParseErr != nil || bookIdParseErr != nil {
-		logger.Warn("Invalid url params.", slimlog.Function("CirculationController.ReturnBookCopy"))
-		ctx.JSON(httpresp.Fail500(nil, "Invalid url params."))
-		return
+	borrowedCopy := model.BorrowedCopy{
+		TransactionId: transactionId,
+		BookId: bookId,
+		Number: parsedAccessionNumber,
+		Remarks: body.Remarks,
 	}
-	returnCopyErr := ctrler.circulationRepository.ReturnBookCopy(transactionId, bookId, accessionNumber)
-	if returnCopyErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
+	if body.Status == status.BorrowStatuses.Returned {
+		fmt.Println("returning")
+		updateErr := ctrler.circulationRepository.MarkBorrowedBookReturned(borrowedCopy)
+		if updateErr!= nil {
+            ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+            return
+        }
 	}
+	if body.Status == status.BorrowStatuses.Unreturned {
+		updateErr := ctrler.circulationRepository.MarkBorrowedBookUnreturned(borrowedCopy)
+		if updateErr!= nil {
+            ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+            return
+        }
+	}
+	if body.Status == status.BorrowStatuses.Cancelled {
+		updateErr := ctrler.circulationRepository.MarkBorrowedBookCancelled(borrowedCopy)
+		if updateErr!= nil {
+            ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+            return
+        }
+	}
+       ctx.JSON(httpresp.Success200(nil, "Status updated"))
 
-	ctx.JSON(httpresp.Success200(nil, "Book copy has been returned."))
 }
 
 func (ctrler * CirculationController) AddBagItem (ctx * gin.Context){
@@ -352,8 +350,6 @@ type CirculationControllerInterface interface {
 	Checkout(ctx *gin.Context)
 	GetBagItems(ctx  *gin.Context)
 	AddBagItem(ctx *gin.Context )
-	ReturnBooksById(ctx *gin.Context)
-	ReturnBookCopy(ctx *gin.Context)
 	DeleteItemFromBag (ctx * gin.Context)
 	CheckItemFromBag(ctx * gin.Context)
 	CheckOrUncheckAllItems(ctx* gin.Context)
@@ -362,4 +358,5 @@ type CirculationControllerInterface interface {
 	GetOnlineBorrowedBooks(ctx * gin.Context)
 	UpdatePatchBorrowRequest(ctx * gin.Context)
 	GetOnlineBorrowedBook(ctx * gin.Context)
+	UpdateBorrowedBookStatus(ctx * gin.Context)
 }
