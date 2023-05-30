@@ -45,7 +45,7 @@ const TransactionByIdPage = () => {
   const { Get, Patch } = useRequest();
   const fetchTransaction = async () => {
     const { data: response } = await Get(
-      `/circulation/transactions/${id}`,
+      `/circulation/transactions/${id}/`,
       {},
       [apiScope("Checkout.Read")]
     );
@@ -113,7 +113,7 @@ const TransactionByIdPage = () => {
         `/circulation/transactions/${id}/books/${selectedCopy.bookId}/accessions/${selectedCopy.number}`,
         body,
         {},
-        [apiScope("Checkout.Add")]
+        [apiScope("Checkout.Edit")]
       ),
     onSuccess: () => {
       toast.success("Borrowed book has been updated.");
@@ -189,75 +189,77 @@ const TransactionByIdPage = () => {
                       <Td>{accession.number}</Td>
 
                       <Td>{new Date(accession.dueDate).toDateString()}</Td>
-                      {!isTransactionFinished && (
-                        <Td className="flex gap-2">
-                          <Tippy content="View Book">
-                            <Link
-                              to={`/circulation/online-borrowed-books/`}
-                              className={
-                                ButtonClasses.PrimaryOutlineButtonClasslist +
-                                " flex items-center gap-2 "
-                              }
-                            >
-                              <AiOutlineEye
-                                className="
+
+                      <Td>
+                        {!isTransactionFinished ?? "Checked Out"}
+                        {accession.isReturned && "Returned"}
+                        {accession.isCancelled && "Cancelled"}
+                        {accession.isUnreturned && "Unreturned"}
+                      </Td>
+
+                      <Td className="flex gap-2">
+                        <Tippy content="View Book">
+                          <Link
+                            to={`/circulation/transactions/${transaction.id}/books/${accession.bookId}/accessions/${accession.number}`}
+                            className={
+                              ButtonClasses.PrimaryOutlineButtonClasslist +
+                              " flex items-center gap-2 "
+                            }
+                          >
+                            <AiOutlineEye
+                              className="
                         text-lg"
-                              />
-                            </Link>
-                          </Tippy>
-
-                          <Tippy content="Mark Book as Returned">
-                            <button
-                              className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
-                              onClick={() => {
-                                setSelectedCopy(accession);
-                                openReturnRemarkPrompt();
-                              }}
-                            >
-                              <MdOutlineKeyboardReturn
-                                className="
+                            />
+                          </Link>
+                        </Tippy>
+                        {!isTransactionFinished && (
+                          <>
+                            {" "}
+                            <Tippy content="Mark Book as Returned">
+                              <button
+                                className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
+                                onClick={() => {
+                                  setSelectedCopy(accession);
+                                  openReturnRemarkPrompt();
+                                }}
+                              >
+                                <MdOutlineKeyboardReturn
+                                  className="
                           text-lg"
-                              />
-                            </button>
-                          </Tippy>
-                          <Tippy content="Mark Book as Unreturned">
-                            <button
-                              className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
-                              onClick={() => {
-                                setSelectedCopy(accession);
-                                openUnreturnedRemarkPrompt();
-                              }}
-                            >
-                              <BsFillQuestionDiamondFill
-                                className="
+                                />
+                              </button>
+                            </Tippy>
+                            <Tippy content="Mark Book as Unreturned">
+                              <button
+                                className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
+                                onClick={() => {
+                                  setSelectedCopy(accession);
+                                  openUnreturnedRemarkPrompt();
+                                }}
+                              >
+                                <BsFillQuestionDiamondFill
+                                  className="
                           text-lg"
-                              />
-                            </button>
-                          </Tippy>
-                          <Tippy content="Cancel Borrow Request">
-                            <button
-                              className="flex items-center border p-2  rounded bg-white text-red-500 border-red-500"
-                              onClick={() => {
-                                setSelectedCopy(accession);
-                                openCancellationRemarkPrompt();
-                              }}
-                            >
-                              <MdOutlineCancel
-                                className="
+                                />
+                              </button>
+                            </Tippy>
+                            <Tippy content="Cancel Borrow Request">
+                              <button
+                                className="flex items-center border p-2  rounded bg-white text-red-500 border-red-500"
+                                onClick={() => {
+                                  setSelectedCopy(accession);
+                                  openCancellationRemarkPrompt();
+                                }}
+                              >
+                                <MdOutlineCancel
+                                  className="
                           text-lg"
-                              />
-                            </button>
-                          </Tippy>
-                        </Td>
-                      )}
-
-                      {isTransactionFinished && (
-                        <Td>
-                          {accession.isReturned && "Returned"}
-                          {accession.isCancelled && "Cancelled"}
-                          {accession.isUnreturned && "Unreturned"}
-                        </Td>
-                      )}
+                                />
+                              </button>
+                            </Tippy>
+                          </>
+                        )}
+                      </Td>
                     </BodyRow>
                   );
                 })}

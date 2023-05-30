@@ -9,10 +9,18 @@ import (
 func CirculationRoutes(router *gin.RouterGroup) {
 	var controller CirculationControllerInterface = NewCirculationController()
 	router.GET("/transactions", controller.GetTransactions)
-	router.GET("/transactions/:id", controller.GetTransactionById)
+
 	router.GET("/transactions/:id/books", controller.GetTransactionBooks)
 	router.POST("/checkout", middlewares.ValidateBody[CheckoutBody], controller.Checkout)
 	router.PATCH("/transactions/:transactionId/books/:bookId/accessions/:number", middlewares.ValidateToken, middlewares.ValidateBody[UpdateBorrowedBookPartialBody],  controller.UpdateBorrowedBookStatus)
+	
+	//fix for this fucking idiot limitation of gin-gonic
+	getTransactionGroup := router.Group("/transactions/:id")
+	getTransactionGroup.GET("/", controller.GetTransactionById)
+	getTransactionGroup.GET("/books/:bookId/accessions/:number", middlewares.ValidateToken,  controller.GetBorrowedCopy)
+	
+	
+
 	router.POST("/bag",middlewares.ValidateToken, middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)
 	router.GET("/bag",middlewares.ValidateToken, controller.GetBagItems)
 	router.DELETE("/bag/:id",middlewares.ValidateToken, controller.DeleteItemFromBag)

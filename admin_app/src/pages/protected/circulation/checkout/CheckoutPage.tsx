@@ -34,6 +34,8 @@ import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { BookInitialValue } from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import Tippy from "@tippyjs/react";
+import { MdOutlineRemoveCircle } from "react-icons/md";
 
 export interface CheckoutAccession extends DetailedAccession {
   dueDate: string;
@@ -229,14 +231,6 @@ const CheckoutPage = () => {
                       <Td>{accession.copyNumber}</Td>
                       <Td>{accession.number}</Td>
                       <Td>
-                        <IoIosRemoveCircleOutline
-                          className="text-red-400 cursor-pointer text-2xl"
-                          onClick={() => {
-                            removeAccession(accession);
-                          }}
-                        />
-                      </Td>
-                      <Td>
                         <CustomDatePicker
                           name="dueDate"
                           error={errors?.dueDate}
@@ -262,6 +256,18 @@ const CheckoutPage = () => {
                             }));
                           }}
                         />
+                      </Td>
+                      <Td>
+                        <Tippy content="Remove Book">
+                          <button>
+                            <MdOutlineRemoveCircle
+                              className="text-red-400 cursor-pointer text-2xl"
+                              onClick={() => {
+                                removeAccession(accession);
+                              }}
+                            />
+                          </button>
+                        </Tippy>
                       </Td>
                     </BodyRow>
                   );

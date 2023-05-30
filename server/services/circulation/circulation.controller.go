@@ -66,7 +66,34 @@ func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Checkout success."))
 }
 
+func (ctrler * CirculationController)GetBorrowedCopy (ctx * gin.Context){
+	transactionId := ctx.Param("id")
+	bookId := ctx.Param("bookId")
+	accessionNumber := ctx.Param("number")
+	parsedAccessionNumber,parseErr  := strconv.Atoi(accessionNumber)
+	if parseErr != nil {
+        ctx.JSON(httpresp.Fail400(nil, "Invalid accession number"))
+        return 
+	}
+	fmt.Println(transactionId)
+	fmt.Println(bookId)
+	borrowedCopy := model.BorrowedCopy{
+		TransactionId: transactionId,
+		BookId: bookId,
+		Number: parsedAccessionNumber,
+	}
+	
+	borrowedCopy, getErr := ctrler.circulationRepository.GetBorrowedCopy(borrowedCopy)
+	if getErr != nil {
+        ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+        return
+    }
 
+
+	ctx.JSON(httpresp.Success200(gin.H{
+			"borrowedCopy": borrowedCopy,
+		}, "Borrowed copy fetched."))
+}
 func (ctrler * CirculationController)UpdateBorrowedBookStatus(ctx * gin.Context) {
 
 	transactionId := ctx.Param("transactionId")
@@ -359,4 +386,6 @@ type CirculationControllerInterface interface {
 	UpdatePatchBorrowRequest(ctx * gin.Context)
 	GetOnlineBorrowedBook(ctx * gin.Context)
 	UpdateBorrowedBookStatus(ctx * gin.Context)
+	GetBorrowedCopy(ctx * gin.Context)
+	
 }

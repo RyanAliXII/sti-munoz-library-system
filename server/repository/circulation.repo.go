@@ -92,6 +92,35 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	}
 	return transaction
 }
+func(repo * CirculationRepository) GetBorrowedCopy( borrowedCopy model.BorrowedCopy) ( model.BorrowedCopy, error){
+	query:= `SELECT bb.transaction_id, bb.accession_number as number,
+	bb.book_id,
+	json_build_object('id',account.id, 'displayName', 
+		display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
+	COALESCE(bb.remarks, '') as remarks,
+	bb.due_date,
+	bv.json_format as book,
+	bb.due_date,
+	(case when bb.returned_at is null then false else true end) as is_returned,
+	(case when bb.cancelled_at is null then false else true end) as is_cancelled,
+	(case when bb.unreturned_at is null then false else true end) as is_unreturned
+	FROM circulation.borrowed_book as bb 
+	INNER JOIN circulation.borrow_transaction as bt on bb.transaction_id = bt.id
+	INNER JOIN system.account   on bt.account_id = account.id
+	INNER JOIN book_view as bv on bb.book_id = bv.id
+	where bb.transaction_id = $1 and bb.book_id = $2 and bb.accession_number = $3
+	LIMIT 1
+	`
+	borrowedCopyDest := model.BorrowedCopy{}
+	getErr := repo.db.Get(&borrowedCopyDest, query, borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+	
+	if getErr != nil {
+        logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.GetBorrowedCopy"), slimlog.Error("getErr"))
+    }
+
+	return borrowedCopyDest, getErr
+
+}
 func (repo *CirculationRepository) NewTransaction(clientId string, accessions model.BorrowedCopies) error {
 	settings := repo.settingRepository.Get()
 	if settings.DuePenalty.Value == 0 {
@@ -326,11 +355,6 @@ func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(a
 	 where account_id = $1 and status = $2
 	ORDER BY created_at desc
 	`
-	// query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
-	// INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	// INNER JOIN book_view as book on accession.book_id = book.id 
-	
-	// `
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId, status)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("CirculationRepository.GetOnlineBorrowedBooksByAccountIdAndStatus"), slimlog.Error("selectErr"))
@@ -510,4 +534,5 @@ type CirculationRepositoryInterface interface {
 	MarkBorrowedBookCancelled(borrowedCopy model.BorrowedCopy ) error
 	MarkBorrowedBookReturned(borrowedCopy model.BorrowedCopy) error
 	MarkBorrowedBookUnreturned(borrowedCopy model.BorrowedCopy) error
+	GetBorrowedCopy( borrowedCopy model.BorrowedCopy)  (model.BorrowedCopy, error)
 }
