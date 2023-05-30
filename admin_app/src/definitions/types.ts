@@ -111,6 +111,7 @@ export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {
   client: Account;
   dueDate: string;
   remarks: string;
+  penalty: number;
 }
 
 export type BorrowingTransaction = {

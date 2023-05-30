@@ -35,7 +35,10 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 		'remarks', bb.remarks,
 		'isReturned', (case when bb.returned_at is null then false else true end),
 		'isCancelled',(case when bb.cancelled_at is null then false else true end),
-		'isUnreturned', (case when bb.unreturned_at is null then false else true end),	
+		'isUnreturned', (case when bb.unreturned_at is null then false else true end),
+		'penalty', (case when  bb.due_date is null or bb.returned_at is not null or bb.unreturned_at is not null or bb.cancelled_at is not null  then 0 else (
+			case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+		   ) end) * penalty_on_past_due,
 		'book', book.json_format		   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
@@ -71,7 +74,10 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 		'dueDate', bb.due_date,
 		'isReturned', (case when bb.returned_at is null then false else true end),
 		'isCancelled',(case when bb.cancelled_at is null then false else true end),
-		'isUnreturned', (case when bb.unreturned_at is null then false else true end),	
+		'isUnreturned', (case when bb.unreturned_at is null then false else true end),
+		'penalty', (case when  bb.due_date is null or bb.returned_at is not null or bb.unreturned_at is not null or bb.cancelled_at is not null then 0 else (
+			case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+		   ) end) * penalty_on_past_due,	
 		'book', book.json_format		   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
@@ -101,6 +107,9 @@ func(repo * CirculationRepository) GetBorrowedCopy( borrowedCopy model.BorrowedC
 	bb.due_date,
 	bv.json_format as book,
 	bb.due_date,
+	(case when  bb.due_date is null or bb.returned_at is not null or bb.unreturned_at is not null or bb.cancelled_at is not null then 0 else (
+		case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+	   ) end) * penalty_on_past_due as penalty,	
 	(case when bb.returned_at is null then false else true end) as is_returned,
 	(case when bb.cancelled_at is null then false else true end) as is_cancelled,
 	(case when bb.unreturned_at is null then false else true end) as is_unreturned
@@ -463,10 +472,9 @@ func (repo * CirculationRepository )AddPenaltyOnlineBorrowedBook (id string) err
 	`
 	
 	getErr := transaction.Get(&borrowedBook, getQuery, id)
-	fmt.Println(borrowedBook)
 	if getErr != nil {
 		transaction.Rollback()
-		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyForDelayedReturnOfOnlineBorrowedBook "), slimlog.Error("getEr") )
+		logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyOnlineBorrowedBook "), slimlog.Error("getErr") )
 		return getErr
 	}
 	if len(borrowedBook.Id) > 0 && borrowedBook.Penalty > 0 {
@@ -481,7 +489,10 @@ Penalty: PHP %.2f
 
 We kindly remind you to promptly return the book and settle the penalty to avoid any further consequences. 
 Please note that failing to return library materials on time disrupts the borrowing system and may inconvenience other library users.
-If you have any questions or require assistance, please contact our library staff. Thank you for your immediate attention to this matter.`,
+If you have any questions or require assistance, please contact our library staff. Thank you for your immediate attention to this matter.
+
+**THIS A SYSTEM GENERATED MESSAGE **
+`,
 		borrowedBook.Book.Title,  borrowedBook.DueDate, borrowedBook.Penalty) 
 		
 	
@@ -489,7 +500,7 @@ If you have any questions or require assistance, please contact our library staf
 		_, insertErr := transaction.Exec(insertQuery, description, borrowedBook.Penalty, borrowedBook.AccountId)
 		if insertErr != nil{
 			transaction.Rollback()
-			logger.Error(insertErr.Error(),slimlog.Function("CirculationRepository.AddPenaltyForDelayedReturnOfOnlineBorrowedBook "), slimlog.Error("insertErr") )
+			logger.Error(insertErr.Error(),slimlog.Function("CirculationRepository.AddPenaltyOnlineBorrowedBook  "), slimlog.Error("insertErr") )
 			return insertErr
 		}
 	}
@@ -497,7 +508,64 @@ If you have any questions or require assistance, please contact our library staf
 	return nil
 }
 
+func (repo * CirculationRepository )AddPenaltyForWalkInBorrowedBook (borrowedCopy model.BorrowedCopy) error {
+		
+		borrowedBook := model.BorrowedCopy{}
 
+		getQuery := `
+			SELECT bb.transaction_id, bb.accession_number as number,
+			bb.book_id,
+			json_build_object('id',account.id, 'displayName', 
+				display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
+			COALESCE(bb.remarks, '') as remarks,
+			bb.due_date,
+			bv.json_format as book,
+			bb.due_date,
+			(case when  bb.due_date is null then 0 else (
+				case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+			) end) * penalty_on_past_due as penalty,	
+			(case when bb.returned_at is null then false else true end) as is_returned,
+			(case when bb.cancelled_at is null then false else true end) as is_cancelled,
+			(case when bb.unreturned_at is null then false else true end) as is_unreturned
+			FROM circulation.borrowed_book as bb 
+			INNER JOIN circulation.borrow_transaction as bt on bb.transaction_id = bt.id
+			INNER JOIN system.account   on bt.account_id = account.id
+			INNER JOIN book_view as bv on bb.book_id = bv.id
+			where bb.transaction_id = $1 and bb.book_id = $2 and bb.accession_number = $3 and (bb.returned_at is not null OR bb.unreturned_at is not null OR bb.cancelled_at is not null)
+			LIMIT 1
+		`
+
+		getErr := repo.db.Get(&borrowedBook, getQuery, borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+
+		if getErr != nil {
+			logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyForWalkInBorrowedBook "), slimlog.Error("getEr") )
+            return getErr
+		}
+		description := fmt.Sprintf(`
+This to inform you that you have been penalized for delayed return of the book.
+						
+Book Details:
+Title: %s
+Due Date: %s
+Penalty: PHP %.2f 
+		
+We kindly remind you to promptly return the book and settle the penalty to avoid any further consequences. 
+Please note that failing to return library materials on time disrupts the borrowing system and may inconvenience other library users.
+If you have any questions or require assistance, please contact our library staff. Thank you for your immediate attention to this matter.
+		
+**THIS A SYSTEM GENERATED MESSAGE **
+		`,
+				borrowedBook.Book.Title,  borrowedBook.DueDate, borrowedBook.Penalty) 
+		if borrowedBook.Penalty > 0 {
+			insertQuery := "INSERT INTO circulation.penalty(description, amount, account_id) VALUES($1, $2, $3)"
+		_, insertErr := repo.db.Exec(insertQuery, description, borrowedBook.Penalty, borrowedBook.Client.Id)
+		if insertErr != nil{
+			logger.Error(insertErr.Error(),slimlog.Function("CirculationRepository.AddPenaltyForWalkInBorrowedBook "), slimlog.Error("insertErr") )
+			return insertErr
+		}
+		}
+		return nil
+}
 
 
 
@@ -535,4 +603,5 @@ type CirculationRepositoryInterface interface {
 	MarkBorrowedBookReturned(borrowedCopy model.BorrowedCopy) error
 	MarkBorrowedBookUnreturned(borrowedCopy model.BorrowedCopy) error
 	GetBorrowedCopy( borrowedCopy model.BorrowedCopy)  (model.BorrowedCopy, error)
+	AddPenaltyForWalkInBorrowedBook (borrowedCopy model.BorrowedCopy) error
 }

@@ -234,7 +234,6 @@ const CheckoutPage = () => {
                         <CustomDatePicker
                           name="dueDate"
                           error={errors?.dueDate}
-                          minDate={new Date()}
                           value={new Date(accession.dueDate).toDateString()}
                           selected={new Date(accession.dueDate)}
                           onChange={(date) => {

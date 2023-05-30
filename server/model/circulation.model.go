@@ -32,6 +32,7 @@ type BorrowedCopy struct {
 	IsCancelled bool            `json:"isCancelled" db:"is_cancelled"`
 	ReturnedAt db.NullableTime `json:"returnedAt"`
 	Client         AccountJSON     `json:"client" db:"client"`
+	Penalty 	float64 `json:"penalty" db:"penalty"`
 	Book       BookJSON        `json:"book"`
 }
 func (copies *BorrowedCopies) Scan(value interface{}) error {

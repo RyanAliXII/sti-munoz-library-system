@@ -93,14 +93,14 @@ const TransactionByIdPage = () => {
     });
   };
   const onConfirmCancel = (remarks: string) => {
-    closeReturnRemarkPrompt();
+    closeCancellationRemarkPrompt();
     updateStatus.mutate({
       status: "cancelled",
       remarks: remarks,
     });
   };
   const onConfirmUnreturn = (remarks: string) => {
-    closeReturnRemarkPrompt();
+    closeUnreturnedRemarkPrompt();
     updateStatus.mutate({
       status: "unreturned",
       remarks: remarks,
@@ -173,6 +173,8 @@ const TransactionByIdPage = () => {
                   <Th>Copy number</Th>
                   <Th>Accession number</Th>
                   <Th>Due Date</Th>
+                  <Th>Status</Th>
+                  <Th>Penalty</Th>
                   <Th></Th>
                 </HeadingRow>
               </Thead>
@@ -191,10 +193,17 @@ const TransactionByIdPage = () => {
                       <Td>{new Date(accession.dueDate).toDateString()}</Td>
 
                       <Td>
-                        {!isTransactionFinished ?? "Checked Out"}
+                        {!isTransactionFinished && "Checked Out"}
                         {accession.isReturned && "Returned"}
                         {accession.isCancelled && "Cancelled"}
                         {accession.isUnreturned && "Unreturned"}
+                      </Td>
+                      <Td>
+                        PHP{" "}
+                        {accession.penalty.toLocaleString(undefined, {
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
+                        })}
                       </Td>
 
                       <Td className="flex gap-2">

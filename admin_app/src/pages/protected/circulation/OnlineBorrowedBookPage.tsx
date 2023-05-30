@@ -32,7 +32,6 @@ import DueDateInputModal from "./DueDateInputModal";
 import { useSwitch } from "@hooks/useToggle";
 import {
   ConfirmDialog,
-  DangerConfirmDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
 import { toast } from "react-toastify";

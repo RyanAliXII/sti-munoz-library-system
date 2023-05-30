@@ -80,14 +80,14 @@ const BorrowBookViewPage = () => {
     });
   };
   const onConfirmCancel = (remarks: string) => {
-    closeReturnRemarkPrompt();
+    closeCancellationRemarkPrompt();
     updateBorrowRequest.mutate({
       status: "cancelled",
       remarks: remarks,
     });
   };
   const onConfirmUnreturn = (remarks: string) => {
-    closeReturnRemarkPrompt();
+    closeUnreturnedRemarkPrompt();
     updateBorrowRequest.mutate({
       status: "unreturned",
       remarks: remarks,
@@ -203,11 +203,11 @@ const BorrowBookViewPage = () => {
               Penalty
             </span>
             <span className="text-gray-500 text-sm md:text-base">
-              {/* PHP{" "}
+              PHP{" "}
               {borrowedBook?.penalty.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })} */}
+              })}
             </span>
           </div>
         </Container>

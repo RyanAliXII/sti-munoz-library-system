@@ -1,7 +1,6 @@
 package circulation
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -75,8 +74,6 @@ func (ctrler * CirculationController)GetBorrowedCopy (ctx * gin.Context){
         ctx.JSON(httpresp.Fail400(nil, "Invalid accession number"))
         return 
 	}
-	fmt.Println(transactionId)
-	fmt.Println(bookId)
 	borrowedCopy := model.BorrowedCopy{
 		TransactionId: transactionId,
 		BookId: bookId,
@@ -114,12 +111,12 @@ func (ctrler * CirculationController)UpdateBorrowedBookStatus(ctx * gin.Context)
 		Remarks: body.Remarks,
 	}
 	if body.Status == status.BorrowStatuses.Returned {
-		fmt.Println("returning")
 		updateErr := ctrler.circulationRepository.MarkBorrowedBookReturned(borrowedCopy)
 		if updateErr!= nil {
             ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
             return
         }
+		 ctrler.circulationRepository.AddPenaltyForWalkInBorrowedBook(borrowedCopy)
 	}
 	if body.Status == status.BorrowStatuses.Unreturned {
 		updateErr := ctrler.circulationRepository.MarkBorrowedBookUnreturned(borrowedCopy)
@@ -127,6 +124,8 @@ func (ctrler * CirculationController)UpdateBorrowedBookStatus(ctx * gin.Context)
             ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
             return
         }
+		ctrler.circulationRepository.AddPenaltyForWalkInBorrowedBook(borrowedCopy)
+	
 	}
 	if body.Status == status.BorrowStatuses.Cancelled {
 		updateErr := ctrler.circulationRepository.MarkBorrowedBookCancelled(borrowedCopy)
@@ -344,12 +343,9 @@ func (ctrler * CirculationController) UpdatePatchBorrowRequest(ctx * gin.Context
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 			return
 		}
-		fmt.Println("ADDING PENALTY")
-		addPenaltyErr := ctrler.circulationRepository.AddPenaltyOnlineBorrowedBook(borrowRequestId)
-		fmt.Println(" PENALTY ADDED")
-		if addPenaltyErr != nil{
-					ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
-					return
+		if body.Status == status.OnlineBorrowStatuses.Returned && body.Status == status.OnlineBorrowStatuses.Unreturned{
+			 ctrler.circulationRepository.AddPenaltyOnlineBorrowedBook(borrowRequestId)
+		
 		}
 		ctx.JSON(httpresp.Success200(nil, "Borrowed book updated."))
 		return 
