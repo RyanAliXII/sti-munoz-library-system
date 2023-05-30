@@ -566,11 +566,6 @@ If you have any questions or require assistance, please contact our library staf
 		}
 		return nil
 }
-
-
-
-
-
 func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
 		db: postgresdb.GetOrCreateInstance(),
