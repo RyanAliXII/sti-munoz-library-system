@@ -32,7 +32,6 @@ import DueDateInputModal from "./DueDateInputModal";
 import { useSwitch } from "@hooks/useToggle";
 import {
   ConfirmDialog,
-  DangerConfirmDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
 import { toast } from "react-toastify";
@@ -58,14 +57,21 @@ const OnlineBorrowedBookPage = () => {
   } = useSwitch();
 
   const {
-    isOpen: isCancelConfirmationDialogOpen,
-    close: closeCancelConfirmationDialog,
-    open: openCancelConfirmationDialog,
-  } = useSwitch();
-  const {
     isOpen: isRemarkPromptOpen,
     close: closeRemarkPrompt,
     open: openRemarkPrompt,
+  } = useSwitch();
+
+  const {
+    isOpen: isUnreturnedRemarkPrompOpen,
+    close: closeUnreturnedRemarkPrompt,
+    open: openUnreturnedRemarkPrompt,
+  } = useSwitch();
+
+  const {
+    isOpen: isCancellationRemarkPromptOpen,
+    close: closeCancellationRemarkPrompt,
+    open: openCancellationRemarkPrompt,
   } = useSwitch();
   const [statusFiter, setStatusFilter] = useState<OnlineBorrowStatus | "all">(
     (localStorage.getItem("statusFilter") as OnlineBorrowStatus) ?? "all"
@@ -118,10 +124,6 @@ const OnlineBorrowedBookPage = () => {
     onError: () => {
       toast.error("Unknown error occured. Please try again later.");
     },
-    onSettled: () => {
-      closeApprovalConfirmationDialog();
-      closeCancelConfirmationDialog();
-    },
   });
 
   const initializeApproval = (borrowedBook: OnlineBorrowedBook) => {
@@ -129,21 +131,28 @@ const OnlineBorrowedBookPage = () => {
     setSelectedBorrowedBook(borrowedBook);
   };
   const initializeCancellation = (borrowedBook: OnlineBorrowedBook) => {
-    openCancelConfirmationDialog();
+    openCancellationRemarkPrompt();
     setSelectedBorrowedBook(borrowedBook);
   };
 
   const onConfirmApproval = () => {
+    closeApprovalConfirmationDialog();
     updateBorrowRequest.mutate({
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.Approved,
     });
   };
-  const onConfirmCancel = () => {
+  const onConfirmCancel = (remarks: string) => {
+    closeCancellationRemarkPrompt();
     updateBorrowRequest.mutate({
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.Cancelled,
+      remarks: remarks,
     });
+  };
+  const initializeUnreturn = (borrowedBook: OnlineBorrowedBook) => {
+    openUnreturnedRemarkPrompt();
+    setSelectedBorrowedBook(borrowedBook);
   };
 
   const initializeCheckout = (borrowedBook: OnlineBorrowedBook) => {
@@ -169,6 +178,15 @@ const OnlineBorrowedBookPage = () => {
       id: selectedBorrowedBook?.id ?? "",
       status: OnlineBorrowStatuses.CheckedOut,
       dueDate: date,
+    });
+  };
+
+  const onConfirmUnreturn = (remarks: string) => {
+    closeUnreturnedRemarkPrompt();
+    updateBorrowRequest.mutate({
+      id: selectedBorrowedBook?.id ?? "",
+      status: OnlineBorrowStatuses.Unreturned,
+      remarks: remarks,
     });
   };
 
@@ -198,6 +216,7 @@ const OnlineBorrowedBookPage = () => {
           <div className="w-3/12 hidden lg:block mb-4 ">
             <CustomSelect
               label="Status"
+              getOptionLabel={(val) => val.label}
               onChange={(option) => {
                 localStorage.setItem("statusFilter", option?.value ?? "all");
                 setStatusFilter((option?.value ?? "all") as OnlineBorrowStatus);
@@ -225,7 +244,7 @@ const OnlineBorrowedBookPage = () => {
                 {borrowedBooks?.map((bb) => {
                   const book = bb.book;
                   return (
-                    <BodyRow key={bb.accessionId}>
+                    <BodyRow key={bb.id}>
                       <Td className="font-bold">{bb.client.displayName}</Td>
                       <Td className="font-bold">{book.title}</Td>
 
@@ -254,11 +273,13 @@ const OnlineBorrowedBookPage = () => {
                         <CheckedOutActions
                           initializeReturn={initializeReturn}
                           borrowedBook={bb}
+                          initializeUnreturn={initializeUnreturn}
                           initializeCancellation={initializeCancellation}
                         />
                       )}
                       {(bb.status === "cancelled" ||
-                        bb.status === "returned") && (
+                        bb.status === "returned" ||
+                        bb.status === "unreturned") && (
                         <ReturnedCancelledActions borrowedBook={bb} />
                       )}
                     </BodyRow>
@@ -281,13 +302,6 @@ const OnlineBorrowedBookPage = () => {
         close={closeApprovalConfirmationDialog}
         onConfirm={onConfirmApproval}
       ></ConfirmDialog>
-      <DangerConfirmDialog
-        title="Cancel Borrow Request!"
-        text="Are you sure you want to cancel borrow request?"
-        isOpen={isCancelConfirmationDialogOpen}
-        close={closeCancelConfirmationDialog}
-        onConfirm={onConfirmCancel}
-      ></DangerConfirmDialog>
 
       <PromptTextAreaDialog
         close={closeRemarkPrompt}
@@ -297,7 +311,26 @@ const OnlineBorrowedBookPage = () => {
         title="Return Remarks"
         placeholder="Eg. Returned with no damage or Damage."
         onProceed={onConfirmReturn}
-      ></PromptTextAreaDialog>
+      />
+
+      <PromptTextAreaDialog
+        close={closeCancellationRemarkPrompt}
+        isOpen={isCancellationRemarkPromptOpen}
+        label="Remarks"
+        proceedBtnText="Save"
+        title="Cancellation Remarks"
+        placeholder="Eg. Cancellation reason"
+        onProceed={onConfirmCancel}
+      />
+      <PromptTextAreaDialog
+        close={closeUnreturnedRemarkPrompt}
+        isOpen={isUnreturnedRemarkPrompOpen}
+        label="Remarks"
+        proceedBtnText="Save"
+        title="Unreturn Remarks"
+        placeholder="Eg. reason for not returning book."
+        onProceed={onConfirmUnreturn}
+      />
     </>
   );
 };

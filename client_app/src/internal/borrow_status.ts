@@ -10,7 +10,8 @@ export type OnlineBorrowStatus =
   | "approved"
   | "checked-out"
   | "returned"
-  | "cancelled";
+  | "cancelled"
+  | "unreturned";
 
 export const StatusText = {
   Pending:

@@ -1,4 +1,4 @@
-import { Book, BorrowedCopy, BorrowingTransaction } from "./types";
+import { Account, Book, BorrowedCopy, BorrowingTransaction } from "./types";
 
 export const BookInitialValue: Book = {
   title: "",
@@ -44,8 +44,26 @@ export const BorrowedCopyInitialValue: BorrowedCopy = {
   copyNumber: 0,
   number: 0,
   returnedAt: "",
+  isAvailable: false,
 };
 
+export const AccountInitialValue: Account = {
+  displayName: "",
+  email: "",
+  givenName: "",
+  surname: "",
+  id: "",
+  metaData: {
+    onlineApprovedBooks: 0,
+    onlineCancelledBooks: 0,
+    onlineCheckedOutBooks: 0,
+    onlinePendingBooks: 0,
+    onlineReturnedBooks: 0,
+    totalPenalty: 0,
+    walkInCheckedOutBooks: 0,
+    walkInReturnedBooks: 0,
+  },
+};
 export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
     displayName: "",
@@ -53,6 +71,16 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
     givenName: "",
     surname: "",
     id: "",
+    metaData: {
+      onlineApprovedBooks: 0,
+      onlineCancelledBooks: 0,
+      onlineCheckedOutBooks: 0,
+      onlinePendingBooks: 0,
+      onlineReturnedBooks: 0,
+      totalPenalty: 0,
+      walkInCheckedOutBooks: 0,
+      walkInReturnedBooks: 0,
+    },
   },
   isDue: false,
   borrowedCopies: [],

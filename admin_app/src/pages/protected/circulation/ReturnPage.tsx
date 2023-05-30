@@ -48,8 +48,7 @@ const BorrowingTransactionPage = () => {
           <Thead>
             <HeadingRow>
               <Th>Client</Th>
-              <Th>Due Date</Th>
-              <Th>Status</Th>
+
               <Th></Th>
             </HeadingRow>
           </Thead>
@@ -64,14 +63,7 @@ const BorrowingTransactionPage = () => {
                   }
                 >
                   <Td>{transaction.client.displayName}</Td>
-                  <Td>{new Date(transaction.dueDate).toLocaleDateString()}</Td>
-                  <Td>
-                    {transaction?.isReturned
-                      ? BorrowStatuses.Returned
-                      : transaction?.isDue
-                      ? BorrowStatuses.Overdue
-                      : BorrowStatuses.CheckedOut}
-                  </Td>
+
                   <Td>
                     <TimeAgo datetime={transaction.createdAt} />
                   </Td>

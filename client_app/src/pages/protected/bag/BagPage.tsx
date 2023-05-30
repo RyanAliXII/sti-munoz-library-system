@@ -125,7 +125,7 @@ const BagPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
       toast.success("Book has been checked out.");
-      navigate("/online/borrowed-books");
+      navigate("/borrowed-books?status=pending");
     },
     onError: () => {
       toast.error("Unknown error occured, Please try again later.");

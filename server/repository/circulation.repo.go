@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
@@ -24,7 +23,6 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 	selectTransactionQuery := `
 	SELECT bt.id,
 	(case when bt.returned_at is null then false else true end) as is_returned,
-	(case when now() > bt.returned_at then true else false end) as is_due,
 	json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 	COALESCE(
@@ -33,12 +31,19 @@ func (repo *CirculationRepository) GetBorrowingTransactions() []model.BorrowingT
 		'bookId', bb.book_id,
 		'copyNumber', accession.copy_number ,
 		'returnedAt',bb.returned_at,
-		'isReturned', (case when bb.returned_at is null then false else true end),	
+		'dueDate', bb.due_date,
+		'remarks', bb.remarks,
+		'isReturned', (case when bb.returned_at is null then false else true end),
+		'isCancelled',(case when bb.cancelled_at is null then false else true end),
+		'isUnreturned', (case when bb.unreturned_at is null then false else true end),
+		'penalty', (case when  bb.due_date is null or bb.returned_at is not null or bb.unreturned_at is not null or bb.cancelled_at is not null  then 0 else (
+			case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+		   ) end) * penalty_on_past_due,
 		'book', book.json_format		   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
 	COALESCE(bt.remarks, '') as remarks,
-	bt.due_date, bt.returned_at
+	 bt.returned_at
 	from circulation.borrow_transaction as bt
 	INNER JOIN system.account on bt.account_id = account.id
 	INNER JOIN circulation.borrowed_book as bb on bt.id = bb.transaction_id
@@ -58,7 +63,6 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	var transaction model.BorrowingTransaction = model.BorrowingTransaction{}
 	query := `SELECT bt.id,
 	(case when bt.returned_at is null then false else true end) as is_returned,
-	(case when now() > bt.returned_at then true else false end) as is_due,
 	json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 	COALESCE(
@@ -67,12 +71,18 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 		'bookId', bb.book_id,
 		'copyNumber', accession.copy_number ,
 		'returnedAt',bb.returned_at,
-		'isReturned', (case when bb.returned_at is null then false else true end),	
+		'dueDate', bb.due_date,
+		'isReturned', (case when bb.returned_at is null then false else true end),
+		'isCancelled',(case when bb.cancelled_at is null then false else true end),
+		'isUnreturned', (case when bb.unreturned_at is null then false else true end),
+		'penalty', (case when  bb.due_date is null or bb.returned_at is not null or bb.unreturned_at is not null or bb.cancelled_at is not null then 0 else (
+			case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+		   ) end) * penalty_on_past_due,	
 		'book', book.json_format		   
 	)),'[]') as borrowed_copies,
 	bt.created_at, 
 	COALESCE(bt.remarks, '') as remarks,
-	bt.due_date, bt.returned_at
+	bt.returned_at
 	from circulation.borrow_transaction as bt
 	INNER JOIN system.account on bt.account_id = account.id
 	INNER JOIN circulation.borrowed_book as bb on bt.id = bb.transaction_id
@@ -88,7 +98,39 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	}
 	return transaction
 }
-func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.NullableDate, accessions []model.Accession) error {
+func(repo * CirculationRepository) GetBorrowedCopy( borrowedCopy model.BorrowedCopy) ( model.BorrowedCopy, error){
+	query:= `SELECT bb.transaction_id, bb.accession_number as number,
+	bb.book_id,
+	json_build_object('id',account.id, 'displayName', 
+		display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
+	COALESCE(bb.remarks, '') as remarks,
+	bb.due_date,
+	bv.json_format as book,
+	bb.due_date,
+	(case when  bb.due_date is null or bb.returned_at is not null or bb.unreturned_at is not null or bb.cancelled_at is not null then 0 else (
+		case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+	   ) end) * penalty_on_past_due as penalty,	
+	(case when bb.returned_at is null then false else true end) as is_returned,
+	(case when bb.cancelled_at is null then false else true end) as is_cancelled,
+	(case when bb.unreturned_at is null then false else true end) as is_unreturned
+	FROM circulation.borrowed_book as bb 
+	INNER JOIN circulation.borrow_transaction as bt on bb.transaction_id = bt.id
+	INNER JOIN system.account   on bt.account_id = account.id
+	INNER JOIN book_view as bv on bb.book_id = bv.id
+	where bb.transaction_id = $1 and bb.book_id = $2 and bb.accession_number = $3
+	LIMIT 1
+	`
+	borrowedCopyDest := model.BorrowedCopy{}
+	getErr := repo.db.Get(&borrowedCopyDest, query, borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+	
+	if getErr != nil {
+        logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.GetBorrowedCopy"), slimlog.Error("getErr"))
+    }
+
+	return borrowedCopyDest, getErr
+
+}
+func (repo *CirculationRepository) NewTransaction(clientId string, accessions model.BorrowedCopies) error {
 	settings := repo.settingRepository.Get()
 	if settings.DuePenalty.Value == 0 {
 		settingsErr := fmt.Errorf("due penalty value is 0")
@@ -102,8 +144,8 @@ func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.Nu
 		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.NewTransaction"), slimlog.Error("transactErr"))
 		return transactErr
 	}
-	query := `INSERT INTO circulation.borrow_transaction (id, account_id, due_date, penalty_on_past_due) VALUES($1,$2,$3,$4)`
-	insertTransactionResult, insertTransactionErr := transaction.Exec(query, transactionId, clientId, dueDate, settings.DuePenalty.Value)
+	query := `INSERT INTO circulation.borrow_transaction (id, account_id,  penalty_on_past_due) VALUES($1,$2,$3)`
+	insertTransactionResult, insertTransactionErr := transaction.Exec(query, transactionId, clientId, settings.DuePenalty.Value)
 
 	if insertTransactionErr != nil {
 		transaction.Rollback()
@@ -114,7 +156,7 @@ func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.Nu
 	var borrowedAccessionsRows []goqu.Record = make([]goqu.Record, 0)
 
 	for _, accession := range accessions {
-		borrowedAccessionsRows = append(borrowedAccessionsRows, goqu.Record{"transaction_id": transactionId, "accession_number": accession.Number, "book_id": accession.BookId})
+		borrowedAccessionsRows = append(borrowedAccessionsRows, goqu.Record{"transaction_id": transactionId, "accession_number": accession.Number, "book_id": accession.BookId, "due_date": accession.DueDate})
 	}
 	accessionDs := dialect.From(goqu.T("borrowed_book").Schema("circulation")).Prepared(true).Insert().Rows(borrowedAccessionsRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
@@ -133,68 +175,41 @@ func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.Nu
 	return nil
 }
 
-func (repo *CirculationRepository) ReturnBooksByTransactionId(id string, remarks string) error {
+func (repo * CirculationRepository) MarkBorrowedBookReturned(borrowedCopy model.BorrowedCopy ) error { 
 
-	transaction, transactErr := repo.db.Beginx()
-	if transactErr != nil {
-		transaction.Rollback()
-		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.ReturnBooksByTransactionId"), slimlog.Error("transactErr"))
-		return transactErr
+	query := `UPDATE circulation.borrowed_book SET returned_at = NOW(), cancelled_at = null, unreturned_at = null, remarks = $1 where transaction_id = $2 and book_id = $3 and accession_number = $4`
+
+	_,updateErr := repo.db.Exec(query, borrowedCopy.Remarks,borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+
+	if updateErr!= nil {
+			logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.MarkBorrowedBookReturned"), slimlog.Error("updateErr"))
+			return updateErr
 	}
-	updateBorrowTransactionQuery := `UPDATE circulation.borrow_transaction SET returned_at = now(), remarks= $1 where id = $2`
-
-	updateBorrowTransactionResult, updateBorrowTransactionErr := transaction.Exec(updateBorrowTransactionQuery, remarks, id)
-
-	if updateBorrowTransactionErr != nil {
-		transaction.Rollback()
-		logger.Error(updateBorrowTransactionErr.Error(), slimlog.Function("CirculationRepository.ReturnBooksByTransactionId"), slimlog.Error("updateBorrowTransactionErr"))
-		return updateBorrowTransactionErr
-	}
-	updateBookBorrowedQuery := `UPDATE circulation.borrowed_book SET returned_at = now() where transaction_id = $1`
-	updateBookBorrowResult, updateBookBorrowedErr := transaction.Exec(updateBookBorrowedQuery, id)
-
-	if updateBookBorrowedErr != nil {
-		transaction.Rollback()
-		logger.Error(updateBorrowTransactionErr.Error(), slimlog.Function("CirculationRepository.ReturnBooksByTransactionId"), slimlog.Error("updateBookBorrowedErr"))
-		return updateBorrowTransactionErr
-	}
-
-	transaction.Commit()
-	updateBookTransactionAffected, _ := updateBorrowTransactionResult.RowsAffected()
-	updateBookBorrowedAffected, _ := updateBookBorrowResult.RowsAffected()
-	logger.Info("Book transaction updated.", slimlog.AffectedRows(updateBookTransactionAffected))
-	logger.Info("Borrowed books update.", slimlog.AffectedRows(updateBookBorrowedAffected))
-	return nil
+	
+	return updateErr
 }
-func (repo *CirculationRepository) ReturnBookCopy(transactionId string, bookId string, accessionNumber int) error {
-	transaction, transactErr := repo.db.Beginx()
-	if transactErr != nil {
-		transaction.Rollback()
-		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.ReturnBookCopy"), slimlog.Error("transactErr"))
-		return transactErr
+func (repo * CirculationRepository) MarkBorrowedBookUnreturned(borrowedCopy model.BorrowedCopy ) error { 
+	query := `UPDATE circulation.borrowed_book SET returned_at = null, cancelled_at = null, unreturned_at = NOW() , remarks = $1 where transaction_id = $2 and book_id = $3 and accession_number = $4`
+
+	_,updateErr := repo.db.Exec(query, borrowedCopy.Remarks,borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+
+	if updateErr!= nil {
+			logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.MarkBorrowedBookUnreturned"), slimlog.Error("updateErr"))
+			return updateErr
 	}
 
-	updateQuery := `UPDATE circulation.borrowed_book SET returned_at = now() where transaction_id = $1 AND book_id = $2 AND accession_number = $3`
-	_, updateErr := transaction.Exec(updateQuery, transactionId, bookId, accessionNumber)
-	if updateErr != nil {
-		transaction.Rollback()
-		logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.ReturnBookCopy"), slimlog.Error("updateErr"))
-	}
+	return updateErr
+}
+func (repo * CirculationRepository) MarkBorrowedBookCancelled(borrowedCopy model.BorrowedCopy ) error { 
+	query := `UPDATE circulation.borrowed_book SET returned_at = null, cancelled_at = NOW(), unreturned_at = null , remarks = $1 where transaction_id = $2 and book_id = $3 and accession_number = $4`
 
-	//check if the books have been returned. If returned, mark the transaction as returned.
-	checkReturnedCopyQuery := `SELECT EXISTS(SELECT 1 FROM circulation.borrowed_book where transaction_id = $1  AND returned_at is null )`
-	exists := false
-	transaction.Get(&exists, checkReturnedCopyQuery, transactionId)
-	if !exists {
-		updateBorrowTransactionQuery := `UPDATE circulation.borrow_transaction SET returned_at = now() where id = $1`
-		_, updateBorrowTransactionErr := transaction.Exec(updateBorrowTransactionQuery, transactionId)
-		if updateBorrowTransactionErr != nil {
-			transaction.Rollback()
-			logger.Error(updateBorrowTransactionErr.Error(), slimlog.Function("CirculationRepository.ReturnBookCopy"), slimlog.Error("updateBorrowTransactionErr"))
-			return updateBorrowTransactionErr
-		}
+	_,updateErr := repo.db.Exec(query, borrowedCopy.Remarks,borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+
+	if updateErr!= nil {
+			logger.Error(updateErr.Error(), slimlog.Function("CirculationRepository.MarkBorrowedBookCancelled"), slimlog.Error("updateErr"))
+			return updateErr
 	}
-	transaction.Commit()
+	
 	return updateErr
 }
 func (repo * CirculationRepository) AddItemToBag(item model.BagItem) error{
@@ -213,8 +228,8 @@ func (repo * CirculationRepository) GetItemsFromBagByAccountId(accountId string)
 	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
 	INNER JOIN book_view as book on accession.book_id = book.id
 	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
+	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
 	where bag.account_id = $1`
 	selectErr := repo.db.Select(&items, query, accountId,)
 	if selectErr != nil {
@@ -286,8 +301,8 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 	SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked FROM circulation.bag
 	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
 	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled'
+	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
 	where (CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) = true AND bag.account_id = $1 AND bag.is_checked = true
 	`
 	selectErr := transaction.Select(&items, query, accountId)
@@ -343,11 +358,11 @@ func (repo * CirculationRepository) CheckoutCheckedItems(accountId string) error
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(accountId string, status string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	where obb.account_id = $1 and status = $2
-	ORDER BY obb.created_at desc
+
+	query := `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks
+	FROM online_borrowed_book_view
+	 where account_id = $1 and status = $2
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId, status)
 	if selectErr != nil {
@@ -357,11 +372,10 @@ func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountIDAndStatus(a
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountID(accountId string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	where obb.account_id = $1 
-	ORDER BY obb.created_at desc
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks
+	FROM online_borrowed_book_view
+	where account_id = $1
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query, accountId)
 	if selectErr != nil {
@@ -371,13 +385,10 @@ func (repo * CirculationRepository) GetOnlineBorrowedBooksByAccountID(accountId 
 }
 func (repo * CirculationRepository) GetOnlineBorrowedBookByStatus( status string) []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	INNER JOIN system.account on obb.account_id = system.account.id
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
+	FROM online_borrowed_book_view
 	where status = $1
-	ORDER BY obb.created_at desc
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query, status)
 	if selectErr != nil {
@@ -387,12 +398,9 @@ func (repo * CirculationRepository) GetOnlineBorrowedBookByStatus( status string
 }
 func (repo * CirculationRepository) GetAllOnlineBorrowedBooks() []model.OnlineBorrowedBook{
 	borrowedBooks := make([]model.OnlineBorrowedBook, 0)
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	INNER JOIN system.account on obb.account_id = system.account.id
-	ORDER BY obb.created_at desc
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
+	FROM online_borrowed_book_view
+	ORDER BY created_at desc
 	`
 	selectErr := repo.db.Select(&borrowedBooks, query)
 	if selectErr != nil {
@@ -400,15 +408,12 @@ func (repo * CirculationRepository) GetAllOnlineBorrowedBooks() []model.OnlineBo
 	}
 	return borrowedBooks
 }
-func (repo * CirculationRepository) GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook{
+func (repo * CirculationRepository) GetOnlineBorrowedBookById(id string) model.OnlineBorrowedBook{
 	borrowedBook := model.OnlineBorrowedBook{}
-	query:= `SELECT obb.id, obb.account_id, obb.accession_id, obb.due_date, accession.number, accession.copy_number,obb.status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client FROM circulation.online_borrowed_book as obb
-	INNER JOIN get_accession_table() as accession on obb.accession_id = accession.id
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	INNER JOIN system.account on obb.account_id = system.account.id
-	where obb.id = $1
-	ORDER BY obb.created_at desc
+	query:= `SELECT id,account_id, accession_id, due_date, number, copy_number, status, book, penalty, remarks, client
+	FROM online_borrowed_book_view
+	where id = $1
+	ORDER BY created_at desc
 	`
 	getErr := repo.db.Get(&borrowedBook, query, id)
 
@@ -437,20 +442,130 @@ func (repo * CirculationRepository) UpdateBorrowRequestStatusAndDueDate(borrowed
 	return updateErr
 }
 func (repo * CirculationRepository) UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error{
+
 	query:= `Update circulation.online_borrowed_book SET status = $1, remarks = $2 where id = $3`
 	_, updateErr := repo.db.Exec(query, borrowedBook.Status, borrowedBook.Remarks, borrowedBook.Id)
 	if(updateErr != nil){
 		logger.Error(updateErr.Error(),  slimlog.Function("CirculationRepository.UpdateBorrowRequestStatusAndDueDate"), slimlog.Error("updateErr"))
 	}
+	
 	return updateErr
 }
 
+func (repo * CirculationRepository )AddPenaltyOnlineBorrowedBook (id string) error{
+	transaction, transactErr := repo.db.Beginx()
 
+	if transactErr != nil {
+		transaction.Rollback()
+		logger.Error(transactErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyForDelayedReturnOfOnlineBorrowedBook "), slimlog.Error("transactErr"), )
+		return transactErr
+	} 
+	borrowedBook := model.OnlineBorrowedBook{}
+	getQuery := `
+	SELECT id, account_id, accession_id, due_date, number, copy_number, status, book,  
+	case when (now()::date - due_date) < 0 then 0 else (now()::date - due_date) end * penalty_on_past_due as penalty,
+	remarks, client
+	FROM online_borrowed_book_view
+	where id = $1 and status in ('returned', 'unreturned')
+	ORDER BY created_at desc
+	LIMIT 1
+	`
+	
+	getErr := transaction.Get(&borrowedBook, getQuery, id)
+	if getErr != nil {
+		transaction.Rollback()
+		logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyOnlineBorrowedBook "), slimlog.Error("getErr") )
+		return getErr
+	}
+	if len(borrowedBook.Id) > 0 && borrowedBook.Penalty > 0 {
+	
+	description := fmt.Sprintf(`
+This to inform you that you have been penalized for delayed return of the book.
+				
+Book Details:
+Title: %s
+Due Date: %s
+Penalty: PHP %.2f 
 
+We kindly remind you to promptly return the book and settle the penalty to avoid any further consequences. 
+Please note that failing to return library materials on time disrupts the borrowing system and may inconvenience other library users.
+If you have any questions or require assistance, please contact our library staff. Thank you for your immediate attention to this matter.
 
+**THIS A SYSTEM GENERATED MESSAGE **
+`,
+		borrowedBook.Book.Title,  borrowedBook.DueDate, borrowedBook.Penalty) 
+		
+	
+		insertQuery := "INSERT INTO circulation.penalty(description, amount, account_id) VALUES($1, $2, $3)"
+		_, insertErr := transaction.Exec(insertQuery, description, borrowedBook.Penalty, borrowedBook.AccountId)
+		if insertErr != nil{
+			transaction.Rollback()
+			logger.Error(insertErr.Error(),slimlog.Function("CirculationRepository.AddPenaltyOnlineBorrowedBook  "), slimlog.Error("insertErr") )
+			return insertErr
+		}
+	}
+	transaction.Commit()
+	return nil
+}
 
+func (repo * CirculationRepository )AddPenaltyForWalkInBorrowedBook (borrowedCopy model.BorrowedCopy) error {
+		
+		borrowedBook := model.BorrowedCopy{}
 
+		getQuery := `
+			SELECT bb.transaction_id, bb.accession_number as number,
+			bb.book_id,
+			json_build_object('id',account.id, 'displayName', 
+				display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
+			COALESCE(bb.remarks, '') as remarks,
+			bb.due_date,
+			bv.json_format as book,
+			bb.due_date,
+			(case when  bb.due_date is null then 0 else (
+				case when (now()::date - bb.due_date) < 0 then 0 else (now()::date - bb.due_date) end
+			) end) * penalty_on_past_due as penalty,	
+			(case when bb.returned_at is null then false else true end) as is_returned,
+			(case when bb.cancelled_at is null then false else true end) as is_cancelled,
+			(case when bb.unreturned_at is null then false else true end) as is_unreturned
+			FROM circulation.borrowed_book as bb 
+			INNER JOIN circulation.borrow_transaction as bt on bb.transaction_id = bt.id
+			INNER JOIN system.account   on bt.account_id = account.id
+			INNER JOIN book_view as bv on bb.book_id = bv.id
+			where bb.transaction_id = $1 and bb.book_id = $2 and bb.accession_number = $3 and (bb.returned_at is not null OR bb.unreturned_at is not null OR bb.cancelled_at is not null)
+			LIMIT 1
+		`
 
+		getErr := repo.db.Get(&borrowedBook, getQuery, borrowedCopy.TransactionId, borrowedCopy.BookId, borrowedCopy.Number)
+
+		if getErr != nil {
+			logger.Error(getErr.Error(), slimlog.Function("CirculationRepository.AddPenaltyForWalkInBorrowedBook "), slimlog.Error("getEr") )
+            return getErr
+		}
+		description := fmt.Sprintf(`
+This to inform you that you have been penalized for delayed return of the book.
+						
+Book Details:
+Title: %s
+Due Date: %s
+Penalty: PHP %.2f 
+		
+We kindly remind you to promptly return the book and settle the penalty to avoid any further consequences. 
+Please note that failing to return library materials on time disrupts the borrowing system and may inconvenience other library users.
+If you have any questions or require assistance, please contact our library staff. Thank you for your immediate attention to this matter.
+		
+**THIS A SYSTEM GENERATED MESSAGE **
+		`,
+				borrowedBook.Book.Title,  borrowedBook.DueDate, borrowedBook.Penalty) 
+		if borrowedBook.Penalty > 0 {
+			insertQuery := "INSERT INTO circulation.penalty(description, amount, account_id) VALUES($1, $2, $3)"
+		_, insertErr := repo.db.Exec(insertQuery, description, borrowedBook.Penalty, borrowedBook.Client.Id)
+		if insertErr != nil{
+			logger.Error(insertErr.Error(),slimlog.Function("CirculationRepository.AddPenaltyForWalkInBorrowedBook "), slimlog.Error("insertErr") )
+			return insertErr
+		}
+		}
+		return nil
+}
 func NewCirculationRepository() CirculationRepositoryInterface {
 	return &CirculationRepository{
 		db: postgresdb.GetOrCreateInstance(),
@@ -461,9 +576,7 @@ func NewCirculationRepository() CirculationRepositoryInterface {
 type CirculationRepositoryInterface interface {
 	GetBorrowingTransactions() []model.BorrowingTransaction
 	GetBorrowingTransactionById(id string) model.BorrowingTransaction
-	NewTransaction(clientId string, dueDate db.NullableDate, accession []model.Accession) error
-	ReturnBooksByTransactionId(id string, remarks string) error
-	ReturnBookCopy(transactionId string, bookId string, accessionNumber int) error
+	NewTransaction(clientId string, accession model.BorrowedCopies) error
 	AddItemToBag(model.BagItem) error
 	GetItemsFromBagByAccountId(accountId string) []model.BagItem
 	DeleteItemFromBag(item model.BagItem) error
@@ -477,7 +590,13 @@ type CirculationRepositoryInterface interface {
 	GetAllOnlineBorrowedBooks() []model.OnlineBorrowedBook
 	UpdateBorrowRequestStatus(id string,  status string) error
 	UpdateBorrowRequestStatusAndDueDate(borrowedBook model.OnlineBorrowedBook ) error
-	GetAllOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
+	GetOnlineBorrowedBookById(id string) model.OnlineBorrowedBook
 	UpdateBorrowRequestStatusAndRemarks(borrowedBook model.OnlineBorrowedBook ) error
 	GetOnlineBorrowedBooksByAccountID(accountId string) []model.OnlineBorrowedBook
+	AddPenaltyOnlineBorrowedBook(id string) error
+	MarkBorrowedBookCancelled(borrowedCopy model.BorrowedCopy ) error
+	MarkBorrowedBookReturned(borrowedCopy model.BorrowedCopy) error
+	MarkBorrowedBookUnreturned(borrowedCopy model.BorrowedCopy) error
+	GetBorrowedCopy( borrowedCopy model.BorrowedCopy)  (model.BorrowedCopy, error)
+	AddPenaltyForWalkInBorrowedBook (borrowedCopy model.BorrowedCopy) error
 }

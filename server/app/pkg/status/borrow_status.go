@@ -6,6 +6,7 @@ package status
 	CheckedOut string
 	Returned string
 	Cancelled string
+	Unreturned string
  }
 
 var OnlineBorrowStatuses = onlineBorrowStatusesStruct {
@@ -14,4 +15,20 @@ var OnlineBorrowStatuses = onlineBorrowStatusesStruct {
 	CheckedOut: "checked-out",
 	Returned: "returned",
 	Cancelled: "cancelled",
+	Unreturned: "unreturned",
+ 
 }
+
+type borrowStatusesStruct struct{
+	Returned string
+	Cancelled string
+	Unreturned string
+ }
+
+var BorrowStatuses = borrowStatusesStruct {
+	Returned: "returned",
+	Cancelled: "cancelled",
+	Unreturned: "unreturned",
+ 
+}
+
