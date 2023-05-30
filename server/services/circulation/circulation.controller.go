@@ -50,14 +50,14 @@ func (ctrler *CirculationController) GetTransactionById(ctx *gin.Context) {
 func (ctrler *CirculationController) Checkout(ctx *gin.Context) {
 	body := CheckoutBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	var accessions []model.Accession = make([]model.Accession, 0)
+	var accessions model.BorrowedCopies = make(model.BorrowedCopies, 0)
 	copyErr := copier.Copy(&accessions, &body.Accessions)
 	if copyErr != nil {
 		logger.Error(copyErr.Error(), slimlog.Function("CirculationController.Checkout"))
 		ctx.JSON(httpresp.Fail400(nil, "Checkout failed."))
 		return
 	}
-	newTransactionErr := ctrler.circulationRepository.NewTransaction(body.ClientId, body.DueDate, accessions)
+	newTransactionErr := ctrler.circulationRepository.NewTransaction(body.ClientId, accessions)
 	if newTransactionErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return

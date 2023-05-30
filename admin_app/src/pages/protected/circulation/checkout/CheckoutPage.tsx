@@ -34,10 +34,13 @@ import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { BookInitialValue } from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
+
+export interface CheckoutAccession extends DetailedAccession {
+  dueDate: string;
+}
 export type CheckoutForm = {
   client: Account;
-  accessions: DetailedAccession[];
-  dueDate: string;
+  accessions: CheckoutAccession[];
 };
 
 const CLIENT_INITIAL_DATA: Account = {
@@ -58,35 +61,31 @@ const CLIENT_INITIAL_DATA: Account = {
   },
 };
 const CheckoutPage = () => {
-  const getDate5DaysFromNow = (): Date => {
-    let date = new Date();
-    date.setDate(date.getDate() + 5);
-    return date;
-  };
   const {
     setForm,
     form: checkout,
     validate,
     resetForm,
     errors,
+    removeFieldError,
     setFieldValue,
   } = useForm<CheckoutForm>({
     initialFormData: {
       accessions: [],
       client: CLIENT_INITIAL_DATA,
-      dueDate: getDate5DaysFromNow().toISOString(),
     },
     scrollToError: false,
     schema: CheckoutSchemaValidation,
   });
 
   const setClient = (account: Account) => {
+    removeFieldError("client");
     setForm((prevForm) => ({ ...prevForm, client: account }));
   };
   const removeClient = () => {
     setFieldValue("client", CLIENT_INITIAL_DATA);
   };
-  const updateAccessionsToBorrow = (accessions: DetailedAccession[]) => {
+  const updateAccessionsToBorrow = (accessions: CheckoutAccession[]) => {
     setForm((prevForm) => ({
       ...prevForm,
       accessions: [...accessions],
@@ -101,6 +100,7 @@ const CheckoutPage = () => {
   } = useSwitch();
 
   const selectBook = (book: Book) => {
+    removeFieldError("accessions");
     setSelectedBook({ ...book });
     openCopySelection();
   };
@@ -117,11 +117,7 @@ const CheckoutPage = () => {
       const data = await validate();
       if (!data) return;
       submitCheckout.mutate(data);
-    } catch (err) {
-      toast.error(
-        "Checkout cannot proceed. Information might be invalid or not provided. Please select a client and books to borrow."
-      );
-    }
+    } catch (err) {}
   };
   const { Post } = useRequest();
   const submitCheckout = useMutation({
@@ -131,7 +127,6 @@ const CheckoutPage = () => {
         {
           clientId: formData.client.id,
           accessions: formData.accessions,
-          dueDate: formData.dueDate,
         },
         {},
         [apiScope("Checkout.Add")]
@@ -146,6 +141,7 @@ const CheckoutPage = () => {
       resetForm();
     },
   });
+
   return (
     <>
       <ContainerNoBackground>
@@ -161,11 +157,12 @@ const CheckoutPage = () => {
         </Divider>
         <div className="w-full flex items-center gap-2">
           <ClientSearchBox setClient={setClient} />
+
           <SecondaryButton className="h-9 mt-6 flex justify-center">
             <AiOutlineScan className="text-white inline text-lg " />
           </SecondaryButton>
         </div>
-
+        <small className="text-red-500 ml-0.5">{errors?.client?.id}</small>
         {checkout.client.id?.length ?? 0 > 0 ? (
           <div className="flex  px-4 py-6 gap-5">
             <div>
@@ -210,6 +207,7 @@ const CheckoutPage = () => {
             <AiOutlineScan className="text-white inline text-lg " />
           </SecondaryButton>
         </div>
+        <small className="text-red-500 ml-0.5">{errors?.accessions}</small>
         {checkout.accessions.length > 0 ? (
           <Container className="mx-0 mt-5 lg:w-full">
             <Table>
@@ -218,11 +216,11 @@ const CheckoutPage = () => {
                   <Th>Book title</Th>
                   <Th>Copy number</Th>
                   <Th>Accession number</Th>
-                  <Th>A</Th>
+                  <Th>Due Date</Th>
                 </HeadingRow>
               </Thead>
               <Tbody>
-                {checkout.accessions?.map((accession) => {
+                {checkout.accessions?.map((accession, index) => {
                   return (
                     <BodyRow
                       key={`${accession.bookId}_${accession.copyNumber}`}
@@ -235,6 +233,33 @@ const CheckoutPage = () => {
                           className="text-red-400 cursor-pointer text-2xl"
                           onClick={() => {
                             removeAccession(accession);
+                          }}
+                        />
+                      </Td>
+                      <Td>
+                        <CustomDatePicker
+                          name="dueDate"
+                          error={errors?.dueDate}
+                          minDate={new Date()}
+                          value={new Date(accession.dueDate).toDateString()}
+                          selected={new Date(accession.dueDate)}
+                          onChange={(date) => {
+                            if (!date) return;
+                            const dateValue = `${date.getFullYear()}-${
+                              date.getMonth() + 1
+                            }-${date.getDate()}`;
+                            setForm((prev) => ({
+                              ...prev,
+                              accessions: prev.accessions.map((a) => {
+                                if (
+                                  a.number === accession.number &&
+                                  a.bookId === accession.bookId
+                                ) {
+                                  return { ...a, dueDate: dateValue };
+                                }
+                                return a;
+                              }),
+                            }));
                           }}
                         />
                       </Td>
@@ -251,7 +276,7 @@ const CheckoutPage = () => {
         )}
       </ContainerNoBackground>
 
-      <ContainerNoBackground className="px-4 py-6">
+      {/* <ContainerNoBackground className="px-4 py-6">
         <Divider
           heading="h2"
           headingProps={{ className: "text-xl" }}
@@ -270,15 +295,11 @@ const CheckoutPage = () => {
               const dateValue = `${date.getFullYear()}-${
                 date.getMonth() + 1
               }-${date.getDate()}`;
-              setForm((prevForm) => ({
-                ...prevForm,
-                dueDate: dateValue,
-              }));
             }}
             selected={new Date(checkout.dueDate)}
           />
         </div>
-      </ContainerNoBackground>
+      </ContainerNoBackground> */}
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
         <PrimaryButton onClick={proceedCheckout}>
           Proceed to checkout

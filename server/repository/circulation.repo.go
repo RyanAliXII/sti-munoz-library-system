@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
@@ -88,7 +87,7 @@ func (repo *CirculationRepository) GetBorrowingTransactionById(id string) model.
 	}
 	return transaction
 }
-func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.NullableDate, accessions []model.Accession) error {
+func (repo *CirculationRepository) NewTransaction(clientId string, accessions model.BorrowedCopies) error {
 	settings := repo.settingRepository.Get()
 	if settings.DuePenalty.Value == 0 {
 		settingsErr := fmt.Errorf("due penalty value is 0")
@@ -103,7 +102,7 @@ func (repo *CirculationRepository) NewTransaction(clientId string, dueDate db.Nu
 		return transactErr
 	}
 	query := `INSERT INTO circulation.borrow_transaction (id, account_id, due_date, penalty_on_past_due) VALUES($1,$2,$3,$4)`
-	insertTransactionResult, insertTransactionErr := transaction.Exec(query, transactionId, clientId, dueDate, settings.DuePenalty.Value)
+	insertTransactionResult, insertTransactionErr := transaction.Exec(query, transactionId, clientId, settings.DuePenalty.Value)
 
 	if insertTransactionErr != nil {
 		transaction.Rollback()
@@ -476,7 +475,7 @@ This to inform you that you have been penalized for delayed return of the book.
 Book Details:
 Title: %s
 Due Date: %s
-Penalty: %.2f
+Penalty: PHP %.2f 
 
 We kindly remind you to promptly return the book and settle the penalty to avoid any further consequences. 
 Please note that failing to return library materials on time disrupts the borrowing system and may inconvenience other library users.
@@ -512,7 +511,7 @@ func NewCirculationRepository() CirculationRepositoryInterface {
 type CirculationRepositoryInterface interface {
 	GetBorrowingTransactions() []model.BorrowingTransaction
 	GetBorrowingTransactionById(id string) model.BorrowingTransaction
-	NewTransaction(clientId string, dueDate db.NullableDate, accession []model.Accession) error
+	NewTransaction(clientId string, accession model.BorrowedCopies) error
 	ReturnBooksByTransactionId(id string, remarks string) error
 	ReturnBookCopy(transactionId string, bookId string, accessionNumber int) error
 	AddItemToBag(model.BagItem) error

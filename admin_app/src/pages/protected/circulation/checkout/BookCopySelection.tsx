@@ -17,17 +17,18 @@ import {
 } from "@definitions/types";
 import { useEffect, useMemo, useState } from "react";
 import Modal from "react-responsive-modal";
-import { CheckoutForm } from "./CheckoutPage";
+import { CheckoutAccession, CheckoutForm } from "./CheckoutPage";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BorrowStatuses } from "@internal/borrow-status";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import { date } from "yup";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
-  updateAccessionsToBorrow: (accesions: DetailedAccession[]) => void;
+  updateAccessionsToBorrow: (accesions: CheckoutAccession[]) => void;
   form: CheckoutForm;
 }
 const BookCopySelectionModal = ({
@@ -38,7 +39,7 @@ const BookCopySelectionModal = ({
   form,
 }: BookCopySelectionProps) => {
   const [selectedAccessions, setSelectedAccessions] = useState<
-    DetailedAccession[]
+    CheckoutAccession[]
   >([]);
 
   const { Get } = useRequest();
@@ -52,7 +53,11 @@ const BookCopySelectionModal = ({
       return [];
     }
   };
-
+  const getDate5DaysFromNow = (): Date => {
+    let date = new Date();
+    date.setDate(date.getDate() + 5);
+    return date;
+  };
   const {
     data: accessions,
     refetch,
@@ -106,6 +111,10 @@ const BookCopySelectionModal = ({
         `${book.id}_${accession.number}`
       )
     ) {
+      const date = getDate5DaysFromNow();
+      const dateValue = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}`;
       setSelectedAccessions((prevSelected) => [
         ...prevSelected,
         {
@@ -115,6 +124,7 @@ const BookCopySelectionModal = ({
           copyNumber: accession.copyNumber,
           number: accession.number,
           isCheckedOut: false,
+          dueDate: dateValue,
         },
       ]);
     } else {

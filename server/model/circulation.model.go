@@ -23,6 +23,7 @@ type BorrowingTransaction struct {
 type BorrowedCopies []struct {
 	Number     int             `json:"number" db:"number"`
 	BookId     string          `json:"bookId" db:"book_id"`
+	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`	
 	CopyNumber int             `json:"copyNumber" db:"copy_number"`
 	IsReturned bool            `json:"isReturned" db:"is_returned"`
 	ReturnedAt db.NullableTime `json:"returnedAt"`
