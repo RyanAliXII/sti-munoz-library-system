@@ -1,4 +1,4 @@
-import { PrimaryButton } from "@components/ui/button/Button";
+import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -26,6 +26,7 @@ import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import Tippy from "@tippyjs/react";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -112,22 +113,34 @@ const OrganizationAsAuthor = () => {
                       <Td>{org.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
                         <HasAccess requiredPermissions={["Author.Edit"]}>
-                          <AiOutlineEdit
-                            className="cursor-pointer text-yellow-400 text-xl"
-                            onClick={() => {
-                              setSelectedRow({ ...org });
-                              openEditModal();
-                            }}
-                          />
+                          <Tippy content="Edit Author">
+                            <button
+                              className={
+                                ButtonClasses.SecondaryOutlineButtonClasslist
+                              }
+                              onClick={() => {
+                                setSelectedRow({ ...org });
+                                openEditModal();
+                              }}
+                            >
+                              <AiOutlineEdit className="cursor-pointer  text-xl" />
+                            </button>
+                          </Tippy>
                         </HasAccess>
                         <HasAccess requiredPermissions={["Author.Delete"]}>
-                          <AiOutlineDelete
-                            className="cursor-pointer text-orange-600  text-xl"
-                            onClick={() => {
-                              openConfirmDialog();
-                              setSelectedRow({ ...org });
-                            }}
-                          />
+                          <Tippy content="Delete Author">
+                            <button
+                              className={
+                                ButtonClasses.DangerButtonOutlineClasslist
+                              }
+                              onClick={() => {
+                                openConfirmDialog();
+                                setSelectedRow({ ...org });
+                              }}
+                            >
+                              <AiOutlineDelete className="cursor-pointer  text-xl" />
+                            </button>
+                          </Tippy>
                         </HasAccess>
                       </Td>
                     </BodyRow>

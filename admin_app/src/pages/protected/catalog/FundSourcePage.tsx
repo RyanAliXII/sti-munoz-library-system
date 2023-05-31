@@ -21,7 +21,11 @@ import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
 import { SourceofFundSchema } from "./schema";
 
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import {
+  ButtonClasses,
+  LighButton,
+  PrimaryButton,
+} from "@components/ui/button/Button";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import Container, {
   ContainerNoBackground,
@@ -30,6 +34,7 @@ import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import Tippy from "@tippyjs/react";
 const SOURCE_FORM_DEFAULT_VALUES = { name: "" };
 const FundSourcePage = () => {
   const {
@@ -123,22 +128,34 @@ const FundSourcePage = () => {
                       <Td>{source.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
                         <HasAccess requiredPermissions={["SOF.Edit"]}>
-                          <AiOutlineEdit
-                            className="cursor-pointer text-yellow-400 text-xl"
-                            onClick={() => {
-                              setSelectedRow({ ...source });
-                              openEditModal();
-                            }}
-                          />
+                          <Tippy content="Edit">
+                            <button
+                              className={
+                                ButtonClasses.SecondaryOutlineButtonClasslist
+                              }
+                              onClick={() => {
+                                setSelectedRow({ ...source });
+                                openEditModal();
+                              }}
+                            >
+                              <AiOutlineEdit className="cursor-pointer  text-xl" />
+                            </button>
+                          </Tippy>
                         </HasAccess>
                         <HasAccess requiredPermissions={["SOF.Delete"]}>
-                          <AiOutlineDelete
-                            className="cursor-pointer text-orange-600  text-xl"
-                            onClick={() => {
-                              openConfirmDialog();
-                              setSelectedRow({ ...source });
-                            }}
-                          />
+                          <Tippy content="Delete">
+                            <button
+                              className={
+                                ButtonClasses.DangerButtonOutlineClasslist
+                              }
+                              onClick={() => {
+                                openConfirmDialog();
+                                setSelectedRow({ ...source });
+                              }}
+                            >
+                              <AiOutlineDelete className="cursor-pointer text-xl" />
+                            </button>
+                          </Tippy>
                         </HasAccess>
                       </Td>
                     </BodyRow>

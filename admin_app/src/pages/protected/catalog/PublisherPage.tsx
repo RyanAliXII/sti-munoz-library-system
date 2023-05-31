@@ -5,7 +5,11 @@ import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { Input } from "@components/ui/form/Input";
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import {
+  ButtonClasses,
+  LighButton,
+  PrimaryButton,
+} from "@components/ui/button/Button";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import {
@@ -30,6 +34,7 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
+import Tippy from "@tippyjs/react";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {
@@ -66,7 +71,10 @@ const PublisherPage = () => {
   };
   const queryClient = useQueryClient();
   const deletePublisher = useMutation({
-    mutationFn: () => Delete(`/publishers/${selectedRow.id}/`, {}, [apiScope("Publisher.Delete")]),
+    mutationFn: () =>
+      Delete(`/publishers/${selectedRow.id}/`, {}, [
+        apiScope("Publisher.Delete"),
+      ]),
     onSuccess: () => {
       queryClient.invalidateQueries(["publishers"]);
       toast.success("Publisher deleted.");
@@ -119,22 +127,34 @@ const PublisherPage = () => {
                       <Td>{publisher.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
                         <HasAccess requiredPermissions={["Publisher.Edit"]}>
-                          <AiOutlineEdit
-                            className="cursor-pointer text-yellow-400 text-xl"
-                            onClick={() => {
-                              setSelectedRow({ ...publisher });
-                              openEditModal();
-                            }}
-                          />
+                          <Tippy content="Edit">
+                            <button
+                              onClick={() => {
+                                setSelectedRow({ ...publisher });
+                                openEditModal();
+                              }}
+                              className={
+                                ButtonClasses.SecondaryOutlineButtonClasslist
+                              }
+                            >
+                              <AiOutlineEdit className="cursor-pointer  text-xl" />
+                            </button>
+                          </Tippy>
                         </HasAccess>
                         <HasAccess requiredPermissions={["Publisher.Delete"]}>
-                          <AiOutlineDelete
-                            className="cursor-pointer text-orange-600  text-xl"
-                            onClick={() => {
-                              openConfirmDialog();
-                              setSelectedRow({ ...publisher });
-                            }}
-                          />
+                          <Tippy content="Delete">
+                            <button
+                              className={
+                                ButtonClasses.DangerButtonOutlineClasslist
+                              }
+                              onClick={() => {
+                                openConfirmDialog();
+                                setSelectedRow({ ...publisher });
+                              }}
+                            >
+                              <AiOutlineDelete className="cursor-pointer  text-xl" />
+                            </button>
+                          </Tippy>
                         </HasAccess>
                       </Td>
                     </BodyRow>

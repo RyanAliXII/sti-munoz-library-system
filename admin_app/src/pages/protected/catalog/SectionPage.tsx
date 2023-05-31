@@ -1,5 +1,9 @@
 import React, { BaseSyntheticEvent } from "react";
-import { PrimaryButton, LighButton } from "@components/ui/button/Button";
+import {
+  PrimaryButton,
+  LighButton,
+  ButtonClasses,
+} from "@components/ui/button/Button";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
@@ -26,6 +30,7 @@ import Container, {
 import { Input } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import Tippy from "@tippyjs/react";
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,
@@ -90,11 +95,26 @@ const SectionPage = () => {
                         )}
                       </Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <AiOutlineEdit
-                          className="cursor-pointer text-yellow-400 text-xl"
-                          onClick={openEditModal}
-                        />
-                        <AiOutlineDelete className="cursor-pointer text-orange-600  text-xl" />
+                        <Tippy content="Edit">
+                          <button
+                            onClick={openEditModal}
+                            className={
+                              ButtonClasses.SecondaryOutlineButtonClasslist
+                            }
+                          >
+                            <AiOutlineEdit className="cursor-pointer text-yellow-400 text-xl" />
+                          </button>
+                        </Tippy>
+                        <Tippy content="Delete">
+                          <button
+                            onClick={openEditModal}
+                            className={
+                              ButtonClasses.DangerButtonOutlineClasslist
+                            }
+                          >
+                            <AiOutlineDelete className="cursor-pointer text-orange-600  text-xl" />
+                          </button>
+                        </Tippy>
                       </Td>
                     </BodyRow>
                   );

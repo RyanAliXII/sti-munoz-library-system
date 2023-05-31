@@ -36,6 +36,7 @@ import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import Tippy from "@tippyjs/react";
 
 const BookPage = () => {
   const {
@@ -154,18 +155,33 @@ const BookPage = () => {
                       {" "}
                       <TimeAgo datetime={book.receivedAt}></TimeAgo>
                     </Td>
-                    <Td className="flex gap-5">
-                      <AiOutlinePrinter
-                        className="text-blue-500 text-lg cursor-pointer "
-                        onClick={() => {
-                          setBookForPrintingAndOpenModal(book);
-                        }}
-                      />
-                      <Link to={`/books/edit/${book.id}`}>
-                        <HasAccess requiredPermissions={["Book.Edit"]}>
-                          <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
-                        </HasAccess>
-                      </Link>
+                    <Td className="flex gap-3">
+                      <Tippy content="View Printables">
+                        <button
+                          className={
+                            ButtonClasses.PrimaryOutlineButtonClasslist
+                          }
+                        >
+                          <AiOutlinePrinter
+                            className="text-blue-500 text-lg cursor-pointer "
+                            onClick={() => {
+                              setBookForPrintingAndOpenModal(book);
+                            }}
+                          />
+                        </button>
+                      </Tippy>
+                      <Tippy content="Edit Book">
+                        <Link
+                          to={`/books/edit/${book.id}`}
+                          className={
+                            ButtonClasses.SecondaryOutlineButtonClasslist
+                          }
+                        >
+                          <HasAccess requiredPermissions={["Book.Edit"]}>
+                            <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                          </HasAccess>
+                        </Link>
+                      </Tippy>
                     </Td>
                   </BodyRow>
                 );
