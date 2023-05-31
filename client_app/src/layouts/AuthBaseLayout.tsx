@@ -72,7 +72,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
             </li>
             <li>
               <NavLink
-                to={"/online/borrowed-books"}
+                to={"/borrowed-books"}
                 className={(nav) =>
                   nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
                 }
