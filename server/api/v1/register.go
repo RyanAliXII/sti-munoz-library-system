@@ -13,6 +13,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/publisher"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/section"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/stats"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/system"
 
 	"github.com/gin-gonic/gin"
@@ -33,5 +34,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	circulation.CirculationRoutes(grp.Group("/circulation"))
 	system.SystemRoutes(grp.Group("/system"))
 	penalty.PenaltyRoutes(grp.Group("/penalties"))
-	
+	stats.StatsRoutes(grp.Group("/stats"))
 }

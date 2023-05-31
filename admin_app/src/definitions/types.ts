@@ -182,3 +182,17 @@ export type Penalty = {
   settledAt: string | null; //iso-time-string
   createdAt: string; //iso-time-string
 };
+
+export type LibraryStats = {
+  accounts: number;
+  books: number;
+  penalties: number;
+  settledPenalties: number;
+  unsettledPenalties: number;
+  pendingBooks: number;
+  approvedBooks: number;
+  checkedOutBooks: number;
+  returnedBooks: number;
+  unreturnedBooks: number;
+  cancelledBooks: number;
+};
