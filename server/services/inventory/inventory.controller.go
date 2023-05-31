@@ -37,7 +37,7 @@ func (ctrler InventoryController) GetAuditedAccession(ctx *gin.Context) {
 	audited := ctrler.inventoryRepository.GetAuditedAccessionById(id)
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audited}, "Accession fetched."))
 }
-func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
+func (ctrler *InventoryController) AddBookCopyToAudit(ctx *gin.Context) {
 	auditId := ctx.Param("id")
 	bookCopy := AuditBookCopyBody{} 
 	ctx.ShouldBindBodyWith(&bookCopy, binding.JSON)
@@ -47,7 +47,29 @@ func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
 		return
 	}
 	
+	ctx.JSON(httpresp.Success200(nil, "Book copy audited."))
+}
+func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
+	auditId := ctx.Param("id")
+	bookId := ctx.Param("bookId")
+
+	addErr :=  ctrler.inventoryRepository.AddBookToAudit(auditId, bookId)
+	if addErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
 	ctx.JSON(httpresp.Success200(nil, "Book audited."))
+}
+func (ctrler *InventoryController) RemoveBookCopyFromAudit(ctx *gin.Context) {
+	auditId := ctx.Param("id")
+	accessionId := ctx.Param("accessionId")
+
+	deleteErr :=  ctrler.inventoryRepository.DeleteBookCopyFromAudit(auditId, accessionId)
+	if deleteErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Book copy removed."))
 }
 
 func (ctrler *InventoryController) NewAudit(ctx *gin.Context) {
@@ -96,7 +118,9 @@ type InventoryControllerInterface interface {
 	GetAudits(ctx *gin.Context)
 	GetAuditById(ctx *gin.Context)
 	GetAuditedAccession(ctx *gin.Context)
+	AddBookCopyToAudit(ctx * gin.Context)
 	AddBookToAudit(ctx *gin.Context)
 	NewAudit(ctx *gin.Context)
 	UpdateAudit(ctx *gin.Context)
+	RemoveBookCopyFromAudit(ctx *gin.Context)
 }

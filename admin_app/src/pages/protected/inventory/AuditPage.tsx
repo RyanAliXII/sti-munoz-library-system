@@ -27,6 +27,7 @@ import { Input } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import Tippy from "@tippyjs/react";
 
 const AuditPage = () => {
   const {
@@ -86,17 +87,25 @@ const AuditPage = () => {
                 return (
                   <BodyRow key={audit.id}>
                     <Td>{audit.name}</Td>
-                    <Td className="flex gap-5">
-                      <Link to={`/inventory/audits/${audit.id}`}>
-                        <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
-                      </Link>
-                      <AiOutlineEdit
-                        className="text-yellow-400  text-lg cursor-pointer"
-                        onClick={() => {
-                          setEditModalFormData({ ...audit });
-                          openEditAuditModal();
-                        }}
-                      ></AiOutlineEdit>
+                    <Td className="flex gap-2">
+                      <Tippy content="Scan Books">
+                        <Link to={`/inventory/audits/${audit.id}`}>
+                          <button className="p-2 border rounded border-blue-500">
+                            <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
+                          </button>
+                        </Link>
+                      </Tippy>
+                      <Tippy content="Edit">
+                        <button className="p-2 border border-yellow-500 rounded">
+                          <AiOutlineEdit
+                            className="text-yellow-500  text-lg cursor-pointer"
+                            onClick={() => {
+                              setEditModalFormData({ ...audit });
+                              openEditAuditModal();
+                            }}
+                          ></AiOutlineEdit>
+                        </button>
+                      </Tippy>
                     </Td>
                   </BodyRow>
                 );

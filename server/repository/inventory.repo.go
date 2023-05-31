@@ -55,13 +55,14 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	book.created_at,
 	covers,
 	COALESCE(json_agg(json_build_object('id',accession.id,'number', accession.number, 'copyNumber', accession.copy_number, 
-	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.transaction_id is null then false else true end))),'[]') as accessions
+	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.transaction_id is null and obb. id is null then false else true end))),'[]') as accessions
 	FROM inventory.audited_book  
 	INNER JOIN book_view as book on audited_book.book_id = book.id
 	INNER JOIN get_accession_table() as accession on book.id = accession.book_id 
 
 	LEFT JOIN inventory.audited_accession as aa on accession.id = aa.accession_id AND audited_book.audit_id = aa.audit_id 
-	LEFT JOIN circulation.borrowed_book as bb on accession.book_id = bb.book_id AND  accession.number =  bb. accession_number AND bb.returned_at is null
+	LEFT JOIN circulation.borrowed_book as bb on accession.book_id = bb.book_id AND  accession.number =  bb. accession_number AND bb.returned_at is null AND bb.cancelled_at is null and bb.unreturned_at is null
+	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id AND status = 'checked-out'
 	where audited_book.audit_id = $1
 	GROUP BY audited_book.audit_id, audited_book.book_id, book.id, title, isbn, 
 	description, 
@@ -152,6 +153,43 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 	transaction.Commit()
 	return nil
 }
+func (repo *InventoryRepository) AddBookToAudit(auditId string, bookId string) error {
+	query := `SELECT EXISTS(SELECT 1 FROM inventory.	audited_book where audit_id = $1  AND book_id = $2 )`
+	exists := true
+	checkBookisAuditedErr := repo.db.Get(&exists, query, auditId, bookId)
+
+	if checkBookisAuditedErr != nil{
+		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("InventoryRepository.AddBookToAudit"), slimlog.Error("checkBookisAuditedErr"))
+
+		return checkBookisAuditedErr
+	}
+	// insert the book to audited book if not exist
+	if !exists{
+		query = `INSERT INTO inventory.audited_book(book_id, audit_id) VALUES ($1,$2)`
+		_, auditBookErr := repo.db.Exec(query, bookId, auditId)
+		if auditBookErr != nil {
+			logger.Error(auditBookErr.Error(), slimlog.Function("InventoryRepository.AddBookToAudit"), slimlog.Error("insertAuditedBookErr"))
+			
+			return auditBookErr
+		}
+	}
+
+	return nil
+}
+
+func (repo *InventoryRepository) DeleteBookCopyFromAudit(auditId string, accessionId string) error {
+	
+		query := `DELETE FROM inventory.audited_accession where audit_id = $1 and accession_id = $2`
+		_, deleteErr := repo.db.Exec(query, auditId, accessionId)
+		if deleteErr != nil {
+			logger.Error(deleteErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("deleteAuditErr"))
+			
+			return deleteErr
+		}
+	
+	return nil
+}
+
 func (repo *InventoryRepository) NewAudit(audit model.Audit) error {
 	_, insertErr := repo.db.NamedExec("INSERT INTO inventory.audit(name)VALUES(:name)", audit)
 	if insertErr != nil {
@@ -180,4 +218,6 @@ type InventoryRepositoryInterface interface {
 	AddToAudit(id string,  accessionId string) error
 	NewAudit(audit model.Audit) error
 	UpdateAudit(audit model.Audit) error
+	AddBookToAudit(auditId string, bookId string) error
+	DeleteBookCopyFromAudit(auditId string, accessionId string) error
 }

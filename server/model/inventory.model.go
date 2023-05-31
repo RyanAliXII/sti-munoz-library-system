@@ -16,6 +16,7 @@ type AuditedBook struct {
 }
 
 type AuditedAccesions []struct {
+	Id 	string `json:"id" db:"number"`
 	Number       int  `json:"number" db:"number"`
 	CopyNumber   int  `json:"copyNumber" db:"copy_number"`
 	IsAudited    bool `json:"isAudited" db:"is_audited"`

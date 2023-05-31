@@ -23,6 +23,12 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { PrimaryButton } from "@components/ui/button/Button";
 import { toast } from "react-toastify";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import BookSearchBox from "@components/BookSearchBox";
+import ordinal from "ordinal";
+import Tippy from "@tippyjs/react";
+import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
+import { BsFillQuestionDiamondFill } from "react-icons/bs";
+import { AiFillCheckCircle } from "react-icons/ai";
 
 export interface AuditedAccession
   extends Omit<
@@ -41,7 +47,7 @@ type QrResult = {
 };
 const AuditScan = () => {
   const { id } = useParams();
-  const { Get, Post } = useRequest();
+  const { Get, Post, Delete } = useRequest();
   const fetchAudit = async () => {
     const { data: response } = await Get(`/inventory/audits/${id}`, {}, [
       apiScope("Audit.Read"),
@@ -86,7 +92,7 @@ const AuditScan = () => {
 
   const sendBookCopy = useMutation({
     mutationFn: (accessionId: string) =>
-      Post(`/inventory/audits/${id}`, { accessionId: accessionId }, {}, [
+      Post(`/inventory/audits/${id}/`, { accessionId: accessionId }, {}, [
         apiScope("Audit.Add"),
       ]),
     onSuccess: () => {
@@ -96,12 +102,31 @@ const AuditScan = () => {
       console.error(error);
     },
   });
-  const onQRScan = (decodedText: string) => {
-    let data: QrResult = jsonpack.unpack(decodedText);
-    // sendBook.mutate(data);
-  };
 
-  // useQRScanner({ elementId: "reader", onScan: onQRScan });
+  const sendBook = useMutation({
+    mutationFn: (bookId: string) =>
+      Post(`/inventory/audits/${id}/books/${bookId}`, {}, {}, [
+        apiScope("Audit.Add"),
+      ]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["auditedBooks"]);
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+  const deleteBookCopy = useMutation({
+    mutationFn: (accessionId: string) =>
+      Delete(`/inventory/audits/${id}/accessions/${accessionId}`, {}, [
+        apiScope("Audit.Delete"),
+      ]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["auditedBooks"]);
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
   const textArr = useRef<string[]>([]);
   useEffect(() => {
     const waitForEvent = (event: KeyboardEvent) => {
@@ -119,6 +144,10 @@ const AuditScan = () => {
       window.removeEventListener("keypress", waitForEvent);
     };
   }, []);
+
+  const onSelectBook = (book: Book) => {
+    sendBook.mutate(book.id ?? "");
+  };
   return (
     <>
       <ContainerNoBackground>
@@ -127,15 +156,22 @@ const AuditScan = () => {
         </h1>
       </ContainerNoBackground>
       <ContainerNoBackground>
-        <PrimaryButton
-          className="mb-2 flex items-center"
-          onClick={() => {
-            toast.info("Feature is still in development.");
-          }}
-        >
-          <HiOutlineDocumentReport className="text-lg mr-2" />
-          Generate Report
-        </PrimaryButton>
+        <div className="flex gap-2 items-center">
+          <PrimaryButton
+            className="mb-2 flex items-center"
+            onClick={() => {
+              toast.info("Feature is still in development.");
+            }}
+          >
+            <HiOutlineDocumentReport className="text-lg mr-2" />
+            Generate Report
+          </PrimaryButton>
+          <div className="mb-1.5 flex-1">
+            <BookSearchBox selectBook={onSelectBook} />
+          </div>
+        </div>
+      </ContainerNoBackground>
+      <Container>
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           <Table>
             <Thead>
@@ -156,6 +192,7 @@ const AuditScan = () => {
                             <Th>Accession Number</Th>
                             <Th>Copy Number</Th>
                             <Th>Status</Th>
+                            <Th></Th>
                           </HeadingRow>
                         </Thead>
                         <Tbody>
@@ -165,7 +202,7 @@ const AuditScan = () => {
                                 key={`${book.id}_${accession.copyNumber}`}
                               >
                                 <Td>{accession.number}</Td>
-                                <Td>Copy {accession.copyNumber}</Td>
+                                <Td>{ordinal(accession.copyNumber)}</Td>
 
                                 <Td>
                                   {accession.isCheckedOut ? (
@@ -174,13 +211,50 @@ const AuditScan = () => {
                                     </span>
                                   ) : accession.isAudited ? (
                                     <span className="text-green-400">
-                                      OK: Found
+                                      Found
                                     </span>
                                   ) : (
                                     <span className="text-yellow-500">
-                                      Unscanned.
+                                      Missing
                                     </span>
                                   )}
+                                </Td>
+                                <Td className="flex gap-2">
+                                  {!accession.isAudited &&
+                                    !accession.isCheckedOut && (
+                                      <Tippy content="Mark Book as Found">
+                                        <button
+                                          className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
+                                          onClick={() => {
+                                            sendBookCopy.mutate(
+                                              accession.id ?? ""
+                                            );
+                                          }}
+                                        >
+                                          <AiFillCheckCircle
+                                            className="
+                                      text-lg"
+                                          />
+                                        </button>
+                                      </Tippy>
+                                    )}
+
+                                  {accession.isAudited &&
+                                    !accession.isCheckedOut && (
+                                      <Tippy content="Mark as Missing">
+                                        <button className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500">
+                                          <BsFillQuestionDiamondFill
+                                            className="
+                                      text-lg"
+                                            onClick={() => {
+                                              deleteBookCopy.mutate(
+                                                accession.id ?? ""
+                                              );
+                                            }}
+                                          />
+                                        </button>
+                                      </Tippy>
+                                    )}
                                 </Td>
                               </BodyRow>
                             );
@@ -199,7 +273,7 @@ const AuditScan = () => {
             </div>
           ) : null}
         </LoadingBoundary>
-      </ContainerNoBackground>
+      </Container>
     </>
   );
 };
