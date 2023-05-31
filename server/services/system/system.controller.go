@@ -1,6 +1,7 @@
 package system
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -95,6 +96,7 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
+	fmt.Println(account)
 	verifyErr := ctrler.accountRepository.VerifyAndUpdateAccount(account)
 	if verifyErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
