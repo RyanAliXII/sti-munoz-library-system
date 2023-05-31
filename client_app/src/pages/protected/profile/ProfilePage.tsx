@@ -9,9 +9,29 @@ import { FaHandHolding, FaMoneyBill } from "react-icons/fa";
 import { MdOutlinePending } from "react-icons/md";
 import QRCode from "react-qr-code";
 import { Link } from "react-router-dom";
+import { useRequest } from "@hooks/useRequest";
+import { useQuery } from "@tanstack/react-query";
+import { Account } from "@definitions/types";
+import Loader from "@components/Loader";
 
 const ProfilePage = () => {
   const { user } = useAuthContext();
+
+  const { Get } = useRequest();
+  const fetchAccount = async () => {
+    try {
+      const response = await Get(`/accounts/${user.id}`);
+      const { data } = response.data;
+      return data.account ?? account;
+    } catch (error) {
+      return account;
+    }
+  };
+
+  const { data: account } = useQuery<Account>({
+    queryFn: fetchAccount,
+    queryKey: ["profileAccount"],
+  });
   const qrRef = useRef<HTMLDivElement | null>(null);
   const downloadQRCode = async () => {
     if (!qrRef.current) return;
@@ -30,11 +50,13 @@ const ProfilePage = () => {
 
     doc.save(user.id);
   };
+
+  if (!account) return <Loader />;
   return (
     <div className="lg:w-8/12 mx-auto">
       <div className="w-full h-56 bg-gray-300 relative">
         <img
-          src={`https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`}
+          src={`https://ui-avatars.com/api/?name=${account.givenName}${account.surname}&background=2563EB&color=fff`}
           className="h-36 w-36 absolute  border rounded-full bg-black left-5"
           style={{ bottom: "-55px" }}
         ></img>
@@ -43,9 +65,9 @@ const ProfilePage = () => {
         <div>
           <div>
             <h1 className="lg:text-xl font-bold ">
-              {user.givenName} {user.surname}
+              {account.givenName} {account.surname}
             </h1>
-            <h2 className="lg:text-lg text-gray-500">{user.email}</h2>
+            <h2 className="lg:text-lg text-gray-500">{account.email}</h2>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 w-full mt-10 gap-3">
@@ -56,7 +78,7 @@ const ProfilePage = () => {
             <FaMoneyBill className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
               PHP{" "}
-              {user.metaData.totalPenalty.toLocaleString(undefined, {
+              {account.metaData.totalPenalty.toLocaleString(undefined, {
                 maximumFractionDigits: 2,
                 minimumFractionDigits: 2,
               })}
@@ -69,7 +91,7 @@ const ProfilePage = () => {
           >
             <MdOutlinePending className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {user.metaData.onlinePendingBooks}
+              {account.metaData.onlinePendingBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Pending Borrow Request
@@ -82,7 +104,7 @@ const ProfilePage = () => {
           >
             <AiFillCheckCircle className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {user.metaData.onlineApprovedBooks}
+              {account.metaData.onlineApprovedBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Approved Borrow Request
@@ -94,8 +116,8 @@ const ProfilePage = () => {
           >
             <FaHandHolding className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {user.metaData.onlineCheckedOutBooks +
-                user.metaData.walkInCheckedOutBooks}
+              {account.metaData.onlineCheckedOutBooks +
+                account.metaData.walkInCheckedOutBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Checked-Out Books
@@ -107,8 +129,8 @@ const ProfilePage = () => {
           >
             <BsArrowReturnLeft className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {user.metaData.onlineReturnedBooks +
-                user.metaData.walkInReturnedBooks}
+              {account.metaData.onlineReturnedBooks +
+                account.metaData.walkInReturnedBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Returned Books
@@ -120,7 +142,7 @@ const ProfilePage = () => {
           >
             <CiCircleRemove className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {user.metaData.onlineCancelledBooks}
+              {account.metaData.onlineCancelledBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Cancelled Borrow Request
@@ -130,7 +152,7 @@ const ProfilePage = () => {
         <div className="flex flex-col mt-10 items-center gap-3">
           <div ref={qrRef}>
             <QRCode
-              value={user?.id ?? "none"}
+              value={account?.id ?? "none"}
               className="w-28 h-28 lg:w-32 lg:h-32"
             />
           </div>

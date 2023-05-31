@@ -92,7 +92,19 @@ func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
 		"accounts": accounts, 
 	}, "Accounts with assigned role fetched."))
 }
+func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
+	id, exists := ctx.Get("requestorId")
+	parsedId,isIdStr := id.(string)
+	if!exists || !isIdStr {
+        ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+        return
+    }
+	account:= ctrler.accountRepository.GetAccountById(parsedId)
 
+	ctx.JSON(httpresp.Success200(gin.H{
+		"account": account,
+	}, "Account has been fetched."))
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -105,4 +117,5 @@ type AccountControllerInterface interface {
 	GetAccounts(ctx *gin.Context)
 	ImportAccount(ctx *gin.Context)
 	GetAccountRoles(ctx * gin.Context)
+	GetAccountById(ctx * gin.Context)
 }

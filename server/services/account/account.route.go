@@ -8,6 +8,7 @@ import (
 func ClientRoutes(router *gin.RouterGroup) {
 	var ctrler AccountControllerInterface = NewAccountController()
 	router.GET("/", ctrler.GetAccounts)
+	router.GET("/:id",middlewares.ValidateToken,ctrler.GetAccountById)
 	router.POST("/bulk", ctrler.ImportAccount)
 	router.GET("/roles",
 	middlewares.ValidatePermissions([]string{"AccessControl.Role.Read"}),
