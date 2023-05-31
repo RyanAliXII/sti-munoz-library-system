@@ -16,6 +16,13 @@ const userInitialData: Account = {
   id: " ",
   metaData: {
     totalPenalty: 0,
+    onlineApprovedBooks: 0,
+    onlineCancelledBooks: 0,
+    onlineCheckedOutBooks: 0,
+    onlinePendingBooks: 0,
+    onlineReturnedBooks: 0,
+    walkInCheckedOutBooks: 0,
+    walkInReturnedBooks: 0,
   },
 };
 

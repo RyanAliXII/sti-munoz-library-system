@@ -36,17 +36,6 @@ export const BookInitialValue: Book = {
   accessions: [],
   createdAt: "",
 };
-
-export const BorrowedCopyInitialValue: BorrowedCopy = {
-  book: BookInitialValue,
-  isReturned: false,
-  bookId: "",
-  copyNumber: 0,
-  number: 0,
-  returnedAt: "",
-  isAvailable: false,
-};
-
 export const AccountInitialValue: Account = {
   displayName: "",
   email: "",
@@ -64,6 +53,23 @@ export const AccountInitialValue: Account = {
     walkInReturnedBooks: 0,
   },
 };
+export const BorrowedCopyInitialValue: BorrowedCopy = {
+  book: BookInitialValue,
+  isReturned: false,
+  bookId: "",
+  copyNumber: 0,
+  number: 0,
+  dueDate: "",
+  isCancelled: false,
+  isUnreturned: false,
+  returnedAt: "",
+  remarks: "",
+  penalty: 0,
+  client: AccountInitialValue,
+
+  isAvailable: false,
+};
+
 export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
     displayName: "",
@@ -85,7 +91,6 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   isDue: false,
   borrowedCopies: [],
   createdAt: "",
-  dueDate: "",
   returnedAt: "",
   remarks: "",
   isReturned: false,
