@@ -12,7 +12,6 @@ import { ClipLoader } from "react-spinners";
 type BookSearchBoxProps = {
   selectBook: (book: Book) => void;
 };
-
 const HIGHLIGHTED_CLASS = "bg-gray-100";
 const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");

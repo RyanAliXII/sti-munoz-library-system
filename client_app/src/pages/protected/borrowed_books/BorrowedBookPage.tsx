@@ -61,7 +61,7 @@ const BorrowedBooksPage = () => {
 
   return (
     <div className="mt-3 container mx-auto px-2" style={{ maxWidth: "800px" }}>
-      <div className="tabs mt-5  ">
+      <div className="mt-5 w-full flex overflow-x-scroll md:overflow-auto overflow-y-hidden ">
         <a
           className={isTabActive(activeTab, "all")}
           onClick={() => {
@@ -96,7 +96,7 @@ const BorrowedBooksPage = () => {
             setActiveTab(OnlineBorrowStatuses.CheckedOut);
           }}
         >
-          Checked Out
+          Borrowed
         </a>
         <a
           className={isTabActive(activeTab, OnlineBorrowStatuses.Returned)}
@@ -217,7 +217,7 @@ const isTabActive = (
   tab: OnlineBorrowStatus | "all"
 ) => {
   return activeTab === tab
-    ? "tab  tab-bordered tab-active"
-    : "tab tab-bordered ";
+    ? "tab  tab-bordered tab-active inline"
+    : "tab tab-bordered inline";
 };
 export default BorrowedBooksPage;

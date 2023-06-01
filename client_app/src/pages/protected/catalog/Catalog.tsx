@@ -30,12 +30,15 @@ const Catalog = () => {
   return (
     <div className="w-full  flex flex-col items-center mt-5 gap-3">
       <div
-        className="w-11/12 md:w-7/12 lg:w-6/12 flex gap-2"
+        className="hidden md:flex w-11/12 md:w-7/12 lg:w-6/12 gap-2"
         style={{
           maxWidth: "800px",
         }}
       >
-        <input type="text" className="input input-bordered flex-1"></input>
+        <input
+          type="text"
+          className="input input-bordered width flex-1"
+        ></input>
         <button
           type="button"
           className="bg-primary text-sm py-1 px-3 lg:px-5 rounded text-base-100"
@@ -44,7 +47,7 @@ const Catalog = () => {
         </button>
       </div>
       <div
-        className="w-11/12 md:w-7/12 lg:w-6/12 flex gap-2"
+        className="hidden w-11/12 md:w-7/12 lg:w-6/12 md:flex gap-2"
         style={{
           maxWidth: "800px",
         }}

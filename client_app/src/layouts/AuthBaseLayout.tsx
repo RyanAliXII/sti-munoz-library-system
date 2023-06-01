@@ -43,8 +43,8 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
       <div className=" min-h-screen"> {children}</div>
 
       <div className="sticky w-full h-16 bg-white border border-t border-gray-50 bottom-0 drop-shadow text-gray-600 md:hidden">
-        <nav className="h-full">
-          <ul className="flex h-full  items-center justify-around">
+        <nav className="h-full w-full">
+          <ul className="flex h-full w-full items-center justify-around">
             <li>
               <NavLink to={"/search"} className={isBottomNavActive}>
                 <AiOutlineSearch />
