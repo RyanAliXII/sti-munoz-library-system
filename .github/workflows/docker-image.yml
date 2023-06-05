@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Production Images CI
 
 on:
   push:
@@ -19,13 +19,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
-      # - name: Build Development Server Docker Image
-      #   run: docker build ./server --file ./server/Dockerfile --tag ryanali12/sti-munoz-library-server:latest
-      # - name: Build Development Admin Application Docker Image
-      #   run: docker build ./admin_app --file ./admin_app/Dockerfile --tag ryanali12/sti-munoz-library-admin-app:latest
-      # - name: Build Development Client Application Docker Image
-      #   run: docker build ./client_app --file ./client_app/Dockerfile --tag ryanali12/sti-munoz-library-client-app:latest
-
       - name: Build Production Server Docker Image
         run: docker build ./server --file ./server/Dockerfile --tag ryanali12/sti-munoz-library-server-prod:latest
       - name: Build Production Admin Application Docker Image
@@ -39,9 +32,3 @@ jobs:
         run: docker push ryanali12/sti-munoz-library-admin-app-prod:latest
       - name: Push Production Client Application Image
         run: docker push ryanali12/sti-munoz-library-client-app-prod:latest
-      # - name: Build Development Server Docker Image
-      #   run: docker build ./server --file ./server/Dockerfile --tag ryanali12/sti-munoz-library-server:latest
-      # - name: Build Development Admin Application Docker Image
-      #   run: docker build ./admin_app --file ./admin_app/Dockerfile --tag ryanali12/sti-munoz-library-admin-app:latest
-      # - name: Build Development Client Application Docker Image
-      #   run: docker build ./client_app --file ./client_app/Dockerfile --tag ryanali12/sti-munoz-library-client-app:latest
