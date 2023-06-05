@@ -2,29 +2,26 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-  
-    - name: Build docker images
-    - uses: actions/checkout@v3
-    
-    - name: Login to dockerhub
-    - uses: docker/login-action@v2
-      with:
-        username: ${{DOCKERBHUB_USERNAME}}
-        password: ${{DOCKERBHUB_ACCESS_TOKEN}}
-    - name: Build and Push Docker Server Image
-      uses: docker/build-push-action@v4
-      with:
-        context: DockerFileFolder/
-        push: true
-        tags: ryanali12/sti-munoz-library-server:latest
+      - name: Build docker images
+      - uses: actions/checkout@v3
+
+      - name: Login to dockerhub
+      - uses: docker/login-action@v2
+        with:
+          username: ${{DOCKERBHUB_USERNAME}}
+          password: ${{DOCKERBHUB_ACCESS_TOKEN}}
+      - name: Build and Push Docker Server Image
+        uses: docker/build-push-action@v4
+        with:
+          context: /server
+          push: true
+          tags: ryanali12/sti-munoz-library-server:latest
