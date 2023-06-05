@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Build docker images
       - uses: actions/checkout@v3
@@ -19,11 +18,5 @@ jobs:
         with:
           username: ${{DOCKERBHUB_USERNAME}}
           password: ${{DOCKERBHUB_ACCESS_TOKEN}}
-      - name: Build and Push Docker Server Image
-        uses: docker/build-push-action@v4
-        with:
-          context: /server
-          push: true
-          tags: 
       - name: Build the Docker image
-      run: docker build -t ryanali12/sti-munoz-library-server:latest -f ./server/Dockerfile
+        run: docker build -t ryanali12/sti-munoz-library-server:latest -f ./server/Dockerfile
