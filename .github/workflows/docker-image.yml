@@ -18,5 +18,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-      - name: Build the Docker image
+
+      - name: Build Server Docker image
         run: docker build ./server --file ./server/Dockerfile --tag ryanali12/sti-munoz-library-server:latest
+
+      - name: Push Server Docker image
+        run: docker push ryanali12/sti-munoz-library-server
