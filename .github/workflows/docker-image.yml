@@ -24,4 +24,6 @@ jobs:
         with:
           context: /server
           push: true
-          tags: ryanali12/sti-munoz-library-server:latest
+          tags: 
+      - name: Build the Docker image
+      run: docker build -t ryanali12/sti-munoz-library-server:latest -f ./server/Dockerfile
