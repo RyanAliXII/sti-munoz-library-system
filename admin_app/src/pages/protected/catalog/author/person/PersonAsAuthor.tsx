@@ -59,6 +59,7 @@ const PersonAsAuthor = () => {
   );
   const { Get, Delete } = useRequest();
   const [page, setPage] = useState<number>(1);
+  const [pages, setPages] = useState<number>(0);
   const fetchAuthors = async () => {
     try {
       const { data: response } = await Get(
@@ -70,6 +71,7 @@ const PersonAsAuthor = () => {
         },
         [apiScope("Author.Read")]
       );
+      setPages(response?.data?.metaData?.pages ?? 0);
       return response.data.authors ?? [];
     } catch (error) {
       toast.error(ErrorMsg.Get);
@@ -170,7 +172,7 @@ const PersonAsAuthor = () => {
           nextLabel="Next"
           pageClassName="border px-3 py-1  text-center rounded"
           pageRangeDisplayed={5}
-          pageCount={20}
+          pageCount={pages}
           onPageChange={({ selected }) => {
             setPage(selected + 1);
           }}
