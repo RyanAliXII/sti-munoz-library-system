@@ -12,7 +12,12 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 
 import { toast } from "react-toastify";
 import { PersonAuthor } from "@definitions/types";
@@ -30,6 +35,7 @@ import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
+import ReactPaginate from "react-paginate";
 const PersonAsAuthor = () => {
   const {
     isOpen: isAddModalOpen,
@@ -52,11 +58,18 @@ const PersonAsAuthor = () => {
     EDIT_AUTHOR_INITIAL_FORM
   );
   const { Get, Delete } = useRequest();
+  const [page, setPage] = useState<number>(1);
   const fetchAuthors = async () => {
     try {
-      const { data: response } = await Get("/authors/", {}, [
-        apiScope("Author.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/authors/",
+        {
+          params: {
+            page: page,
+          },
+        },
+        [apiScope("Author.Read")]
+      );
       return response.data.authors ?? [];
     } catch (error) {
       toast.error(ErrorMsg.Get);
@@ -88,7 +101,7 @@ const PersonAsAuthor = () => {
     isFetching,
   } = useQuery<PersonAuthor[]>({
     queryFn: fetchAuthors,
-    queryKey: ["authors"],
+    queryKey: ["authors", page],
   });
   return (
     <>
@@ -152,6 +165,23 @@ const PersonAsAuthor = () => {
           />
         </Container>
       </LoadingBoundary>
+      <ContainerNoBackground>
+        <ReactPaginate
+          nextLabel="Next"
+          pageClassName="border px-3 py-1  text-center rounded"
+          pageRangeDisplayed={5}
+          pageCount={20}
+          onPageChange={({ selected }) => {
+            setPage(selected + 1);
+          }}
+          className="flex gap-2 items-center"
+          previousLabel="Previous"
+          previousClassName="px-2 border text-blue-500 py-1 rounded"
+          nextClassName="px-2 border text-blue-500 py-1 rounded"
+          renderOnZeroPageCount={null}
+          activeClassName="bg-blue-500 text-white"
+        />
+      </ContainerNoBackground>
     </>
   );
 };
