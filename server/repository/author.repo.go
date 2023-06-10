@@ -32,19 +32,30 @@ func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) Get(filter * Filter) []model.PersonAsAuthor {
+func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor, Metadata) {
 	authors := make([]model.PersonAsAuthor, 0)
+	transaction, transactErr := repo.db.Beginx()
 
+	if transactErr != nil {
+		logger.Error(transactErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("transactErr"))
+		transaction.Rollback()
+		return authors, Metadata{}
+	}
 	if filter.Page <= 0 {
 		filter.Page = 1
 	}
-	const LIMIT = 1
-	offset :=  (filter.Page - 1) * LIMIT
-	selectErr := repo.db.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", LIMIT, offset)
+	const RowLimit = 10
+	offset :=  (filter.Page - 1) * RowLimit
+	selectErr := transaction.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", RowLimit, offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
-	return authors
+	metaData, getMetaErr := GetRepositoryMetadataTx(transaction, "catalog.author", RowLimit)
+	if getMetaErr != nil {
+		logger.Error(getMetaErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("getMetaErr"))
+	}
+	
+	return authors, metaData
 }
 func (repo *AuthorRepository) Delete(id int) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.author SET deleted_at = now() where id=$1")
@@ -137,7 +148,7 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 
 type AuthorRepositoryInterface interface {
 	New(model.PersonAsAuthor) error
-	Get(filter * Filter) []model.PersonAsAuthor
+	Get(filter * Filter) ([]model.PersonAsAuthor, Metadata)
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error

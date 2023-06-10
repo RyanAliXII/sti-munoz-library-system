@@ -34,10 +34,10 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
         return
 	}
-	var authors []model.PersonAsAuthor = ctrler.authorRepository.Get(&repository.Filter{
+	authors, metaData := ctrler.authorRepository.Get(&repository.Filter{
 		Page: parsedPage,
 	})
-	ctx.JSON(httpresp.Success200(gin.H{"authors": authors}, "Authors fetched."))
+	ctx.JSON(httpresp.Success200(gin.H{"authors": authors, "metaData": metaData,}, "Authors fetched."))
 }
 
 func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
