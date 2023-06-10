@@ -54,7 +54,7 @@ func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor, Meta
 	if getMetaErr != nil {
 		logger.Error(getMetaErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("getMetaErr"))
 	}
-	
+	transaction.Commit()
 	return authors, metaData
 }
 func (repo *AuthorRepository) Delete(id int) error {
