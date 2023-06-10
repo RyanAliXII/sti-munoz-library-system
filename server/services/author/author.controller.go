@@ -27,7 +27,16 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
-	var authors []model.PersonAsAuthor = ctrler.authorRepository.Get()
+	page := ctx.Query("page")
+
+	parsedPage, parsePageErr := strconv.Atoi(page)
+	if parsePageErr != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
+        return
+	}
+	var authors []model.PersonAsAuthor = ctrler.authorRepository.Get(&repository.Filter{
+		Page: parsedPage,
+	})
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors}, "Authors fetched."))
 }
 
