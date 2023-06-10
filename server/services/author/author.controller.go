@@ -34,6 +34,10 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
         return
 	}
+
+	if parsedPage <= 0 {
+		parsedPage = 1
+	}
 	authors, metaData := ctrler.authorRepository.Get(&repository.Filter{
 		Page: parsedPage,
 	})
