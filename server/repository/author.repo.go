@@ -45,12 +45,12 @@ func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor, Meta
 		filter.Page = 1
 	}
 	const RowLimit = 10
-	offset :=  (filter.Page - 1) * RowLimit
-	selectErr := transaction.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", RowLimit, offset)
+	rowOffset :=  (filter.Page - 1) * RowLimit
+	selectErr := transaction.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", RowLimit, rowOffset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
-	metaData, getMetaErr := GetRepositoryMetadataTx(transaction, "catalog.author", RowLimit)
+	metaData, getMetaErr := GetParanoidRepositoryMetadataTx(transaction, "catalog.author", RowLimit)
 	if getMetaErr != nil {
 		logger.Error(getMetaErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("getMetaErr"))
 	}

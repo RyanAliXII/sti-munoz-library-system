@@ -83,7 +83,18 @@ const PersonAsAuthor = () => {
   const mutation = useMutation({
     mutationFn: () => Delete(`/authors/${selectedRow?.id}/`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["authors"]);
+      /*
+        validate first if deleted row is the last item from the page
+        by checking the current active page rows length
+        if the current page is empty then go to previous page
+      */
+
+      if (authors?.length === 1) {
+        setPage((prevPage) => prevPage - 1);
+      } else {
+        queryClient.invalidateQueries(["authors"]);
+      }
+
       toast.success("Author has been deleted.");
     },
     onError: (error) => {
@@ -173,12 +184,13 @@ const PersonAsAuthor = () => {
           pageClassName="border px-3 py-1  text-center rounded"
           pageRangeDisplayed={5}
           pageCount={pages}
+          disabledClassName="opacity-60 pointer-events-none"
           onPageChange={({ selected }) => {
             setPage(selected + 1);
           }}
           className="flex gap-2 items-center"
           previousLabel="Previous"
-          previousClassName="px-2 border text-blue-500 py-1 rounded"
+          previousClassName="px-2 border text-gray-500 py-1 rounded"
           nextClassName="px-2 border text-blue-500 py-1 rounded"
           renderOnZeroPageCount={null}
           activeClassName="bg-blue-500 text-white"
