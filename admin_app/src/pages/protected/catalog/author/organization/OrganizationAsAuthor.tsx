@@ -48,11 +48,17 @@ const OrganizationAsAuthor = () => {
     open: openEditModal,
   } = useSwitch();
   const { Get, Delete } = useRequest();
-  const { currentPage, nextPage, previousPage, totalPages, setCurrentPage } =
-    usePaginate({
-      initialPage: 1,
-      numberOfPages: 5,
-    });
+  const {
+    currentPage,
+    nextPage,
+    previousPage,
+    totalPages,
+    setCurrentPage,
+    setTotalPages,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const fetchOrganizations = async () => {
     try {
       const { data: response } = await Get(
@@ -62,8 +68,10 @@ const OrganizationAsAuthor = () => {
             page: currentPage,
           },
         },
+
         [apiScope("Author.Read")]
       );
+      setTotalPages(response?.data?.metaData?.pages ?? 0);
       return response?.data?.organizations || [];
     } catch {
       return [];

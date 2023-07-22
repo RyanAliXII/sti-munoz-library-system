@@ -48,6 +48,7 @@ const PublisherAsAuthor = () => {
         },
         [apiScope("Publisher.Read")]
       );
+      setTotalPages(response?.data?.metaData?.pages ?? 0);
       return response?.data?.publishers || [];
     } catch (error) {
       console.error(error);

@@ -59,7 +59,7 @@ func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"publishers": publishers,
-		"meta": metaData,
+		"metaData": metaData,
 	}, "Publishers successfully fetched."))
 }
 func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
