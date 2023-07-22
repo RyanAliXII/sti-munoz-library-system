@@ -26,16 +26,11 @@ import { toast } from "react-toastify";
 
 const PublisherAsAuthor = () => {
   const { Get } = useRequest();
-  const {
-    currentPage,
-
-    setCurrentPage,
-    setTotalPages,
-    totalPages,
-  } = usePaginate({
-    initialPage: 1,
-    numberOfPages: 0,
-  });
+  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
+    usePaginate({
+      initialPage: 1,
+      numberOfPages: 0,
+    });
   const fetchPublisher = async () => {
     try {
       const { data: response } = await Get(
