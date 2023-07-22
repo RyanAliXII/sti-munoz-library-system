@@ -13,7 +13,7 @@ import (
 
 type AuthorController struct {
 	authorRepository repository.AuthorRepositoryInterface
-	recordMetadataRepository repository.RecordMetadataRepository
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
@@ -25,6 +25,7 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
@@ -38,16 +39,15 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 	if parsedPage <= 0 {
 		parsedPage = 1
 	}
-	const NumberOfRowsToFetch = 10
+	const NumberOfRowsToFetch = 15
 	authors := ctrler.authorRepository.Get(&repository.Filter{
 		Page: parsedPage,
-		Limit: 10,
+		Limit: NumberOfRowsToFetch,
 		Offset: ( parsedPage - 1) * NumberOfRowsToFetch,
 	})
 
 	metaData, metaErr := ctrler.recordMetadataRepository.GetPersonAsAuthorMetadata(NumberOfRowsToFetch)
 	if metaErr != nil {
-
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"message": "Unknown error occured",
 		}, "Invalid page number."))
@@ -68,6 +68,7 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(gin.H{}, err.Error()))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor deleted."))
 }
 

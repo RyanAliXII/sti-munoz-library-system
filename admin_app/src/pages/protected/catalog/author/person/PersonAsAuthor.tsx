@@ -181,7 +181,7 @@ const PersonAsAuthor = () => {
       <ContainerNoBackground>
         <ReactPaginate
           nextLabel="Next"
-          pageClassName="border px-3 py-1  text-center rounded"
+          pageClassName="border px-3 py-0.5  text-center rounded"
           pageRangeDisplayed={5}
           pageCount={pages}
           disabledClassName="opacity-60 pointer-events-none"
