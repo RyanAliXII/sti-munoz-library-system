@@ -104,9 +104,30 @@ func (ctrler *AuthorController) NewOrganizationAsAuthor(ctx *gin.Context) {
 }
 
 func (ctrler *AuthorController) GetOrganizations(ctx *gin.Context) {
-	orgs := ctrler.authorRepository.GetOrganization()
+	page := ctx.Query("page")
+	parsedPage, parsePageErr := strconv.Atoi(page)
+	if parsePageErr != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
+        return
+	}
+
+	if parsedPage <= 0 {
+		parsedPage = 1
+	}
+	const NumberOfRowsToFetch = 15
+	orgs := ctrler.authorRepository.GetOrganizations(&repository.Filter{Page: parsedPage,
+		Limit: NumberOfRowsToFetch,
+		Offset: ( parsedPage - 1) * NumberOfRowsToFetch, })
+	metaData, metaErr := ctrler.recordMetadataRepository.GetOrgAsAuthorMetadata(NumberOfRowsToFetch)
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"message": "Unknown error occured",
+		}, "Invalid page number."))
+        return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"organizations": orgs,
+		"metaData": metaData,
 	}, "Organizations fetched."))
 }
 func (ctrler *AuthorController) DeleteOrganization(ctx *gin.Context) {

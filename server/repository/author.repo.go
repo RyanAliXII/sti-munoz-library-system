@@ -102,7 +102,7 @@ func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) GetOrganization() []model.OrgAsAuthor {
+func (repo *AuthorRepository) GetOrganizations(filter * Filter) []model.OrgAsAuthor {
 	orgs := make([]model.OrgAsAuthor, 0)
 	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null")
 	if selectErr != nil {
@@ -139,7 +139,7 @@ type AuthorRepositoryInterface interface {
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error
 	NewOrganization(org model.OrgAsAuthor) error
-	GetOrganization() []model.OrgAsAuthor
+	GetOrganizations(filter * Filter) []model.OrgAsAuthor
 	DeleteOrganization(id int) error
 	UpdateOrganization(org model.OrgAsAuthor) error
 }
