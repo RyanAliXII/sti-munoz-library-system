@@ -28,8 +28,7 @@ const PublisherAsAuthor = () => {
   const { Get } = useRequest();
   const {
     currentPage,
-    nextPage,
-    previousPage,
+
     setCurrentPage,
     setTotalPages,
     totalPages,
@@ -63,7 +62,7 @@ const PublisherAsAuthor = () => {
     isFetching,
   } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
-    queryKey: ["publishers"],
+    queryKey: ["publishers", currentPage],
   });
   return (
     <>
