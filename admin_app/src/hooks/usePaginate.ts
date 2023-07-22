@@ -10,7 +10,7 @@ const usePaginate = ({ initialPage = 1, numberOfPages = 0 }) => {
   };
   const previousPage = () => {
     if (currentPage === 1) return;
-    setCurrentPage((prevPage) => prevPage + 1);
+    setCurrentPage((prevPage) => prevPage - 1);
   };
   return {
     currentPage,

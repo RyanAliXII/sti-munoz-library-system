@@ -60,11 +60,17 @@ const PersonAsAuthor = () => {
   );
   const { Get, Delete } = useRequest();
 
-  const { currentPage, totalPages, setTotalPages, nextPage, setCurrentPage } =
-    usePaginate({
-      initialPage: 1,
-      numberOfPages: 0,
-    });
+  const {
+    currentPage,
+    totalPages,
+    setTotalPages,
+    nextPage,
+    previousPage,
+    setCurrentPage,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const fetchAuthors = async () => {
     try {
       const { data: response } = await Get(
@@ -86,7 +92,8 @@ const PersonAsAuthor = () => {
   };
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => Delete(`/authors/${selectedRow?.id}/`),
+    mutationFn: () =>
+      Delete(`/authors/${selectedRow?.id}/`, {}, [apiScope(["Author.Delete"])]),
     onSuccess: () => {
       /*
         validate first if deleted row is the last item from the page
@@ -94,8 +101,8 @@ const PersonAsAuthor = () => {
         if the current page is empty then go to previous page
       */
 
-      if (authors?.length === 1) {
-        nextPage();
+      if (authors?.length === 1 && totalPages > 1) {
+        previousPage();
       } else {
         queryClient.invalidateQueries(["authors"]);
       }

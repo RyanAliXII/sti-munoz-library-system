@@ -26,6 +26,7 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidatePublisher()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"publisher":  gin.H{
 			"id":id,
@@ -91,6 +92,7 @@ func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, deleteErr.Error()))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidatePublisher()
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Publisher deleted."))
 }
 func NewPublisherController() PublisherControllerInterface {
