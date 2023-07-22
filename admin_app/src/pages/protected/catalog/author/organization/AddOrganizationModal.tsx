@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 type AddFormType = Omit<Organization, "id">;
 interface AddOrgModalProps extends ModalProps {
@@ -38,7 +39,8 @@ const AddOrganizationModal = ({
     } catch {}
   };
   const newOrganization = useMutation({
-    mutationFn: (data: AddFormType) => Post("/authors/organizations", data),
+    mutationFn: (data: AddFormType) =>
+      Post("/authors/organizations", data, {}, [apiScope("Author.Add")]),
     onSuccess: () => {
       toast.success("New organization has been added.");
       refetch();
