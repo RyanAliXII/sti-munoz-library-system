@@ -14,6 +14,7 @@ import (
 
 type PublisherController struct {
 	publisherRepository repository.PublisherRepositoryInterface
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
 func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
@@ -33,9 +34,32 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	}, "model.Publisher added."))
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
-	var publishers []model.Publisher = ctrler.publisherRepository.Get()
+
+	page := ctx.Query("page")
+	parsedPage, parsePageErr := strconv.Atoi(page)
+	if parsePageErr != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
+        return
+	}
+
+	if parsedPage <= 0 {
+		parsedPage = 1
+	}
+	const NumberOfRowsToFetch = 15
+	var publishers []model.Publisher = ctrler.publisherRepository.Get(repository.Filter{
+        Limit: 15,
+		Offset: (parsedPage - 1) * NumberOfRowsToFetch,
+	})
+	metaData, metaErr := ctrler.recordMetadataRepository.GetPublisherMetadata(NumberOfRowsToFetch)
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"message": "Unknown error occured",
+		}, "Invalid page number."))
+        return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"publishers": publishers,
+		"meta": metaData,
 	}, "Publishers successfully fetched."))
 }
 func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
@@ -72,6 +96,7 @@ func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
 func NewPublisherController() PublisherControllerInterface {
 	return &PublisherController{
 		publisherRepository: repository.NewPublisherRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 	}
 
 }

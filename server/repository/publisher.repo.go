@@ -20,9 +20,9 @@ type PublisherRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *PublisherRepository) Get() []model.Publisher {
+func (repo *PublisherRepository) Get(filter  Filter) []model.Publisher {
 	var publishers []model.Publisher = make([]model.Publisher, 0)
-	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null")
+	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null ORDER BY created_at DESC")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_PUBLISHERS))
 	}
@@ -81,7 +81,7 @@ func NewPublisherRepository() PublisherRepositoryInterface {
 }
 
 type PublisherRepositoryInterface interface {
-	Get() []model.Publisher
+	Get(filter Filter) []model.Publisher
 	New(publisher model.Publisher) (int64, error)
 	Delete(id int) error
 	Update(id int, publisher model.Publisher) error

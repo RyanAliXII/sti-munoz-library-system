@@ -32,7 +32,7 @@ func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor) {
+func (repo *AuthorRepository) Get(filter Filter) ([]model.PersonAsAuthor) {
 	authors := make([]model.PersonAsAuthor, 0)
 	if filter.Page <= 0 {
 		filter.Page = 1
@@ -102,7 +102,7 @@ func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) GetOrganizations(filter * Filter) []model.OrgAsAuthor {
+func (repo *AuthorRepository) GetOrganizations(filter  Filter) []model.OrgAsAuthor {
 	orgs := make([]model.OrgAsAuthor, 0)
 	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
@@ -134,12 +134,12 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 
 type AuthorRepositoryInterface interface {
 	New(model.PersonAsAuthor) error
-	Get(filter * Filter) []model.PersonAsAuthor
+	Get(filter Filter) []model.PersonAsAuthor
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error
 	NewOrganization(org model.OrgAsAuthor) error
-	GetOrganizations(filter * Filter) []model.OrgAsAuthor
+	GetOrganizations(filter  Filter) []model.OrgAsAuthor
 	DeleteOrganization(id int) error
 	UpdateOrganization(org model.OrgAsAuthor) error
 }
