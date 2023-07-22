@@ -44,9 +44,8 @@ func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor) {
 	if filter.Page <= 0 {
 		filter.Page = 1
 	}
-	const RowLimit = 10
-	rowOffset :=  (filter.Page - 1) * RowLimit
-	selectErr := transaction.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", RowLimit, rowOffset)
+
+	selectErr := transaction.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
