@@ -101,6 +101,7 @@ func (ctrler *AuthorController) NewOrganizationAsAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidateOrgAsAuthor()
 	ctx.JSON(httpresp.Success200(nil, "New organization has been added."))
 }
 
@@ -143,6 +144,7 @@ func (ctrler *AuthorController) DeleteOrganization(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidateOrgAsAuthor()
 	ctx.JSON(httpresp.Success200(nil, "Organization deleted."))
 }
 func (ctrler *AuthorController) UpdateOrganization(ctx *gin.Context) {
