@@ -13,7 +13,7 @@ import (
 
 type AuthorController struct {
 	authorRepository repository.AuthorRepositoryInterface
-	recordMetadataRepo repository.RecordMetadataRepository
+	recordMetadataRepository repository.RecordMetadataRepository
 }
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
@@ -29,7 +29,6 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 	page := ctx.Query("page")
-
 	parsedPage, parsePageErr := strconv.Atoi(page)
 	if parsePageErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
@@ -39,12 +38,16 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 	if parsedPage <= 0 {
 		parsedPage = 1
 	}
+	const NumberOfRowsToFetch = 10
 	authors := ctrler.authorRepository.Get(&repository.Filter{
 		Page: parsedPage,
+		Limit: 10,
+		Offset: ( parsedPage - 1) * NumberOfRowsToFetch,
 	})
 
-	metaData, metaErr := ctrler.recordMetadataRepo.GetPersonAsAuthorMetadata(30)
+	metaData, metaErr := ctrler.recordMetadataRepository.GetPersonAsAuthorMetadata(NumberOfRowsToFetch)
 	if metaErr != nil {
+
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"message": "Unknown error occured",
 		}, "Invalid page number."))
@@ -137,9 +140,10 @@ func (ctrler *AuthorController) UpdateOrganization(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Organization deleted."))
 }
 func NewAuthorController() AuthorControllerInterface {
-	authorRepo := repository.NewAuthorRepository()
+
 	return &AuthorController{
-		authorRepository: authorRepo,
+		authorRepository: repository.NewAuthorRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 	}
 
 }
