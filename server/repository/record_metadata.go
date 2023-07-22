@@ -33,7 +33,7 @@ func (repo *RecordMetadataRepository) GetPersonAsAuthorMetadata(rowsLimit int) (
 
 
 func (repo *RecordMetadataRepository) GetOrgAsAuthorMetadata(rowsLimit int) (Metadata, error) {
-	if(recordMetaDataCache.PersonAsAuthor.IsValid){
+	if(recordMetaDataCache.OrgAsAuthor.IsValid){
 		return recordMetaDataCache.OrgAsAuthor.Metadata, nil;
 	}
 	meta := Metadata{}
