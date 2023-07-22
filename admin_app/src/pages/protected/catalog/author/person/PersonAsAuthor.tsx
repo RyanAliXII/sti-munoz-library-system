@@ -36,6 +36,7 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
 import ReactPaginate from "react-paginate";
+import usePaginate from "@hooks/usePaginate";
 const PersonAsAuthor = () => {
   const {
     isOpen: isAddModalOpen,
@@ -58,20 +59,24 @@ const PersonAsAuthor = () => {
     EDIT_AUTHOR_INITIAL_FORM
   );
   const { Get, Delete } = useRequest();
-  const [page, setPage] = useState<number>(1);
-  const [pages, setPages] = useState<number>(0);
+
+  const { currentPage, totalPages, setTotalPages, nextPage, setCurrentPage } =
+    usePaginate({
+      initialPage: 1,
+      numberOfPages: 0,
+    });
   const fetchAuthors = async () => {
     try {
       const { data: response } = await Get(
         "/authors/",
         {
           params: {
-            page: page,
+            page: currentPage,
           },
         },
         [apiScope("Author.Read")]
       );
-      setPages(response?.data?.metaData?.pages ?? 0);
+      setTotalPages(response?.data?.metaData?.pages ?? 0);
       return response.data.authors ?? [];
     } catch (error) {
       toast.error(ErrorMsg.Get);
@@ -90,7 +95,7 @@ const PersonAsAuthor = () => {
       */
 
       if (authors?.length === 1) {
-        setPage((prevPage) => prevPage - 1);
+        nextPage();
       } else {
         queryClient.invalidateQueries(["authors"]);
       }
@@ -114,7 +119,7 @@ const PersonAsAuthor = () => {
     isFetching,
   } = useQuery<PersonAuthor[]>({
     queryFn: fetchAuthors,
-    queryKey: ["authors", page],
+    queryKey: ["authors", currentPage],
   });
   return (
     <>
@@ -183,10 +188,10 @@ const PersonAsAuthor = () => {
           nextLabel="Next"
           pageClassName="border px-3 py-0.5  text-center rounded"
           pageRangeDisplayed={5}
-          pageCount={pages}
+          pageCount={totalPages}
           disabledClassName="opacity-60 pointer-events-none"
           onPageChange={({ selected }) => {
-            setPage(selected + 1);
+            setCurrentPage(selected + 1);
           }}
           className="flex gap-2 items-center"
           previousLabel="Previous"
