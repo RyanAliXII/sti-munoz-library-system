@@ -9,6 +9,7 @@ import { PublisherSchema } from "../schema";
 import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { errors, form, validate, handleFormInput, resetForm } =
@@ -19,7 +20,8 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { Post } = useRequest();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () => Post("/publishers/", form, {}),
+    mutationFn: () =>
+      Post("/publishers/", form, {}, [apiScope("Publisher.Add")]),
     onSuccess: () => {
       toast.success("New publisher has been added.");
       queryClient.invalidateQueries(["publishers"]);

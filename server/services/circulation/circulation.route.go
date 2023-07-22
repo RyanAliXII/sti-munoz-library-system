@@ -12,12 +12,13 @@ func CirculationRoutes(router *gin.RouterGroup) {
 
 	router.GET("/transactions/:id/books", controller.GetTransactionBooks)
 	router.POST("/checkout", middlewares.ValidateBody[CheckoutBody], controller.Checkout)
+	router.GET("/transactions/:id", controller.GetTransactionById)
 	router.PATCH("/transactions/:transactionId/books/:bookId/accessions/:number", middlewares.ValidateToken, middlewares.ValidateBody[UpdateBorrowedBookPartialBody],  controller.UpdateBorrowedBookStatus)
-	
+	router.GET("/books/:bookId/accessions/:number", middlewares.ValidateToken,  controller.GetBorrowedCopy)
 	//fix for this fucking idiot limitation of gin-gonic
-	getTransactionGroup := router.Group("/transactions/:id")
-	getTransactionGroup.GET("/", controller.GetTransactionById)
-	getTransactionGroup.GET("/books/:bookId/accessions/:number", middlewares.ValidateToken,  controller.GetBorrowedCopy)
+	// getTransactionGroup := router.Group("/transactions/:id")
+	// getTransactionGroup.GET("/", controller.GetTransactionById)
+	// getTransactionGroup.GET("/books/:bookId/accessions/:number", middlewares.ValidateToken,  controller.GetBorrowedCopy)
 	
 	
 
