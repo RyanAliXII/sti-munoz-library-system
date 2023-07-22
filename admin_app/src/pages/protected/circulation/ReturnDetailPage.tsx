@@ -20,11 +20,7 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  ButtonClasses,
-  PrimaryButton,
-  SecondaryOutlineButton,
-} from "@components/ui/button/Button";
+import { ButtonClasses } from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
 import { useState } from "react";
 import {
@@ -45,7 +41,7 @@ const TransactionByIdPage = () => {
   const { Get, Patch } = useRequest();
   const fetchTransaction = async () => {
     const { data: response } = await Get(
-      `/circulation/transactions/${id}/`,
+      `/circulation/transactions/${id}`,
       {},
       [apiScope("Checkout.Read")]
     );
@@ -77,7 +73,7 @@ const TransactionByIdPage = () => {
     queryFn: fetchTransaction,
     queryKey: ["transaction"],
     retry: false,
-    onError: () => {
+    onError: (err) => {
       navigate("/void");
     },
   });

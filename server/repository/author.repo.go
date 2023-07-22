@@ -32,14 +32,14 @@ func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor, Metadata) {
+func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor) {
 	authors := make([]model.PersonAsAuthor, 0)
 	transaction, transactErr := repo.db.Beginx()
 
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("transactErr"))
 		transaction.Rollback()
-		return authors, Metadata{}
+		return authors
 	}
 	if filter.Page <= 0 {
 		filter.Page = 1
@@ -50,12 +50,7 @@ func (repo *AuthorRepository) Get(filter * Filter) ([]model.PersonAsAuthor, Meta
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
-	metaData, getMetaErr := GetParanoidRepositoryMetadataTx(transaction, "catalog.author", RowLimit)
-	if getMetaErr != nil {
-		logger.Error(getMetaErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("getMetaErr"))
-	}
-	transaction.Commit()
-	return authors, metaData
+	return authors
 }
 func (repo *AuthorRepository) Delete(id int) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.author SET deleted_at = now() where id=$1")
@@ -148,7 +143,7 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 
 type AuthorRepositoryInterface interface {
 	New(model.PersonAsAuthor) error
-	Get(filter * Filter) ([]model.PersonAsAuthor, Metadata)
+	Get(filter * Filter) []model.PersonAsAuthor
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error

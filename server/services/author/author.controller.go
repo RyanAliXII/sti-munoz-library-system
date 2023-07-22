@@ -13,6 +13,7 @@ import (
 
 type AuthorController struct {
 	authorRepository repository.AuthorRepositoryInterface
+	recordMetadataRepo repository.RecordMetadataRepository
 }
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
@@ -38,9 +39,17 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 	if parsedPage <= 0 {
 		parsedPage = 1
 	}
-	authors, metaData := ctrler.authorRepository.Get(&repository.Filter{
+	authors := ctrler.authorRepository.Get(&repository.Filter{
 		Page: parsedPage,
 	})
+
+	metaData, metaErr := ctrler.recordMetadataRepo.GetPersonAsAuthorMetadata(30)
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"message": "Unknown error occured",
+		}, "Invalid page number."))
+        return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors, "metaData": metaData,}, "Authors fetched."))
 }
 
