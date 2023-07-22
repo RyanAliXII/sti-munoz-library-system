@@ -104,7 +104,7 @@ func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
 }
 func (repo *AuthorRepository) GetOrganizations(filter * Filter) []model.OrgAsAuthor {
 	orgs := make([]model.OrgAsAuthor, 0)
-	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null")
+	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_ORGS), slimlog.Error("selectErr"))
 	}

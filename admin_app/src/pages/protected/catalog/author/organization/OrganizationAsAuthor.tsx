@@ -75,7 +75,7 @@ const OrganizationAsAuthor = () => {
     isError,
     isFetching,
   } = useQuery<Organization[]>({
-    queryKey: ["organizations"],
+    queryKey: ["organizations", currentPage],
     queryFn: fetchOrganizations,
   });
   const proceedToDelete = () => {
