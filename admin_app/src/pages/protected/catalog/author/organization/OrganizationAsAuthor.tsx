@@ -90,7 +90,10 @@ const OrganizationAsAuthor = () => {
     deleteOrganization.mutate();
   };
   const deleteOrganization = useMutation({
-    mutationFn: () => Delete(`/authors/organizations/${selectedRow.id}`),
+    mutationFn: () =>
+      Delete(`/authors/organizations/${selectedRow.id}`, {}, [
+        apiScope("Author.Delete"),
+      ]),
     onSuccess: () => {
       toast.success("Organization deleted.");
     },

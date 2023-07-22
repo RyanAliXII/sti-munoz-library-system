@@ -11,6 +11,7 @@ import { CreateAuthorSchema } from "../../schema";
 import Modal from "react-responsive-modal";
 import { EDIT_AUTHOR_INITIAL_FORM } from "../AuthorPage";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const EditAuthorPersonModal: React.FC<EditModalProps<PersonAuthor>> = ({
   isOpen,
@@ -45,7 +46,8 @@ const EditAuthorPersonModal: React.FC<EditModalProps<PersonAuthor>> = ({
   };
   const { Put } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Put(`/authors/${formData.id}/`, form),
+    mutationFn: () =>
+      Put(`/authors/${formData.id}/`, form, {}, [apiScope("Author.Edit")]),
     onSuccess: () => {
       toast.success("Author has been updated.");
       queryClient.invalidateQueries(["authors"]);
