@@ -27,6 +27,8 @@ import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
+import usePaginate from "@hooks/usePaginate";
+import ReactPaginate from "react-paginate";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -46,11 +48,22 @@ const OrganizationAsAuthor = () => {
     open: openEditModal,
   } = useSwitch();
   const { Get, Delete } = useRequest();
+  const { currentPage, nextPage, previousPage, totalPages, setCurrentPage } =
+    usePaginate({
+      initialPage: 1,
+      numberOfPages: 5,
+    });
   const fetchOrganizations = async () => {
     try {
-      const { data: response } = await Get("/authors/organizations", {}, [
-        apiScope("Author.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/authors/organizations",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+        [apiScope("Author.Read")]
+      );
       return response?.data?.organizations || [];
     } catch {
       return [];
@@ -81,6 +94,7 @@ const OrganizationAsAuthor = () => {
       refetch();
     },
   });
+
   return (
     <>
       <ContainerNoBackground className="flex gap-2">
@@ -151,6 +165,25 @@ const OrganizationAsAuthor = () => {
           </div>
         </Container>
       </LoadingBoundary>
+
+      <ContainerNoBackground>
+        <ReactPaginate
+          nextLabel="Next"
+          pageClassName="border px-3 py-0.5  text-center rounded"
+          pageRangeDisplayed={5}
+          pageCount={totalPages}
+          disabledClassName="opacity-60 pointer-events-none"
+          onPageChange={({ selected }) => {
+            setCurrentPage(selected + 1);
+          }}
+          className="flex gap-2 items-center"
+          previousLabel="Previous"
+          previousClassName="px-2 border text-gray-500 py-1 rounded"
+          nextClassName="px-2 border text-blue-500 py-1 rounded"
+          renderOnZeroPageCount={null}
+          activeClassName="bg-blue-500 text-white"
+        />
+      </ContainerNoBackground>
       <DangerConfirmDialog
         close={closeConfirmDialog}
         isOpen={isConfirmDialogOpen}
