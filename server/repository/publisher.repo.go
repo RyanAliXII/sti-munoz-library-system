@@ -22,7 +22,7 @@ type PublisherRepository struct {
 
 func (repo *PublisherRepository) Get(filter  Filter) []model.Publisher {
 	var publishers []model.Publisher = make([]model.Publisher, 0)
-	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null ORDER BY created_at DESC")
+	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_PUBLISHERS))
 	}
