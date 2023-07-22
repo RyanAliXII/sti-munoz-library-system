@@ -14,21 +14,40 @@ import {
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { Publisher } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import usePaginate from "@hooks/usePaginate";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 
 import { AiFillInfoCircle, AiOutlineRight } from "react-icons/ai";
 import { BsArrowRight } from "react-icons/bs";
+import ReactPaginate from "react-paginate";
 import { NavLink } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const PublisherAsAuthor = () => {
   const { Get } = useRequest();
+  const {
+    currentPage,
+    nextPage,
+    previousPage,
+    setCurrentPage,
+    setTotalPages,
+    totalPages,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await Get("/publishers/", {}, [
-        apiScope("Publisher.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/publishers/",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+        [apiScope("Publisher.Read")]
+      );
       return response?.data?.publishers || [];
     } catch (error) {
       console.error(error);
@@ -92,6 +111,24 @@ const PublisherAsAuthor = () => {
             </div>
           </Container>
         </LoadingBoundary>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="bg-blue-500 text-white"
+          />
+        </ContainerNoBackground>
       </div>
     </>
   );

@@ -41,7 +41,7 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 		parsedPage = 1
 	}
 	const NumberOfRowsToFetch = 15
-	authors := ctrler.authorRepository.Get(&repository.Filter{
+	authors := ctrler.authorRepository.Get(repository.Filter{
 		Page: parsedPage,
 		Limit: NumberOfRowsToFetch,
 		Offset: ( parsedPage - 1) * NumberOfRowsToFetch,
@@ -116,7 +116,7 @@ func (ctrler *AuthorController) GetOrganizations(ctx *gin.Context) {
 		parsedPage = 1
 	}
 	const NumberOfRowsToFetch = 15
-	orgs := ctrler.authorRepository.GetOrganizations(&repository.Filter{Page: parsedPage,
+	orgs := ctrler.authorRepository.GetOrganizations(repository.Filter{Page: parsedPage,
 		Limit: NumberOfRowsToFetch,
 		Offset: ( parsedPage - 1) * NumberOfRowsToFetch, })
 	metaData, metaErr := ctrler.recordMetadataRepository.GetOrgAsAuthorMetadata(NumberOfRowsToFetch)
