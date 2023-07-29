@@ -1,4 +1,4 @@
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -18,7 +18,7 @@ import usePaginate from "@hooks/usePaginate";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 
-import { AiFillInfoCircle, AiOutlineRight } from "react-icons/ai";
+import { AiFillInfoCircle } from "react-icons/ai";
 import { BsArrowRight } from "react-icons/bs";
 import ReactPaginate from "react-paginate";
 import { NavLink } from "react-router-dom";
@@ -84,7 +84,11 @@ const PublisherAsAuthor = () => {
             </div>
           </div>
         </ContainerNoBackground>
-        <LoadingBoundary isError={isError} isLoading={isFetching} delay={300}>
+        <LoadingBoundaryV2
+          isError={isError}
+          isLoading={isFetching}
+          contentLoadDelay={150}
+        >
           <Container className="lg:px-0">
             <div className="w-full">
               <Table>
@@ -105,7 +109,7 @@ const PublisherAsAuthor = () => {
               </Table>
             </div>
           </Container>
-        </LoadingBoundary>
+        </LoadingBoundaryV2>
         <ContainerNoBackground>
           <ReactPaginate
             nextLabel="Next"

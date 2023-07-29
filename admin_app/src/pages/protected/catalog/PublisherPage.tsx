@@ -10,7 +10,7 @@ import {
   LighButton,
   PrimaryButton,
 } from "@components/ui/button/Button";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 
 import {
   Table,
@@ -107,7 +107,7 @@ const PublisherPage = () => {
 
   const {
     data: publishers,
-    isLoading,
+    isFetching,
     isError,
   } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
@@ -124,7 +124,11 @@ const PublisherPage = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <LoadingBoundary isLoading={isLoading} isError={isError}>
+      <LoadingBoundaryV2
+        isLoading={isFetching}
+        isError={isError}
+        contentLoadDelay={150}
+      >
         <Container className="lg:px-0">
           <div className="w-full">
             <Table>
@@ -178,7 +182,7 @@ const PublisherPage = () => {
             </Table>
           </div>
         </Container>
-      </LoadingBoundary>
+      </LoadingBoundaryV2>
 
       <ContainerNoBackground>
         <ReactPaginate

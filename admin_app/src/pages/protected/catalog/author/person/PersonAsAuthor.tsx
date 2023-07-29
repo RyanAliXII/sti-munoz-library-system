@@ -12,12 +12,7 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "react-toastify";
 import { PersonAuthor } from "@definitions/types";
@@ -29,10 +24,9 @@ import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import EditAuthorModal from "./EditPersonAuthorModal";
 import AddAuthorModal from "./AddPersonModal";
 import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
-import axios from "axios";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
 import ReactPaginate from "react-paginate";
@@ -137,7 +131,7 @@ const PersonAsAuthor = () => {
           </div>
         </ContainerNoBackground>
       </HasAccess>
-      <LoadingBoundary isError={isError} isLoading={isFetching}>
+      <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
         <Container>
           <div className="w-full">
             <Table>
@@ -189,7 +183,7 @@ const PersonAsAuthor = () => {
             onConfirm={onConfirmDialog}
           />
         </Container>
-      </LoadingBoundary>
+      </LoadingBoundaryV2>
       <ContainerNoBackground>
         <ReactPaginate
           nextLabel="Next"
