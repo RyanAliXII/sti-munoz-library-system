@@ -36,10 +36,7 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	}, "model.Publisher added."))
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
-
 	filter := filter.ExtractFilter(ctx)
-	
-	filter.Limit =  30
 	var publishers []model.Publisher = ctrler.publisherRepository.Get(&filter)
 	metaData, metaErr := ctrler.recordMetadataRepository.GetPublisherMetadata(filter.Limit)
 	if metaErr != nil {
