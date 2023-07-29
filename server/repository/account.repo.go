@@ -22,7 +22,7 @@ type AccountRepository struct {
 }
 
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view LIMIT $1 OFFSET $2`
+	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -59,6 +59,7 @@ func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.SearchAccounts"), slimlog.Error("selectErr"))
 	}
+	
 	return accounts
 }
 
