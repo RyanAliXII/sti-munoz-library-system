@@ -63,7 +63,7 @@ const AccountPage = () => {
       initialPage: INITIAL_PAGE,
       numberOfPages: 5,
     });
-  const fetchAccounts = async ({ pageParam = 0 }) => {
+  const fetchAccounts = async () => {
     try {
       const { data: response } = await Get(
         "/accounts/",
@@ -88,16 +88,15 @@ const AccountPage = () => {
     isError,
   } = useQuery<Account[]>({
     queryFn: fetchAccounts,
-    queryKey: ["accounts", currentPage],
+    queryKey: ["accounts", currentPage, searchKeyword],
   });
   const debounceSearch = useDebounce();
-  const search = () => {
-    queryClient.invalidateQueries(["accounts"]);
+  const search = (q: any) => {
+    setSearchKeyWord(q);
     setCurrentPage(INITIAL_PAGE);
   };
   const handleSearch = (event: BaseSyntheticEvent) => {
-    setSearchKeyWord(event.target.value);
-    debounceSearch(search, "", 500);
+    debounceSearch(search, event.target.value, 500);
   };
 
   return (

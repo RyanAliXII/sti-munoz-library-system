@@ -3,6 +3,7 @@ package repository
 import (
 	"sync"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/jmoiron/sqlx"
@@ -73,6 +74,19 @@ func (repo *RecordMetadataRepository) GetAccountMetadata (rowsLimit int) (Metada
 	}
 	recordMetaDataCache.Account.IsValid = true
 	recordMetaDataCache.Account.Metadata = meta
+	return meta, getMetaErr
+}
+func (repo *RecordMetadataRepository) GetAccountSearchMetadata (filter * filter.Filter) (Metadata, error) {
+
+	meta := Metadata{}
+	query := `
+			SELECT  CASE WHEN COUNT(*) = 0 then 0 else CEIL((COUNT(*)/$1::numeric))::bigint end as pages, count(*) as records 
+			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $2) :: text || ':*' ) :: tsquery
+		`
+	getMetaErr := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
+	if getMetaErr != nil {
+			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetAccountMetadata"))
+	}
 	return meta, getMetaErr
 }
 func (repo *RecordMetadataRepository) InvalidatePersonAsAuthor() {

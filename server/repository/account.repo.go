@@ -42,7 +42,7 @@ func (repo *AccountRepository) GetAccountById(id string) model.Account {
 	return account
 }
 
-func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
+func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
 	query := `
 			SELECT id, email, 
 			display_name, 
@@ -191,7 +191,7 @@ func NewAccountRepository() AccountRepositoryInterface {
 
 type AccountRepositoryInterface interface {
 	GetAccounts( * filter.Filter) []model.Account
-	SearchAccounts(filter Filter) []model.Account
+	SearchAccounts(* filter.Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
 	GetRoleByAccountId(accountId string) (model.Role, error)

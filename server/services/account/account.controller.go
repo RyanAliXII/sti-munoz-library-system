@@ -20,15 +20,22 @@ type AccountController struct {
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	filter := filter.ExtractFilter(ctx)
-	accounts := ctrler.accountRepository.GetAccounts(&filter)
-	metadata, metaErr := ctrler.recordMetadataRepository.GetAccountMetadata(filter.Limit)
-
+	
+	var accounts []model.Account;
+	var metadata repository.Metadata;
+	var metaErr error = nil
+	if len(filter.Keyword) > 0 {
+		accounts = ctrler.accountRepository.SearchAccounts(&filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountSearchMetadata(&filter)
+	}else{
+		accounts = ctrler.accountRepository.GetAccounts(&filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountMetadata(filter.Limit)
+	}	
 	if metaErr != nil {
-		ctx.JSON(httpresp.Fail500(gin.H{
-			"message": "Unknown error occured",
-		}, "Invalid page number."))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
         return
 	}
+
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
 		"metadata": metadata,
