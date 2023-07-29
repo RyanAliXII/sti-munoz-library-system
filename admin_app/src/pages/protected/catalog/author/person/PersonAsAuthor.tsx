@@ -93,7 +93,7 @@ const PersonAsAuthor = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
-      Delete(`/authors/${selectedRow?.id}/`, {}, [apiScope(["Author.Delete"])]),
+      Delete(`/authors/${selectedRow?.id}/`, {}, [apiScope("Author.Delete")]),
     onSuccess: () => {
       /*
         validate first if deleted row is the last item from the page
@@ -193,7 +193,7 @@ const PersonAsAuthor = () => {
       <ContainerNoBackground>
         <ReactPaginate
           nextLabel="Next"
-          pageClassName="border px-3 py-0.5  text-center rounded"
+          pageLinkClassName="border px-3 py-0.5  text-center rounded"
           pageRangeDisplayed={5}
           pageCount={totalPages}
           disabledClassName="opacity-60 pointer-events-none"
@@ -205,7 +205,7 @@ const PersonAsAuthor = () => {
           previousClassName="px-2 border text-gray-500 py-1 rounded"
           nextClassName="px-2 border text-blue-500 py-1 rounded"
           renderOnZeroPageCount={null}
-          activeClassName="bg-blue-500 text-white"
+          activeClassName="border-none bg-blue-500 text-white rounded"
         />
       </ContainerNoBackground>
     </>

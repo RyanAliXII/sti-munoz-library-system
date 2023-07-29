@@ -84,7 +84,7 @@ const PublisherAsAuthor = () => {
             </div>
           </div>
         </ContainerNoBackground>
-        <LoadingBoundary isError={isError} isLoading={isFetching}>
+        <LoadingBoundary isError={isError} isLoading={isFetching} delay={300}>
           <Container className="lg:px-0">
             <div className="w-full">
               <Table>
@@ -109,7 +109,7 @@ const PublisherAsAuthor = () => {
         <ContainerNoBackground>
           <ReactPaginate
             nextLabel="Next"
-            pageClassName="border px-3 py-0.5  text-center rounded"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
             pageRangeDisplayed={5}
             pageCount={totalPages}
             disabledClassName="opacity-60 pointer-events-none"
@@ -121,7 +121,7 @@ const PublisherAsAuthor = () => {
             previousClassName="px-2 border text-gray-500 py-1 rounded"
             nextClassName="px-2 border text-blue-500 py-1 rounded"
             renderOnZeroPageCount={null}
-            activeClassName="bg-blue-500 text-white"
+            activeClassName="border-none bg-blue-500 text-white rounded"
           />
         </ContainerNoBackground>
       </div>

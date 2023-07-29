@@ -40,7 +40,7 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 	if parsedPage <= 0 {
 		parsedPage = 1
 	}
-	const NumberOfRowsToFetch = 15
+	const NumberOfRowsToFetch = 30
 	authors := ctrler.authorRepository.Get(repository.Filter{
 		Page: parsedPage,
 		Limit: NumberOfRowsToFetch,
@@ -115,7 +115,7 @@ func (ctrler *AuthorController) GetOrganizations(ctx *gin.Context) {
 	if parsedPage <= 0 {
 		parsedPage = 1
 	}
-	const NumberOfRowsToFetch = 15
+	const NumberOfRowsToFetch = 30
 	orgs := ctrler.authorRepository.GetOrganizations(repository.Filter{Page: parsedPage,
 		Limit: NumberOfRowsToFetch,
 		Offset: ( parsedPage - 1) * NumberOfRowsToFetch, })
