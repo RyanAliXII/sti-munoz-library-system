@@ -21,9 +21,17 @@ type AccountController struct {
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	filter := filter.ExtractFilter(ctx)
 	accounts := ctrler.accountRepository.GetAccounts(&filter)
+	metadata, metaErr := ctrler.recordMetadataRepository.GetAccountMetadata(filter.Limit)
 
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"message": "Unknown error occured",
+		}, "Invalid page number."))
+        return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
+		"metadata": metadata,
 	},
 		"Accounts Fetched.",
 	))
@@ -83,6 +91,7 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 		
 	}
 
