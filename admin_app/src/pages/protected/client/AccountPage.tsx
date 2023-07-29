@@ -57,10 +57,10 @@ const AccountPage = () => {
     open: openImportModal,
   } = useSwitch(false);
   const { Get } = useRequest();
+  const INITIAL_PAGE = 1;
   const { currentPage, totalPages, setCurrentPage, setTotalPages } =
     usePaginate({
-      initialPage: 1,
-
+      initialPage: INITIAL_PAGE,
       numberOfPages: 5,
     });
   const fetchAccounts = async ({ pageParam = 0 }) => {
@@ -92,12 +92,8 @@ const AccountPage = () => {
   });
   const debounceSearch = useDebounce();
   const search = () => {
-    queryClient.setQueryData(["accounts"], () => {
-      return {
-        pageParams: [],
-        pages: [],
-      };
-    });
+    queryClient.invalidateQueries(["accounts"]);
+    setCurrentPage(INITIAL_PAGE);
   };
   const handleSearch = (event: BaseSyntheticEvent) => {
     setSearchKeyWord(event.target.value);
@@ -176,6 +172,7 @@ const AccountPage = () => {
             }}
             className="flex gap-2 items-center"
             previousLabel="Previous"
+            forcePage={currentPage - 1}
             previousClassName="px-2 border text-gray-500 py-1 rounded"
             nextClassName="px-2 border text-blue-500 py-1 rounded"
             renderOnZeroPageCount={null}
