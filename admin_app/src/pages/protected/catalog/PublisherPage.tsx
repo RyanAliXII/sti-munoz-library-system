@@ -182,26 +182,26 @@ const PublisherPage = () => {
             </Table>
           </div>
         </Container>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
       </LoadingBoundaryV2>
 
-      <ContainerNoBackground>
-        <ReactPaginate
-          nextLabel="Next"
-          pageLinkClassName="border px-3 py-0.5  text-center rounded"
-          pageRangeDisplayed={5}
-          pageCount={totalPages}
-          disabledClassName="opacity-60 pointer-events-none"
-          onPageChange={({ selected }) => {
-            setCurrentPage(selected + 1);
-          }}
-          className="flex gap-2 items-center"
-          previousLabel="Previous"
-          previousClassName="px-2 border text-gray-500 py-1 rounded"
-          nextClassName="px-2 border text-blue-500 py-1 rounded"
-          renderOnZeroPageCount={null}
-          activeClassName="border-none bg-blue-500 text-white rounded"
-        />
-      </ContainerNoBackground>
       <HasAccess requiredPermissions={["Publisher.Add"]}>
         <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       </HasAccess>
