@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -25,17 +26,19 @@ const (
 )
 
 func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
-
+ 
 	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.author(given_name, middle_name, surname)VALUES(:given_name, :middle_name, :surname )", author)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_AUTHOR))
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) Get() []model.PersonAsAuthor {
-
+func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.PersonAsAuthor) {
 	authors := make([]model.PersonAsAuthor, 0)
-	selectErr := repo.db.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC")
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	selectErr := repo.db.Select(&authors, "SELECT id,given_name, middle_name, surname FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
@@ -100,9 +103,9 @@ func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) GetOrganization() []model.OrgAsAuthor {
+func (repo *AuthorRepository) GetOrganizations(filter  Filter) []model.OrgAsAuthor {
 	orgs := make([]model.OrgAsAuthor, 0)
-	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null")
+	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_ORGS), slimlog.Error("selectErr"))
 	}
@@ -132,12 +135,12 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 
 type AuthorRepositoryInterface interface {
 	New(model.PersonAsAuthor) error
-	Get() []model.PersonAsAuthor
+	Get(*filter.Filter ) []model.PersonAsAuthor
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error
 	NewOrganization(org model.OrgAsAuthor) error
-	GetOrganization() []model.OrgAsAuthor
+	GetOrganizations(filter  Filter) []model.OrgAsAuthor
 	DeleteOrganization(id int) error
 	UpdateOrganization(org model.OrgAsAuthor) error
 }

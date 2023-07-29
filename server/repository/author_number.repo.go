@@ -72,7 +72,4 @@ type AuthorNumberRepositoryInterface interface {
 	Search(filter Filter) []model.AuthorNumber
 	Generate(firstname string, lastname string) cutters.AuthorNumber
 	GenerateByTitle(title string) cutters.AuthorNumber
-	// GetGroupedArray() map[string][]map[string]interface{}
-	// GetGroupedObjects() map[string]map[string]int
-	// GetDefaultArray() []map[string]interface{}
 }

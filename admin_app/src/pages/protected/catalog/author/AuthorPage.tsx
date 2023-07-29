@@ -96,11 +96,11 @@ type TabContentProps = {
 const TabContent = ({ activeTab }: TabContentProps) => {
   switch (activeTab) {
     case Tab.Person:
-      return <PersonAsAuthor />;
+      return <PersonAsAuthor key="PersonAsAuthor" />;
     case Tab.Organization:
-      return <OrganizationAsAuthor />;
+      return <OrganizationAsAuthor key="OrgAsAuthor" />;
     case Tab.Publisher:
-      return <PublisherAsAuthor />;
+      return <PublisherAsAuthor key="PublisherAsAuthor" />;
     default:
       return null;
   }

@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 interface EditOrgModalProps extends ModalProps {
   refetch: () => void;
@@ -48,7 +49,9 @@ const EditOrganizationModal = ({
   };
   const updateOrganization = useMutation({
     mutationFn: (data: Organization) =>
-      Put(`/authors/organizations/${data.id}`, data),
+      Put(`/authors/organizations/${data.id}`, data, {}, [
+        apiScope("Author.Edit"),
+      ]),
     onSuccess: () => {
       toast.success("Organization has been updated.");
       refetch();

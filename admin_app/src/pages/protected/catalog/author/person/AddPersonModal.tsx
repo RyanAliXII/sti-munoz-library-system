@@ -10,6 +10,7 @@ import { CreateAuthorSchema } from "../../schema";
 import { PersonAuthor, ModalProps } from "@definitions/types";
 import { ADD_AUTHOR_INITIAL_FORM } from "../AuthorPage";
 import { useRequest } from "@hooks/useRequest";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { form, errors, validate, handleFormInput, resetForm } = useForm<
@@ -30,7 +31,7 @@ const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   };
   const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/authors/", form),
+    mutationFn: () => Post("/authors/", form, {}, [apiScope("Author.Add")]),
     onSuccess: () => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);

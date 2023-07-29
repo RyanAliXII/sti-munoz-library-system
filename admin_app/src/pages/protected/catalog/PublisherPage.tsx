@@ -10,7 +10,7 @@ import {
   LighButton,
   PrimaryButton,
 } from "@components/ui/button/Button";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 
 import {
   Table,
@@ -35,6 +35,8 @@ import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
 import Tippy from "@tippyjs/react";
+import usePaginate from "@hooks/usePaginate";
+import ReactPaginate from "react-paginate";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {
@@ -58,11 +60,23 @@ const PublisherPage = () => {
     PUBLISHER_FORM_DEFAULT_VALUES
   );
   const { Get, Delete } = useRequest();
+  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
+    usePaginate({
+      initialPage: 1,
+      numberOfPages: 0,
+    });
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await Get("/publishers/", {}, [
-        apiScope("Publisher.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/publishers/",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+        [apiScope("Publisher.Read")]
+      );
+      setTotalPages(response?.data?.metaData?.pages);
       return response?.data?.publishers || [];
     } catch (error) {
       toast.error(ErrorMsg.Get);
@@ -93,11 +107,11 @@ const PublisherPage = () => {
 
   const {
     data: publishers,
-    isLoading,
+    isFetching,
     isError,
   } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
-    queryKey: ["publishers"],
+    queryKey: ["publishers", currentPage],
   });
 
   return (
@@ -110,7 +124,11 @@ const PublisherPage = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <LoadingBoundary isLoading={isLoading} isError={isError}>
+      <LoadingBoundaryV2
+        isLoading={isFetching}
+        isError={isError}
+        contentLoadDelay={150}
+      >
         <Container className="lg:px-0">
           <div className="w-full">
             <Table>
@@ -164,7 +182,26 @@ const PublisherPage = () => {
             </Table>
           </div>
         </Container>
-      </LoadingBoundary>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
+      </LoadingBoundaryV2>
+
       <HasAccess requiredPermissions={["Publisher.Add"]}>
         <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       </HasAccess>

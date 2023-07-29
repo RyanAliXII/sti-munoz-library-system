@@ -9,6 +9,7 @@ import { useForm } from "@hooks/useForm";
 import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { apiScope } from "@definitions/configs/msal/scopes";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
   givenName: "",
@@ -82,7 +83,7 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
   };
   const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/authors/", form),
+    mutationFn: () => Post("/authors/", form, {}, [apiScope("Author.Add")]),
     onSuccess: () => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);
@@ -160,7 +161,7 @@ const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
   };
   const newOrganization = useMutation({
     mutationFn: (data: { name: string }) =>
-      Post("/authors/organizations", data),
+      Post("/authors/organizations", data, {}, [apiScope("Author.Add")]),
     onSuccess: () => {
       toast.success("New organization has been added.");
       queryClient.invalidateQueries(["authors"]);

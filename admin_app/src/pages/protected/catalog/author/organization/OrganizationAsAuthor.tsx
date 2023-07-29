@@ -24,9 +24,13 @@ import { ErrorMsg } from "@definitions/var";
 import EditOrganizationModal from "./EditOrganizationModal";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import LoadingBoundary, {
+  LoadingBoundaryV2,
+} from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
+import usePaginate from "@hooks/usePaginate";
+import ReactPaginate from "react-paginate";
 
 const OrganizationAsAuthor = () => {
   const [selectedRow, setSelectedRow] = useState<Organization>({
@@ -46,11 +50,30 @@ const OrganizationAsAuthor = () => {
     open: openEditModal,
   } = useSwitch();
   const { Get, Delete } = useRequest();
+  const {
+    currentPage,
+    nextPage,
+    previousPage,
+    totalPages,
+    setCurrentPage,
+    setTotalPages,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const fetchOrganizations = async () => {
     try {
-      const { data: response } = await Get("/authors/organizations", {}, [
-        apiScope("Author.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/authors/organizations",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+
+        [apiScope("Author.Read")]
+      );
+      setTotalPages(response?.data?.metaData?.pages ?? 0);
       return response?.data?.organizations || [];
     } catch {
       return [];
@@ -62,14 +85,17 @@ const OrganizationAsAuthor = () => {
     isError,
     isFetching,
   } = useQuery<Organization[]>({
-    queryKey: ["organizations"],
+    queryKey: ["organizations", currentPage],
     queryFn: fetchOrganizations,
   });
   const proceedToDelete = () => {
     deleteOrganization.mutate();
   };
   const deleteOrganization = useMutation({
-    mutationFn: () => Delete(`/authors/organizations/${selectedRow.id}`),
+    mutationFn: () =>
+      Delete(`/authors/organizations/${selectedRow.id}`, {}, [
+        apiScope("Author.Delete"),
+      ]),
     onSuccess: () => {
       toast.success("Organization deleted.");
     },
@@ -81,6 +107,7 @@ const OrganizationAsAuthor = () => {
       refetch();
     },
   });
+
   return (
     <>
       <ContainerNoBackground className="flex gap-2">
@@ -96,7 +123,11 @@ const OrganizationAsAuthor = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <LoadingBoundary isError={isError} isLoading={isFetching}>
+      <LoadingBoundaryV2
+        isError={isError}
+        isLoading={isFetching}
+        contentLoadDelay={150}
+      >
         <Container className="lg:px-0">
           <div className="w-full">
             <Table>
@@ -150,7 +181,27 @@ const OrganizationAsAuthor = () => {
             </Table>
           </div>
         </Container>
-      </LoadingBoundary>
+
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
+      </LoadingBoundaryV2>
+
       <DangerConfirmDialog
         close={closeConfirmDialog}
         isOpen={isConfirmDialogOpen}

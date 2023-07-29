@@ -1,4 +1,4 @@
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -14,21 +14,35 @@ import {
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { Publisher } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import usePaginate from "@hooks/usePaginate";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 
-import { AiFillInfoCircle, AiOutlineRight } from "react-icons/ai";
+import { AiFillInfoCircle } from "react-icons/ai";
 import { BsArrowRight } from "react-icons/bs";
+import ReactPaginate from "react-paginate";
 import { NavLink } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const PublisherAsAuthor = () => {
   const { Get } = useRequest();
+  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
+    usePaginate({
+      initialPage: 1,
+      numberOfPages: 0,
+    });
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await Get("/publishers/", {}, [
-        apiScope("Publisher.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/publishers/",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+        [apiScope("Publisher.Read")]
+      );
+      setTotalPages(response?.data?.metaData?.pages ?? 0);
       return response?.data?.publishers || [];
     } catch (error) {
       console.error(error);
@@ -43,7 +57,7 @@ const PublisherAsAuthor = () => {
     isFetching,
   } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
-    queryKey: ["publishers"],
+    queryKey: ["publishers", currentPage],
   });
   return (
     <>
@@ -70,7 +84,11 @@ const PublisherAsAuthor = () => {
             </div>
           </div>
         </ContainerNoBackground>
-        <LoadingBoundary isError={isError} isLoading={isFetching}>
+        <LoadingBoundaryV2
+          isError={isError}
+          isLoading={isFetching}
+          contentLoadDelay={150}
+        >
           <Container className="lg:px-0">
             <div className="w-full">
               <Table>
@@ -91,7 +109,25 @@ const PublisherAsAuthor = () => {
               </Table>
             </div>
           </Container>
-        </LoadingBoundary>
+        </LoadingBoundaryV2>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
       </div>
     </>
   );

@@ -33,6 +33,7 @@
     "react-datepicker": "^4.8.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.7.1",
+    "react-paginate": "^8.2.0",
     "react-qr-code": "^2.0.11",
     "react-responsive-modal": "^6.4.1",
     "react-router-dom": "^6.6.1",

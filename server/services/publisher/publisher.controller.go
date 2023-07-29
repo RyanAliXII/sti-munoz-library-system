@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -14,6 +15,7 @@ import (
 
 type PublisherController struct {
 	publisherRepository repository.PublisherRepositoryInterface
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
 func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
@@ -25,6 +27,7 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidatePublisher()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"publisher":  gin.H{
 			"id":id,
@@ -33,9 +36,18 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	}, "model.Publisher added."))
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
-	var publishers []model.Publisher = ctrler.publisherRepository.Get()
+	filter := filter.ExtractFilter(ctx)
+	var publishers []model.Publisher = ctrler.publisherRepository.Get(&filter)
+	metaData, metaErr := ctrler.recordMetadataRepository.GetPublisherMetadata(filter.Limit)
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"message": "Unknown error occured",
+		}, "Invalid page number."))
+        return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"publishers": publishers,
+		"metaData": metaData,
 	}, "Publishers successfully fetched."))
 }
 func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
@@ -67,11 +79,13 @@ func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, deleteErr.Error()))
 		return
 	}
+	ctrler.recordMetadataRepository.InvalidatePublisher()
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.Publisher deleted."))
 }
 func NewPublisherController() PublisherControllerInterface {
 	return &PublisherController{
 		publisherRepository: repository.NewPublisherRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 	}
 
 }

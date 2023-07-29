@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -20,9 +21,9 @@ type PublisherRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *PublisherRepository) Get() []model.Publisher {
+func (repo *PublisherRepository) Get(filter * filter.Filter) []model.Publisher {
 	var publishers []model.Publisher = make([]model.Publisher, 0)
-	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null")
+	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_PUBLISHERS))
 	}
@@ -81,7 +82,7 @@ func NewPublisherRepository() PublisherRepositoryInterface {
 }
 
 type PublisherRepositoryInterface interface {
-	Get() []model.Publisher
+	Get(*filter.Filter) []model.Publisher
 	New(publisher model.Publisher) (int64, error)
 	Delete(id int) error
 	Update(id int, publisher model.Publisher) error
