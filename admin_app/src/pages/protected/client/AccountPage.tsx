@@ -197,7 +197,7 @@ const AccountPage = () => {
           >
             <UploadArea
               refetch={() => {
-                queryClient.invalidateQueries("accounts");
+                queryClient.invalidateQueries(["accounts"]);
               }}
             ></UploadArea>
           </Modal>
