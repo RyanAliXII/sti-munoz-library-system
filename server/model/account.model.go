@@ -8,11 +8,11 @@ import (
 )
 
 type Account struct {
-	Id          string          `json:"id" db:"id" csv:"id"`
+	Id          string          `json:"id" db:"id" csv:"id" validate:"required"`
 	DisplayName string          `json:"displayName" db:"display_name" csv:"displayName"`
 	GivenName   string          `json:"givenName" db:"given_name" csv:"givenName"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
-	Email       string          `json:"email" db:"email" csv:"mail"`
+	Email       string          `json:"email" db:"email" csv:"mail" validate:"required"`
 	AccountMetadata AccountMetadata `json:"metaData" db:"meta_data"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
