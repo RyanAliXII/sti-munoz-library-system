@@ -8,7 +8,7 @@ import (
 )
 
 type Account struct {
-	Id          string          `json:"id" db:"id" csv:"id" validate:"required"`
+	Id          string          `json:"id" db:"id" csv:"id" validate:"required,uuid"`
 	DisplayName string          `json:"displayName" db:"display_name" csv:"displayName"`
 	GivenName   string          `json:"givenName" db:"given_name" csv:"givenName"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`

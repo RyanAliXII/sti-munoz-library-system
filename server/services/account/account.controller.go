@@ -9,14 +9,15 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
-
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/gocarina/gocsv"
 )
 
 type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
 	recordMetadataRepository  repository.RecordMetadataRepository
+	validator   * validator.Validate
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
@@ -66,20 +67,28 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	}
 	bytesFile, toBytesErr := io.ReadAll(file)
 	var accounts []model.Account = make([]model.Account, 0)
-
 	if toBytesErr != nil {
 		logger.Error(toBytesErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("toBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	parseErr := gocsv.UnmarshalBytes(bytesFile, &accounts)
+
 	if parseErr != nil {
 		logger.Error(parseErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("parseErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-
+	validateErr := ctrler.validator.Struct(AccountSlice{
+		Accounts: accounts,
+	})
+	if validateErr != nil {
+		logger.Error(validateErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("validateErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
 	newAccountsErr := ctrler.accountRepository.NewAccounts(&accounts)
+	
 	if newAccountsErr != nil {
 		logger.Error(newAccountsErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("newAccountsErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
@@ -111,7 +120,7 @@ func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
 		recordMetadataRepository: repository.NewRecordMetadataRepository(),
-		
+		validator: validator.New(),
 	}
 
 }
