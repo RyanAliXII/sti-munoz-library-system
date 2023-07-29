@@ -46,7 +46,7 @@ func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	if parsedPage <= 0 {
 		parsedPage = 1
 	}
-	const NumberOfRowsToFetch = 15
+	const NumberOfRowsToFetch = 30
 	var publishers []model.Publisher = ctrler.publisherRepository.Get(repository.Filter{
         Limit: 15,
 		Offset: (parsedPage - 1) * NumberOfRowsToFetch,
