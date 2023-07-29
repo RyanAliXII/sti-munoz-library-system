@@ -98,7 +98,6 @@ const AccountPage = () => {
         pages: [],
       };
     });
-    // refetch();
   };
   const handleSearch = (event: BaseSyntheticEvent) => {
     setSearchKeyWord(event.target.value);
@@ -196,7 +195,11 @@ const AccountPage = () => {
               modal: "w-9/12 lg:w-6/12",
             }}
           >
-            <UploadArea refetch={() => {}}></UploadArea>
+            <UploadArea
+              refetch={() => {
+                queryClient.invalidateQueries("accounts");
+              }}
+            ></UploadArea>
           </Modal>
         )}
       </HasAccess>
