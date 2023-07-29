@@ -67,6 +67,7 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	if newAccountsErr != nil {
 		logger.Error(newAccountsErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("newAccountsErr"))
 	}
+	ctrler.recordMetadataRepository.InvalidateAccount()
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
 func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
