@@ -24,7 +24,9 @@ import { ErrorMsg } from "@definitions/var";
 import EditOrganizationModal from "./EditOrganizationModal";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import LoadingBoundary, {
+  LoadingBoundaryV2,
+} from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
 import usePaginate from "@hooks/usePaginate";
@@ -105,7 +107,7 @@ const OrganizationAsAuthor = () => {
       refetch();
     },
   });
-  const [paginationClass, setPaginationClass] = useState<string>("hidden");
+
   return (
     <>
       <ContainerNoBackground className="flex gap-2">
@@ -121,7 +123,11 @@ const OrganizationAsAuthor = () => {
           </HasAccess>
         </div>
       </ContainerNoBackground>
-      <LoadingBoundary isError={isError} isLoading={isFetching}>
+      <LoadingBoundaryV2
+        isError={isError}
+        isLoading={isFetching}
+        contentLoadDelay={150}
+      >
         <Container className="lg:px-0">
           <div className="w-full">
             <Table>
@@ -175,26 +181,27 @@ const OrganizationAsAuthor = () => {
             </Table>
           </div>
         </Container>
-      </LoadingBoundary>
 
-      <ContainerNoBackground className={paginationClass}>
-        <ReactPaginate
-          nextLabel="Next"
-          pageLinkClassName="border px-3 py-0.5  text-center rounded"
-          pageRangeDisplayed={5}
-          pageCount={totalPages}
-          disabledClassName="opacity-60 pointer-events-none"
-          onPageChange={({ selected }) => {
-            setCurrentPage(selected + 1);
-          }}
-          className="flex gap-2 items-center"
-          previousLabel="Previous"
-          previousClassName="px-2 border text-gray-500 py-1 rounded"
-          nextClassName="px-2 border text-blue-500 py-1 rounded"
-          renderOnZeroPageCount={null}
-          activeClassName="border-none bg-blue-500 text-white rounded"
-        />
-      </ContainerNoBackground>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
+      </LoadingBoundaryV2>
+
       <DangerConfirmDialog
         close={closeConfirmDialog}
         isOpen={isConfirmDialogOpen}

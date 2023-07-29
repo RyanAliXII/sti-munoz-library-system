@@ -48,7 +48,7 @@ func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	}
 	const NumberOfRowsToFetch = 30
 	var publishers []model.Publisher = ctrler.publisherRepository.Get(repository.Filter{
-        Limit: 15,
+        Limit: NumberOfRowsToFetch,
 		Offset: (parsedPage - 1) * NumberOfRowsToFetch,
 	})
 	metaData, metaErr := ctrler.recordMetadataRepository.GetPublisherMetadata(NumberOfRowsToFetch)
