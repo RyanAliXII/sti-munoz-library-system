@@ -3,6 +3,7 @@ package repository
 import (
 	"sync"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/jmoiron/sqlx"
@@ -61,6 +62,33 @@ func (repo *RecordMetadataRepository) GetPublisherMetadata(rowsLimit int) (Metad
 	recordMetaDataCache.Publisher.Metadata = meta
 	return meta, getMetaErr
 }
+func (repo *RecordMetadataRepository) GetAccountMetadata (rowsLimit int) (Metadata, error) {
+	if(recordMetaDataCache.Account.IsValid){
+		return recordMetaDataCache.Account.Metadata, nil;
+	}
+	meta := Metadata{}
+    query := `SELECT CASE WHEN COUNT(*) = 0 then 0 else CEIL((COUNT(*)/$1::numeric))::bigint end as pages, count(*) as records FROM system.account`
+	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
+	if getMetaErr != nil {
+			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetAccountMetadata"))
+	}
+	recordMetaDataCache.Account.IsValid = true
+	recordMetaDataCache.Account.Metadata = meta
+	return meta, getMetaErr
+}
+func (repo *RecordMetadataRepository) GetAccountSearchMetadata (filter * filter.Filter) (Metadata, error) {
+
+	meta := Metadata{}
+	query := `
+			SELECT  CASE WHEN COUNT(*) = 0 then 0 else CEIL((COUNT(*)/$1::numeric))::bigint end as pages, count(*) as records 
+			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $2) :: text || ':*' ) :: tsquery
+		`
+	getMetaErr := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
+	if getMetaErr != nil {
+			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetAccountMetadata"))
+	}
+	return meta, getMetaErr
+}
 func (repo *RecordMetadataRepository) InvalidatePersonAsAuthor() {
 	recordMetaDataCache.PersonAsAuthor.IsValid = false
 }
@@ -69,6 +97,9 @@ func (repo *RecordMetadataRepository) InvalidateOrgAsAuthor() {
 }
 func (repo *RecordMetadataRepository) InvalidatePublisher() {
 	recordMetaDataCache.Publisher.IsValid = false
+}
+func (repo *RecordMetadataRepository) InvalidateAccount() {
+	recordMetaDataCache.Account.IsValid = false
 }
 
 func NewRecordMetadataRepository () RecordMetadataRepository{
@@ -88,6 +119,7 @@ type RecordMetadataCache struct{
 	PersonAsAuthor MetadataCache
 	OrgAsAuthor MetadataCache
 	Publisher MetadataCache
+	Account MetadataCache
 }
 
 var once sync.Once
@@ -98,6 +130,13 @@ func newRecordMetadataCache () *RecordMetadataCache {
 			PersonAsAuthor: MetadataCache{IsValid: false, Metadata: Metadata{Records: 0, Pages: 0}},
 			OrgAsAuthor: MetadataCache{IsValid: false, Metadata: Metadata{Records: 0, Pages: 0}},
 			Publisher: MetadataCache{
+				IsValid: false,
+				Metadata: Metadata{
+					Records: 0,
+					Pages: 0,
+				},
+			},
+			Account: MetadataCache{
 				IsValid: false,
 				Metadata: Metadata{
 					Records: 0,

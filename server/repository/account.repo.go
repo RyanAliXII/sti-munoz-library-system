@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -20,8 +21,8 @@ type AccountRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *AccountRepository) GetAccounts(filter Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view LIMIT $1 OFFSET $2`
+func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
+	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -41,7 +42,7 @@ func (repo *AccountRepository) GetAccountById(id string) model.Account {
 	return account
 }
 
-func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
+func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
 	query := `
 			SELECT id, email, 
 			display_name, 
@@ -58,6 +59,7 @@ func (repo *AccountRepository) SearchAccounts(filter Filter) []model.Account {
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.SearchAccounts"), slimlog.Error("selectErr"))
 	}
+	
 	return accounts
 }
 
@@ -188,8 +190,8 @@ func NewAccountRepository() AccountRepositoryInterface {
 }
 
 type AccountRepositoryInterface interface {
-	GetAccounts(filter Filter) []model.Account
-	SearchAccounts(filter Filter) []model.Account
+	GetAccounts( * filter.Filter) []model.Account
+	SearchAccounts(* filter.Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
 	GetRoleByAccountId(accountId string) (model.Role, error)

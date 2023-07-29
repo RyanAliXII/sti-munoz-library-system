@@ -2,9 +2,9 @@ package account
 
 import (
 	"io"
-	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -15,40 +15,30 @@ import (
 
 type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
+	filter := filter.ExtractFilter(ctx)
 	
-	const (
-		DEFAULT_OFFSET = 0
-		DEFAULT_LIMIT  = 50
-	)
+	var accounts []model.Account;
+	var metadata repository.Metadata;
+	var metaErr error = nil
+	if len(filter.Keyword) > 0 {
+		accounts = ctrler.accountRepository.SearchAccounts(&filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountSearchMetadata(&filter)
+	}else{
+		accounts = ctrler.accountRepository.GetAccounts(&filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountMetadata(filter.Limit)
+	}	
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+        return
+	}
 
-	var filter repository.Filter = repository.Filter{}
-	offset := ctx.Query("offset")
-	limit := ctx.Query("limit")
-	keyword := ctx.Query("keyword")
-	parsedOffset, offsetConvErr := strconv.Atoi(offset)
-	if offsetConvErr != nil {
-		filter.Offset = DEFAULT_OFFSET
-	} else {
-		filter.Offset = parsedOffset
-	}
-	parsedLimit, limitConvErr := strconv.Atoi(limit)
-	if limitConvErr != nil {
-		filter.Limit = DEFAULT_LIMIT
-	} else {
-		filter.Limit = parsedLimit
-	}
-	var accounts []model.Account
-	if len(keyword) > 0 {
-		filter.Keyword = keyword
-		accounts = ctrler.accountRepository.SearchAccounts(filter)
-	} else {
-		accounts = ctrler.accountRepository.GetAccounts(filter)
-	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
+		"metadata": metadata,
 	},
 		"Accounts Fetched.",
 	))
@@ -84,6 +74,7 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	if newAccountsErr != nil {
 		logger.Error(newAccountsErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("newAccountsErr"))
 	}
+	ctrler.recordMetadataRepository.InvalidateAccount()
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
 func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
@@ -108,6 +99,7 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 		
 	}
 

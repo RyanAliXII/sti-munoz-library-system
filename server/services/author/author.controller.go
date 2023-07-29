@@ -31,6 +31,7 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
+
 	filter := filter.ExtractFilter(ctx)
 	authors := ctrler.authorRepository.Get(&filter)
 	metaData, metaErr := ctrler.recordMetadataRepository.GetPersonAsAuthorMetadata(filter.Limit)

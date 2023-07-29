@@ -9,12 +9,14 @@ import {
   Tbody,
   Thead,
 } from "@components/ui/table/Table";
-import Container from "@components/ui/container/Container";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
-import useScrollWatcher from "@hooks/useScrollWatcher";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
 import { Input } from "@components/ui/form/Input";
 import { PrimaryButton } from "@components/ui/button/Button";
@@ -33,7 +35,9 @@ import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import usePaginate from "@hooks/usePaginate";
+import ReactPaginate from "react-paginate";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -47,59 +51,52 @@ const uppy = new Uppy({
 });
 const AccountPage = () => {
   const [searchKeyword, setSearchKeyWord] = useState<string>("");
-
   const {
     close: closeImportModal,
     isOpen: isImportModalOpen,
     open: openImportModal,
   } = useSwitch(false);
   const { Get } = useRequest();
-  const fetchAccounts = async ({ pageParam = 0 }) => {
+  const INITIAL_PAGE = 1;
+  const { currentPage, totalPages, setCurrentPage, setTotalPages } =
+    usePaginate({
+      initialPage: INITIAL_PAGE,
+      numberOfPages: 5,
+    });
+  const fetchAccounts = async () => {
     try {
       const { data: response } = await Get(
         "/accounts/",
         {
           params: {
-            offset: pageParam,
+            page: currentPage,
             keyword: searchKeyword,
           },
         },
         [apiScope("Account.Read")]
       );
+      setTotalPages(response?.data?.metadata?.pages ?? 0);
       return response?.data?.accounts ?? [];
     } catch {
       return [];
     }
   };
   const queryClient = useQueryClient();
-  const { data, fetchNextPage, refetch, isError, isFetching } =
-    useInfiniteQuery<Account[]>({
-      queryFn: fetchAccounts,
-      queryKey: ["accounts"],
-      refetchOnWindowFocus: false,
-      getNextPageParam: (_, allPages) => {
-        return allPages.length * 30;
-      },
-    });
-  useScrollWatcher({
-    element: window,
-    onScrollEnd: () => {
-      fetchNextPage();
-    },
+  const {
+    data: accounts,
+    isFetching,
+    isError,
+  } = useQuery<Account[]>({
+    queryFn: fetchAccounts,
+    queryKey: ["accounts", currentPage, searchKeyword],
   });
   const debounceSearch = useDebounce();
-  const search = () => {
-    queryClient.setQueryData(["accounts"], () => {
-      return {
-        pageParams: [],
-        pages: [],
-      };
-    });
-    refetch();
+  const search = (q: any) => {
+    setSearchKeyWord(q);
+    setCurrentPage(INITIAL_PAGE);
   };
   const handleSearch = (event: BaseSyntheticEvent) => {
-    setSearchKeyWord(event.target.value);
-    debounceSearch(search, "", 500);
+    debounceSearch(search, event.target.value, 500);
   };
 
   return (
@@ -128,19 +125,22 @@ const AccountPage = () => {
           </HasAccess>
         </div>
       </div>
-
-      <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Td></Td>
-              <Th>Email</Th>
-              <Th>Client</Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {data?.pages.map((pageData) =>
-              pageData.map((account) => {
+      <LoadingBoundaryV2
+        isLoading={isFetching}
+        isError={isError}
+        contentLoadDelay={150}
+      >
+        <Container>
+          <Table>
+            <Thead>
+              <HeadingRow>
+                <Td></Td>
+                <Th>Email</Th>
+                <Th>Client</Th>
+              </HeadingRow>
+            </Thead>
+            <Tbody>
+              {accounts?.map((account) => {
                 return (
                   <BodyRow key={account.id}>
                     <Td>
@@ -155,31 +155,50 @@ const AccountPage = () => {
                     <Td>{account.displayName}</Td>
                   </BodyRow>
                 );
-              })
-            )}
-          </Tbody>
-        </Table>
-        <HasAccess requiredPermissions={["Account.Add"]}>
-          {isImportModalOpen && (
-            <Modal
-              open={isImportModalOpen}
-              onClose={closeImportModal}
-              center
-              closeOnEsc
-              showCloseIcon={false}
-              classNames={{
-                modal: "w-9/12 lg:w-6/12",
+              })}
+            </Tbody>
+          </Table>
+        </Container>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className="flex gap-2 items-center"
+            previousLabel="Previous"
+            forcePage={currentPage - 1}
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
+      </LoadingBoundaryV2>
+      <HasAccess requiredPermissions={["Account.Add"]}>
+        {isImportModalOpen && (
+          <Modal
+            open={isImportModalOpen}
+            onClose={closeImportModal}
+            center
+            closeOnEsc
+            showCloseIcon={false}
+            classNames={{
+              modal: "w-9/12 lg:w-6/12",
+            }}
+          >
+            <UploadArea
+              refetch={() => {
+                queryClient.invalidateQueries(["accounts"]);
               }}
-            >
-              <UploadArea
-                refetch={() => {
-                  refetch();
-                }}
-              ></UploadArea>
-            </Modal>
-          )}
-        </HasAccess>
-      </Container>
+            ></UploadArea>
+          </Modal>
+        )}
+      </HasAccess>
     </>
   );
 };
