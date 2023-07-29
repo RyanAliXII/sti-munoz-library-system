@@ -2,6 +2,7 @@ package account
 
 import (
 	"io"
+	"path/filepath"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
@@ -51,28 +52,38 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	}
 	file, fileErr := fileHeader.Open()
 	if fileErr != nil {
+		file.Close()
 		logger.Error(fileErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("fileErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-
+	const ExpectedFileExtension = ".csv"
+	fileExtension := filepath.Ext(fileHeader.Filename)
+	if(fileExtension != ExpectedFileExtension){
+		logger.Error("File is not csv.", slimlog.Function("AccountController.ImportAccount"), slimlog.Error("WrongFileExtensionErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
 	bytesFile, toBytesErr := io.ReadAll(file)
 	var accounts []model.Account = make([]model.Account, 0)
+
 	if toBytesErr != nil {
 		logger.Error(toBytesErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("toBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-
 	parseErr := gocsv.UnmarshalBytes(bytesFile, &accounts)
 	if parseErr != nil {
 		logger.Error(parseErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("parseErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
+
 	newAccountsErr := ctrler.accountRepository.NewAccounts(&accounts)
 	if newAccountsErr != nil {
 		logger.Error(newAccountsErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("newAccountsErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
 	}
 	ctrler.recordMetadataRepository.InvalidateAccount()
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
