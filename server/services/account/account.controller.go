@@ -2,9 +2,9 @@ package account
 
 import (
 	"io"
-	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -15,38 +15,13 @@ import (
 
 type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
-	
-	const (
-		DEFAULT_OFFSET = 0
-		DEFAULT_LIMIT  = 50
-	)
+	filter := filter.ExtractFilter(ctx)
+	accounts := ctrler.accountRepository.GetAccounts(&filter)
 
-	var filter repository.Filter = repository.Filter{}
-	offset := ctx.Query("offset")
-	limit := ctx.Query("limit")
-	keyword := ctx.Query("keyword")
-	parsedOffset, offsetConvErr := strconv.Atoi(offset)
-	if offsetConvErr != nil {
-		filter.Offset = DEFAULT_OFFSET
-	} else {
-		filter.Offset = parsedOffset
-	}
-	parsedLimit, limitConvErr := strconv.Atoi(limit)
-	if limitConvErr != nil {
-		filter.Limit = DEFAULT_LIMIT
-	} else {
-		filter.Limit = parsedLimit
-	}
-	var accounts []model.Account
-	if len(keyword) > 0 {
-		filter.Keyword = keyword
-		accounts = ctrler.accountRepository.SearchAccounts(filter)
-	} else {
-		accounts = ctrler.accountRepository.GetAccounts(filter)
-	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
 	},

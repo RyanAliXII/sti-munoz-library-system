@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -20,7 +21,7 @@ type AccountRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *AccountRepository) GetAccounts(filter Filter) []model.Account {
+func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
 	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view LIMIT $1 OFFSET $2`
 	var accounts []model.Account = make([]model.Account, 0)
 
@@ -188,7 +189,7 @@ func NewAccountRepository() AccountRepositoryInterface {
 }
 
 type AccountRepositoryInterface interface {
-	GetAccounts(filter Filter) []model.Account
+	GetAccounts( * filter.Filter) []model.Account
 	SearchAccounts(filter Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
