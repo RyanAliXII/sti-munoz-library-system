@@ -57,11 +57,12 @@ const AccountPage = () => {
     open: openImportModal,
   } = useSwitch(false);
   const { Get } = useRequest();
-  const { currentPage, totalPages, setCurrentPage } = usePaginate({
-    initialPage: 1,
+  const { currentPage, totalPages, setCurrentPage, setTotalPages } =
+    usePaginate({
+      initialPage: 1,
 
-    numberOfPages: 5,
-  });
+      numberOfPages: 5,
+    });
   const fetchAccounts = async ({ pageParam = 0 }) => {
     try {
       const { data: response } = await Get(
@@ -74,6 +75,7 @@ const AccountPage = () => {
         },
         [apiScope("Account.Read")]
       );
+      setTotalPages(response?.data?.metadata?.pages ?? 0);
       return response?.data?.accounts ?? [];
     } catch {
       return [];
