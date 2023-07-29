@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -32,7 +33,7 @@ func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
 	}
 	return insertErr
 }
-func (repo *AuthorRepository) Get(filter Filter) ([]model.PersonAsAuthor) {
+func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.PersonAsAuthor) {
 	authors := make([]model.PersonAsAuthor, 0)
 	if filter.Page <= 0 {
 		filter.Page = 1
@@ -134,7 +135,7 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 
 type AuthorRepositoryInterface interface {
 	New(model.PersonAsAuthor) error
-	Get(filter Filter) []model.PersonAsAuthor
+	Get(*filter.Filter ) []model.PersonAsAuthor
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error

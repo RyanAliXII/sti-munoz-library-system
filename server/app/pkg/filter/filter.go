@@ -16,10 +16,14 @@ type Filter struct {
 }
 
 
+var defaultFilter  = Filter{
+	Limit: 30, // default number of rows to fetch per page
+	Keyword: "", // search keyword
+	Page: 1, // default page number
+} 	
 
-
-func ExtractFilter(ctx * gin.Context) Filter {
-	filter := Filter {}
+func ExtractFilter(ctx * gin.Context ) Filter {
+	filter := defaultFilter
 	page := ctx.Query("page")
 	parsedPage, parsePageErr := strconv.Atoi(page)
 	if parsePageErr == nil {
@@ -28,6 +32,7 @@ func ExtractFilter(ctx * gin.Context) Filter {
 			filter.Page = 1
 		}
 	}
+	filter.Offset = (filter.Page - 1) * filter.Limit
 	filter.Keyword = ctx.Query("keyword")
 	return filter
 }

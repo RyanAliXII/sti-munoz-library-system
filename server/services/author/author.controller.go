@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -30,24 +31,9 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
-	page := ctx.Query("page")
-	parsedPage, parsePageErr := strconv.Atoi(page)
-	if parsePageErr != nil {
-		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
-        return
-	}
-
-	if parsedPage <= 0 {
-		parsedPage = 1
-	}
-	const NumberOfRowsToFetch = 30
-	authors := ctrler.authorRepository.Get(repository.Filter{
-		Page: parsedPage,
-		Limit: NumberOfRowsToFetch,
-		Offset: ( parsedPage - 1) * NumberOfRowsToFetch,
-	})
-
-	metaData, metaErr := ctrler.recordMetadataRepository.GetPersonAsAuthorMetadata(NumberOfRowsToFetch)
+	filter := filter.ExtractFilter(ctx)
+	authors := ctrler.authorRepository.Get(&filter)
+	metaData, metaErr := ctrler.recordMetadataRepository.GetPersonAsAuthorMetadata(filter.Limit)
 	if metaErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"message": "Unknown error occured",
