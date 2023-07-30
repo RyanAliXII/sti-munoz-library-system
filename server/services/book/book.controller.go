@@ -160,7 +160,22 @@ func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Book Cover Updated."))
+	ctx.JSON(httpresp.Success200(nil, "Book covers updated."))
+}
+
+func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
+	bookId := ctx.Param("bookId")
+	_, parseIdErr := uuid.Parse(bookId)
+	if parseIdErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
+		return
+	}
+	deleteCoverErr := ctrler.bookRepository.DeleteBookCoversByBookId(bookId)
+	if deleteCoverErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Book covers deleted."))
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{
@@ -177,4 +192,5 @@ type BookControllerInterface interface {
 	GetAccessionByBookId(ctx *gin.Context)
 	UploadBookCover(ctx *gin.Context)
 	UpdateBookCover(ctx *gin.Context)
+	DeleteBookCovers (ctx * gin.Context)
 }
