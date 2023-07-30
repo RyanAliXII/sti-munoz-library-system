@@ -74,7 +74,7 @@ const BookEditForm = () => {
     registerFormGroup,
   } = useBookEditFormContext();
   const { instance: msalInstance } = useMsal();
-  const { Get, Put } = useRequest();
+  const { Get, Put, Delete } = useRequest();
   const fetchPublishers = async () => {
     try {
       const { data: response } = await Get("/publishers/");
@@ -164,6 +164,11 @@ const BookEditForm = () => {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
       });
+      const covers = uppy.getFiles();
+      if (covers.length === 0) {
+        console.log(covers);
+        deleteBookCovers();
+      }
       uppy.setMeta({ bookId: form.id });
       await uppy.upload();
     },
@@ -175,6 +180,16 @@ const BookEditForm = () => {
       window.scrollTo({ behavior: "smooth", top: 0 });
     },
   });
+
+  const deleteBookCovers = async () => {
+    try {
+      await Delete(`/books/${form.id}/covers`, {}, [
+        apiScope("Book.Cover.Edit"),
+      ]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleDescriptionInput = (content: string, editor: any) => {
     setFieldValue("description", content);
   };
