@@ -540,6 +540,28 @@ func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.F
 	transaction.Commit()
 	return nil
 }
+func (repo * BookRepository) DeleteBookCoversByBookId(bookId string) error {
+	ctx := context.Background()
+	path := fmt.Sprintf("covers/%s/", bookId)
+	objects := repo.minio.ListObjects(ctx, objstore.BUCKET, minio.ListObjectsOptions{
+		Recursive: true,
+		Prefix:    path,
+	})
+
+	for cover := range objects {
+		deleteCoverErr := repo.minio.RemoveObject(ctx, objstore.BUCKET, cover.Key, minio.RemoveObjectOptions{})
+		if deleteCoverErr != nil {
+			logger.Error(deleteCoverErr.Error(), slimlog.Function("BookRepository.DeleteBookCoversByBookId"), slimlog.Error("deleteCoverErr "))
+			return deleteCoverErr
+		}
+	}
+	_, deleteErr := repo.db.Exec("DELETE FROM catalog.book_cover where book_id = $1", bookId)
+	if deleteErr != nil {
+		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.DeleteBookCoversByBookId"), slimlog.Error("deleteErr"))
+		return deleteErr
+	}
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -558,4 +580,5 @@ type BookRepositoryInterface interface {
 	GetAccessionsByBookId(id string) []model.Accession
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
+	DeleteBookCoversByBookId(bookId string) error 
 }
