@@ -59,6 +59,8 @@ const PublisherAsAuthor = () => {
     queryFn: fetchPublisher,
     queryKey: ["publishers", currentPage],
   });
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
   return (
     <>
       <div>
@@ -120,7 +122,7 @@ const PublisherAsAuthor = () => {
             onPageChange={({ selected }) => {
               setCurrentPage(selected + 1);
             }}
-            className="flex gap-2 items-center"
+            className={paginationClass}
             previousLabel="Previous"
             previousClassName="px-2 border text-gray-500 py-1 rounded"
             nextClassName="px-2 border text-blue-500 py-1 rounded"
