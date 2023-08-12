@@ -98,7 +98,8 @@ const AccountPage = () => {
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
   };
-
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex items-center gap-5">
@@ -169,7 +170,7 @@ const AccountPage = () => {
             onPageChange={({ selected }) => {
               setCurrentPage(selected + 1);
             }}
-            className="flex gap-2 items-center"
+            className={paginationClass}
             previousLabel="Previous"
             forcePage={currentPage - 1}
             previousClassName="px-2 border text-gray-500 py-1 rounded"
