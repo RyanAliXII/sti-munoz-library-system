@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
@@ -13,13 +14,19 @@ type DDCRepository struct {
 
 func (repo *DDCRepository) Get(filter Filter) []model.DDC {
 	var deweys []model.DDC = make([]model.DDC, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT id, name, number from catalog.ddc LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, "SELECT name, number from catalog.ddc LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Get"))
 	}
 	return deweys
 }
+
+func NewDDCRepository() DDCRepositoryInterface {
+	return &DDCRepository{
+		db: postgresdb.GetOrCreateInstance(),
+	}
+}
+
 type DDCRepositoryInterface interface {
 	Get(filter Filter) []model.DDC
-
 }
