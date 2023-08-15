@@ -63,24 +63,26 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
 
   const search = () => {};
   const { Get } = useRequest();
-  const fetchDDC = async ({ pageParam = 0 }) => {
+  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
+    usePaginate({
+      initialPage: 1,
+      numberOfPages: 0,
+    });
+  const fetchDDC = async () => {
     try {
       const { data: response } = await Get("/ddc/", {
         params: {
           page: currentPage,
         },
       });
-
+      setTotalPages(response?.data?.metadata?.pages ?? 0);
       return response?.data?.ddc ?? [];
     } catch (error) {
       console.error(error);
       return [];
     }
   };
-  const { currentPage, setCurrentPage } = usePaginate({
-    initialPage: 1,
-    numberOfPages: 0,
-  });
+
   const {
     data: ddc,
     isFetching,
@@ -96,6 +98,8 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
     removeFieldError("ddc");
     toast.info(`${ddc.name} has been selected as classification.`);
   };
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center mt-10";
   return (
     <>
       <div className="flex gap-2 items-center mb-3">
@@ -147,12 +151,12 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           nextLabel="Next"
           pageLinkClassName="border px-3 py-0.5  text-center rounded"
           pageRangeDisplayed={3}
-          pageCount={10}
+          pageCount={totalPages}
           disabledClassName="opacity-60 pointer-events-none"
           onPageChange={({ selected }) => {
             setCurrentPage(selected + 1);
           }}
-          className="flex gap-2 items-center"
+          className={paginationClass}
           previousLabel="Previous"
           previousClassName="px-2 border text-gray-500 py-1 rounded"
           nextClassName="px-2 border text-blue-500 py-1 rounded"
