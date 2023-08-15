@@ -17,12 +17,12 @@ import { BaseSyntheticEvent, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
-import { toast } from "react-toastify";
 
 import ReactPaginate from "react-paginate";
 import usePaginate from "@hooks/usePaginate";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { remove } from "lodash";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -55,12 +55,10 @@ type DDCTableProps = {
 };
 const DDCTable = ({ modalRef, closeModal }: DDCTableProps) => {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const { form, setForm, removeFieldError } = useBookAddFormContext();
+  const { setForm, removeFieldError } = useBookAddFormContext();
 
   const INITIAL_PAGE = 1;
   const searchDebounce = useDebounce();
-
-  const queryClient = useQueryClient();
 
   const search = (q: any) => {
     setSearchKeyword(q);
@@ -113,6 +111,7 @@ const DDCTable = ({ modalRef, closeModal }: DDCTableProps) => {
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center mt-2";
   const proceed = () => {
     setForm((prev) => ({ ...prev, ddc: selectedDDC.number }));
+    removeFieldError("ddc");
     closeModal();
   };
   return (
