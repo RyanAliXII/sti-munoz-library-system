@@ -60,11 +60,16 @@ const PublisherPage = () => {
     PUBLISHER_FORM_DEFAULT_VALUES
   );
   const { Get, Delete } = useRequest();
-  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
-    usePaginate({
-      initialPage: 1,
-      numberOfPages: 0,
-    });
+  const {
+    currentPage,
+    setCurrentPage,
+    setTotalPages,
+    totalPages,
+    previousPage,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const fetchPublisher = async () => {
     try {
       const { data: response } = await Get(
@@ -90,7 +95,12 @@ const PublisherPage = () => {
         apiScope("Publisher.Delete"),
       ]),
     onSuccess: () => {
-      queryClient.invalidateQueries(["publishers"]);
+      if (publishers?.length === 1 && totalPages > 1) {
+        previousPage();
+      } else {
+        queryClient.invalidateQueries(["publishers"]);
+      }
+
       toast.success("Publisher deleted.");
     },
     onError: (error) => {
