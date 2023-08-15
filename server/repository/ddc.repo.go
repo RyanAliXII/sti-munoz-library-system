@@ -23,7 +23,17 @@ func (repo *DDCRepository) Get(filter  * filter.Filter ) []model.DDC {
 }
 func (repo * DDCRepository) Search (filter * filter.Filter)[]model.DDC {
 	var deweys []model.DDC = make([]model.DDC, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT id, name, number from catalog.ddc where search_vector @@ (websearch_to_tsquery('english', $1) :: text || ':*' ) :: tsquery ORDER BY number ASC LIMIT $2 OFFSET $3",filter.Keyword, filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, `
+	SELECT id, name, number
+	FROM catalog.ddc
+	WHERE search_vector @@ (
+	  CASE
+		WHEN length((websearch_to_tsquery('english', $1)::text)) > 0 THEN
+				(websearch_to_tsquery('english', $1)::text || ':*')::tsquery
+		ELSE
+				websearch_to_tsquery('english', $1) :: tsquery
+	  END)  
+	  ORDER BY number ASC LIMIT $2 OFFSET $3`,filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Get"))
 	}
