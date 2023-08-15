@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 
 import ReactPaginate from "react-paginate";
 import usePaginate from "@hooks/usePaginate";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -39,7 +40,7 @@ const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
       }}
       classNames={{
         modalContainer: "",
-        modal: "w-11/12 lg:w-9/12 rounded h-[600px]",
+        modal: "w-11/12 lg:w-9/12 rounded h-[700px]",
       }}
     >
       <DDCTable modalRef={modalRef} />
@@ -76,17 +77,15 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
       return [];
     }
   };
-  const {
-    currentPage,
-    setCurrentPage,
-    setTotalPages,
-    totalPages,
-    previousPage,
-  } = usePaginate({
+  const { currentPage, setCurrentPage } = usePaginate({
     initialPage: 1,
     numberOfPages: 0,
   });
-  const { data: ddc } = useQuery<DDC[]>({
+  const {
+    data: ddc,
+    isFetching,
+    isError,
+  } = useQuery<DDC[]>({
     queryFn: fetchDDC,
     queryKey: ["ddc", currentPage],
     refetchOnWindowFocus: false,
@@ -107,58 +106,60 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           placeholder="Search..."
         ></Input>
       </div>
-      <Table>
-        <Thead>
-          <HeadingRow>
-            <Th></Th>
-            <Th>Class name</Th>
-            <Th>Number</Th>
-          </HeadingRow>
-        </Thead>
+      <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
+        <Table>
+          <Thead>
+            <HeadingRow>
+              <Th></Th>
+              <Th>Class name</Th>
+              <Th>Number</Th>
+            </HeadingRow>
+          </Thead>
 
-        <Tbody>
-          {ddc?.map((d) => {
-            return (
-              <BodyRow
-                key={d.id}
-                onClick={() => {
-                  selectDDC(d);
-                }}
-                className="cursor-pointer"
-              >
-                <Td>
-                  <Input
-                    wrapperclass="flex items-center"
-                    type="checkbox"
-                    checked={form.ddc === d.number}
-                    className="h-4"
-                    readOnly
-                  ></Input>
-                </Td>
-                <Td>{d.name}</Td>
-                <Td>{d.number}</Td>
-              </BodyRow>
-            );
-          })}
-        </Tbody>
-      </Table>
+          <Tbody>
+            {ddc?.map((d) => {
+              return (
+                <BodyRow
+                  key={d.id}
+                  onClick={() => {
+                    selectDDC(d);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Td>
+                    <Input
+                      wrapperclass="flex items-center"
+                      type="checkbox"
+                      checked={form.ddc === d.number}
+                      className="h-4"
+                      readOnly
+                    ></Input>
+                  </Td>
+                  <Td>{d.name}</Td>
+                  <Td>{d.number}</Td>
+                </BodyRow>
+              );
+            })}
+          </Tbody>
+        </Table>
 
-      <ReactPaginate
-        nextLabel="Next"
-        pageLinkClassName="border px-3 py-0.5  text-center rounded"
-        pageRangeDisplayed={3}
-        pageCount={10}
-        disabledClassName="opacity-60 pointer-events-none"
-        onPageChange={({ selected }) => {
-          setCurrentPage(selected + 1);
-        }}
-        className="flex gap-2 items-center"
-        previousLabel="Previous"
-        previousClassName="px-2 border text-gray-500 py-1 rounded"
-        nextClassName="px-2 border text-blue-500 py-1 rounded"
-        renderOnZeroPageCount={null}
-        activeClassName="border-none bg-blue-500 text-white rounded"
-      />
+        <ReactPaginate
+          nextLabel="Next"
+          pageLinkClassName="border px-3 py-0.5  text-center rounded"
+          pageRangeDisplayed={3}
+          pageCount={10}
+          disabledClassName="opacity-60 pointer-events-none"
+          onPageChange={({ selected }) => {
+            setCurrentPage(selected + 1);
+          }}
+          className="flex gap-2 items-center"
+          previousLabel="Previous"
+          previousClassName="px-2 border text-gray-500 py-1 rounded"
+          nextClassName="px-2 border text-blue-500 py-1 rounded"
+          renderOnZeroPageCount={null}
+          activeClassName="border-none bg-blue-500 text-white rounded"
+        />
+      </LoadingBoundaryV2>
     </>
   );
 };
