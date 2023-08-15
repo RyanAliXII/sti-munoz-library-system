@@ -124,7 +124,9 @@ const BookAddForm = () => {
     }
   };
   const [shouldSelectFirstPublisher, setSelectFirstPublisher] = useState(false);
-  const { data: publishers, refetch } = useQuery<Publisher[]>({
+  const [shouldSelectFirstAuthor, setSelectFirstAuthor] = useState(false);
+
+  const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
     onSettled: (publishers) => {
       if ((publishers?.length ?? 0) > 0 && publishers) {
@@ -535,7 +537,6 @@ const BookAddForm = () => {
         selectFirstPublisher={() => {
           setSelectFirstPublisher(true);
         }}
-        refetch={refetch}
       />
       <AddAuthorModal
         closeModal={closeAddAuthorModal}

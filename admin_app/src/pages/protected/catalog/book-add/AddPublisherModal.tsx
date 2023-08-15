@@ -15,13 +15,11 @@ const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 
 interface AddPublisherModalProps extends ModalProps {
   selectFirstPublisher: () => void;
-  refetch: () => void;
 }
 const AddPublisherModal: React.FC<AddPublisherModalProps> = ({
   isOpen,
   closeModal,
   selectFirstPublisher,
-  refetch,
 }) => {
   const { errors, form, validate, handleFormInput, resetForm } =
     useForm<Publisher>({
@@ -29,14 +27,14 @@ const AddPublisherModal: React.FC<AddPublisherModalProps> = ({
       schema: PublisherSchema,
     });
   const { Post } = useRequest();
-
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
       Post("/publishers/", form, {}, [apiScope("Publisher.Add")]),
     onSuccess: () => {
       toast.success("New publisher has been added.");
+      queryClient.invalidateQueries(["publishers"]);
       selectFirstPublisher();
-      refetch();
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
