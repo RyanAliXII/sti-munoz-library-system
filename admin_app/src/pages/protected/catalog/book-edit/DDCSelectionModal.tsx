@@ -8,22 +8,20 @@ import {
   Td,
   BodyRow,
 } from "@components/ui/table/Table";
-import { ModalProps } from "@definitions/types";
+import { ModalProps, DDC } from "@definitions/types";
 import Modal from "react-responsive-modal";
 import { useBookEditFormContext } from "./BookEditFormContext";
 
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
-import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useRequest } from "@hooks/useRequest";
-import { toast } from "react-toastify";
 
-type DDC = {
-  name: string;
-  number: number;
-};
+import ReactPaginate from "react-paginate";
+import usePaginate from "@hooks/usePaginate";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -42,59 +40,47 @@ const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
       }}
       classNames={{
         modalContainer: "",
-        modal: "w-11/12 lg:w-9/12 rounded h-[600px]",
+        modal: "w-11/12 lg:w-9/12 rounded h-[750px]",
       }}
     >
-      <DDCTable modalRef={modalRef} />
+      <DDCTable closeModal={closeModal} />
     </Modal>
   );
 };
 
-enum SearchBy {
-  Name = "name",
-  Number = "number",
-}
 type DDCTableProps = {
-  modalRef: React.RefObject<HTMLDivElement>;
+  closeModal: () => void;
 };
-const DDCTable = ({ modalRef }: DDCTableProps) => {
-  const { Get } = useRequest();
-  const PAGE_OFFSET_INCREMENT = 50;
-  const { form, setForm, removeFieldError } = useBookEditFormContext();
+const DDCTable = ({ closeModal }: DDCTableProps) => {
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const { setForm, removeFieldError } = useBookEditFormContext();
+
+  const INITIAL_PAGE = 1;
   const searchDebounce = useDebounce();
-  const [filters, setFilters] = useState({
-    keyword: "",
-    searchBy: SearchBy.Name,
-  });
 
-  const queryClient = useQueryClient();
-  const handleFilters = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
-    searchDebounce(search, {}, 300);
+  const search = (q: any) => {
+    setSearchKeyword(q);
+    setCurrentPage(INITIAL_PAGE);
   };
 
-  const search = () => {
-    queryClient.setQueryData(["ddc"], () => {
-      return {
-        pageParams: [],
-        pages: [],
-      };
+  const handleSearch = (event: BaseSyntheticEvent) => {
+    searchDebounce(search, event.target.value, 500);
+  };
+  const { Get } = useRequest();
+  const { currentPage, setCurrentPage, setTotalPages, totalPages } =
+    usePaginate({
+      initialPage: INITIAL_PAGE,
+      numberOfPages: 1,
     });
-    refetch();
-  };
-  const fetchDDC = async ({ pageParam = 0 }) => {
+  const fetchDDC = async () => {
     try {
       const { data: response } = await Get("/ddc/", {
         params: {
-          offset: pageParam,
-          limit: 50,
-          keyword: filters.keyword,
-          searchBy: filters.searchBy,
+          page: currentPage,
+          keyword: searchKeyword,
         },
       });
-
+      setTotalPages(response?.data?.metadata?.pages ?? 1);
       return response?.data?.ddc ?? [];
     } catch (error) {
       console.error(error);
@@ -102,72 +88,65 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
     }
   };
 
-  const { data, fetchNextPage, refetch } = useInfiniteQuery<DDC[]>({
+  const {
+    data: ddc,
+    isFetching,
+    isError,
+  } = useQuery<DDC[]>({
     queryFn: fetchDDC,
-    queryKey: ["ddc"],
+    queryKey: ["ddc", currentPage, searchKeyword],
     refetchOnWindowFocus: false,
-    getNextPageParam: (_, allPages) => {
-      return allPages.length * PAGE_OFFSET_INCREMENT;
-    },
   });
-  useScrollWatcher({
-    element: modalRef.current,
-    onScrollEnd: () => {
-      fetchNextPage();
-    },
+  const [selectedDDC, setSelectedDDC] = useState<DDC>({
+    id: 0,
+    name: "",
+    number: "",
   });
   const selectDDC = (ddc: DDC) => {
-    setForm((prevForm) => ({ ...prevForm, ddc: ddc.number }));
+    setSelectedDDC(ddc);
+  };
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center mt-2";
+  const proceed = () => {
+    setForm((prev) => ({ ...prev, ddc: selectedDDC.number }));
     removeFieldError("ddc");
-    toast.info(`${ddc.name} has been selected as classification.`);
+    closeModal();
   };
   return (
     <>
+      {selectedDDC.id != 0 && (
+        <p className="">
+          <span className="underline underline-offset-2">
+            {selectedDDC.name}{" "}
+          </span>
+          has been selected.
+        </p>
+      )}
       <div className="flex gap-2 items-center mb-3">
-        <div>
-          <Input
-            label="DDC"
-            wrapperclass="flex items-center"
-            className="disabled:bg-gray-100"
-            type="text"
-            value={form.ddc}
-            readOnly
-            disabled
-          />
-        </div>
         <Input
           wrapperclass="flex items-end h-14 mt-1"
           name="keyword"
-          onChange={handleFilters}
           type="text"
           placeholder="Search..."
+          onChange={handleSearch}
         ></Input>
-        <div className="w-48 h-16 flex items-end ">
-          <select
-            className={`${InputClasses.InputDefaultClasslist} mb-1 `}
-            onChange={handleFilters}
-            name="searchBy"
-          >
-            <option value="name">Name</option>
-            <option value="number">Number</option>
-          </select>
-        </div>
       </div>
-      <Table>
-        <Thead>
-          <HeadingRow>
-            <Th></Th>
-            <Th>Class name</Th>
-            <Th>Number</Th>
-          </HeadingRow>
-        </Thead>
 
-        <Tbody>
-          {data?.pages.map((ddc) => {
-            return ddc.map((d) => {
+      <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
+        <Table>
+          <Thead>
+            <HeadingRow>
+              <Th></Th>
+              <Th>Class name</Th>
+              <Th>Number</Th>
+            </HeadingRow>
+          </Thead>
+
+          <Tbody>
+            {ddc?.map((d) => {
               return (
                 <BodyRow
-                  key={d.number}
+                  key={d.id}
                   onClick={() => {
                     selectDDC(d);
                   }}
@@ -177,19 +156,53 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
                     <Input
                       wrapperclass="flex items-center"
                       type="checkbox"
-                      checked={form.ddc === d.number}
+                      checked={d.number === selectedDDC.number}
                       className="h-4"
                       readOnly
                     ></Input>
                   </Td>
                   <Td>{d.name}</Td>
-                  <Td>{d.number.toString().padStart(3, "000")}</Td>
+                  <Td>{d.number}</Td>
                 </BodyRow>
               );
-            });
-          })}
-        </Tbody>
-      </Table>
+            })}
+          </Tbody>
+        </Table>
+        <div className="flex justify-between items-center mt-10">
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={3}
+            forcePage={currentPage - 1}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className={paginationClass}
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+          <div className="flex gap-2">
+            <PrimaryButton
+              disabled={selectedDDC.id != 0 ? false : true}
+              onClick={proceed}
+            >
+              Proceed
+            </PrimaryButton>
+            <LighButton
+              onClick={() => {
+                closeModal();
+              }}
+            >
+              Cancel
+            </LighButton>
+          </div>
+        </div>
+      </LoadingBoundaryV2>
     </>
   );
 };
