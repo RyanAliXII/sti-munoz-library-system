@@ -72,7 +72,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   const { currentPage, setCurrentPage, setTotalPages, totalPages } =
     usePaginate({
       initialPage: INITIAL_PAGE,
-      numberOfPages: 0,
+      numberOfPages: 1,
     });
   const fetchDDC = async () => {
     try {
@@ -82,7 +82,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           keyword: searchKeyword,
         },
       });
-      setTotalPages(response?.data?.metadata?.pages ?? 0);
+      setTotalPages(response?.data?.metadata?.pages ?? 1);
       return response?.data?.ddc ?? [];
     } catch (error) {
       console.error(error);
@@ -159,6 +159,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           nextLabel="Next"
           pageLinkClassName="border px-3 py-0.5  text-center rounded"
           pageRangeDisplayed={3}
+          forcePage={currentPage - 1}
           pageCount={totalPages}
           disabledClassName="opacity-60 pointer-events-none"
           onPageChange={({ selected }) => {
