@@ -105,7 +105,15 @@ func (repo *RecordMetadataRepository) GetDDCMetadata(rowsLimit int) (Metadata, e
 }
 func (repo *RecordMetadataRepository) GetDDCSearchMetadata(filter * filter.Filter) (Metadata, error) {
 	meta := Metadata{}
-    query := `SELECT CASE WHEN COUNT(*) = 0 then 0 else CEIL((COUNT(*)/$1::numeric))::bigint end as pages, count(*) as records FROM catalog.ddc where search_vector @@ (websearch_to_tsquery('english', $2) :: text || ':*' ) :: tsquery`
+    query := `
+	SELECT CASE WHEN COUNT(*) = 0 then 0 else CEIL((COUNT(*)/$1::numeric))::bigint end as pages, count(*) as records FROM catalog.ddc where search_vector 
+	@@   CASE
+	WHEN length((websearch_to_tsquery('english', $2)::text)) > 0 THEN
+			(websearch_to_tsquery('english', $2)::text || ':*')::tsquery
+	ELSE
+			websearch_to_tsquery('english', $2) :: tsquery
+  	END  
+  `
 	getMetaErr := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	if getMetaErr != nil {
 			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetDDCMetadata"))
