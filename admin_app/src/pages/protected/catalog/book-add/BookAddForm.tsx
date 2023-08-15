@@ -123,19 +123,8 @@ const BookAddForm = () => {
       return [];
     }
   };
-  const [shouldSelectFirstPublisher, setSelectFirstPublisher] = useState(false);
-  const [shouldSelectFirstAuthor, setSelectFirstAuthor] = useState(false);
-
   const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
-    onSettled: (publishers) => {
-      if ((publishers?.length ?? 0) > 0 && publishers) {
-        if (shouldSelectFirstPublisher) {
-          setFieldValue("publisher", publishers[0]);
-          setSelectFirstPublisher(false);
-        }
-      }
-    },
     queryKey: ["publishers"],
   });
   const { data: sourceOfFunds } = useQuery<Source[]>({
@@ -534,9 +523,6 @@ const BookAddForm = () => {
       <AddPublisherModal
         closeModal={closeAddPublisherModal}
         isOpen={isAddPublisherModalOpen}
-        selectFirstPublisher={() => {
-          setSelectFirstPublisher(true);
-        }}
       />
       <AddAuthorModal
         closeModal={closeAddAuthorModal}

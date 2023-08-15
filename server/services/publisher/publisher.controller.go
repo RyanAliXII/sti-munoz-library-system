@@ -21,7 +21,7 @@ type PublisherController struct {
 func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
-	id,insertErr := ctrler.publisherRepository.New(publisher)
+	publisher,insertErr := ctrler.publisherRepository.New(publisher)
 	
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
@@ -29,11 +29,8 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	}
 	ctrler.recordMetadataRepository.InvalidatePublisher()
 	ctx.JSON(httpresp.Success200(gin.H{
-		"publisher":  gin.H{
-			"id":id,
-			"name":publisher.Name,
-		},
-	}, "model.Publisher added."))
+		"publisher": publisher,
+	}, "Publisher added."))
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	filter := filter.ExtractFilter(ctx)
