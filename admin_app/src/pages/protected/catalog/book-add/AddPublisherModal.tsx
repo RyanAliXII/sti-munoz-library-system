@@ -10,17 +10,12 @@ import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import { useBookAddFormContext } from "./BookAddFormContext";
 
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 
-interface AddPublisherModalProps extends ModalProps {
-  selectFirstPublisher: () => void;
-}
-const AddPublisherModal: React.FC<AddPublisherModalProps> = ({
-  isOpen,
-  closeModal,
-  selectFirstPublisher,
-}) => {
+const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
+  const { setFieldValue } = useBookAddFormContext();
   const { errors, form, validate, handleFormInput, resetForm } =
     useForm<Publisher>({
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
@@ -31,10 +26,13 @@ const AddPublisherModal: React.FC<AddPublisherModalProps> = ({
   const mutation = useMutation({
     mutationFn: () =>
       Post("/publishers/", form, {}, [apiScope("Publisher.Add")]),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success("New publisher has been added.");
       queryClient.invalidateQueries(["publishers"]);
-      selectFirstPublisher();
+      const { data } = response.data;
+      if (data?.publisher?.name && data?.publisher?.id) {
+        setFieldValue("publisher", data?.publisher);
+      }
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
