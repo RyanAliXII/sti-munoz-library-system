@@ -13,7 +13,7 @@ import {
 } from "@components/ui/table/Table";
 import { useSwitch } from "@hooks/useToggle";
 import AddOrganizationModal from "./AddOrganizationModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Organization } from "@definitions/types";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
@@ -79,6 +79,7 @@ const OrganizationAsAuthor = () => {
       return [];
     }
   };
+  const queryClient = useQueryClient();
   const {
     data: organizations,
     refetch,
@@ -98,6 +99,16 @@ const OrganizationAsAuthor = () => {
       ]),
     onSuccess: () => {
       toast.success("Organization deleted.");
+      /*
+        validate first if deleted row is the last item from the page
+        by checking the current active page rows length
+        if the current page is empty then go to previous page
+      */
+      if (organizations?.length === 1 && totalPages > 1) {
+        previousPage();
+      } else {
+        queryClient.invalidateQueries(["authors"]);
+      }
     },
     onError: () => {
       toast.error(ErrorMsg.Delete);
