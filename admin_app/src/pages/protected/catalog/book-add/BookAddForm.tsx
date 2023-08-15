@@ -138,15 +138,15 @@ const BookAddForm = () => {
 
   const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
-    removeFieldError("section.value");
+    removeFieldError("section");
   };
   const handleSourceSelect = (option: SingleValue<Source>) => {
     setFieldValue("fundSource", option);
-    removeFieldError("fundSource.value");
+    removeFieldError("fundSource");
   };
   const handlePublisherSelect = (option: SingleValue<Source>) => {
     setFieldValue("publisher", option);
-    removeFieldError("publisher.value");
+    removeFieldError("publisher");
   };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
