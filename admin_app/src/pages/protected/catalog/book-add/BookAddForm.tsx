@@ -7,7 +7,7 @@ import {
 } from "@components/ui/button/Button";
 
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useEffect } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
@@ -123,8 +123,13 @@ const BookAddForm = () => {
       return [];
     }
   };
-  const { data: publishers } = useQuery<Publisher[]>({
+  const { data: publishers, refetch } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
+    onSuccess: () => {
+      if ((publishers?.length ?? 0) > 0 && publishers) {
+        setFieldValue("publisher", publishers[0]);
+      }
+    },
     queryKey: ["publishers"],
   });
   const { data: sourceOfFunds } = useQuery<Source[]>({
@@ -135,6 +140,7 @@ const BookAddForm = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
+  const [shouldSelectFirstPublisher, setSelectFirstPublisher] = useState(false);
 
   const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
@@ -523,6 +529,10 @@ const BookAddForm = () => {
       <AddPublisherModal
         closeModal={closeAddPublisherModal}
         isOpen={isAddPublisherModalOpen}
+        selectFirstPublisher={() => {
+          setSelectFirstPublisher(true);
+        }}
+        refetch={refetch}
       />
       <AddAuthorModal
         closeModal={closeAddAuthorModal}
