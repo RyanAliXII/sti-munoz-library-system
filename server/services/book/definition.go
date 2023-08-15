@@ -23,7 +23,7 @@ type BookBody struct {
 	CostPrice     float32   `json:"costPrice"  binding:"gte=0"`
 	Edition       int       `json:"edition" binding:"gte=0" `
 	YearPublished int       `json:"yearPublished"  binding:"required"`
-	DDC           float64   `json:"ddc"  binding:"gte=0,lt=1000"`
+	DDC           string    `json:"ddc"  binding:"required"`
 	AuthorNumber  string    `json:"authorNumber" binding:"required,min=1,max=50"`
 	ReceivedAt    time.Time `json:"receivedAt" binding:"required"`
 	Authors       Authors   `json:"authors" binding:"dive"`
