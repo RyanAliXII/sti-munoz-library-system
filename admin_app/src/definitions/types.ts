@@ -84,7 +84,11 @@ export type Audit = {
   id?: string;
   name: string;
 };
-
+export type DDC = {
+  id: number;
+  name: string;
+  number: string;
+};
 export type Account = {
   id?: string;
   displayName: string;

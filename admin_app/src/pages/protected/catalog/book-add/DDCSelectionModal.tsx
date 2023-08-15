@@ -8,22 +8,17 @@ import {
   Td,
   BodyRow,
 } from "@components/ui/table/Table";
-import { ModalProps } from "@definitions/types";
+import { ModalProps, DDC } from "@definitions/types";
 import Modal from "react-responsive-modal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
-import useScrollWatcher from "@hooks/useScrollWatcher";
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
 
-type DDC = {
-  name: string;
-  number: number;
-};
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   if (!isOpen) return null;
@@ -66,12 +61,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   });
 
   const queryClient = useQueryClient();
-  useScrollWatcher({
-    element: modalRef.current,
-    onScrollEnd: () => {
-      fetchNextPage();
-    },
-  });
+
   const handleFilters = (event: BaseSyntheticEvent) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -79,15 +69,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
     searchDebounce(search, {}, 300);
   };
 
-  const search = () => {
-    queryClient.setQueryData(["ddc"], () => {
-      return {
-        pageParams: [],
-        pages: [],
-      };
-    });
-    refetch();
-  };
+  const search = () => {};
   const { Get } = useRequest();
   const fetchDDC = async ({ pageParam = 0 }) => {
     try {
@@ -107,13 +89,10 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
     }
   };
 
-  const { data, fetchNextPage, refetch } = useInfiniteQuery<DDC[]>({
+  const { data: ddc } = useQuery<DDC>({
     queryFn: fetchDDC,
     queryKey: ["ddc"],
     refetchOnWindowFocus: false,
-    getNextPageParam: (_, allPages) => {
-      return allPages.length * PAGE_OFFSET_INCREMENT;
-    },
   });
 
   const selectDDC = (ddc: DDC) => {
@@ -163,30 +142,28 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
         </Thead>
 
         <Tbody>
-          {data?.pages.map((ddc) => {
-            return ddc.map((d) => {
-              return (
-                <BodyRow
-                  key={d.number}
-                  onClick={() => {
-                    selectDDC(d);
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Td>
-                    <Input
-                      wrapperclass="flex items-center"
-                      type="checkbox"
-                      checked={form.ddc === d.number}
-                      className="h-4"
-                      readOnly
-                    ></Input>
-                  </Td>
-                  <Td>{d.name}</Td>
-                  <Td>{d.number.toString().padStart(3, "000")}</Td>
-                </BodyRow>
-              );
-            });
+          {ddc?.map((d) => {
+            return (
+              <BodyRow
+                key={d.number}
+                onClick={() => {
+                  selectDDC(d);
+                }}
+                className="cursor-pointer"
+              >
+                <Td>
+                  <Input
+                    wrapperclass="flex items-center"
+                    type="checkbox"
+                    checked={form.ddc === d.number}
+                    className="h-4"
+                    readOnly
+                  ></Input>
+                </Td>
+                <Td>{d.name}</Td>
+                <Td>{d.number.toString().padStart(3, "000")}</Td>
+              </BodyRow>
+            );
           })}
         </Tbody>
       </Table>
