@@ -25,7 +25,7 @@ type Book struct {
 	Edition       int             `json:"edition" db:"edition"`
 	YearPublished int             `json:"yearPublished" db:"year_published"`
 	ReceivedAt    db.NullableTime `json:"receivedAt" db:"received_at"`
-	DDC           float64         `json:"ddc" db:"ddc"`
+	DDC           string        `json:"ddc" db:"ddc"`
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
 
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
