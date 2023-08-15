@@ -18,6 +18,7 @@ import { BaseSyntheticEvent, useRef, useState } from "react";
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
+import { PrimaryButton } from "@components/ui/button/Button";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -52,22 +53,10 @@ type DDCTableProps = {
   modalRef: React.RefObject<HTMLDivElement>;
 };
 const DDCTable = ({ modalRef }: DDCTableProps) => {
-  const PAGE_OFFSET_INCREMENT = 50;
   const { form, setForm, removeFieldError } = useBookAddFormContext();
   const searchDebounce = useDebounce();
-  const [filters, setFilters] = useState({
-    keyword: "",
-    searchBy: SearchBy.Name,
-  });
 
   const queryClient = useQueryClient();
-
-  const handleFilters = (event: BaseSyntheticEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
-    searchDebounce(search, {}, 300);
-  };
 
   const search = () => {};
   const { Get } = useRequest();
@@ -98,34 +87,12 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   return (
     <>
       <div className="flex gap-2 items-center mb-3">
-        <div>
-          <Input
-            label="DDC"
-            wrapperclass="flex items-center"
-            className="disabled:bg-gray-100"
-            type="text"
-            value={form.ddc}
-            readOnly
-            disabled
-          />
-        </div>
         <Input
           wrapperclass="flex items-end h-14 mt-1"
           name="keyword"
-          onChange={handleFilters}
           type="text"
           placeholder="Search..."
         ></Input>
-        <div className="w-48 h-16 flex items-end ">
-          <select
-            className={`${InputClasses.InputDefaultClasslist} mb-1 `}
-            onChange={handleFilters}
-            name="searchBy"
-          >
-            <option value="name">Name</option>
-            <option value="number">Number</option>
-          </select>
-        </div>
       </div>
       <Table>
         <Thead>
@@ -162,6 +129,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           })}
         </Tbody>
       </Table>
+      <PrimaryButton>Done</PrimaryButton>
     </>
   );
 };
