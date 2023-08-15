@@ -32,6 +32,8 @@ func BookRoutes(router *gin.RouterGroup) {
 	middlewares.ValidatePermissions([]string{"Book.Cover.Edit"}),
 	controller.UpdateBookCover)
 
+	router.DELETE("/:bookId/covers", controller.DeleteBookCovers)
+	
 	router.GET("/accessions", 
 	middlewares.ValidatePermissions([]string{"Accession.Read"}),
 	controller.GetAccession)
