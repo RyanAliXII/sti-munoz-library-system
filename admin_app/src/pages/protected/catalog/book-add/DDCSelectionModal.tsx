@@ -12,7 +12,7 @@ import { ModalProps, DDC } from "@definitions/types";
 import Modal from "react-responsive-modal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { BaseSyntheticEvent, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
@@ -22,7 +22,6 @@ import ReactPaginate from "react-paginate";
 import usePaginate from "@hooks/usePaginate";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import { remove } from "lodash";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -44,16 +43,15 @@ const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
         modal: "w-11/12 lg:w-9/12 rounded h-[750px]",
       }}
     >
-      <DDCTable modalRef={modalRef} closeModal={closeModal} />
+      <DDCTable closeModal={closeModal} />
     </Modal>
   );
 };
 
 type DDCTableProps = {
-  modalRef: React.RefObject<HTMLDivElement>;
   closeModal: () => void;
 };
-const DDCTable = ({ modalRef, closeModal }: DDCTableProps) => {
+const DDCTable = ({ closeModal }: DDCTableProps) => {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const { setForm, removeFieldError } = useBookAddFormContext();
 
