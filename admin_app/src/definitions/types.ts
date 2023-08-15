@@ -49,7 +49,7 @@ export interface Book {
   pages: number;
   yearPublished: number;
   receivedAt: string; //iso-string  date
-  ddc: number;
+  ddc: string;
   description: string;
   authors: {
     people: PersonAuthor[];

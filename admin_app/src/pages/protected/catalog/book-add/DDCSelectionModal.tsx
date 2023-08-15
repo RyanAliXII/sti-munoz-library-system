@@ -74,12 +74,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   const fetchDDC = async ({ pageParam = 0 }) => {
     try {
       const { data: response } = await Get("/ddc/", {
-        params: {
-          offset: pageParam,
-          limit: 50,
-          keyword: filters.keyword,
-          searchBy: filters.searchBy,
-        },
+        params: {},
       });
 
       return response?.data?.ddc ?? [];
@@ -89,7 +84,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
     }
   };
 
-  const { data: ddc } = useQuery<DDC>({
+  const { data: ddc } = useQuery<DDC[]>({
     queryFn: fetchDDC,
     queryKey: ["ddc"],
     refetchOnWindowFocus: false,
@@ -145,7 +140,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           {ddc?.map((d) => {
             return (
               <BodyRow
-                key={d.number}
+                key={d.id}
                 onClick={() => {
                   selectDDC(d);
                 }}
@@ -161,7 +156,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
                   ></Input>
                 </Td>
                 <Td>{d.name}</Td>
-                <Td>{d.number.toString().padStart(3, "000")}</Td>
+                <Td>{d.number}</Td>
               </BodyRow>
             );
           })}
