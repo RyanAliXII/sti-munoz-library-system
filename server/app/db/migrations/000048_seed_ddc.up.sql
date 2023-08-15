@@ -1,14 +1,15 @@
 DROP TABLE IF EXISTS catalog.ddc;
 CREATE TABLE catalog.ddc (
+  id integer primary key generated always as identity,
   name text,
   number text,
   search_vector tsvector generated always as ( 
     setweight(to_tsvector('english', name), 'A')   
     || ' ' ||
-    setweight(to_tsvector('simple', number), 'B') ::tsvector
+    setweight(to_tsvector('simple', number), 'B')::tsvector
 ) stored
 );
-INSERT INTO catalog.ddc VALUES
+INSERT INTO catalog.ddc(name, number) VALUES
 ('Computer science, information & general works','0'),
 ('Knowledge','1'),
 ('Classification','1.012'),
