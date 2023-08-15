@@ -14,7 +14,7 @@ type DDCRepository struct {
 
 func (repo *DDCRepository) Get(filter Filter) []model.DDC {
 	var deweys []model.DDC = make([]model.DDC, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT name, number from catalog.ddc LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&deweys, "SELECT id, name, number from catalog.ddc")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Get"))
 	}
