@@ -13,12 +13,14 @@ import Modal from "react-responsive-modal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, useRef, useState } from "react";
+import { useRef } from "react";
 
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
-import { PrimaryButton } from "@components/ui/button/Button";
+
+import ReactPaginate from "react-paginate";
+import usePaginate from "@hooks/usePaginate";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,9 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
   const fetchDDC = async ({ pageParam = 0 }) => {
     try {
       const { data: response } = await Get("/ddc/", {
-        params: {},
+        params: {
+          page: currentPage,
+        },
       });
 
       return response?.data?.ddc ?? [];
@@ -72,10 +76,19 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
       return [];
     }
   };
-
+  const {
+    currentPage,
+    setCurrentPage,
+    setTotalPages,
+    totalPages,
+    previousPage,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const { data: ddc } = useQuery<DDC[]>({
     queryFn: fetchDDC,
-    queryKey: ["ddc"],
+    queryKey: ["ddc", currentPage],
     refetchOnWindowFocus: false,
   });
 
@@ -129,7 +142,23 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           })}
         </Tbody>
       </Table>
-      <PrimaryButton>Done</PrimaryButton>
+
+      <ReactPaginate
+        nextLabel="Next"
+        pageLinkClassName="border px-3 py-0.5  text-center rounded"
+        pageRangeDisplayed={3}
+        pageCount={10}
+        disabledClassName="opacity-60 pointer-events-none"
+        onPageChange={({ selected }) => {
+          setCurrentPage(selected + 1);
+        }}
+        className="flex gap-2 items-center"
+        previousLabel="Previous"
+        previousClassName="px-2 border text-gray-500 py-1 rounded"
+        nextClassName="px-2 border text-blue-500 py-1 rounded"
+        renderOnZeroPageCount={null}
+        activeClassName="border-none bg-blue-500 text-white rounded"
+      />
     </>
   );
 };

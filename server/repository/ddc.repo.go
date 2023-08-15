@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -12,9 +13,9 @@ type DDCRepository struct {
 	db *sqlx.DB
 }
 
-func (repo *DDCRepository) Get(filter Filter) []model.DDC {
+func (repo *DDCRepository) Get(filter  * filter.Filter ) []model.DDC {
 	var deweys []model.DDC = make([]model.DDC, 0)
-	selectErr := repo.db.Select(&deweys, "SELECT id, name, number from catalog.ddc")
+	selectErr := repo.db.Select(&deweys, "SELECT id, name, number from catalog.ddc ORDER BY number ASC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("DDCRepository.Get"))
 	}
@@ -28,5 +29,5 @@ func NewDDCRepository() DDCRepositoryInterface {
 }
 
 type DDCRepositoryInterface interface {
-	Get(filter Filter) []model.DDC
+	Get(filter * filter.Filter) []model.DDC
 }

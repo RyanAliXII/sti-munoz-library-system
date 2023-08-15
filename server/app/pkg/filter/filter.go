@@ -10,8 +10,6 @@ type Filter struct {
 	Offset   int
 	Limit    int
 	Keyword  string
-	FindBy   string
-	SearchBy string
 	Page int
 }
 
@@ -21,7 +19,9 @@ var defaultFilter  = Filter{
 	Keyword: "", // search keyword
 	Page: 1, // default page number
 } 	
+func New() {
 
+}
 func ExtractFilter(ctx * gin.Context ) Filter {
 	filter := defaultFilter
 	page := ctx.Query("page")
