@@ -10,6 +10,7 @@ import (
 
 type DDCController struct {
 	ddcRepository repository.DDCRepositoryInterface
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
 func (ctrler *DDCController) GetDDC(ctx *gin.Context) {
@@ -18,13 +19,22 @@ func (ctrler *DDCController) GetDDC(ctx *gin.Context) {
 	}
 	filter.ExtractFilter(ctx)
 	ddc := ctrler.ddcRepository.Get(&filter) 
+	metadata, metaErr := ctrler.recordMetadataRepository.GetDDCMetadata(filter.Limit)
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"message": "Unknown error occured",
+		}, "Invalid page number."))
+        return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"ddc": ddc,
+		"metadata": metadata,
 	}, "DDC fetched."))
 }
 func NewDDCController() DDCControllerInterface {
 	return &DDCController{
 		ddcRepository: repository.NewDDCRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 	}
 
 }
