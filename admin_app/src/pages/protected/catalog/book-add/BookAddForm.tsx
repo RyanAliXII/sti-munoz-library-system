@@ -123,11 +123,15 @@ const BookAddForm = () => {
       return [];
     }
   };
+  const [shouldSelectFirstPublisher, setSelectFirstPublisher] = useState(false);
   const { data: publishers, refetch } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
-    onSuccess: () => {
+    onSettled: (publishers) => {
       if ((publishers?.length ?? 0) > 0 && publishers) {
-        setFieldValue("publisher", publishers[0]);
+        if (shouldSelectFirstPublisher) {
+          setFieldValue("publisher", publishers[0]);
+          setSelectFirstPublisher(false);
+        }
       }
     },
     queryKey: ["publishers"],
@@ -140,7 +144,6 @@ const BookAddForm = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
-  const [shouldSelectFirstPublisher, setSelectFirstPublisher] = useState(false);
 
   const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
