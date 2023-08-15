@@ -4,7 +4,7 @@ import BookAddForm from "./BookAddForm";
 const BookAddPage = () => {
   return (
     <BookAddFormProvider>
-      <BookAddForm></BookAddForm>
+      <BookAddForm />
     </BookAddFormProvider>
   );
 };

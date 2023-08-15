@@ -201,11 +201,7 @@ export const UpdateBookSchemaValidation = object().shape({
   description: string().notRequired(),
   author: array().notRequired(),
   authorNumber: string().required("Author number is required."),
-  ddc: number()
-    .typeError("Value must not be empty and should be numeric.")
-    .required("Classification is required.")
-    .min(0, "Classfication below zero does not exist.")
-    .max(1000, "Classification above 1000 does not exist."),
+  ddc: string().required("Dewey Decimal Classification is required."),
 });
 
 export const AuditSchemaValidation = object().shape({
