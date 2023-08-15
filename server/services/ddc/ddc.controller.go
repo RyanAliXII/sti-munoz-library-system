@@ -13,9 +13,11 @@ type DDCController struct {
 }
 
 func (ctrler *DDCController) GetDDC(ctx *gin.Context) {
-
-	filter := filter.ExtractFilter(ctx)
-	ddc :=ctrler.ddcRepository.Get(&filter) 
+	filter := filter.Filter{
+		Limit: 10,
+	}
+	filter.ExtractFilter(ctx)
+	ddc := ctrler.ddcRepository.Get(&filter) 
 	ctx.JSON(httpresp.Success200(gin.H{
 		"ddc": ddc,
 	}, "DDC fetched."))
