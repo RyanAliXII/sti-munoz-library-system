@@ -8,7 +8,7 @@ CREATE TABLE catalog.ddc (
     setweight(to_tsvector('simple', number), 'B') ::tsvector
 ) stored
 );
-INSERT INTO "catalog.ddc" VALUES
+INSERT INTO catalog.ddc VALUES
 ('Computer science, information & general works','0'),
 ('Knowledge','1'),
 ('Classification','1.012'),
