@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS catalog.ddc;
 CREATE TABLE catalog.ddc (
   id integer primary key generated always as identity,
   name text,
-  number text,
+  number text UNIQUE,
   search_vector tsvector generated always as ( 
     setweight(to_tsvector('english', name), 'A')   
     || ' ' ||
