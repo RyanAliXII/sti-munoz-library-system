@@ -35,7 +35,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       copies: 1,
       receivedAt: new Date().toISOString(),
       authorNumber: "",
-      ddc: 0,
+      ddc: "",
       costPrice: 0,
       description: "",
 
