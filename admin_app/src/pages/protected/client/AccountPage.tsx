@@ -50,7 +50,7 @@ const uppy = new Uppy({
   endpoint: `${BASE_URL_V1}/accounts/bulk`,
 });
 const AccountPage = () => {
-  const [searchKeyword, setSearchKeyWord] = useState<string>("");
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
   const {
     close: closeImportModal,
     isOpen: isImportModalOpen,
@@ -92,7 +92,7 @@ const AccountPage = () => {
   });
   const debounceSearch = useDebounce();
   const search = (q: any) => {
-    setSearchKeyWord(q);
+    setSearchKeyword(q);
     setCurrentPage(INITIAL_PAGE);
   };
   const handleSearch = (event: BaseSyntheticEvent) => {

@@ -13,7 +13,7 @@ import Modal from "react-responsive-modal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
+import { BaseSyntheticEvent, useRef, useState } from "react";
 
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
@@ -48,24 +48,30 @@ const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   );
 };
 
-enum SearchBy {
-  Name = "name",
-  Number = "number",
-}
 type DDCTableProps = {
   modalRef: React.RefObject<HTMLDivElement>;
 };
 const DDCTable = ({ modalRef }: DDCTableProps) => {
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
   const { form, setForm, removeFieldError } = useBookAddFormContext();
+
+  const INITIAL_PAGE = 1;
   const searchDebounce = useDebounce();
 
   const queryClient = useQueryClient();
 
-  const search = () => {};
+  const search = (q: any) => {
+    setSearchKeyword(q);
+    setCurrentPage(INITIAL_PAGE);
+  };
+
+  const handleSearch = (event: BaseSyntheticEvent) => {
+    searchDebounce(search, event.target.value, 500);
+  };
   const { Get } = useRequest();
   const { currentPage, setCurrentPage, setTotalPages, totalPages } =
     usePaginate({
-      initialPage: 1,
+      initialPage: INITIAL_PAGE,
       numberOfPages: 0,
     });
   const fetchDDC = async () => {
@@ -73,6 +79,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
       const { data: response } = await Get("/ddc/", {
         params: {
           page: currentPage,
+          keyword: searchKeyword,
         },
       });
       setTotalPages(response?.data?.metadata?.pages ?? 0);
@@ -89,7 +96,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
     isError,
   } = useQuery<DDC[]>({
     queryFn: fetchDDC,
-    queryKey: ["ddc", currentPage],
+    queryKey: ["ddc", currentPage, searchKeyword],
     refetchOnWindowFocus: false,
   });
 
@@ -108,6 +115,7 @@ const DDCTable = ({ modalRef }: DDCTableProps) => {
           name="keyword"
           type="text"
           placeholder="Search..."
+          onChange={handleSearch}
         ></Input>
       </div>
       <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
