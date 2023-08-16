@@ -34,7 +34,7 @@ const INITIAL_FORM_DATA: Book = {
   },
   receivedAt: new Date().toISOString(),
   authorNumber: "",
-  ddc: 0,
+  ddc: "",
   costPrice: 0,
   description: "",
 

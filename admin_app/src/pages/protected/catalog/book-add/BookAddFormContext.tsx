@@ -1,7 +1,7 @@
 import { BaseProps } from "@definitions/props.definition";
-import { Book, PersonAuthor, AuthorNumber } from "@definitions/types";
+import { Book } from "@definitions/types";
 import { useForm, UseFormType } from "@hooks/useForm";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext } from "react";
 import { NewBookSchemaValidation } from "../schema";
 
 export const BookAddFormContext = createContext({} as BookAddContextType);
@@ -35,7 +35,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       copies: 1,
       receivedAt: new Date().toISOString(),
       authorNumber: "",
-      ddc: 0,
+      ddc: "",
       costPrice: 0,
       description: "",
 

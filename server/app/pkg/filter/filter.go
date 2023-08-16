@@ -10,8 +10,6 @@ type Filter struct {
 	Offset   int
 	Limit    int
 	Keyword  string
-	FindBy   string
-	SearchBy string
 	Page int
 }
 
@@ -35,6 +33,19 @@ func ExtractFilter(ctx * gin.Context ) Filter {
 	filter.Offset = (filter.Page - 1) * filter.Limit
 	filter.Keyword = ctx.Query("keyword")
 	return filter
+}
+
+func(filter * Filter) ExtractFilter(ctx *gin.Context){
+	page := ctx.Query("page")
+	parsedPage, parsePageErr := strconv.Atoi(page)
+	if parsePageErr == nil {
+		filter.Page = parsedPage
+		if parsedPage <= 0 {
+			filter.Page = 1
+		}
+	}
+	filter.Offset = (filter.Page - 1) * filter.Limit
+	filter.Keyword = ctx.Query("keyword")
 }
 
 

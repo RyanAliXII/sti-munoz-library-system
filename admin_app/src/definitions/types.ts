@@ -49,7 +49,7 @@ export interface Book {
   pages: number;
   yearPublished: number;
   receivedAt: string; //iso-string  date
-  ddc: number;
+  ddc: string;
   description: string;
   authors: {
     people: PersonAuthor[];
@@ -84,7 +84,11 @@ export type Audit = {
   id?: string;
   name: string;
 };
-
+export type DDC = {
+  id: number;
+  name: string;
+  number: string;
+};
 export type Account = {
   id?: string;
   displayName: string;

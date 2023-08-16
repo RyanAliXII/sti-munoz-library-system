@@ -126,15 +126,15 @@ const BookEditForm = () => {
   } = useSwitch();
   const handleSectionSelect = (option: SingleValue<Section>) => {
     setFieldValue("section", option);
-    removeFieldError("section.id");
+    removeFieldError("section");
   };
   const handleSourceSelect = (option: SingleValue<Source>) => {
     setFieldValue("fundSource", option);
-    removeFieldError("fundSource.id");
+    removeFieldError("fundSource");
   };
   const handlePublisherSelect = (option: SingleValue<Publisher>) => {
     setFieldValue("publisher", option);
-    removeFieldError("publisher.id");
+    removeFieldError("publisher");
   };
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();

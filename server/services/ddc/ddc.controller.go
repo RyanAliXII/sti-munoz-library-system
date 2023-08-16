@@ -1,10 +1,9 @@
 package ddc
 
 import (
-	"strconv"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/dewey"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
 	"github.com/gin-gonic/gin"
@@ -12,61 +11,41 @@ import (
 
 type DDCController struct {
 	ddcRepository repository.DDCRepositoryInterface
+	recordMetadataRepository  repository.RecordMetadataRepository
 }
 
-func (ctler *DDCController) GetDDC(ctx *gin.Context) {
-
-	const (
-		DEFAULT_OFFSET         = 0
-		DEFAULT_LIMIT          = 50
-		DEFAULT_SEARCH_BY      = "name"
-		SEARCH_BY_CLASS_NUMBER = "number"
-	)
-
-	var filter repository.Filter = repository.Filter{}
-	offset := ctx.Query("offset")
-	limit := ctx.Query("limit")
-	keyword := ctx.Query("keyword")
-	searchBy := ctx.Query("searchBy")
-	var ddc []dewey.DeweyDecimal = make([]dewey.DeweyDecimal, 0)
-	parsedOffset, offsetConvErr := strconv.Atoi(offset)
-	if offsetConvErr != nil {
-		filter.Offset = DEFAULT_OFFSET
-	} else {
-		filter.Offset = parsedOffset
+func (ctrler *DDCController) GetDDC(ctx *gin.Context) {
+	filter := filter.Filter{
+		Limit: 10,
 	}
-
-	parsedLimit, limitConvErr := strconv.Atoi(limit)
-	if limitConvErr != nil {
-		filter.Limit = DEFAULT_LIMIT
-	} else {
-		filter.Limit = parsedLimit
+	filter.ExtractFilter(ctx)
+	var ddc []model.DDC;
+	var metadata repository.Metadata
+	var metaErr error;
+	if len(filter.Keyword) > 0 {
+		ddc = ctrler.ddcRepository.Search(&filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetDDCSearchMetadata(&filter)	
+	}else{
+		ddc = ctrler.ddcRepository.Get(&filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetDDCMetadata(filter.Limit)
 	}
-	if len(keyword) > 0 {
-		filter.Keyword = keyword
-		if len(searchBy) > 0 && searchBy == SEARCH_BY_CLASS_NUMBER {
-			ddc = ctler.ddcRepository.SearchByNumber(filter)
-		} else {
-			ddc = ctler.ddcRepository.SearchByName(filter)
-		}
-		ctx.JSON(httpresp.Success200(gin.H{
-			"ddc": ddc,
-		}, "DDC fetched."))
-		return
+	
+	if metaErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unkown error occured."))
+        return
 	}
-
-	ddc = ctler.ddcRepository.Get(filter)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"ddc": ddc,
+		"metadata": metadata,
 	}, "DDC fetched."))
 }
 func NewDDCController() DDCControllerInterface {
 	return &DDCController{
 		ddcRepository: repository.NewDDCRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(),
 	}
 
 }
-
 type DDCControllerInterface interface {
 	GetDDC(ctx *gin.Context)
 }
