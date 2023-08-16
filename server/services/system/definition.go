@@ -1,5 +1,10 @@
 package system
 
+type RoleBody struct {
+	Name        string`json:"name" binding:"required"`
+	Permissions []PermissionBody   `json:"permissions" binding:"dive"`
+}
+
 
 type PermissionBody struct {
 	Id int `json:"id"  binding:"required,min=1"`
