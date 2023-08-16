@@ -53,16 +53,17 @@ func main() {
 
 func CustomLogger() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		start := time.Now()
 		method := ctx.Request.Method
+		if(method == "OPTIONS"){
+			return
+		}
+		start := time.Now()
 		statusCode := ctx.Writer.Status()
 		clientIP := ctx.ClientIP()
 		ctx.Next()
 		latency := time.Since(start)
 		path := ctx.Request.URL.Path
-		if(method == "OPTIONS"){
-			return
-		}
+		
 		if ctx.Writer.Status() >= 400 {
 			logger.Error("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
 		} else {
