@@ -45,6 +45,9 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       createRole.mutate(role);
     } catch {}
   };
+
+  const isCreateButtonDisabled =
+    form.permissions.length === 0 || form.name.length === 0;
   const queryClient = useQueryClient();
   const fetchPermissions = async () => {
     try {
@@ -77,6 +80,12 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     queryKey: ["permissions"],
     queryFn: fetchPermissions,
   });
+  const selectedPermissions = useMemo(() => {
+    return form.permissions.reduce<Map<number, boolean>>((a, p) => {
+      a.set(p.id, true);
+      return a;
+    }, new Map<number, boolean>());
+  }, [form]);
 
   if (!isOpen) return null;
   return (
@@ -116,15 +125,31 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
             <div className="px-2">
               <ul className="list-none px-1 ">
                 {permissions?.map((permission) => {
+                  const isChecked = selectedPermissions.has(permission.id);
                   return (
                     <React.Fragment key={permission.id}>
                       <li
                         className="grid grid-cols-3 px-1 py-1 cursor-pointer"
-                        onClick={() => {}}
+                        onClick={() => {
+                          if (!isChecked) {
+                            setForm((prev) => ({
+                              ...prev,
+                              permissions: [...prev.permissions, permission],
+                            }));
+                            return;
+                          }
+                          setForm((prev) => ({
+                            ...prev,
+                            permissions: prev.permissions.filter(
+                              (p) => p.id != permission.id
+                            ),
+                          }));
+                        }}
                       >
                         <div>
                           <input
                             type="checkbox"
+                            checked={isChecked}
                             readOnly={true}
                             className="h-8 flex items-center"
                           ></input>
@@ -145,7 +170,9 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
           </div>
 
           <div className="flex gap-2 mt-5">
-            <PrimaryButton>Create role</PrimaryButton>
+            <PrimaryButton disabled={isCreateButtonDisabled}>
+              Create role
+            </PrimaryButton>
             <LightOutlineButton
               type="button"
               onClick={() => {

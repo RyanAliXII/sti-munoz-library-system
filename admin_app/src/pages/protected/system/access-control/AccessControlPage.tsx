@@ -67,7 +67,7 @@ const AccessControlPage = () => {
   const [selectedRole, setSelectedRole] = useState<Role>({
     id: 0,
     name: "",
-    permissions: {},
+    permissions: [],
   });
 
   return (

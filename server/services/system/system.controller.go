@@ -32,19 +32,19 @@ func (ctrler *SystemController) GetModules(ctx *gin.Context) {
 	}, "Permissions fetched."))
 }
 func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
-	// role := model.Role{}
-	// bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
-	// if bindingErr != nil {
-	// 	logger.Error(bindingErr.Error(), slimlog.Function("SystemController.CreateRole"), slimlog.Error("bindingErr"))
-	// 	ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
-	// 	return
-	// }
-	// role.Permissions = acl.Validate(role.Permissions)
-	// insertErr := ctrler.systemRepository.NewRole(role)
-	// if insertErr != nil {
-	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	// 	return
-	// }
+	role := model.Role{}
+	
+	bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
+	if bindingErr != nil {
+		logger.Error(bindingErr.Error(), slimlog.Function("SystemController.CreateRole"), slimlog.Error("bindingErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
+		return
+	}
+	insertErr := ctrler.systemRepository.NewRole(role)
+	if insertErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "Role has been created successfully."))
 }
 func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
