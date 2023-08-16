@@ -60,7 +60,10 @@ func CustomLogger() gin.HandlerFunc {
 		ctx.Next()
 		latency := time.Since(start)
 		path := ctx.Request.URL.Path
-		if ctx.Writer.Status() >= 500 {
+		if(method == "OPTIONS"){
+			return
+		}
+		if ctx.Writer.Status() >= 400 {
 			logger.Error("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
 		} else {
 			logger.Info("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
