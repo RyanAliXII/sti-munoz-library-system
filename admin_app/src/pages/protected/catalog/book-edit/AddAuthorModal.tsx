@@ -9,6 +9,7 @@ import { useForm } from "@hooks/useForm";
 import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { useBookEditFormContext } from "./BookEditFormContext";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
   givenName: "",
@@ -71,6 +72,7 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
     schema: CreateAuthorSchema,
   });
   const queryClient = useQueryClient();
+  const { setForm: setBookEditForm } = useBookEditFormContext();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -83,9 +85,19 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
   const { Post } = useRequest();
   const mutation = useMutation({
     mutationFn: () => Post("/authors/", form),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);
+      const { data } = response.data;
+      if (data?.author?.id) {
+        setBookEditForm((prev) => ({
+          ...prev,
+          authors: {
+            ...prev.authors,
+            people: [...prev.authors.people, data.author],
+          },
+        }));
+      }
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -150,6 +162,7 @@ const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
   });
 
   const { Post } = useRequest();
+  const { setForm: setBookEditForm } = useBookEditFormContext();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
@@ -161,9 +174,19 @@ const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
   const newOrganization = useMutation({
     mutationFn: (data: { name: string }) =>
       Post("/authors/organizations", data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success("New organization has been added.");
       queryClient.invalidateQueries(["authors"]);
+      const { data } = response.data;
+      if (data?.organization?.id) {
+        setBookEditForm((prev) => ({
+          ...prev,
+          authors: {
+            ...prev.authors,
+            organizations: [...prev.authors.organizations, data.organization],
+          },
+        }));
+      }
     },
     onError: () => {
       toast.error(ErrorMsg.New);
