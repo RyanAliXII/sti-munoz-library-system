@@ -22,13 +22,15 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	var author model.PersonAsAuthor = model.PersonAsAuthor{}
 
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
-	insertErr := ctrler.authorRepository.New(author)
+	newAuthor, insertErr := ctrler.authorRepository.New(author)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
 	}
 	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
-	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"author": newAuthor,
+	}, "PersonAsAuthor has been added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 
