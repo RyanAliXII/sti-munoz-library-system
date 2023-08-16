@@ -78,6 +78,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Audit",
         to: "/inventory/audits",
         items: [],
+        requiredPermissions: ["Audit.Access"],
       },
     ],
   },
@@ -102,22 +103,26 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     items: [
       {
         text: "Online Borrowed Books",
+        requiredPermissions: ["Borrowing.Access"],
         to: "/circulation/online-borrowed-books",
         items: [],
       },
       {
         text: "Borrowed Books",
+        requiredPermissions: ["Borrowing.Access"],
         to: "/circulation/transactions",
         items: [],
       },
       {
         text: "Borrow Book",
         to: "/circulation/checkout",
+        requiredPermissions: ["Borrowing.Access"],
         items: [],
       },
       {
         text: "Penalties",
         to: "/circulation/penalties",
+        requiredPermissions: ["Penalty.Access"],
         items: [],
       },
     ],
@@ -149,6 +154,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/system/settings",
         text: "Settings",
         items: [],
+        requiredPermissions: ["Settings.Access"],
       },
     ],
   },
