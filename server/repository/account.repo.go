@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
@@ -108,7 +107,6 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 	}
 	registeredAccount := model.Account{}
 	getErr := transaction.Get(&registeredAccount, "Select id, display_name, email, surname, given_name, updated_at from system.account where id = $1 or email = $2", account.Id, account.Email)
-	fmt.Println(registeredAccount)
 	if getErr != nil {
 		if getErr == sql.ErrNoRows {
 				logger.Info("User doesn't not exist inserting in database.")
