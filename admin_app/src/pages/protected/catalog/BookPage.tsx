@@ -99,7 +99,7 @@ const BookPage = () => {
             <CustomSelect label="Section" />
           </div>
           <div className="w-32 mt-1">
-            <HasAccess requiredPermissions={["Book.Add"]}>
+            <HasAccess requiredPermissions={["Book.Access"]}>
               <Link
                 to="/books/new"
                 className={`${ButtonClasses.PrimaryButtonDefaultClasslist} py-2.5`}
@@ -177,7 +177,7 @@ const BookPage = () => {
                             ButtonClasses.SecondaryOutlineButtonClasslist
                           }
                         >
-                          <HasAccess requiredPermissions={["Book.Edit"]}>
+                          <HasAccess requiredPermissions={["Book.Access"]}>
                             <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
                           </HasAccess>
                         </Link>

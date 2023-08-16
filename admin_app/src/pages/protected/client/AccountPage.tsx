@@ -113,7 +113,7 @@ const AccountPage = () => {
           ></Input>
         </div>
         <div>
-          <HasAccess requiredPermissions={["Account.Add"]}>
+          <HasAccess requiredPermissions={["Account.Access"]}>
             <PrimaryButton
               className="flex gap-1 items-center"
               onClick={() => {
@@ -180,7 +180,7 @@ const AccountPage = () => {
           />
         </ContainerNoBackground>
       </LoadingBoundaryV2>
-      <HasAccess requiredPermissions={["Account.Add"]}>
+      <HasAccess requiredPermissions={["Account.Access"]}>
         {isImportModalOpen && (
           <Modal
             open={isImportModalOpen}

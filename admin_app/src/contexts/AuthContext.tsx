@@ -7,6 +7,7 @@ import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
+import { string } from "yup";
 
 const userInitialData: Account = {
   displayName: "",
@@ -29,7 +30,7 @@ const userInitialData: Account = {
 export const AuthContext = createContext<AuthContextState>({
   user: userInitialData,
   hasPermissions: () => false,
-  permissions: [],
+  permissions: "",
   loading: true,
 });
 export const useAuthContext = () => {
@@ -38,7 +39,7 @@ export const useAuthContext = () => {
 export type AuthContextState = {
   loading?: boolean;
   user: Account;
-  permissions: string[];
+  permissions: string;
   hasPermissions: (requiredPermissions: string[]) => boolean;
 };
 
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const [user, setUser] = useState<Account>(userInitialData);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<string>("");
 
   const useAccount = async () => {
     try {
@@ -67,7 +68,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         surname: user.data.surname,
       };
       await verifyAccount(accountData);
-      await getRolePermissions();
+      await getPermissions();
 
       return true;
     } catch (error) {
@@ -102,13 +103,13 @@ export const AuthProvider = ({ children }: BaseProps) => {
     setUser(data.account);
   };
 
-  const getRolePermissions = async () => {
+  const getPermissions = async () => {
     const tokens = await msalClient.acquireTokenSilent({
       scopes: [apiScope("AccessControl.Role.Read")],
     });
 
     const { data: response } = await axiosClient.post(
-      "/system/accounts/roles",
+      "/system/accounts/permissions",
       {},
       {
         headers: {
@@ -116,21 +117,17 @@ export const AuthProvider = ({ children }: BaseProps) => {
         },
       }
     );
-    if (!response.data.role) return;
-    const role: Role = response.data.role;
-    const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
-      (a, moduleName) => [...a, ...role.permissions[moduleName]],
-      []
-    );
-    setPermissions(() => permissionsArr);
+
+    if (!response?.data?.permissions) return;
+    setPermissions(response?.data?.permissions ?? "");
   };
 
-  const hasPermissions = (requredPermissions: string[]) => {
+  const hasPermissions = (requiredPermissions: string[]) => {
     // if empty array is given, it means accessing module doesnt not require any permissions for access.
-    if (requredPermissions.length === 0) {
+    if (requiredPermissions.length === 0) {
       return true;
     }
-    for (const p of requredPermissions) {
+    for (const p of requiredPermissions) {
       if (permissions.includes(p)) {
         return true;
       }

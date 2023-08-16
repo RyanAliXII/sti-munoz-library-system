@@ -47,12 +47,7 @@ var Modules = []Module{
 	},
 	{
 		Id: 8,
-		Value: "ACL.AccessControl",
-		Description: "Allows user to access access control module.",
-	},
-	{
-		Id: 8,
-		Value: "ACL.AccessControl",
+		Value: "ACL.Access",
 		Description: "Allows user to access access control module.",
 	},
 	{
@@ -66,7 +61,7 @@ var Modules = []Module{
 		Description: "Allows user to access borrowing module.",
 	},
 	{
-		Id: 10, 
+		Id: 11, 
 		Value: "Penalty.Access",
 		Description: "Allows user to access penalty module.",
 	},

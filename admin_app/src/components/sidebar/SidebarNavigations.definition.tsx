@@ -34,29 +34,29 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Book",
         to: "/books/",
         items: [],
-        requiredPermissions: ["Book.Read"],
+        requiredPermissions: ["Book.Access"],
       },
       {
         text: "Accession",
         to: "/books/accessions",
-        requiredPermissions: ["Accession.Read"],
+        requiredPermissions: ["Book.Access"],
         items: [],
       },
       {
         text: "Author",
         to: "/books/authors",
-        requiredPermissions: ["Author.Read"],
+        requiredPermissions: ["Author.Access"],
         items: [],
       },
       {
         text: "Section",
         to: "/books/sections",
-        requiredPermissions: ["Section.Read"],
+        requiredPermissions: ["Section.Access"],
         items: [],
       },
       {
         text: "Publisher",
-        requiredPermissions: ["Publisher.Read"],
+        requiredPermissions: ["Publisher.Access"],
         to: "/books/publishers",
         items: [],
       },
@@ -88,7 +88,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     items: [
       {
         text: "Account",
-        requiredPermissions: ["Account.Read"],
+        requiredPermissions: ["Account.Access"],
         to: "/clients/accounts",
         items: [],
       },
@@ -128,19 +128,19 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     icon: <FiSettings className="text-xl" />,
     items: [
       {
-        requiredPermissions: ["AccessControl.Role.Read"],
+        requiredPermissions: ["ACL.Access"],
         to: "/system/access-control/",
         text: "Role and Permission",
         items: [],
       },
       {
-        requiredPermissions: ["AccessControl.Role.Assign"],
+        requiredPermissions: ["ACL.Access"],
         to: "/system/access-control/assign",
         text: "Assign Role",
         items: [],
       },
       {
-        requiredPermissions: ["AccessControl.Role.Read"],
+        requiredPermissions: ["ACL.Access"],
         to: "/system/access-control/assignments",
         text: "Role Assignments",
         items: [],

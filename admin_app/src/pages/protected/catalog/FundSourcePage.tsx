@@ -106,7 +106,7 @@ const FundSourcePage = () => {
       <ContainerNoBackground>
         <div className="w-full flex gap-2 justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Source of Fund</h1>
-          <HasAccess requiredPermissions={["SOF.Add"]}>
+          <HasAccess requiredPermissions={["FundSource.Access"]}>
             <PrimaryButton onClick={openAddModal}>New Source</PrimaryButton>
           </HasAccess>
         </div>
@@ -127,7 +127,7 @@ const FundSourcePage = () => {
                     <BodyRow key={source.id}>
                       <Td>{source.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <HasAccess requiredPermissions={["SOF.Edit"]}>
+                        <HasAccess requiredPermissions={["FundSource.Access"]}>
                           <Tippy content="Edit">
                             <button
                               className={
@@ -142,7 +142,7 @@ const FundSourcePage = () => {
                             </button>
                           </Tippy>
                         </HasAccess>
-                        <HasAccess requiredPermissions={["SOF.Delete"]}>
+                        <HasAccess requiredPermissions={["FundSource.Access"]}>
                           <Tippy content="Delete">
                             <button
                               className={
@@ -166,10 +166,10 @@ const FundSourcePage = () => {
           </div>
         </Container>
       </LoadingBoundary>
-      <HasAccess requiredPermissions={["SOF.Add"]}>
+      <HasAccess requiredPermissions={["FundSource.Access"]}>
         <AddSourceModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       </HasAccess>
-      <HasAccess requiredPermissions={["SOF.Edit"]}>
+      <HasAccess requiredPermissions={["FundSource.Access"]}>
         <EditSourceModal
           isOpen={isEditModalOpen}
           closeModal={closeEditModal}
