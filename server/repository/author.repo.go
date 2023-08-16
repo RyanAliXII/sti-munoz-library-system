@@ -96,13 +96,13 @@ func (repo *AuthorRepository) Update(id int, author model.PersonAsAuthor) error 
 	return updateErr
 }
 
-func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
-
-	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.organization(name)VALUES(:name )", org)
+func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) (model.OrgAsAuthor, error) {
+	newOrg := model.OrgAsAuthor{}
+	insertErr := repo.db.Get(&newOrg,"INSERT INTO catalog.organization(name)VALUES($1) RETURNING id,name", org.Name)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_ORG), slimlog.Error("insertErr"))
 	}
-	return insertErr
+	return newOrg,insertErr
 }
 func (repo *AuthorRepository) GetOrganizations(filter  Filter) []model.OrgAsAuthor {
 	orgs := make([]model.OrgAsAuthor, 0)
@@ -140,7 +140,7 @@ type AuthorRepositoryInterface interface {
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error
-	NewOrganization(org model.OrgAsAuthor) error
+	NewOrganization(org model.OrgAsAuthor) (model.OrgAsAuthor, error)
 	GetOrganizations(filter  Filter) []model.OrgAsAuthor
 	DeleteOrganization(id int) error
 	UpdateOrganization(org model.OrgAsAuthor) error

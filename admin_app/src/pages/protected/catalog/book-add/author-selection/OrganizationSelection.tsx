@@ -20,7 +20,6 @@ const OrganizationSelection = () => {
   const fetchOrganizations = async () => {
     try {
       const { data: response } = await Get("/authors/organizations");
-
       return response?.data?.organizations || [];
     } catch {
       return [];
