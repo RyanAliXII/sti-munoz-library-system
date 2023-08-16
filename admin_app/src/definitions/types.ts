@@ -12,9 +12,7 @@ export interface ModalProps {
   isOpen: boolean;
   closeModal: () => void;
 }
-export interface EditModalProps<T> extends ModalProps {
-  formData: T;
-}
+
 export type PersonAuthor = {
   id?: number;
   givenName: string;

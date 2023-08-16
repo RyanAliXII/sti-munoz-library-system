@@ -48,25 +48,24 @@ func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Role has been created successfully."))
 }
 func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
-	// role := model.Role{}
-	// bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
-	// id, parseIdErr := strconv.Atoi(ctx.Param("id"))
-	// if parseIdErr != nil {
-	// 	logger.Error("Invalid param id.", slimlog.Function("SystemController.UpdateRole"), slimlog.Error("parseIdErr"))
-	// 	return
-	// }
-	// if bindingErr != nil {
-	// 	logger.Error(bindingErr.Error(), slimlog.Function("SystemController.UpdateRole"), slimlog.Error("bindingErr"))
-	// 	ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
-	// 	return
-	// }
-	// // role.Permissions = acl.Validate(role.Permissions)	
-	// // role.Id = id
-	// // updateErr := ctrler.systemRepository.UpdateRole(role)
-	// if updateErr != nil {
-	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	// 	return
-	// }
+	role := model.Role{}
+	bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
+	id, parseIdErr := strconv.Atoi(ctx.Param("id"))
+	if parseIdErr != nil {
+		logger.Error("Invalid param id.", slimlog.Function("SystemController.UpdateRole"), slimlog.Error("parseIdErr"))
+		return
+	}
+	if bindingErr != nil {
+		logger.Error(bindingErr.Error(), slimlog.Function("SystemController.UpdateRole"), slimlog.Error("bindingErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
+		return
+	}
+	role.Id = id
+	updateErr := ctrler.systemRepository.UpdateRole(role)
+	if updateErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "Role has been created successfully."))
 }
 func (ctrler *SystemController) GetRoles(ctx *gin.Context) {
