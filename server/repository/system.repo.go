@@ -31,7 +31,12 @@ func (repo *SystemRepository) NewRole(role model.Role) error {
 	return insertErr
 }
 func (repo *SystemRepository) UpdateRole(role model.Role) error {
-	_, updateErr := repo.db.Exec("UPDATE system.role SET name = $1, permissions = $2 where id = $3", role.Name, role.Permissions, role.Id)
+	permissions, marshallErr := json.Marshal(role.Permissions)
+	if marshallErr != nil {
+		logger.Error(marshallErr.Error(), slimlog.Function("SystemRepository.UpdateRole"), slimlog.Error("marshallErr"))
+		return marshallErr
+	}
+	_, updateErr := repo.db.Exec("UPDATE system.role SET name = $1, permissions = $2 where id = $3", role.Name, permissions, role.Id)
 
 	if updateErr != nil {
 		logger.Error(updateErr.Error(), slimlog.Function("SystemRepository.UpdateRole"), slimlog.Error("updateErr"))
