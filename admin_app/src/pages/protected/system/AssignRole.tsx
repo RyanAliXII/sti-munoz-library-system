@@ -32,14 +32,14 @@ type AssignForm = {
 };
 const AssignRolePage = () => {
   const [form, setForm] = useState<AssignForm[]>([]);
-  const handleSelect = (account: Account) => {
+  const handleAccountSelect = (account: Account) => {
     setForm((prevData) => [
       ...prevData,
       {
         account: account,
         role: {
           name: "",
-          permissions: {},
+          permissions: [],
         },
       },
     ]);
@@ -109,7 +109,7 @@ const AssignRolePage = () => {
     <>
       <ContainerNoBackground>
         <AccountSearchBox
-          setClient={handleSelect}
+          setClient={handleAccountSelect}
           label="Search Accounts"
           placeholder="Enter account given name, surname or email"
         ></AccountSearchBox>

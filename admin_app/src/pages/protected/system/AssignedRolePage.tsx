@@ -75,7 +75,7 @@ const AssignedRolePage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold">Assigned Roles</h1>
+        <h1 className="text-3xl font-bold">Role Assignments</h1>
       </ContainerNoBackground>
       <LoadingBoundary
         isError={isError}
