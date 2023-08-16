@@ -133,20 +133,18 @@ export type Organization = {
   id?: number;
   name: string;
 };
+
 export type Permission = {
+  id: number;
   name: string;
+  value: string;
   description: string;
-};
-export type Module = {
-  name: string;
-  displayText: string;
-  permissions: Permission[];
 };
 
 export type Role = {
   id?: number;
   name: string;
-  permissions: Record<string, string[]>;
+  permissions: Permission[];
 };
 export type AccountRole = {
   account: Account;

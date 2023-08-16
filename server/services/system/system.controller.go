@@ -28,7 +28,7 @@ type SystemController struct {
 func (ctrler *SystemController) GetModules(ctx *gin.Context) {
 
 	ctx.JSON(httpresp.Success200(gin.H{
-		"modules": acl.Modules,
+		"permissions": acl.Permissions,
 	}, "Permissions fetched."))
 }
 func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
