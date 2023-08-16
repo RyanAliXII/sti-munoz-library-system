@@ -130,7 +130,7 @@ const PublisherPage = () => {
       <ContainerNoBackground>
         <div className="flex justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Publishers</h1>
-          <HasAccess requiredPermissions={["Publisher.Add"]}>
+          <HasAccess requiredPermissions={["Publisher.Access"]}>
             <PrimaryButton onClick={openAddModal}>New Publisher</PrimaryButton>
           </HasAccess>
         </div>
@@ -155,7 +155,7 @@ const PublisherPage = () => {
                     <BodyRow key={publisher.id}>
                       <Td>{publisher.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <HasAccess requiredPermissions={["Publisher.Edit"]}>
+                        <HasAccess requiredPermissions={["Publisher.Access"]}>
                           <Tippy content="Edit">
                             <button
                               onClick={() => {
@@ -170,7 +170,7 @@ const PublisherPage = () => {
                             </button>
                           </Tippy>
                         </HasAccess>
-                        <HasAccess requiredPermissions={["Publisher.Delete"]}>
+                        <HasAccess requiredPermissions={["Publisher.Access"]}>
                           <Tippy content="Delete">
                             <button
                               className={
@@ -213,10 +213,10 @@ const PublisherPage = () => {
         </ContainerNoBackground>
       </LoadingBoundaryV2>
 
-      <HasAccess requiredPermissions={["Publisher.Add"]}>
+      <HasAccess requiredPermissions={["Publisher.Access"]}>
         <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       </HasAccess>
-      <HasAccess requiredPermissions={["Publisher.Edit"]}>
+      <HasAccess requiredPermissions={["Publisher.Access"]}>
         <EditPublisherModal
           closeModal={closeEditModal}
           isOpen={isEditModalOpen}

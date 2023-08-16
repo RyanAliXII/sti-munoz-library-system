@@ -153,14 +153,19 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 
 		if role == "Root" {
 			permissions := acl.BuildRootPermissions()
-			encryptedPermissions, ecryptionErr := crypt.Encrypt(fmt.Sprintf("%s%s", permissions, requestorId)) 
+			encryptedPermissions, ecryptionErr := crypt.Encrypt(fmt.Sprintf("%s %s", permissions, requestorId)) 
 			if ecryptionErr != nil {
-				logger.Error("Role failed to encrypt", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
+				logger.Error("Permissions failed to encrypt", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
 			const OneDay = 3600 * 24
 			ctx.SetCookie("role", encryptedPermissions,OneDay, "/", "", false, true)
+
+			 ctx.JSON(httpresp.Success200(gin.H{
+				"permissions": permissions,
+			}, "Permissions successfully fetched"))
+			return
 		}
 	}
 //    // check if which app request comes from using app id from token.

@@ -35,7 +35,6 @@ func main() {
 		AllowCredentials: true,
 	}))
 	objstore.GetorCreateInstance()
-
 	r.GET("/", func(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, gin.H{

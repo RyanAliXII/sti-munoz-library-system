@@ -127,7 +127,7 @@ const PersonAsAuthor = () => {
 
   return (
     <>
-      <HasAccess requiredPermissions={["Author.Add"]}>
+      <HasAccess requiredPermissions={["Author.Access"]}>
         <ContainerNoBackground className="flex gap-2">
           <div className="w-full">
             <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
@@ -165,13 +165,13 @@ const PersonAsAuthor = () => {
               </Tbody>
             </Table>
           </div>
-          <HasAccess requiredPermissions={["Author.Add"]}>
+          <HasAccess requiredPermissions={["Author.Access"]}>
             <AddAuthorModal
               isOpen={isAddModalOpen}
               closeModal={closeAddModal}
             />
           </HasAccess>
-          <HasAccess requiredPermissions={["Author.Edit"]}>
+          <HasAccess requiredPermissions={["Author.Access"]}>
             <EditAuthorModal
               isOpen={isEditModalOpen}
               formData={selectedRow}
@@ -226,7 +226,7 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
       <Td>{author.middleName}</Td>
       <Td>{author.surname}</Td>
       <Td className="p-2 flex gap-2 items-center">
-        <HasAccess requiredPermissions={["Author.Edit"]}>
+        <HasAccess requiredPermissions={["Author.Access"]}>
           <Tippy content="Edit Author">
             <button
               className={ButtonClasses.SecondaryOutlineButtonClasslist}
@@ -236,7 +236,7 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
             </button>
           </Tippy>
         </HasAccess>
-        <HasAccess requiredPermissions={["Author.Delete"]}>
+        <HasAccess requiredPermissions={["Author.Access"]}>
           <Tippy content="Delete Author">
             <button
               className={ButtonClasses.DangerButtonOutlineClasslist}
