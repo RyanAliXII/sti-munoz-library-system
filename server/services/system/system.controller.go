@@ -176,7 +176,6 @@ func(ctrler * SystemController)GetAccountRoles(ctx * gin.Context){
 
 func (ctrler * SystemController) RemoveRoleAssignment(ctx * gin.Context){
 	roleId, convertErr := strconv.Atoi(ctx.Param("id"))
-
 	if convertErr != nil{
 		logger.Error(convertErr.Error(), slimlog.Function("SystemController.RemoveRoleAssignment"), slimlog.Error("covertErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid role id."))

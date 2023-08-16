@@ -7,8 +7,6 @@ type Permission struct {
 	Value string `json:"value"`
 	Description string `json:"description"`
 }
-
-
 var Permissions = []Permission{
 	{
 		Id: 1,
