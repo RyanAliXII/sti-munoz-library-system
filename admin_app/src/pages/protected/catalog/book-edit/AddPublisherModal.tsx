@@ -9,6 +9,7 @@ import { PublisherSchema } from "../schema";
 import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { useBookEditFormContext } from "./BookEditFormContext";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { errors, form, validate, handleFormInput, resetForm } =
@@ -16,13 +17,18 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
     });
+  const { setForm: setBookEditForm } = useBookEditFormContext();
   const { Post } = useRequest();
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const addPublisher = useMutation({
     mutationFn: () => Post("/publishers/", form, {}),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success("New publisher has been added.");
       queryClient.invalidateQueries(["publishers"]);
+      const { data } = response.data;
+      if (data?.publisher?.id) {
+        setBookEditForm((prev) => ({ ...prev, publisher: data.publisher }));
+      }
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -38,7 +44,7 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     event.preventDefault();
     try {
       await validate();
-      mutation.mutate();
+      addPublisher.mutate();
     } catch (error) {
       console.error(error);
     }

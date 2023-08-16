@@ -22,13 +22,15 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	var author model.PersonAsAuthor = model.PersonAsAuthor{}
 
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
-	insertErr := ctrler.authorRepository.New(author)
+	newAuthor, insertErr := ctrler.authorRepository.New(author)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
 	}
 	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
-	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor added."))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"author": newAuthor,
+	}, "PersonAsAuthor has been added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 
@@ -81,15 +83,15 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 func (ctrler *AuthorController) NewOrganizationAsAuthor(ctx *gin.Context) {
 	org := model.OrgAsAuthor{}
 	ctx.ShouldBindBodyWith(&org, binding.JSON)
-
-	newErr := ctrler.authorRepository.NewOrganization(org)
-
+	newOrg, newErr := ctrler.authorRepository.NewOrganization(org)
 	if newErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	ctrler.recordMetadataRepository.InvalidateOrgAsAuthor()
-	ctx.JSON(httpresp.Success200(nil, "New organization has been added."))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"organization": newOrg,
+	}, "New organization has been added."))
 }
 
 func (ctrler *AuthorController) GetOrganizations(ctx *gin.Context) {

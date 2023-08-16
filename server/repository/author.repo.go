@@ -25,13 +25,14 @@ const (
 	UPDATE_ORG    = "AuthorRepository.UpdateOrganization"
 )
 
-func (repo *AuthorRepository) New(author model.PersonAsAuthor) error {
- 
-	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.author(given_name, middle_name, surname)VALUES(:given_name, :middle_name, :surname )", author)
+func (repo *AuthorRepository) New(author model.PersonAsAuthor) (model.PersonAsAuthor, error) {
+	
+	 newAuthor := model.PersonAsAuthor{}
+	 insertErr := repo.db.Get(&newAuthor, "INSERT INTO catalog.author(given_name, middle_name, surname)VALUES($1, $2, $3) RETURNING id, given_name, middle_name, surname", author.GivenName, author.MiddleName, author.Surname)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_AUTHOR))
 	}
-	return insertErr
+	return newAuthor, insertErr
 }
 func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.PersonAsAuthor) {
 	authors := make([]model.PersonAsAuthor, 0)
@@ -95,13 +96,13 @@ func (repo *AuthorRepository) Update(id int, author model.PersonAsAuthor) error 
 	return updateErr
 }
 
-func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) error {
-
-	_, insertErr := repo.db.NamedExec("INSERT INTO catalog.organization(name)VALUES(:name )", org)
+func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) (model.OrgAsAuthor, error) {
+	newOrg := model.OrgAsAuthor{}
+	insertErr := repo.db.Get(&newOrg,"INSERT INTO catalog.organization(name)VALUES($1) RETURNING id,name", org.Name)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function(NEW_ORG), slimlog.Error("insertErr"))
 	}
-	return insertErr
+	return newOrg,insertErr
 }
 func (repo *AuthorRepository) GetOrganizations(filter  Filter) []model.OrgAsAuthor {
 	orgs := make([]model.OrgAsAuthor, 0)
@@ -134,12 +135,12 @@ func NewAuthorRepository() AuthorRepositoryInterface {
 }
 
 type AuthorRepositoryInterface interface {
-	New(model.PersonAsAuthor) error
+	New(model.PersonAsAuthor) (model.PersonAsAuthor, error)
 	Get(*filter.Filter ) []model.PersonAsAuthor
 	GetAuthoredBook(string) []model.PersonAsAuthor
 	Delete(id int) error
 	Update(id int, author model.PersonAsAuthor) error
-	NewOrganization(org model.OrgAsAuthor) error
+	NewOrganization(org model.OrgAsAuthor) (model.OrgAsAuthor, error)
 	GetOrganizations(filter  Filter) []model.OrgAsAuthor
 	DeleteOrganization(id int) error
 	UpdateOrganization(org model.OrgAsAuthor) error

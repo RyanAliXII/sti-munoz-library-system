@@ -1,4 +1,4 @@
-import { ModalProps, PersonAuthor } from "@definitions/types";
+import { ModalProps, Organization, PersonAuthor } from "@definitions/types";
 import React, { BaseSyntheticEvent, useState } from "react";
 import { CreateAuthorSchema, OrganizationValidation } from "../schema";
 import { useRequest } from "@hooks/useRequest";
@@ -10,6 +10,7 @@ import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import { useBookAddFormContext } from "./BookAddFormContext";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
   givenName: "",
@@ -71,6 +72,8 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
     initialFormData: ADD_AUTHOR_INITIAL_FORM,
     schema: CreateAuthorSchema,
   });
+
+  const { setForm: setAddBookForm } = useBookAddFormContext();
   const queryClient = useQueryClient();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
@@ -84,9 +87,20 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
   const { Post } = useRequest();
   const mutation = useMutation({
     mutationFn: () => Post("/authors/", form, {}, [apiScope("Author.Add")]),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);
+      const { data } = response.data;
+      if (data?.author?.id) {
+        const author = data?.author as PersonAuthor;
+        setAddBookForm((prev) => ({
+          ...prev,
+          authors: {
+            ...prev.authors,
+            people: [...prev.authors.people, author],
+          },
+        }));
+      }
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -149,7 +163,7 @@ const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
     },
     schema: OrganizationValidation,
   });
-
+  const { setForm: setAddBookForm } = useBookAddFormContext();
   const { Post } = useRequest();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
@@ -162,9 +176,20 @@ const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
   const newOrganization = useMutation({
     mutationFn: (data: { name: string }) =>
       Post("/authors/organizations", data, {}, [apiScope("Author.Add")]),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success("New organization has been added.");
       queryClient.invalidateQueries(["authors"]);
+      const { data } = response.data;
+      if (data?.organization?.id) {
+        const organization = data.organization as Organization;
+        setAddBookForm((prev) => ({
+          ...prev,
+          authors: {
+            ...prev.authors,
+            organizations: [...prev.authors.organizations, organization],
+          },
+        }));
+      }
     },
     onError: () => {
       toast.error(ErrorMsg.New);
