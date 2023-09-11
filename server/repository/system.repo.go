@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"encoding/json"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -16,7 +18,12 @@ type SystemRepository struct {
 }
 
 func (repo *SystemRepository) NewRole(role model.Role) error {
-	_, insertErr := repo.db.Exec("Insert into system.role(name, permissions) VALUES ($1, $2)", role.Name, role.Permissions)
+	permissions, marshallErr := json.Marshal(role.Permissions)
+	if marshallErr != nil {
+		logger.Error(marshallErr.Error(), slimlog.Function("SystemRepository.NewRole"), slimlog.Error("marshallErr"))
+		return marshallErr
+	}
+	_, insertErr := repo.db.Exec("Insert into system.role(name, permissions) VALUES ($1, $2)", role.Name, permissions)
 
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function("SystemRepository.NewRole"), slimlog.Error("insertErr"))
@@ -24,7 +31,12 @@ func (repo *SystemRepository) NewRole(role model.Role) error {
 	return insertErr
 }
 func (repo *SystemRepository) UpdateRole(role model.Role) error {
-	_, updateErr := repo.db.Exec("UPDATE system.role SET name = $1, permissions = $2 where id = $3", role.Name, role.Permissions, role.Id)
+	permissions, marshallErr := json.Marshal(role.Permissions)
+	if marshallErr != nil {
+		logger.Error(marshallErr.Error(), slimlog.Function("SystemRepository.UpdateRole"), slimlog.Error("marshallErr"))
+		return marshallErr
+	}
+	_, updateErr := repo.db.Exec("UPDATE system.role SET name = $1, permissions = $2 where id = $3", role.Name, permissions, role.Id)
 
 	if updateErr != nil {
 		logger.Error(updateErr.Error(), slimlog.Function("SystemRepository.UpdateRole"), slimlog.Error("updateErr"))
@@ -34,7 +46,7 @@ func (repo *SystemRepository) UpdateRole(role model.Role) error {
 func (repo *SystemRepository) GetRoles() []model.Role {
 
 	roles := make([]model.Role, 0)
-	selectErr := repo.db.Select(&roles, "Select id,name, permissions from system.role order by created_at desc")
+	selectErr := repo.db.Select(&roles, "Select id, name, permissions from system.role order by created_at desc")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SystemRepository.GetRoles"), slimlog.Error("selectErr"))
 	}

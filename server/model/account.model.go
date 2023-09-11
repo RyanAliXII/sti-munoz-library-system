@@ -27,8 +27,6 @@ type AccountRoles []struct {
 	Role    RoleJSON    `json:"role" db:"role"`
 }
 
-
-
 func (account *AccountJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	INITIAL_DATA_ON_ERROR := AccountJSON{

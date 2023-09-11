@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
@@ -108,7 +107,6 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 	}
 	registeredAccount := model.Account{}
 	getErr := transaction.Get(&registeredAccount, "Select id, display_name, email, surname, given_name, updated_at from system.account where id = $1 or email = $2", account.Id, account.Email)
-	fmt.Println(registeredAccount)
 	if getErr != nil {
 		if getErr == sql.ErrNoRows {
 				logger.Info("User doesn't not exist inserting in database.")
@@ -148,7 +146,7 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
 
 	role := model.Role{}
-	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '{}') as permissions from system.account as ac
+	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '[]') as permissions from system.account as ac
 		LEFT JOIN system.account_role as ar on ac.id = ar.account_id
 		LEFT JOIN system.role on ar.role_id = role.id
 		where ac.id = $1`

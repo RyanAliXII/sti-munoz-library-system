@@ -1,8 +1,16 @@
 package system
 
 type RoleBody struct {
-	Name        string              `json:"name" binding:"required"`
-	Permissions map[string][]string `json:"permissions"`
+	Name        string`json:"name" binding:"required"`
+	Permissions []PermissionBody   `json:"permissions" binding:"dive"`
+}
+
+
+type PermissionBody struct {
+	Id int `json:"id"  binding:"required,min=1"`
+	Name string `json:"name" binding:"required,min=1"`
+	Value string `json:"value"  binding:"required"`
+	Description string `json:"description"  binding:"required"`
 }
 
 type AssignBody []struct {

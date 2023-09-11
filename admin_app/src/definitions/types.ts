@@ -12,9 +12,7 @@ export interface ModalProps {
   isOpen: boolean;
   closeModal: () => void;
 }
-export interface EditModalProps<T> extends ModalProps {
-  formData: T;
-}
+
 export type PersonAuthor = {
   id?: number;
   givenName: string;
@@ -133,20 +131,18 @@ export type Organization = {
   id?: number;
   name: string;
 };
+
 export type Permission = {
+  id: number;
   name: string;
+  value: string;
   description: string;
-};
-export type Module = {
-  name: string;
-  displayText: string;
-  permissions: Permission[];
 };
 
 export type Role = {
   id?: number;
   name: string;
-  permissions: Record<string, string[]>;
+  permissions: Permission[];
 };
 export type AccountRole = {
   account: Account;

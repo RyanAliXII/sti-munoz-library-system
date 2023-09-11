@@ -67,7 +67,7 @@ const AccessControlPage = () => {
   const [selectedRole, setSelectedRole] = useState<Role>({
     id: 0,
     name: "",
-    permissions: {},
+    permissions: [],
   });
 
   return (
@@ -75,7 +75,7 @@ const AccessControlPage = () => {
       <ContainerNoBackground>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-700">Access Control</h1>
-          <HasAccess requiredPermissions={["AccessControl.Role.Add"]}>
+          <HasAccess requiredPermissions={["ACL.Access"]}>
             <PrimaryButton onClick={openAddModal}>Create Role</PrimaryButton>
           </HasAccess>
         </div>
@@ -93,7 +93,7 @@ const AccessControlPage = () => {
               </small>
             </div>
             <div className="flex items-center gap-2 mr-5 text-blue-500 justify-self-end">
-              <HasAccess requiredPermissions={["AccessControl.Role.Assign"]}>
+              <HasAccess requiredPermissions={["ACL.Access"]}>
                 <NavLink
                   to={"/system/access-control/assign"}
                   className="text-xs font-semibold"
@@ -121,9 +121,7 @@ const AccessControlPage = () => {
                   <BodyRow key={role.id}>
                     <Td> {role.name}</Td>
                     <Td className="p-2 flex gap-2 items-center">
-                      <HasAccess
-                        requiredPermissions={["AccessControl.Role.Edit"]}
-                      >
+                      <HasAccess requiredPermissions={["ACL.Access"]}>
                         <AiOutlineEdit
                           className="cursor-pointer text-yellow-400 text-xl"
                           onClick={() => {
@@ -132,9 +130,7 @@ const AccessControlPage = () => {
                           }}
                         />
                       </HasAccess>
-                      <HasAccess
-                        requiredPermissions={["AccessControl.Role.Delete"]}
-                      >
+                      <HasAccess requiredPermissions={["ACL.Access"]}>
                         <AiOutlineDelete
                           className="cursor-pointer text-orange-600  text-xl"
                           onClick={() => {
@@ -150,10 +146,10 @@ const AccessControlPage = () => {
           </Table>
         </Container>
       </LoadingBoundary>
-      <HasAccess requiredPermissions={["AccessControl.Role.Add"]}>
+      <HasAccess requiredPermissions={["ACL.Access"]}>
         <AddRoleModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       </HasAccess>
-      <HasAccess requiredPermissions={["AccessControl.Role.Edit"]}>
+      <HasAccess requiredPermissions={["ACL.Access"]}>
         <EditRoleModal
           closeModal={closeEditModal}
           isOpen={isEditModalOpen}

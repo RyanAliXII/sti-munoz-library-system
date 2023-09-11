@@ -1,7 +1,6 @@
 package author
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -109,7 +108,6 @@ func (ctrler *AuthorController) GetOrganizations(ctx *gin.Context) {
 		Limit: NumberOfRowsToFetch,
 		Offset: ( parsedPage - 1) * NumberOfRowsToFetch, })
 	metaData, metaErr := ctrler.recordMetadataRepository.GetOrgAsAuthorMetadata(NumberOfRowsToFetch)
-	fmt.Println(metaData)
 	if metaErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"message": "Unknown error occured",

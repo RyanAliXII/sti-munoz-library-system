@@ -4,7 +4,7 @@ import {
 } from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
 import { Input } from "@components/ui/form/Input";
-import { ModalProps, Module, Role } from "@definitions/types";
+import { ModalProps, Permission, Role } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
@@ -30,7 +30,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   } = useForm<Role>({
     initialFormData: {
       name: "",
-      permissions: {},
+      permissions: [],
     },
     scrollToError: true,
     parentElementScroll: modalRef,
@@ -45,13 +45,16 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       createRole.mutate(role);
     } catch {}
   };
+
+  const isCreateButtonDisabled =
+    form.permissions.length === 0 || form.name.length === 0;
   const queryClient = useQueryClient();
   const fetchPermissions = async () => {
     try {
       const { data: response } = await Get("/system/modules", {}, [
         apiScope("AccessControl.Role.Read"),
       ]);
-      return response?.data?.modules ?? [];
+      return response?.data?.permissions ?? [];
     } catch (error) {
       console.log(error);
       return [];
@@ -73,44 +76,16 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     },
   });
 
-  const { data: modules } = useQuery<Module[]>({
-    queryKey: ["modules"],
+  const { data: permissions } = useQuery<Permission[]>({
+    queryKey: ["permissions"],
     queryFn: fetchPermissions,
   });
-
-  const selectedPermissionCache: Record<string, Object> = useMemo(
-    () =>
-      Object.keys(form.permissions).reduce<Record<string, Object>>(
-        (prev, key) => {
-          const permissionObj = form.permissions[key].reduce<Object>(
-            (a, permission) => ({ ...a, [permission]: true }),
-            {}
-          );
-          return { ...prev, [key]: permissionObj };
-        },
-        {}
-      ),
-    [form.permissions]
-  );
-
-  const handleSelect = (module: string, permission: string) => {
-    setForm((prevForm) => ({
-      ...prevForm,
-      permissions: {
-        ...prevForm.permissions,
-        [module]: [...(prevForm.permissions[module] ?? []), permission],
-      },
-    }));
-  };
-  const handleRemove = (module: string, permission: string) => {
-    setForm((prevForm) => ({
-      ...prevForm,
-      permissions: {
-        ...prevForm.permissions,
-        [module]: prevForm.permissions[module].filter((p) => p != permission),
-      },
-    }));
-  };
+  const selectedPermissions = useMemo(() => {
+    return form.permissions.reduce<Map<number, boolean>>((a, p) => {
+      a.set(p.id, true);
+      return a;
+    }, new Map<number, boolean>());
+  }, [form]);
 
   if (!isOpen) return null;
   return (
@@ -122,10 +97,10 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       showCloseIcon={false}
       styles={{
         modal: {
-          maxHeight: "500px",
+          maxHeight: "800px",
         },
       }}
-      classNames={{ modal: "w-11/12 md:w-1/3 lg:w-11/12 rounded" }}
+      classNames={{ modal: "w-11/12 md:w-10/12 lg:w-11/12 rounded" }}
     >
       <form onSubmit={submit}>
         <div className="w-full mt-2">
@@ -147,60 +122,57 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
             <h2 className="text-lg py-2 font-semibold ml-1 mt-4">
               Role Access Level
             </h2>
-            {modules?.map((module) => {
-              return (
-                <div key={module.name} className="px-2">
-                  <div className="py-2">{module.displayText}</div>
-                  <Divider></Divider>
-                  <ul className="list-none px-1 ">
-                    {module.permissions.map((p) => {
-                      let isChecked = false;
-                      const selectedModule = selectedPermissionCache[
-                        module.name
-                      ] as Record<string, boolean>;
-                      if (selectedModule) {
-                        isChecked = selectedModule[p.name];
-                      }
-
-                      return (
-                        <React.Fragment key={p.name}>
-                          <li
-                            className="grid grid-cols-3 px-1 py-1 cursor-pointer"
-                            onClick={() => {
-                              if (isChecked) {
-                                handleRemove(module.name, p.name);
-                                return;
-                              }
-                              handleSelect(module.name, p.name);
-                            }}
-                          >
-                            <div>
-                              <input
-                                type="checkbox"
-                                checked={isChecked ? true : false}
-                                readOnly={true}
-                                className="h-8 flex items-center"
-                              ></input>
-                            </div>
-                            <div className="text-sm flex items-center">
-                              {p.name}
-                            </div>
-                            <div className="text-sm flex items-center">
-                              {p.description}
-                            </div>
-                          </li>
-                          <Divider />
-                        </React.Fragment>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })}
+            <div className="px-2">
+              <ul className="list-none px-1 ">
+                {permissions?.map((permission) => {
+                  const isChecked = selectedPermissions.has(permission.id);
+                  return (
+                    <React.Fragment key={permission.id}>
+                      <li
+                        className="grid grid-cols-3 px-1 py-1 cursor-pointer"
+                        onClick={() => {
+                          if (!isChecked) {
+                            setForm((prev) => ({
+                              ...prev,
+                              permissions: [...prev.permissions, permission],
+                            }));
+                            return;
+                          }
+                          setForm((prev) => ({
+                            ...prev,
+                            permissions: prev.permissions.filter(
+                              (p) => p.id != permission.id
+                            ),
+                          }));
+                        }}
+                      >
+                        <div>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            readOnly={true}
+                            className="h-8 flex items-center"
+                          ></input>
+                        </div>
+                        <div className="text-sm flex items-center">
+                          {permission.name}
+                        </div>
+                        <div className="text-sm flex items-center">
+                          {permission.description}
+                        </div>
+                      </li>
+                      <Divider />
+                    </React.Fragment>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
 
           <div className="flex gap-2 mt-5">
-            <PrimaryButton>Create role</PrimaryButton>
+            <PrimaryButton disabled={isCreateButtonDisabled}>
+              Create role
+            </PrimaryButton>
             <LightOutlineButton
               type="button"
               onClick={() => {

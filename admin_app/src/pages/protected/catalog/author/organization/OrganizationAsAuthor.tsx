@@ -124,7 +124,7 @@ const OrganizationAsAuthor = () => {
     <>
       <ContainerNoBackground className="flex gap-2">
         <div className="w-full">
-          <HasAccess requiredPermissions={["Author.Add"]}>
+          <HasAccess requiredPermissions={["Author.Access"]}>
             <PrimaryButton
               onClick={() => {
                 open();
@@ -155,7 +155,7 @@ const OrganizationAsAuthor = () => {
                     <BodyRow key={org.id}>
                       <Td>{org.name}</Td>
                       <Td className="p-2 flex gap-2 items-center">
-                        <HasAccess requiredPermissions={["Author.Edit"]}>
+                        <HasAccess requiredPermissions={["Author.Access"]}>
                           <Tippy content="Edit Author">
                             <button
                               className={
@@ -170,7 +170,7 @@ const OrganizationAsAuthor = () => {
                             </button>
                           </Tippy>
                         </HasAccess>
-                        <HasAccess requiredPermissions={["Author.Delete"]}>
+                        <HasAccess requiredPermissions={["Author.Access"]}>
                           <Tippy content="Delete Author">
                             <button
                               className={
@@ -221,7 +221,7 @@ const OrganizationAsAuthor = () => {
         title="Delete organization"
         text="Are you sure you want to delete this organization ?"
       ></DangerConfirmDialog>
-      <HasAccess requiredPermissions={["Author.Add"]}>
+      <HasAccess requiredPermissions={["Author.Access"]}>
         <AddOrganizationModal
           closeModal={close}
           isOpen={isOpen}
@@ -230,7 +230,7 @@ const OrganizationAsAuthor = () => {
           }}
         />
       </HasAccess>
-      <HasAccess requiredPermissions={["Author.Edit"]}>
+      <HasAccess requiredPermissions={["Author.Access"]}>
         <EditOrganizationModal
           closeModal={closeEditModal}
           isOpen={isEditModalOpen}
