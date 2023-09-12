@@ -51,7 +51,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 		}
 	} else {
 		tableName = "accession_main"
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1,$2)", section.Name, tableName)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1,$2,$3)", section.Name, tableName, section.Prefix)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
