@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/api/v1"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/routes"
 
 	"time"
 
@@ -38,13 +39,14 @@ func main() {
 	r.GET("/", func(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "HELLO",
+			"message": "STI MUNOZ LIBRARY",
 			"time":    time.Now(),
 		})
 	})
 	
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
+	routes.RegisterPrintablesGeneratorRoutes(r)
 	logger.Info("Server starting")
 	
 	r.Run(":5200")
