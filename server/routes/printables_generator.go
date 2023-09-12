@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/printables"
 	"github.com/gin-gonic/gin"
 )
 
@@ -8,8 +9,7 @@ import (
 
 
 func RegisterPrintablesGeneratorRoutes(router * gin.Engine){
+	ctrler := printables.NewPrintableController()
 	grp := router.Group("/printables-generator")
-	grp.GET("/books/:id", func(ctx *gin.Context) {
-		
-	})
+	grp.GET("/books/:id", ctrler.RenderBookPrintables)
 }
