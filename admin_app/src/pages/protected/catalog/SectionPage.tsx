@@ -4,7 +4,12 @@ import {
   LighButton,
   ButtonClasses,
 } from "@components/ui/button/Button";
-import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import {
+  AiFillInfoCircle,
+  AiOutlineDelete,
+  AiOutlineEdit,
+  AiOutlineInfoCircle,
+} from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import "react-responsive-modal/styles.css";
 import { Modal } from "react-responsive-modal";
@@ -27,10 +32,11 @@ import { Section } from "@definitions/types";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import { Input } from "@components/ui/form/Input";
+import { Input, InputClasses } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
+import { BsInfoCircle } from "react-icons/bs";
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,
@@ -138,6 +144,7 @@ interface ModalProps {
 const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const FORM_DEFAULT_VALUES: Section = {
     name: "",
+    prefix: "",
     hasOwnAccession: false,
   };
   const { form, errors, handleFormInput, validate } = useForm<Section>({
@@ -190,6 +197,25 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               type="text"
               name="name"
               value={form.name}
+              onChange={handleFormInput}
+            />
+          </div>
+          <div className="px-2">
+            <div className="flex items-center gap-1">
+              <label className={InputClasses.LabelClasslist}>
+                Section Prefix
+              </label>
+              <Tippy content="This prefix will be used in generated book printables. E.g. 'Th' for thesis, 'Ref' for reference">
+                <span>
+                  <AiOutlineInfoCircle className="text-sm text-gray-600 hover:text-blue-400"></AiOutlineInfoCircle>
+                </span>
+              </Tippy>
+            </div>
+            <Input
+              error={errors?.prefix}
+              type="text"
+              name="prefix"
+              value={form.prefix}
               onChange={handleFormInput}
             />
           </div>
