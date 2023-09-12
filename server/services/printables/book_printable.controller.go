@@ -33,25 +33,10 @@ func(p * Printable)RenderBookPrintables(ctx * gin.Context) {
 	ctx.HTML(http.StatusOK, "printables-generator/books/index", gin.H{
 		"book": book,
 		"authors": authors,
-		"formateddEdition": ordinal(book.Edition),
+		"formateddEdition": book.Edition,
 	})
 }
-func ordinal(n int) string {
-    if n >= 11 && n <= 13 {
-        return fmt.Sprintf("%dth", n)
-    }
 
-    switch n % 10 {
-    case 1:
-        return fmt.Sprintf("%dst", n)
-    case 2:
-        return fmt.Sprintf("%dnd", n)
-    case 3:
-        return fmt.Sprintf("%drd", n)
-    default:
-        return fmt.Sprintf("%dth", n)
-    }
-}
 type PrintableController interface {
 	RenderBookPrintables(c * gin.Context)
 }

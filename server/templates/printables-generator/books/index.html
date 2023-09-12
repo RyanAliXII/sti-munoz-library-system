@@ -71,7 +71,7 @@
                 {{range $idx, $author := $.authors}}
                 <span class="text">{{$author}}</span>
                 {{end}} {{if ne $.book.Edition 0 }}
-                <span class="text"> -- {{$.formateddEdition }} ed.</span>
+                <span class="text"> -- {{ ordinal $.book.Edition }} ed.</span>
                 {{end}}
               </div>
 

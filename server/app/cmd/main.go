@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
@@ -27,6 +28,7 @@ func main() {
 	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
 	
 	r := gin.New()
+	r.SetFuncMap(funcmap.FuncMap)
 	r.LoadHTMLFiles(loadtmpl.LoadHTMLFiles("./templates")...)
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
