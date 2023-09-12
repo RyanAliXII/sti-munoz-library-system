@@ -3,10 +3,130 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{.Id}}</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <title>{{.book.Id}}</title>
   </head>
-  <body></body>
+  <style>
+    div {
+      page-break-inside: avoid;
+    }
+    .catalog-card {
+      min-height: 3in;
+      width: 5in;
+      border: 1px dotted black;
+      margin: 10px auto;
+      font-family: "Roboto", sans-serif;
+    }
+    .roboto {
+      font-family: "Roboto", sans-serif;
+    }
+    .ddc-cutter {
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .author-list {
+      max-width: 280px;
+    }
+    .card-content-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card-content {
+      width: fit-content;
+    }
+    .main-text {
+      font-size: medium;
+    }
+    .text {
+      font-size: smaller;
+      word-spacing: 2px;
+    }
+    .text-small {
+      font-size: x-small;
+    }
+  </style>
+  <body>
+    <div class="catalog-cards">
+      <div class="title-cards">
+        <h3 class="roboto" style="text-align: center">Title card</h3>
+        {{range $accession := .book.Accessions}}
+        <div class="catalog-card">
+          <div class="ddc-cutter text">
+            <small>{{$.book.DDC}}</small><small>{{$.book.AuthorNumber}}</small>
+            <span></span>
+          </div>
+          <div class="card-content-wrapper">
+            <div class="card-content">
+              <span class="main-text">{{$.book.Title}}</span>
+              <div class="author-list" style="margin-top: 2px">
+                {{range $idx, $author := $.authors}}
+                <span class="text">{{$author}}</span>
+                {{end}} {{if ne $.book.Edition 0 }}
+                <span class="text"> -- {{$.formateddEdition }} ed.</span>
+                {{end}}
+              </div>
+
+              <div class="text" style="margin-top: 2px">
+                <span>{{$.book.Publisher.Name}}, {{$.book.YearPublished}}</span>
+              </div>
+              <div class="text-small" style="margin-top: 4px">
+                <span>{{$.book.Pages}} p.</span>
+              </div>
+              <div class="text-small" style="margin-top: 2px">
+                <span>ISBN : {{$.book.ISBN}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+      <div class="author-cards">
+        <h3 class="roboto" style="text-align: center">Author card</h3>
+        {{range $accession := .book.Accessions}}
+        <div class="catalog-card">
+          <div class="ddc-cutter text">
+            <small>{{$.book.DDC}}</small><small>{{$.book.AuthorNumber}}</small>
+            <span></span>
+          </div>
+          <div class="card-content-wrapper">
+            <div class="card-content">
+              <div class="author-list" style="margin-top: 2px">
+                {{range $author := $.authors}}
+                <span class="main-text">{{$author}}</span> {{end}}
+              </div>
+              <div class="text">
+                <span> {{$.book.Title}} </span>
+
+                {{if ne $.book.Edition 0 }}
+                <span class="text"> -- {{$.formateddEdition }} ed.</span>
+                {{end}}
+              </div>
+
+              <div class="text" style="margin-top: 2px">
+                <span>{{$.book.Publisher.Name}}, {{$.book.YearPublished}}</span>
+              </div>
+              <div class="text-small" style="margin-top: 4px">
+                <span>{{$.book.Pages}} p.</span>
+              </div>
+              <div class="text-small" style="margin-top: 2px">
+                <span>ISBN : {{$.book.ISBN}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </body>
 </html>
 
 {{end}}
