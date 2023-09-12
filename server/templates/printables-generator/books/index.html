@@ -68,9 +68,12 @@
             <div class="card-content">
               <span class="main-text">{{$.book.Title}}</span>
               <div class="author-list" style="margin-top: 2px">
-                {{range $idx, $author := $.authors}}
+                {{range $idx, $author := $.authors}} {{if eq (add $idx 1) (len
+                $.authors)}}
                 <span class="text">{{$author}}</span>
-                {{end}} {{if ne $.book.Edition 0 }}
+                {{else}}
+                <span class="text">{{$author}},</span>
+                {{end}} {{end}} {{if ne $.book.Edition 0 }}
                 <span class="text"> -- {{ ordinal $.book.Edition }} ed.</span>
                 {{end}}
               </div>
@@ -100,8 +103,12 @@
           <div class="card-content-wrapper">
             <div class="card-content">
               <div class="author-list" style="margin-top: 2px">
-                {{range $author := $.authors}}
-                <span class="main-text">{{$author}}</span> {{end}}
+                {{range $idx, $author := $.authors}} {{if eq (add $idx 1) (len
+                $.authors)}}
+                <span class="main-text">{{$author}}</span>
+                {{else}}
+                <span class="main-text">{{$author}},</span>
+                {{end}} {{end}}
               </div>
               <div class="text">
                 <span> {{$.book.Title}} </span>

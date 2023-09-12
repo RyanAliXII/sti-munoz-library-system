@@ -33,7 +33,6 @@ func(p * Printable)RenderBookPrintables(ctx * gin.Context) {
 	ctx.HTML(http.StatusOK, "printables-generator/books/index", gin.H{
 		"book": book,
 		"authors": authors,
-		"formateddEdition": book.Edition,
 	})
 }
 
