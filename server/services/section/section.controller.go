@@ -20,6 +20,7 @@ func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	ctrler.sectionRepository.New(model.Section{
 		Name:            body.Name,
+		Prefix: 		 body.Prefix,
 		HasOwnAccession: body.HasOwnAccession,
 	})
 

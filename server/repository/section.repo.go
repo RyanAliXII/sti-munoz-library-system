@@ -17,7 +17,6 @@ type SectionRepository struct {
 
 func (repo *SectionRepository) New(section model.Section) error {
 	transaction, transactErr := repo.db.Beginx()
-
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function("SectionRepository.New"))
 		return transactErr
@@ -44,7 +43,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 			logger.Error(createErr.Error(), slimlog.Function("SectionRepository.New"))
 			return createErr
 		}
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1, $2)", section.Name, tableName)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
