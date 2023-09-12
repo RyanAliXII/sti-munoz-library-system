@@ -13,6 +13,7 @@ export const CreateAuthorSchema = object().shape({
 });
 export const SectionSchema = object().shape({
   name: string().required("Name is required field"),
+  prefix: string().required("Prefix is required field"),
 });
 //
 export const PublisherSchema = object().shape({

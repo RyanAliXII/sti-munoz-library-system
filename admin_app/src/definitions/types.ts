@@ -31,6 +31,7 @@ export type Source = {
 export type Section = {
   id?: number;
   name: string;
+  prefix: string;
   hasOwnAccession: boolean;
 };
 
