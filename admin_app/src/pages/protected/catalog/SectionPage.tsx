@@ -186,7 +186,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       center
     >
       <form onSubmit={submit}>
-        <div className="w-full h-46 mt-2">
+        <div className="w-full h-80 mt-2">
           <div className="px-2 mb-3">
             <h1 className="text-xl font-medium">New Section</h1>
           </div>
@@ -200,7 +200,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               onChange={handleFormInput}
             />
           </div>
-          <div className="px-2">
+          <div className="px-2 mt-2">
             <div className="flex items-center gap-1">
               <label className={InputClasses.LabelClasslist}>
                 Section Prefix
@@ -219,7 +219,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               onChange={handleFormInput}
             />
           </div>
-          <div className="flex items-center  gap-2">
+          <div className="flex items-center  gap-2 mt-4">
             <input
               type="checkbox"
               className="w-5 h-5 ml-2"
