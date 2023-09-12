@@ -91,7 +91,7 @@ const SectionPage = () => {
               <Tbody>
                 {sections?.map((section) => {
                   return (
-                    <BodyRow key={section.name}>
+                    <BodyRow key={section.id}>
                       <Td className="p-2 capitalize">{section.name}</Td>
                       <Td>
                         {section.hasOwnAccession ? (

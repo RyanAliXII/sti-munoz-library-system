@@ -12,7 +12,7 @@
 	author_number,
 	book.created_at,
 	jsonb_build_object('id', source_of_fund.id, 'name', source_of_fund.name) as fund_source,
-	jsonb_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table) as section,
+	jsonb_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table, 'prefix', section.prefix) as section,
 	jsonb_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	jsonb_build_object(
 	'people', COALESCE((SELECT  jsonb_agg(json_build_object( 'id', author.id, 'givenName', author.given_name , 'middleName', author.middle_name,  'surname', author.surname )) 
