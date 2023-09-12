@@ -111,10 +111,10 @@
                 {{end}} {{end}}
               </div>
               <div class="text">
-                <span> {{$.book.Title}} </span>
+                <span class="text"> {{$.book.Title}} </span>
 
                 {{if ne $.book.Edition 0 }}
-                <span class="text"> -- {{$.formateddEdition }} ed.</span>
+                <span class="text"> -- {{ordinal $.book.Edition }} ed.</span>
                 {{end}}
               </div>
 
