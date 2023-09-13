@@ -9,7 +9,7 @@ import (
 
 
 func RegisterPrintablesGeneratorRoutes(router * gin.Engine){
-	ctrler := printables.NewPrintableController()
+	ctrler := printables.NewBookPrintableController()
 	grp := router.Group("/printables-generator")
 	grp.GET("/books/:id", ctrler.RenderBookPrintables)
 }
