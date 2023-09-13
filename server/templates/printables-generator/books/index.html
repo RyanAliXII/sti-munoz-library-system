@@ -12,9 +12,9 @@
     />
     <title>{{.book.Id}}</title>
   </head>
-  <style>
+  <style type="text/css">
     div {
-      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .catalog-card {
       min-height: 3in;
@@ -56,21 +56,20 @@
     .call-numbers {
       width: 3in;
       width: 5in;
-      display: grid;
-      grid-template-columns: auto auto;
       gap: 15px;
       margin: auto;
     }
     .call-number {
-      width: 80px;
-      height: 115px;
+      width: 0.9in;
+      height: 1.3in;
       padding: 10px;
       border: 1px dotted black;
     }
     .item {
-      display: flex;
-      gap: 5px;
+      margin-top: 5px;
       align-items: center;
+      gap: 5px;
+      display: flex;
     }
   </style>
   <body>
@@ -153,7 +152,7 @@
       </div>
 
       <div class="call-numbers roboto">
-        {{range $accession := .book.Accessions}}
+        {{range $idx, $accession := .book.Accessions}}
         <div class="item" id="{{$accession.Id}}">
           <div class="qr"></div>
           <div class="call-number">
@@ -182,15 +181,42 @@
   </body>
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   <script>
-    const qrArea = document.querySelector(".call-numbers");
-    for (let i = 0; i < qrArea.children.length; i++) {
-      const callNumberDiv = qrArea.children[i];
-      const qrDiv = callNumberDiv.querySelector(".qr");
-      new QRCode(qrDiv, {
-        text: callNumberDiv.id,
+    const items = document
+      .querySelector(".call-numbers")
+      .querySelectorAll(".item");
+
+    let counter = 0;
+    /*
+      Initilize QR Ccode and Fix page not breaking if display is grid
+    */
+    for (let i = 0; i < items.length; i += 2) {
+      const callNumberDiv1 = items[i];
+
+      const qrDiv1 = callNumberDiv1.querySelector(".qr");
+      new QRCode(qrDiv1, {
+        text: callNumberDiv1.id,
         width: 80,
         height: 80,
       });
+      /*
+      By wrapping elements with div adding display flex we can now display them grid like.
+    */
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.gap = "10px";
+      callNumberDiv1.parentNode.insertBefore(wrapper, callNumberDiv1);
+      wrapper.appendChild(callNumberDiv1);
+
+      if (i < items.length) {
+        const callNumberDiv2 = items[i + 1];
+        const qrDiv2 = callNumberDiv2.querySelector(".qr");
+        new QRCode(qrDiv2, {
+          text: callNumberDiv2.id,
+          width: 80,
+          height: 80,
+        });
+        wrapper.appendChild(callNumberDiv2);
+      }
     }
   </script>
 </html>
