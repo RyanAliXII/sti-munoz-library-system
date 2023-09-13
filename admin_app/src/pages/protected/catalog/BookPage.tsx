@@ -19,7 +19,7 @@ import {
 import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import QRCode from "react-qr-code";
@@ -37,6 +37,7 @@ import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
+import axios from "axios";
 
 const BookPage = () => {
   const {
@@ -208,6 +209,7 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
   book,
 }) => {
   const printableDiv = useRef<HTMLDivElement | null>(null);
+
   const download = async () => {
     if (!printableDiv.current) return;
     const canvas = await html2canvas(printableDiv.current, { scale: 4 });
@@ -215,6 +217,13 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
 
     doc.addImage(canvas, 10, 0, 350, 450);
     doc.save(`${book.title}_${book.yearPublished}.pdf`);
+  };
+
+  useEffect(() => {
+    fetchPrintable();
+  }, []);
+  const fetchPrintable = async () => {
+    const response = await axios.get(`/printables/books`);
   };
   if (!isOpen) return null;
   return (
