@@ -42,11 +42,12 @@ func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
 }
 func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
 	browser, err := browser.NewBrowser()
+	bookId := ctx.Param("id")
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewBrowserErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 	}
-	page, err := browser.Goto("http://localhost:5200/printables-generator/books/fbdc33f6-8814-4d06-843e-47c7f265ca3d")
+	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/printables-generator/books/%s",  bookId))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GotoErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -65,7 +66,6 @@ func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("PDFError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 	}
-	// _ = utils.OutputFile("test.pdf", pdf)
 	var buffer bytes.Buffer
 	_, err = buffer.ReadFrom(pdf)
 	if err != nil {
