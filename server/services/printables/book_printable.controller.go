@@ -10,10 +10,10 @@ import (
 )
 
 
-type Printable struct{
+type BookPrintable struct{
 	bookRepo repository.BookRepositoryInterface
 }
-func(p * Printable)RenderBookPrintables(ctx * gin.Context) {
+func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
 	id := ctx.Param("id")
 	book := p.bookRepo.GetOne(id)
 	if book.Id == "" {
@@ -40,8 +40,8 @@ type PrintableController interface {
 	RenderBookPrintables(c * gin.Context)
 }
 
-func NewPrintableController() PrintableController {
-	return &Printable{
+func NewBookPrintableController() PrintableController {
+	return &BookPrintable{
 		bookRepo: repository.NewBookRepository(),
 	}
 }
