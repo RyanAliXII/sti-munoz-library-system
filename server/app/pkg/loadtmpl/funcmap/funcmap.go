@@ -9,11 +9,15 @@ import (
 var FuncMap template.FuncMap = template.FuncMap{
     "add" : Add,
     "ordinal": Ordinal,
+    "firstchar": GetFirstLetter,
 }
 
 
 func Add (num1 int, num2 int)int  {
     return num1 + num2
+}
+func GetFirstLetter (s string) string {
+    return string(s[0])
 }
 func Ordinal(n int) string {
     if n >= 11 && n <= 13 {
