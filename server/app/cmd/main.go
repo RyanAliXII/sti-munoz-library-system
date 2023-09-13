@@ -9,6 +9,7 @@ import (
 
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
@@ -26,7 +27,13 @@ func main() {
 
 	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
 	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
-	
+	browser, err  := browser.NewBrowser()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	defer browser.GetBrowser().Close()
+	defer browser.GetLauncher().Close()
+
 	r := gin.New()
 	r.SetFuncMap(funcmap.FuncMap)
 	r.LoadHTMLFiles(loadtmpl.LoadHTMLFiles("./templates")...)
