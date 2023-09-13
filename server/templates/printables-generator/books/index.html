@@ -53,6 +53,25 @@
     .text-small {
       font-size: x-small;
     }
+    .call-numbers {
+      width: 3in;
+      width: 5in;
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 15px;
+      margin: auto;
+    }
+    .call-number {
+      width: 80px;
+      height: 115px;
+      padding: 10px;
+      border: 1px dotted black;
+    }
+    .item {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
   </style>
   <body>
     <div class="catalog-cards">
@@ -132,8 +151,48 @@
         </div>
         {{end}}
       </div>
+
+      <div class="call-numbers roboto">
+        {{range $accession := .book.Accessions}}
+        <div class="item" id="{{$accession.Id}}">
+          <div class="qr"></div>
+          <div class="call-number">
+            <div>
+              <span class="main-text">{{$.book.Section.Prefix}}</span>
+            </div>
+            <div>
+              <span class="text">{{firstchar $.book.Title}}{{$.book.DDC}}</span>
+            </div>
+            <div>
+              <span class="text">{{$.book.AuthorNumber}}</span>
+            </div>
+            <div>
+              <span class="text">{{$.book.YearPublished}}</span>
+            </div>
+            {{if gt (len $.book.Accessions) 1}}
+            <div>
+              <span class="text">c.{{$accession.CopyNumber}}</span>
+            </div>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      </div>
     </div>
   </body>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script>
+    const qrArea = document.querySelector(".call-numbers");
+    for (let i = 0; i < qrArea.children.length; i++) {
+      const callNumberDiv = qrArea.children[i];
+      const qrDiv = callNumberDiv.querySelector(".qr");
+      new QRCode(qrDiv, {
+        text: callNumberDiv.id,
+        width: 80,
+        height: 80,
+      });
+    }
+  </script>
 </html>
 
 {{end}}
