@@ -57,7 +57,7 @@ func main() {
 	
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
-	routes.RegisterPrintablesGeneratorRoutes(r)
+	routes.Register(r)
 	logger.Info("Server starting")
 	
 	r.Run(":5200")

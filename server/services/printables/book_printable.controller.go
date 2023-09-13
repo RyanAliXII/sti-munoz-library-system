@@ -1,12 +1,17 @@
 package printables
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/go-rod/rod/lib/proto"
+	"github.com/ysmood/gson"
 )
 
 
@@ -35,9 +40,42 @@ func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
 		"authors": authors,
 	})
 }
-
+func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
+	browser, err := browser.NewBrowser()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("NewBrowserErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+	}
+	page, err := browser.Goto("http://localhost:5200/printables-generator/books/fbdc33f6-8814-4d06-843e-47c7f265ca3d")
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GotoErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+	}
+	err = page.WaitLoad()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+	}
+	pdf, err := page.PDF( &proto.PagePrintToPDF{
+		PaperWidth:  gson.Num(8.5),
+		PaperHeight: gson.Num(11),
+		
+	})
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("PDFError"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+	}
+	// _ = utils.OutputFile("test.pdf", pdf)
+	var buffer bytes.Buffer
+	_, err = buffer.ReadFrom(pdf)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
+}
 type PrintableController interface {
 	RenderBookPrintables(c * gin.Context)
+	GetBookPrintablesByBookId(c * gin.Context)
 }
 
 func NewBookPrintableController() PrintableController {
