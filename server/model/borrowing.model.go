@@ -18,3 +18,4 @@ type BorrowedBook struct {
 	Remarks string `json:"remarks" db:"remarks"`
 	Client         AccountJSON     `json:"client" db:"client"`
 }
+

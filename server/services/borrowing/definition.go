@@ -8,7 +8,7 @@ type CheckoutBody struct {
 }
 
 type CheckoutAccessions struct {
-	Number int    `json:"number" binding:"required,gte=1" `
+	Id string `json:"id" binding:"required,uuid"`
 	BookId string `json:"bookId" binding:"required,uuid" `
 	DueDate db.NullableDate `json:"dueDate" binding:"required" copier:"DueDate"`
 }

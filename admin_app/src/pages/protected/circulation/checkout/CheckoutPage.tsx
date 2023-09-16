@@ -222,11 +222,9 @@ const CheckoutPage = () => {
                 </HeadingRow>
               </Thead>
               <Tbody>
-                {checkout.accessions?.map((accession, index) => {
+                {checkout.accessions?.map((accession) => {
                   return (
-                    <BodyRow
-                      key={`${accession.bookId}_${accession.copyNumber}`}
-                    >
+                    <BodyRow key={accession.id}>
                       <Td>{accession.book.title}</Td>
                       <Td>{accession.copyNumber}</Td>
                       <Td>{accession.number}</Td>
@@ -244,10 +242,7 @@ const CheckoutPage = () => {
                             setForm((prev) => ({
                               ...prev,
                               accessions: prev.accessions.map((a) => {
-                                if (
-                                  a.number === accession.number &&
-                                  a.bookId === accession.bookId
-                                ) {
+                                if ((a.id = accession.id)) {
                                   return { ...a, dueDate: dateValue };
                                 }
                                 return a;
@@ -280,31 +275,6 @@ const CheckoutPage = () => {
           </div>
         )}
       </ContainerNoBackground>
-
-      {/* <ContainerNoBackground className="px-4 py-6">
-        <Divider
-          heading="h2"
-          headingProps={{ className: "text-xl" }}
-          hrProps={{ className: "mb-5" }}
-        >
-          Due date
-        </Divider>
-        <div>
-          <CustomDatePicker
-            name="dueDate"
-            error={errors?.dueDate}
-            minDate={new Date()}
-            value={new Date(checkout.dueDate).toDateString()}
-            onChange={(date) => {
-              if (!date) return;
-              const dateValue = `${date.getFullYear()}-${
-                date.getMonth() + 1
-              }-${date.getDate()}`;
-            }}
-            selected={new Date(checkout.dueDate)}
-          />
-        </div>
-      </ContainerNoBackground> */}
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
         <PrimaryButton onClick={proceedCheckout}>
           Proceed to checkout
