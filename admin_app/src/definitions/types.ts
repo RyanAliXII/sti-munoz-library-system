@@ -127,6 +127,12 @@ export type BorrowingTransaction = {
   createdAt: string; //iso-time-string
   returnedAt: string; //iso-time-string
 };
+export type BorrowRequest = {
+  id: string;
+  client: Account;
+  accountId: string;
+  createdAt: string;
+};
 
 export type Organization = {
   id?: number;
