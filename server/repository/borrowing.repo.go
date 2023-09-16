@@ -15,18 +15,20 @@ import (
 
 type BorrowingRepository interface {
 
-
+	BorrowBook([]model.BorrowedBook) error
 
 }
 type Borrowing struct{
 	db * sqlx.DB
 
 }
-func (repo * Borrowing)NewAsCheckedOut(borrowedBook []model.BorrowedBook){
+func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook) error{
+	_, err := repo.db.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date)", borrowedBooks)
+	return err
 
 }
 func NewBorrowingRepository ()  BorrowingRepository {
-	return Borrowing{
+	return &Borrowing{
 		db: db.Connect(),
 	}
 }
