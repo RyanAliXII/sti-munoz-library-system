@@ -171,7 +171,7 @@ const BookCopySelectionModal = ({
                     key={accession.number}
                     className={
                       !accession.isAvailable
-                        ? "bg-gray-100 hover:bg-gray-100 cursor-pointer"
+                        ? "bg-gray-100 hover:bg-gray-100 pointer-events-none "
                         : "cursor-pointer"
                     }
                     onClick={() => {
