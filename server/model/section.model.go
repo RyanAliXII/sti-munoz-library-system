@@ -9,6 +9,7 @@ type Section struct {
 	Id              int    `json:"id" db:"id"`
 	Name            string `json:"name" db:"name"`
 	HasOwnAccession bool   `json:"hasOwnAccession" db:"has_own_accession"`
+	Prefix 			string `json:"prefix" db:"prefix"`
 	AccessionTable  string `json:"accessionTable" db:"accession_table"`
 }
 type SectionJSON struct {

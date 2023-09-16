@@ -5,9 +5,13 @@ import (
 	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/api/v1"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/routes"
 
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
@@ -23,8 +27,16 @@ func main() {
 
 	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
 	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
-	
+	browser, err  := browser.NewBrowser()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	defer browser.GetBrowser().Close()
+	defer browser.GetLauncher().Close()
+
 	r := gin.New()
+	r.SetFuncMap(funcmap.FuncMap)
+	r.LoadHTMLFiles(loadtmpl.LoadHTMLFiles("./templates")...)
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
 	r.Use(cors.New(cors.Config{
@@ -38,13 +50,14 @@ func main() {
 	r.GET("/", func(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "HELLO",
+			"message": "STI MUNOZ LIBRARY",
 			"time":    time.Now(),
 		})
 	})
 	
 	realtime.RealtimeRoutes(r.Group("/rt"))
 	api.RegisterAPIV1(r)
+	routes.Register(r)
 	logger.Info("Server starting")
 	
 	r.Run(":5200")

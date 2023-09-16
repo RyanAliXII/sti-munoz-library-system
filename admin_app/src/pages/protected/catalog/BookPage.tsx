@@ -5,6 +5,7 @@ import {
   PrimaryButton,
   SecondaryButton,
   ButtonClasses,
+  LighButton,
 } from "@components/ui/button/Button";
 import {
   BodyRow,
@@ -19,10 +20,9 @@ import {
 import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
-import QRCode from "react-qr-code";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -35,8 +35,11 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
+import LoadingBoundary, {
+  LoadingBoundaryV2,
+} from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
+import axios from "axios";
 
 const BookPage = () => {
   const {
@@ -64,6 +67,7 @@ const BookPage = () => {
   ] = useState<Book>({} as Book);
   const setBookForPrintingAndOpenModal = (book: Book) => {
     setSelectedBookForPrintingPrintables({ ...book });
+
     openPrintablesModal();
   };
   const {
@@ -161,13 +165,11 @@ const BookPage = () => {
                           className={
                             ButtonClasses.PrimaryOutlineButtonClasslist
                           }
+                          onClick={() => {
+                            setBookForPrintingAndOpenModal(book);
+                          }}
                         >
-                          <AiOutlinePrinter
-                            className="text-blue-500 text-lg cursor-pointer "
-                            onClick={() => {
-                              setBookForPrintingAndOpenModal(book);
-                            }}
-                          />
+                          <AiOutlinePrinter className="text-blue-500 text-lg cursor-pointer " />
                         </button>
                       </Tippy>
                       <Tippy content="Edit Book">
@@ -202,20 +204,36 @@ const BookPage = () => {
 interface PrintablesModalProps extends ModalProps {
   book: Book;
 }
+
 export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
   closeModal,
   isOpen,
   book,
 }) => {
   const printableDiv = useRef<HTMLDivElement | null>(null);
-  const download = async () => {
-    if (!printableDiv.current) return;
-    const canvas = await html2canvas(printableDiv.current, { scale: 4 });
-    const doc = new jsPDF("p", "px", "a4");
 
-    doc.addImage(canvas, 10, 0, 350, 450);
-    doc.save(`${book.title}_${book.yearPublished}.pdf`);
+  const fetchPDF = async () => {
+    const response = await axios.get(
+      `http://localhost:5200/printables/books/${book.id}`,
+      {
+        responseType: "blob",
+      }
+    );
+    const url = URL.createObjectURL(response.data);
+    return url;
   };
+  const {
+    data: pdfURL,
+    isFetching,
+    isError,
+  } = useQuery<string>({
+    queryFn: fetchPDF,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    initialData: "",
+    queryKey: ["bookPrintable", book],
+  });
+
   if (!isOpen) return null;
   return (
     <Modal
@@ -228,147 +246,23 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
         },
       }}
       classNames={{
-        modal: "w-11/12  lg:w-8/12  xl:w-5/12 xl: rounded h-[900-px]",
+        modal: "w-11/12  lg:w-12/12  xl: rounded h-[900-px]",
       }}
     >
-      <div
-        className="w-6/12 py-2 mx-auto"
-        ref={printableDiv}
-        style={{
-          minWidth: "650px",
-        }}
-      >
-        <div className="flex flex-col w-full gap-2 mb-2 ">
-          <div className="w-full flex justify-center">
-            <small>Title card</small>
+      <div className="py-2 mx-auto" ref={printableDiv}>
+        <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
+          <div className="mb-5">
+            <LighButton onClick={closeModal}>Close</LighButton>
           </div>
-          <TitleCard book={book}></TitleCard>
-          <div className="w-full flex justify-center">
-            <small>Author card</small>
-          </div>
-          <AuthorCard book={book}></AuthorCard>
-        </div>
-        <div className="flex justify-center">
-          <div className="grid grid-cols-3 gap-2">
-            {book?.accessions?.map((accession) => {
-              return (
-                <CallNumber
-                  key={`${accession.copyNumber}_${book.title}`}
-                  book={book}
-                  accessionNumber={accession.number}
-                  copyNumber={accession.copyNumber}
-                  accessionId={accession.id ?? ""}
-                ></CallNumber>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 w-full border-t py-2">
-        <div className="float-right py-2">
-          <PrimaryButton className="mr-2 w-32" type="button" onClick={download}>
-            Download
-          </PrimaryButton>
-          <SecondaryButton className="w-32">Print</SecondaryButton>
-        </div>
+          <iframe
+            className="w-full h-[900-px]"
+            src={pdfURL}
+            height="900px"
+          ></iframe>
+        </LoadingBoundaryV2>
+        <div className="flex flex-col w-full gap-2 mb-2 "></div>
       </div>
     </Modal>
-  );
-};
-
-type CardProps = {
-  book: Book;
-};
-const TitleCard = ({ book }: CardProps) => {
-  const peopleAuthors = book?.authors.people?.map(
-    (author) => `${author.givenName} ${author.surname}`
-  );
-  const orgAuthors = book?.authors.organizations?.map((org) => org.name);
-  const publisherAuthors = book?.authors.publishers.map((p) => p.name);
-  const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
-  return (
-    <div className=" h-80 border-gray-400 border border-dashed">
-      <div className="flex h-full">
-        <div className="h-full">
-          <div className="mt-14 px-10">
-            <small className="block">{book.ddc}</small>
-            <small>{book.authorNumber}</small>
-          </div>
-        </div>
-        <div className="w-full flex items-center">
-          <div className="px-3">
-            <big className="block">{book.title} </big>
-            <span>{authors.join(" , ")}</span>
-            <span className="block">
-              {book.publisher.name} {book.yearPublished}
-            </span>
-            <span>{book.pages} p.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AuthorCard = ({ book }: CardProps) => {
-  const peopleAuthors = book?.authors.people?.map(
-    (author) => `${author.givenName} ${author.surname}`
-  );
-  const orgAuthors = book?.authors.organizations?.map((org) => org.name);
-  const publisherAuthors = book?.authors.publishers.map((p) => p.name);
-  const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
-  return (
-    <div className="h-80 border-gray-400 border border-dashed">
-      <div className="flex h-full">
-        <div className="h-full">
-          <div className="mt-14 px-10">
-            <small className="block">{book.ddc}</small>
-            <small>{book.authorNumber}</small>
-          </div>
-        </div>
-        <div className="w-full flex items-center">
-          <div className="px-3">
-            <big>{authors.join(" , ")}</big>
-            <span className="block">{book.title} </span>
-            <span className="block">
-              {book.publisher.name} {book.yearPublished}
-            </span>
-            <span>{book.pages} p.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface CallNumberProps extends CardProps {
-  copyNumber: number;
-  accessionNumber: number;
-  accessionId: string;
-}
-const CallNumber = ({
-  book,
-  copyNumber,
-  accessionNumber,
-  accessionId,
-}: CallNumberProps) => {
-  return (
-    <div className="flex border border-dashed border-gray-400  px-2 justify-center py-3">
-      <div className="p-5">
-        <QRCode value={accessionId} className="w-16 h-16"></QRCode>
-      </div>
-      <div className="w-32 h-28 border-gray-400 border border-dashed flex flex-col px-2">
-        <span>{book.section.name?.substring(0, 3)}</span>
-        <small className="tracking-wide">
-          {book.title.charAt(0)}
-          {book.ddc}
-        </small>
-        <small>{book.authorNumber}</small>
-        <small>{book.yearPublished}</small>
-        <small>c.{copyNumber}</small>
-      </div>
-    </div>
   );
 };
 export default BookPage;

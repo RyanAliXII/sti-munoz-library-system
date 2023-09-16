@@ -17,7 +17,6 @@ type SectionRepository struct {
 
 func (repo *SectionRepository) New(section model.Section) error {
 	transaction, transactErr := repo.db.Beginx()
-
 	if transactErr != nil {
 		logger.Error(transactErr.Error(), slimlog.Function("SectionRepository.New"))
 		return transactErr
@@ -44,7 +43,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 			logger.Error(createErr.Error(), slimlog.Function("SectionRepository.New"))
 			return createErr
 		}
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1, $2)", section.Name, tableName)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
@@ -52,7 +51,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 		}
 	} else {
 		tableName = "accession_main"
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table)VALUES($1,$2)", section.Name, tableName)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1,$2,$3)", section.Name, tableName, section.Prefix)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
@@ -71,7 +70,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 }
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
-	selectErr := repo.db.Select(&sections, "SELECT id, name, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section ORDER BY created_at DESC")
+	selectErr := repo.db.Select(&sections, "SELECT id, name, prefix, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section ORDER BY created_at DESC")
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}

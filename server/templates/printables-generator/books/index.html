@@ -1,0 +1,224 @@
+{{define "printables-generator/books/index"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <title>{{.book.Id}}</title>
+  </head>
+  <style type="text/css">
+    div {
+      break-inside: avoid;
+    }
+    .catalog-card {
+      min-height: 3in;
+      width: 5in;
+      border: 1px dotted black;
+      margin: 10px auto;
+      font-family: "Roboto", sans-serif;
+    }
+    .roboto {
+      font-family: "Roboto", sans-serif;
+    }
+    .ddc-cutter {
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .author-list {
+      max-width: 280px;
+    }
+    .card-content-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card-content {
+      width: fit-content;
+    }
+    .main-text {
+      font-size: medium;
+    }
+    .text {
+      font-size: smaller;
+      word-spacing: 2px;
+    }
+    .text-small {
+      font-size: x-small;
+    }
+    .call-numbers {
+      width: 3in;
+      width: 5in;
+      gap: 15px;
+      margin: auto;
+    }
+    .call-number {
+      width: 0.9in;
+      height: 1.3in;
+      padding: 10px;
+      border: 1px dotted black;
+    }
+    .item {
+      margin-top: 5px;
+      align-items: center;
+      gap: 5px;
+      display: flex;
+    }
+  </style>
+  <body>
+    <div class="catalog-cards">
+      <div class="title-cards">
+        <h3 class="roboto" style="text-align: center">Title card</h3>
+        {{range $accession := .book.Accessions}}
+        <div class="catalog-card">
+          <div class="ddc-cutter text">
+            <small>{{$.book.DDC}}</small><small>{{$.book.AuthorNumber}}</small>
+            <span></span>
+          </div>
+          <div class="card-content-wrapper">
+            <div class="card-content">
+              <span class="main-text">{{$.book.Title}}</span>
+              <div class="author-list" style="margin-top: 2px">
+                {{range $idx, $author := $.authors}} {{if eq (add $idx 1) (len
+                $.authors)}}
+                <span class="text">{{$author}}</span>
+                {{else}}
+                <span class="text">{{$author}},</span>
+                {{end}} {{end}} {{if ne $.book.Edition 0 }}
+                <span class="text"> -- {{ ordinal $.book.Edition }} ed.</span>
+                {{end}}
+              </div>
+
+              <div class="text" style="margin-top: 2px">
+                <span>{{$.book.Publisher.Name}}, {{$.book.YearPublished}}</span>
+              </div>
+              <div class="text-small" style="margin-top: 4px">
+                <span>{{$.book.Pages}} p.</span>
+              </div>
+              <div class="text-small" style="margin-top: 2px">
+                <span>ISBN : {{$.book.ISBN}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+      <div class="author-cards">
+        <h3 class="roboto" style="text-align: center">Author card</h3>
+        {{range $accession := .book.Accessions}}
+        <div class="catalog-card">
+          <div class="ddc-cutter text">
+            <small>{{$.book.DDC}}</small><small>{{$.book.AuthorNumber}}</small>
+            <span></span>
+          </div>
+          <div class="card-content-wrapper">
+            <div class="card-content">
+              <div class="author-list" style="margin-top: 2px">
+                {{range $idx, $author := $.authors}} {{if eq (add $idx 1) (len
+                $.authors)}}
+                <span class="main-text">{{$author}}</span>
+                {{else}}
+                <span class="main-text">{{$author}},</span>
+                {{end}} {{end}}
+              </div>
+              <div class="text">
+                <span class="text"> {{$.book.Title}} </span>
+
+                {{if ne $.book.Edition 0 }}
+                <span class="text"> -- {{ordinal $.book.Edition }} ed.</span>
+                {{end}}
+              </div>
+
+              <div class="text" style="margin-top: 2px">
+                <span>{{$.book.Publisher.Name}}, {{$.book.YearPublished}}</span>
+              </div>
+              <div class="text-small" style="margin-top: 4px">
+                <span>{{$.book.Pages}} p.</span>
+              </div>
+              <div class="text-small" style="margin-top: 2px">
+                <span>ISBN : {{$.book.ISBN}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+
+      <div class="call-numbers roboto">
+        {{range $idx, $accession := .book.Accessions}}
+        <div class="item" id="{{$accession.Id}}">
+          <div class="qr"></div>
+          <div class="call-number">
+            <div>
+              <span class="main-text">{{$.book.Section.Prefix}}</span>
+            </div>
+            <div>
+              <span class="text">{{firstchar $.book.Title}}{{$.book.DDC}}</span>
+            </div>
+            <div>
+              <span class="text">{{$.book.AuthorNumber}}</span>
+            </div>
+            <div>
+              <span class="text">{{$.book.YearPublished}}</span>
+            </div>
+            {{if gt (len $.book.Accessions) 1}}
+            <div>
+              <span class="text">c.{{$accession.CopyNumber}}</span>
+            </div>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </body>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script>
+    const items = document
+      .querySelector(".call-numbers")
+      .querySelectorAll(".item");
+
+    let counter = 0;
+    /*
+      Initilize QR Ccode and Fix page not breaking if display is grid
+    */
+    for (let i = 0; i < items.length; i += 2) {
+      const callNumberDiv1 = items[i];
+
+      const qrDiv1 = callNumberDiv1.querySelector(".qr");
+      new QRCode(qrDiv1, {
+        text: callNumberDiv1.id,
+        width: 80,
+        height: 80,
+      });
+      /*
+      By wrapping elements with div adding display flex we can now display them grid like.
+    */
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.gap = "10px";
+      callNumberDiv1.parentNode.insertBefore(wrapper, callNumberDiv1);
+      wrapper.appendChild(callNumberDiv1);
+
+      if (i < items.length) {
+        const callNumberDiv2 = items[i + 1];
+        const qrDiv2 = callNumberDiv2.querySelector(".qr");
+        new QRCode(qrDiv2, {
+          text: callNumberDiv2.id,
+          width: 80,
+          height: 80,
+        });
+        wrapper.appendChild(callNumberDiv2);
+      }
+    }
+  </script>
+</html>
+
+{{end}}
