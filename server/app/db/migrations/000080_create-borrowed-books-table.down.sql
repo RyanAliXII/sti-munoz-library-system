@@ -1,1 +1,1 @@
-DROP TABLE IF NOT EXISTS borrowing.borrowed_book;
+DROP TABLE IF EXISTS borrowing.borrowed_book
