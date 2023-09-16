@@ -125,7 +125,7 @@ const CheckoutPage = () => {
   const submitCheckout = useMutation({
     mutationFn: (formData: CheckoutForm) =>
       Post(
-        "/circulation/checkout",
+        "/borrowing/",
         {
           clientId: formData.client.id,
           accessions: formData.accessions,
