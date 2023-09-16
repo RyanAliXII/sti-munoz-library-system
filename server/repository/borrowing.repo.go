@@ -23,7 +23,7 @@ type Borrowing struct{
 
 }
 func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook) error{
-	_, err := repo.db.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date)", borrowedBooks)
+	_, err := repo.db.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date, :penalty_on_past_due)", borrowedBooks)
 	return err
 
 }

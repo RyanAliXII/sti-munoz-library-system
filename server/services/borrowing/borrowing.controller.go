@@ -1,6 +1,8 @@
 package borrowing
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
@@ -16,6 +18,7 @@ type BorrowingController interface {
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
+	settingsRepo repository.SettingsRepositoryInterface
 }
 func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 	body := CheckoutBody{}
@@ -25,18 +28,30 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 		return 
 	}	
-	borrowedBooks := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut)
+	borrowedBooks, err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("toBorrowedBookModel"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
+		return
+	}
 	err  = ctrler.borrowingRepo.BorrowBook(borrowedBooks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
+		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book has been borrowed"))
 	
 }
-func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )[]model.BorrowedBook{
+func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]model.BorrowedBook, error){
 	grpId := uuid.New().String()
+	settings := ctrler.settingsRepo.Get()
+
 	borrowedBooks := make([]model.BorrowedBook, 0)	
+	if settings.DuePenalty.Value == 0 {
+		return borrowedBooks, fmt.Errorf("due penalty must not be 0")
+	}
+
 	for _, accession := range body.Accessions {
 		borrowedBooks = append(borrowedBooks, model.BorrowedBook{
 			GroupId: grpId,
@@ -44,10 +59,11 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )[]mo
 			DueDate: accession.DueDate,
 			AccountId: body.ClientId,
 			StatusId: status,
+			PenaltyOnPastDue: settings.DuePenalty.Value,
 			
 		})
 	}
-	return borrowedBooks
+	return borrowedBooks, nil
 }
 
 func(ctrler * Borrowing)borrowBookAsPending(ctx * gin.Context){
@@ -60,5 +76,6 @@ func (ctrler * Borrowing)borrowBookAsCheckedOut(ctx * gin.Context){
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{
 		borrowingRepo: repository.NewBorrowingRepository(),
+		settingsRepo: repository.NewSettingsRepository(),
 	}
 }

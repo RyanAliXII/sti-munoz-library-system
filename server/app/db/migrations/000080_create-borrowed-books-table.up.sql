@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS borrowing.borrowed_book(
     status_id INT,
     due_date date,
     remarks text DEFAULT '',
+    penalty_on_past_due NUMERIC(10, 2) DEFAULT 0,
     created_at timestamptz DEFAULT NOW(),
     FOREIGN KEY(account_id) REFERENCES system.account(id),
     FOREIGN KEY(status_id) REFERENCES borrowing.borrow_status(id)

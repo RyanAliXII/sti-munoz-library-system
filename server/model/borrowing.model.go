@@ -8,6 +8,7 @@ type BorrowedBook struct {
 	AccessionId  string `json:"accessionId" db:"accession_id"`
 	AccountId string `json:"accountId" db:"account_id"`
 	AccessionNumber int `json:"accessionNumber" db:"number"`
+	PenaltyOnPastDue int `json:"penaltyOnPastDue" db:"penalty_on_past_due"`
 	CopyNumber int `json:"copyNumber" db:"copy_number"`
 	Book BookJSON `json:"book" db:"book"`
 	GroupId string `json:"groupId" db:"group_id"`
