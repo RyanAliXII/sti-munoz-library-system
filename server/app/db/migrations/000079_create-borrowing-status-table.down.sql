@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS borrowing.borrow_status;
