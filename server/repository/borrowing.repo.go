@@ -16,6 +16,7 @@ import (
 type BorrowingRepository interface {
 
 	BorrowBook([]model.BorrowedBook) error
+	GetBorrowingRequests()([]model.BorrowingRequest, error)
 
 }
 type Borrowing struct{
@@ -25,7 +26,23 @@ type Borrowing struct{
 func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook) error{
 	_, err := repo.db.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date, :penalty_on_past_due)", borrowedBooks)
 	return err
+}
 
+func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
+	requests := make([]model.BorrowingRequest, 0) 
+	query := `SELECT group_id as id, account_id, json_build_object('id',account.id, 'displayName', 
+	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client, MAX(borrowed_book.created_at) as created_at FROM borrowing.borrowed_book
+	INNER JOIN system.account on account_id = account.id
+	GROUP BY account_id, group_id, account.id`
+	err := repo.db.Select(&requests, query)
+	return requests, err
+}
+
+func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
+	borrowedBooks := make([]model.BorrowedBook, 0) 
+	query := `SELECT * FROM borrowed_book_view where group_id = ?`
+	err := repo.db.Select(&borrowedBooks, query, groupId)
+	return borrowedBooks, err
 }
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{

@@ -94,7 +94,7 @@ DROP VIEW IF EXISTS account_view;
 DROP VIEW IF EXISTS borrowed_book_view;
 -- CREATE BORROWED BOOK VIEW
 CREATE OR REPLACE VIEW borrowed_book_view as 
-SELECT bb.id, bb.account_id, bb.accession_id, bb.due_date, accession.number, remarks,
+SELECT bb.id, bb.group_id, bb.account_id, bb.accession_id, bb.due_date, accession.number, remarks,
 accession.copy_number,bb.status_id, bs.description as status ,book.json_format as book, json_build_object('id', account.id, 'displayName', 
 display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 	(case when due_date is null or status_id != 3  then 0 else (

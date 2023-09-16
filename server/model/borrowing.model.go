@@ -20,3 +20,11 @@ type BorrowedBook struct {
 	Client         AccountJSON     `json:"client" db:"client"`
 }
 
+
+
+type BorrowingRequest struct {
+	Id string `json:"id" db:"id"`
+	AccountId string `json:"accountId" db:"account_id"`
+	Client AccountJSON `json:"client" db:"client"`
+	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
+}

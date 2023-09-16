@@ -15,6 +15,7 @@ import (
 
 type BorrowingController interface {
 	HandleBorrowing(ctx * gin.Context)
+	GetBorrowRequests(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -65,6 +66,19 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 	}
 	return borrowedBooks, nil
 }
+func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
+
+	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowRequests": requests,
+	}, "borrow request fetched."))
+}
+
+
+
 
 func(ctrler * Borrowing)borrowBookAsPending(ctx * gin.Context){
 
