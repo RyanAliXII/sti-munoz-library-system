@@ -22,8 +22,8 @@ type Borrowing struct{
 	db * sqlx.DB
 
 }
-func (repo * Borrowing)NewAsCheckedOut(borrowedBook model.BorrowedBook){
-	
+func (repo * Borrowing)NewAsCheckedOut(borrowedBook []model.BorrowedBook){
+
 }
 func NewBorrowingRepository ()  BorrowingRepository {
 	return Borrowing{

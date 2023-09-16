@@ -25,6 +25,7 @@ import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { date } from "yup";
+import { access } from "fs";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -120,6 +121,7 @@ const BookCopySelectionModal = ({
         {
           isAvailable: true,
           book: book,
+          id: accession.id,
           bookId: book.id ?? "",
           copyNumber: accession.copyNumber,
           number: accession.number,
