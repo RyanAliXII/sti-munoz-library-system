@@ -190,7 +190,7 @@ const BookCopySelectionModal = ({
                     <Td>Copy {accession.copyNumber}</Td>
                     <Td>
                       {!accession.isAvailable
-                        ? BorrowStatuses.CheckedOut
+                        ? "Unavailable"
                         : BorrowStatuses.Available}
                     </Td>
                   </BodyRow>

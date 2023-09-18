@@ -264,6 +264,7 @@ const TransactionByIdPage = () => {
         </LoadingBoundary>
       </ContainerNoBackground>
       <PromptTextAreaDialog
+        key={"forReturn"}
         close={closeReturnRemarkPrompt}
         isOpen={isReturnRemarkPromptOpen}
         label="Remarks"
@@ -283,6 +284,7 @@ const TransactionByIdPage = () => {
         onProceed={onConfirmCancel}
       /> */}
       <PromptTextAreaDialog
+        key={"forUnreturn"}
         close={closeUnreturnedRemarkPrompt}
         isOpen={isUnreturnedRemarkPromptOpen}
         label="Remarks"
