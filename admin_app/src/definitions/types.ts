@@ -117,6 +117,19 @@ export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {
   penalty: number;
 }
 
+export type BorrowedBook = {
+  id: string;
+  status: string;
+  statusId: number;
+  client: Account;
+  book: Book;
+  accessionId: string;
+  accessionNumber: number;
+  copyNumber: number;
+  dueDate: string;
+  penalty: number;
+  createdAt: string;
+};
 export type BorrowingTransaction = {
   id?: string;
   client: Account;

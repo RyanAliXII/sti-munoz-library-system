@@ -16,6 +16,7 @@ import (
 type BorrowingController interface {
 	HandleBorrowing(ctx * gin.Context)
 	GetBorrowRequests(ctx * gin.Context)
+	GetBorrowedBooksByGroupId(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -74,8 +75,21 @@ func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowRequests": requests,
-	}, "borrow request fetched."))
+	}, "Borrow requests fetched."))
 }
+func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
+	groupId := ctx.Param("id")
+	requests, err := ctrler.borrowingRepo.GetBorrowedBooksByGroupId(groupId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetBorrowedBooksByGroupId")) 
+		ctx.JSON(httpresp.Fail404(nil, "Not found"))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowedBooks": requests,
+	}, "Borrowed books fetched."))
+}
+
 
 
 
