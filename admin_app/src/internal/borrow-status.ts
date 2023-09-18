@@ -20,7 +20,7 @@ export type OnlineBorrowStatus =
   | "returned"
   | "cancelled"
   | "unreturned";
-export type BorrowStatus = "returned" | "cancelled" | "unreturned";
+// export type BorrowStatus = "returned" | "cancelled" | "unreturned";
 export const STATUSES_OPTIONS = [
   {
     value: "all",
@@ -51,3 +51,12 @@ export const STATUSES_OPTIONS = [
     label: "Unreturned",
   },
 ];
+
+export enum BorrowStatus {
+  Pending = 1,
+  Approved = 2,
+  CheckedOut = 3,
+  Returned = 4,
+  Cancelled = 5,
+  Unreturned = 6,
+}

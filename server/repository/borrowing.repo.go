@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -17,7 +18,8 @@ type BorrowingRepository interface {
 
 	BorrowBook([]model.BorrowedBook) error
 	GetBorrowingRequests()([]model.BorrowingRequest, error)
-	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
+	MarkAsReturned(id string)error
+ 	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 
 }
 type Borrowing struct{
@@ -44,6 +46,12 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 	query := `SELECT * FROM borrowed_book_view where group_id = $1`
 	err := repo.db.Select(&borrowedBooks, query, groupId)
 	return borrowedBooks, err
+}
+func (repo * Borrowing) MarkAsReturned(id string) error {
+	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1 where id = $2 and status_id = $3"
+	_, err := repo.db.Exec(query, id, status.BorrowStatusReturned, status.BorrowStatusCheckedOut)
+	return err
 }
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
