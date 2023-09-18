@@ -6,20 +6,13 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
-
-
-
-
-
-
-
-
 type BorrowingRepository interface {
 
 	BorrowBook([]model.BorrowedBook) error
 	GetBorrowingRequests()([]model.BorrowingRequest, error)
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
+	MarkAsApproved(id string, remarks string) error 
  	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 
 }
@@ -37,7 +30,9 @@ func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
 	query := `SELECT group_id as id, account_id, json_build_object('id',account.id, 'displayName', 
 	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client, MAX(borrowed_book.created_at) as created_at FROM borrowing.borrowed_book
 	INNER JOIN system.account on account_id = account.id
-	GROUP BY account_id, group_id, account.id`
+	GROUP BY account_id, group_id, account.id
+	ORDER BY MIN(borrowed_book.created_at)
+	`
 	err := repo.db.Select(&requests, query)
 	return requests, err
 }
@@ -59,6 +54,13 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
 	_, err := repo.db.Exec(query, status.BorrowStatusUnreturned, remarks ,id, status.BorrowStatusCheckedOut)
 	return err
+}
+
+func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
+		//Mark the book as approved if the book status is pending. The status id for checked out is 3.
+		query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
+		_, err := repo.db.Exec(query, status.BorrowStatusApproved, remarks ,id, status.BorrowStatusPending)
+		return err
 }
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{

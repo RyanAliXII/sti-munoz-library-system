@@ -114,7 +114,10 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	 	case status.BorrowStatusUnreturned:
 			ctrler.handleBookUnreturn(id, body.Remarks, ctx)
 			return
-	}	
+		case status.BorrowStatusApproved:
+			ctrler.handleBookApproval(id, body.Remarks, ctx)
+			return
+	 }	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
 	
 }
@@ -136,12 +139,15 @@ func (ctrler * Borrowing)handleBookUnreturn(id string, remarks string, ctx * gin
 	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
-func(ctrler * Borrowing)borrowBookAsPending(ctx * gin.Context){
 
-
-}
-func (ctrler * Borrowing)borrowBookAsCheckedOut(ctx * gin.Context){
-
+func (ctrler * Borrowing) handleBookApproval(id string, remarks string, ctx * gin.Context){
+	err := ctrler.borrowingRepo.MarkAsApproved(id, remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{

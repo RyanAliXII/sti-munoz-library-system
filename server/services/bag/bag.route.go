@@ -17,4 +17,5 @@ func BagRoutes (router * gin.RouterGroup) {
 	router.PATCH("/:id/checklist", middlewares.ValidateToken, controller.CheckItemFromBag)
 	router.PATCH("/checklist", middlewares.ValidateToken, controller.CheckOrUncheckAllItems)
 	router.DELETE("/checklist", middlewares.ValidateToken,  controller.DeleteAllCheckedItems)
+	router.POST("/checklist/checkout", middlewares.ValidateToken, controller.CheckoutCheckedItems)
 }
