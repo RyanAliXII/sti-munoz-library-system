@@ -22,3 +22,11 @@ export const StatusText = {
   Returned: "The book has been returned.",
   Cancelled: "Book borrow request has been declined or cancelled.",
 };
+export enum BorrowStatus {
+  Pending = 1,
+  Approved = 2,
+  CheckedOut = 3,
+  Returned = 4,
+  Cancelled = 5,
+  Unreturned = 6,
+}

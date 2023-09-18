@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -12,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type BorrowingController interface {
@@ -19,6 +21,7 @@ type BorrowingController interface {
 	GetBorrowRequests(ctx * gin.Context)
 	GetBorrowedBooksByGroupId(ctx * gin.Context)
 	UpdateBorrowingStatus(ctx * gin.Context)
+	GetBorrowedBookByAccountId(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -70,7 +73,6 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 	return borrowedBooks, nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
-	fmt.Println(ctx.Get("requestorApp"))
 	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
@@ -78,6 +80,36 @@ func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowRequests": requests,
 	}, "Borrow requests fetched."))
+}
+func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
+	appId, _ := ctx.Get("requestorApp")
+	requestorId, _ :=ctx.Get("requestorId")
+	accountId := requestorId.(string)
+	if appId != azuread.ClientAppClientId {
+		logger.Warn("Someone tried to access endpoints that is made for client", zap.String("endpoint", "GetBorrowedBooksByAccountId"))	
+		ctx.JSON(httpresp.Fail404(nil, "Not found"))
+		return
+	}
+	statusId, _ := strconv.Atoi(ctx.Query("statusId"))
+	var borrowedBooks  []model.BorrowedBook;
+	var err error = nil
+	if statusId != status.BorrowStatusApproved &&
+	   statusId != status.BorrowStatusPending &&
+	   statusId != status.BorrowStatusCancelled &&
+	   statusId != status.BorrowStatusCheckedOut &&
+	   statusId != status.BorrowStatusReturned {
+		borrowedBooks, err = ctrler.borrowingRepo.GetBorrowedBooksByAccountId(accountId)	
+	}else{
+		borrowedBooks, err = ctrler.borrowingRepo.GetBorrowedBooksByAccountIdAndStatusId(accountId,  statusId)
+	}
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetBorrowedBooksErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowedBooks": borrowedBooks,
+	}, "Borrowed books fetched fetched."))
 }
 func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 	groupId := ctx.Param("id")
