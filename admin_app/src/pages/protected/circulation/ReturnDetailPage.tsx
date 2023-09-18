@@ -14,7 +14,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 
-import { BorrowedCopy, BorrowingTransaction } from "@definitions/types";
+import { BorrowedBook } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -23,30 +23,20 @@ import { toast } from "react-toastify";
 import { ButtonClasses } from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
 import { useState } from "react";
-import {
-  BorrowedCopyInitialValue,
-  BorrowingTransactionInitialValue,
-} from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
 import { BorrowStatus } from "@internal/borrow-status";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
-import { AiOutlineEye } from "react-icons/ai";
-import { BsFillQuestionDiamondFill } from "react-icons/bs";
-import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
+import { BsArrowReturnLeft, BsQuestionDiamond } from "react-icons/bs";
+import { GrDocumentMissing } from "react-icons/gr";
+import { buildS3Url } from "@definitions/configs/s3";
+import ordinal from "ordinal";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { Get, Patch } = useRequest();
-  const fetchTransaction = async () => {
-    const { data: response } = await Get(
-      `/circulation/transactions/${id}`,
-      {},
-      [apiScope("Checkout.Read")]
-    );
-    return response?.data?.transaction ?? BorrowingTransactionInitialValue;
-  };
+
   const {
     isOpen: isReturnRemarkPromptOpen,
     close: closeReturnRemarkPrompt,
@@ -54,7 +44,7 @@ const TransactionByIdPage = () => {
   } = useSwitch();
 
   const {
-    isOpen: isUnreturnedRemarkPrompOpen,
+    isOpen: isUnreturnedRemarkPromptOpen,
     close: closeUnreturnedRemarkPrompt,
     open: openUnreturnedRemarkPrompt,
   } = useSwitch();
@@ -64,12 +54,19 @@ const TransactionByIdPage = () => {
     close: closeCancellationRemarkPrompt,
     open: openCancellationRemarkPrompt,
   } = useSwitch();
+
+  const fetchTransaction = async () => {
+    const { data: response } = await Get(`/borrowing/requests/${id}`, {}, [
+      apiScope("Checkout.Read"),
+    ]);
+    return response?.data?.borrowedBooks ?? [];
+  };
   const {
-    data: transaction,
+    data: borrowedBooks,
     refetch,
     isError,
     isFetching,
-  } = useQuery<BorrowingTransaction>({
+  } = useQuery<BorrowedBook[]>({
     queryFn: fetchTransaction,
     queryKey: ["transaction"],
     retry: false,
@@ -78,27 +75,26 @@ const TransactionByIdPage = () => {
     },
   });
 
-  const [selectedCopy, setSelectedCopy] = useState<BorrowedCopy>(
-    BorrowedCopyInitialValue
-  );
+  const [selectedBorrowedBookId, setSelectedBorrowedBookId] =
+    useState<string>("");
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
     updateStatus.mutate({
-      status: "returned",
+      status: BorrowStatus.Returned,
       remarks: remarks,
     });
   };
-  const onConfirmCancel = (remarks: string) => {
-    closeCancellationRemarkPrompt();
-    updateStatus.mutate({
-      status: "cancelled",
-      remarks: remarks,
-    });
-  };
+  // const onConfirmCancel = (remarks: string) => {
+  //   closeCancellationRemarkPrompt();
+  //   updateStatus.mutate({
+  //     status: "cancelled",
+  //     remarks: remarks,
+  //   });
+  // };
   const onConfirmUnreturn = (remarks: string) => {
     closeUnreturnedRemarkPrompt();
     updateStatus.mutate({
-      status: "unreturned",
+      status: BorrowStatus.Unreturned,
       remarks: remarks,
     });
   };
@@ -106,21 +102,32 @@ const TransactionByIdPage = () => {
   const updateStatus = useMutation({
     mutationFn: (body: { status: BorrowStatus; remarks: string }) =>
       Patch(
-        `/circulation/transactions/${id}/books/${selectedCopy.bookId}/accessions/${selectedCopy.number}`,
-        body,
-        {},
+        `/borrowing/borrowed-books/${selectedBorrowedBookId}/status`,
+        {
+          remarks: body.remarks,
+        },
+        {
+          params: {
+            statusId: body.status,
+          },
+        },
         [apiScope("Checkout.Edit")]
       ),
     onSuccess: () => {
       toast.success("Borrowed book has been updated.");
+      refetch();
     },
     onError: () => {
       toast.error(ErrorMsg.Update);
     },
-    onSettled: () => {
-      refetch();
-    },
   });
+
+  const client = borrowedBooks?.[0]?.client ?? {
+    displayName: "",
+    email: "",
+    givenName: "",
+    surname: "",
+  };
   return (
     <>
       <ContainerNoBackground>
@@ -132,17 +139,15 @@ const TransactionByIdPage = () => {
             <div className="flex gap-5">
               <div>
                 <ProfileIcon
-                  givenName={transaction?.client.givenName ?? ""}
-                  surname={transaction?.client.surname ?? ""}
+                  givenName={client.givenName ?? ""}
+                  surname={client.surname ?? ""}
                 ></ProfileIcon>
               </div>
               <div className="flex flex-col">
                 <span className="text-gray-600 font-bold">
-                  {transaction?.client.displayName}
+                  {client.displayName}
                 </span>
-                <small className="text-gray-500">
-                  {transaction?.client.email}
-                </small>
+                <small className="text-gray-500">{client.email}</small>
               </div>
             </div>
           </div>
@@ -166,104 +171,89 @@ const TransactionByIdPage = () => {
               <Thead>
                 <HeadingRow>
                   <Th>Title</Th>
+                  <Th>Created At</Th>
+                  <Th>Due Date</Th>
                   <Th>Copy number</Th>
                   <Th>Accession number</Th>
-                  <Th>Due Date</Th>
                   <Th>Status</Th>
                   <Th>Penalty</Th>
                   <Th></Th>
                 </HeadingRow>
               </Thead>
               <Tbody>
-                {transaction?.borrowedCopies?.map((accession) => {
-                  const isTransactionFinished =
-                    accession.isReturned ||
-                    accession.isCancelled ||
-                    accession.isUnreturned;
+                {borrowedBooks?.map((borrowedBook) => {
                   return (
-                    <BodyRow key={`${accession.number}_${accession.bookId}`}>
-                      <Td>{accession.book.title}</Td>
-                      <Td>{accession.copyNumber}</Td>
-                      <Td>{accession.number}</Td>
-
-                      <Td>{new Date(accession.dueDate).toDateString()}</Td>
-
-                      <Td>
-                        {!isTransactionFinished && "Checked Out"}
-                        {accession.isReturned && "Returned"}
-                        {accession.isCancelled && "Cancelled"}
-                        {accession.isUnreturned && "Unreturned"}
+                    <BodyRow key={borrowedBook.id}>
+                      <Td className="font-bold flex items-center gap-2">
+                        {borrowedBook.book.covers?.[0] ? (
+                          <img
+                            className="rounded"
+                            width={"40px"}
+                            height={"40px"}
+                            src={
+                              buildS3Url(borrowedBook.book.covers?.[0]) ?? ""
+                            }
+                          />
+                        ) : (
+                          <div
+                            className="bg-gray-200 rounded"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                            }}
+                          ></div>
+                        )}
+                        {borrowedBook.book.title}
                       </Td>
-                      <Td>
+                      <Td>{new Date(borrowedBook.dueDate).toDateString()}</Td>
+                      <Td>{new Date(borrowedBook.dueDate).toDateString()}</Td>
+                      <Td>{ordinal(borrowedBook.copyNumber)}</Td>
+                      <Td>{borrowedBook.accessionNumber}</Td>
+
+                      <Td>{borrowedBook.status}</Td>
+                      <Td className="text-red-500">
                         PHP{" "}
-                        {accession.penalty.toLocaleString(undefined, {
+                        {borrowedBook.penalty.toLocaleString(undefined, {
                           maximumFractionDigits: 2,
                           minimumFractionDigits: 2,
                         })}
                       </Td>
 
-                      <Td className="flex gap-2">
-                        <Tippy content="View Book">
-                          <Link
-                            to={`/circulation/transactions/${transaction.id}/books/${accession.bookId}/accessions/${accession.number}`}
-                            className={
-                              ButtonClasses.PrimaryOutlineButtonClasslist +
-                              " flex items-center gap-2 "
-                            }
-                          >
-                            <AiOutlineEye
-                              className="
-                        text-lg"
-                            />
-                          </Link>
-                        </Tippy>
-                        {!isTransactionFinished && (
-                          <>
-                            {" "}
-                            <Tippy content="Mark Book as Returned">
+                      <Td>
+                        <div className="flex gap-2">
+                          {borrowedBook.statusId ===
+                            BorrowStatus.CheckedOut && (
+                            <Tippy content="Mark borrowed book as returned.">
                               <button
-                                className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
+                                className={
+                                  ButtonClasses.PrimaryOutlineButtonClasslist
+                                }
                                 onClick={() => {
-                                  setSelectedCopy(accession);
+                                  setSelectedBorrowedBookId(borrowedBook.id);
                                   openReturnRemarkPrompt();
                                 }}
                               >
-                                <MdOutlineKeyboardReturn
-                                  className="
-                          text-lg"
-                                />
+                                <BsArrowReturnLeft />
                               </button>
                             </Tippy>
-                            <Tippy content="Mark Book as Unreturned">
+                          )}
+                          {borrowedBook.statusId ===
+                            BorrowStatus.CheckedOut && (
+                            <Tippy content="Mark borrowed book as unreturned.">
                               <button
-                                className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
+                                className={
+                                  ButtonClasses.WarningButtonOutlineClasslist
+                                }
                                 onClick={() => {
-                                  setSelectedCopy(accession);
+                                  setSelectedBorrowedBookId(borrowedBook.id);
                                   openUnreturnedRemarkPrompt();
                                 }}
                               >
-                                <BsFillQuestionDiamondFill
-                                  className="
-                          text-lg"
-                                />
+                                <BsQuestionDiamond />
                               </button>
                             </Tippy>
-                            <Tippy content="Cancel Borrow Request">
-                              <button
-                                className="flex items-center border p-2  rounded bg-white text-red-500 border-red-500"
-                                onClick={() => {
-                                  setSelectedCopy(accession);
-                                  openCancellationRemarkPrompt();
-                                }}
-                              >
-                                <MdOutlineCancel
-                                  className="
-                          text-lg"
-                                />
-                              </button>
-                            </Tippy>
-                          </>
-                        )}
+                          )}
+                        </div>
                       </Td>
                     </BodyRow>
                   );
@@ -274,6 +264,7 @@ const TransactionByIdPage = () => {
         </LoadingBoundary>
       </ContainerNoBackground>
       <PromptTextAreaDialog
+        key={"forReturn"}
         close={closeReturnRemarkPrompt}
         isOpen={isReturnRemarkPromptOpen}
         label="Remarks"
@@ -283,7 +274,7 @@ const TransactionByIdPage = () => {
         onProceed={onConfirmReturn}
       />
 
-      <PromptTextAreaDialog
+      {/* <PromptTextAreaDialog
         close={closeCancellationRemarkPrompt}
         isOpen={isCancellationRemarkPromptOpen}
         label="Remarks"
@@ -291,10 +282,11 @@ const TransactionByIdPage = () => {
         title="Cancellation Remarks"
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
-      />
+      /> */}
       <PromptTextAreaDialog
+        key={"forUnreturn"}
         close={closeUnreturnedRemarkPrompt}
-        isOpen={isUnreturnedRemarkPrompOpen}
+        isOpen={isUnreturnedRemarkPromptOpen}
         label="Remarks"
         proceedBtnText="Save"
         title="Unreturn Remarks"

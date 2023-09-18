@@ -6,6 +6,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/author"
 	authornum "github.com/RyanAliXII/sti-munoz-library-system/server/services/author_number"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/circulation"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	fundsrc "github.com/RyanAliXII/sti-munoz-library-system/server/services/fund_source"
@@ -35,4 +36,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	system.SystemRoutes(grp.Group("/system"))
 	penalty.PenaltyRoutes(grp.Group("/penalties"))
 	stats.StatsRoutes(grp.Group("/stats"))
+	borrowing.BorrowingRoutes(grp.Group("/borrowing"))
 }
