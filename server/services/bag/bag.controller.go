@@ -17,6 +17,7 @@ type BagController interface {
 	CheckItemFromBag(ctx * gin.Context)
 	CheckOrUncheckAllItems(ctx * gin.Context)
 	DeleteAllCheckedItems(ctx * gin.Context)
+	CheckoutCheckedItems(ctx *gin.Context)
 }
 type Bag struct {
 	bagRepo repository.BagRepository
@@ -132,6 +133,21 @@ func (ctrler * Bag) DeleteAllCheckedItems (ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Bag checked item has been deleted."))
 }
+func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
+	accountId, hasAccountId := ctx.Get("requestorId")
+	parsedAccountId, isStr  := accountId.(string)
+
+	if(!hasAccountId  || !isStr){
+	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
+	 return
+	}
+	checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
+	if checkoutErr != nil{
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Books has been checked out."))
+} 
 
 
 func NewBagController()BagController {

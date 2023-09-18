@@ -1,5 +1,8 @@
 import ProfileIcon from "@components/ProfileIcon";
-import { PromptTextAreaDialog } from "@components/ui/dialog/Dialog";
+import {
+  ConfirmDialog,
+  PromptTextAreaDialog,
+} from "@components/ui/dialog/Dialog";
 
 import {
   Thead,
@@ -28,7 +31,11 @@ import { BorrowStatus } from "@internal/borrow-status";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
-import { BsArrowReturnLeft, BsQuestionDiamond } from "react-icons/bs";
+import {
+  BsArrowReturnLeft,
+  BsHandThumbsUpFill,
+  BsQuestionDiamond,
+} from "react-icons/bs";
 import { GrDocumentMissing } from "react-icons/gr";
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
@@ -36,7 +43,11 @@ const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { Get, Patch } = useRequest();
-
+  const {
+    isOpen: isApprovalConfirmationDialogOpen,
+    close: closeApprovalConfirmationDialog,
+    open: openApprovalConfirmationDialog,
+  } = useSwitch();
   const {
     isOpen: isReturnRemarkPromptOpen,
     close: closeReturnRemarkPrompt,
@@ -91,6 +102,13 @@ const TransactionByIdPage = () => {
   //     remarks: remarks,
   //   });
   // };
+  const onConfirmApproval = () => {
+    closeApprovalConfirmationDialog();
+    updateStatus.mutate({
+      status: BorrowStatus.Approved,
+      remarks: "",
+    });
+  };
   const onConfirmUnreturn = (remarks: string) => {
     closeUnreturnedRemarkPrompt();
     updateStatus.mutate({
@@ -205,8 +223,12 @@ const TransactionByIdPage = () => {
                         )}
                         {borrowedBook.book.title}
                       </Td>
-                      <Td>{new Date(borrowedBook.dueDate).toDateString()}</Td>
-                      <Td>{new Date(borrowedBook.dueDate).toDateString()}</Td>
+                      <Td>{new Date(borrowedBook.createdAt).toDateString()}</Td>
+                      <Td>
+                        {borrowedBook.dueDate === ""
+                          ? "No due date"
+                          : new Date(borrowedBook.dueDate).toDateString()}
+                      </Td>
                       <Td>{ordinal(borrowedBook.copyNumber)}</Td>
                       <Td>{borrowedBook.accessionNumber}</Td>
 
@@ -234,6 +256,21 @@ const TransactionByIdPage = () => {
                                 }}
                               >
                                 <BsArrowReturnLeft />
+                              </button>
+                            </Tippy>
+                          )}
+                          {borrowedBook.statusId === BorrowStatus.Pending && (
+                            <Tippy content="Approve borrowing request.">
+                              <button
+                                className={
+                                  ButtonClasses.PrimaryOutlineButtonClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  openApprovalConfirmationDialog();
+                                }}
+                              >
+                                <BsHandThumbsUpFill />
                               </button>
                             </Tippy>
                           )}
@@ -283,6 +320,13 @@ const TransactionByIdPage = () => {
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
       /> */}
+      <ConfirmDialog
+        title="Approve Borrow Request!"
+        text="Are you sure you want to approve borrow request?"
+        isOpen={isApprovalConfirmationDialogOpen}
+        close={closeApprovalConfirmationDialog}
+        onConfirm={onConfirmApproval}
+      ></ConfirmDialog>
       <PromptTextAreaDialog
         key={"forUnreturn"}
         close={closeUnreturnedRemarkPrompt}

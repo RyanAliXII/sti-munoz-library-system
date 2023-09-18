@@ -112,7 +112,7 @@ const BagPage = () => {
   const navigate = useNavigate();
   const checkout = useMutation({
     mutationFn: () =>
-      Post("/checklist/checkout", {}, {}, [apiScope("Book.Checkout")]),
+      Post("/bag/checklist/checkout", {}, {}, [apiScope("Book.Checkout")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
       toast.success("Book has been checked out.");
