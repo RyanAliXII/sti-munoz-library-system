@@ -13,5 +13,6 @@ type CheckoutAccessions struct {
 	DueDate db.NullableDate `json:"dueDate" binding:"required" copier:"DueDate"`
 }
 
-
-
+type UpdateBorrowStatusBody struct {
+	Remarks string `json:"remarks"`
+}
