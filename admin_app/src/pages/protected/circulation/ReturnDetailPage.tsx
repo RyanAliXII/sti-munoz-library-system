@@ -41,6 +41,7 @@ import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
 import DueDateInputModal from "./DueDateInputModal";
 import { AiFillCheckCircle } from "react-icons/ai";
+import { MdOutlineCancel } from "react-icons/md";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -111,13 +112,13 @@ const TransactionByIdPage = () => {
     });
   };
 
-  // const onConfirmCancel = (remarks: string) => {
-  //   closeCancellationRemarkPrompt();
-  //   updateStatus.mutate({
-  //     status: "cancelled",
-  //     remarks: remarks,
-  //   });
-  // };
+  const onConfirmCancel = (remarks: string) => {
+    closeCancellationRemarkPrompt();
+    updateStatus.mutate({
+      status: BorrowStatus.Cancelled,
+      remarks: remarks,
+    });
+  };
   const onConfirmApproval = () => {
     closeApprovalConfirmationDialog();
     updateStatus.mutate({
@@ -326,6 +327,24 @@ const TransactionByIdPage = () => {
                               </button>
                             </Tippy>
                           )}
+                          {(borrowedBook.statusId === BorrowStatus.Pending ||
+                            borrowedBook.statusId === BorrowStatus.Approved ||
+                            borrowedBook.statusId ===
+                              BorrowStatus.CheckedOut) && (
+                            <Tippy content="Cancel Request">
+                              <button
+                                className={
+                                  ButtonClasses.DangerButtonOutlineClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  openCancellationRemarkPrompt();
+                                }}
+                              >
+                                <MdOutlineCancel />
+                              </button>
+                            </Tippy>
+                          )}
                         </div>
                       </Td>
                     </BodyRow>
@@ -347,7 +366,8 @@ const TransactionByIdPage = () => {
         onProceed={onConfirmReturn}
       />
 
-      {/* <PromptTextAreaDialog
+      <PromptTextAreaDialog
+        key={"forCancellation"}
         close={closeCancellationRemarkPrompt}
         isOpen={isCancellationRemarkPromptOpen}
         label="Remarks"
@@ -355,7 +375,7 @@ const TransactionByIdPage = () => {
         title="Cancellation Remarks"
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
-      /> */}
+      />
       <DueDateInputModal
         closeModal={closeInputDueDateModal}
         isOpen={isDueDateInputModalOpen}

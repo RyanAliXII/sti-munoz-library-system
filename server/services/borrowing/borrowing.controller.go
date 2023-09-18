@@ -133,8 +133,8 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	}
 	 id := ctx.Param("id")
 	 body := UpdateBorrowStatusBody{}
-	 // do not bind to body if status id is checkout.
-	 if  statusId == status.BorrowStatusApproved || statusId == status.BorrowStatusReturned || statusId == status.BorrowStatusUnreturned{
+	 // bind to body if status id is not checkout.
+	 if  statusId != status.BorrowStatusCheckedOut {
 		err =  ctx.Bind(&body)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("BindErr"))
@@ -142,25 +142,27 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 			return
 		}
 	 }
-	
 	 switch(statusId){
 	 	case status.BorrowStatusReturned: 
-			ctrler.handleBookReturn(id, body.Remarks, ctx)
+			ctrler.handleReturn(id, body.Remarks, ctx)
 			return
 	 	case status.BorrowStatusUnreturned:
-			ctrler.handleBookUnreturn(id, body.Remarks, ctx)
+			ctrler.handleUnreturn(id, body.Remarks, ctx)
 			return
 		case status.BorrowStatusApproved:
-			ctrler.handleBookApproval(id, body.Remarks, ctx)
+			ctrler.handleApproval(id, body.Remarks, ctx)
 			return
 		case status.BorrowStatusCheckedOut: 
-			ctrler.handleBookCheckout(id, ctx)
+			ctrler.handleCheckout(id, ctx)
+			return
+		case status.BorrowStatusCancelled: 
+			ctrler.handleCancellation(id, body.Remarks, ctx)
 			return
 	 }	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
 	
 }
-func (ctrler * Borrowing)handleBookReturn(id string, remarks string, ctx * gin.Context){
+func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
@@ -169,7 +171,7 @@ func (ctrler * Borrowing)handleBookReturn(id string, remarks string, ctx * gin.C
 	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
-func (ctrler * Borrowing)handleBookUnreturn(id string, remarks string, ctx * gin.Context){
+func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsUnreturned(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsUnreturnedErr"))
@@ -180,7 +182,7 @@ func (ctrler * Borrowing)handleBookUnreturn(id string, remarks string, ctx * gin
 }
 
 
-func (ctrler * Borrowing) handleBookApproval(id string, remarks string, ctx * gin.Context){
+func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsApproved(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
@@ -189,7 +191,16 @@ func (ctrler * Borrowing) handleBookApproval(id string, remarks string, ctx * gi
 	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
-func (ctrler * Borrowing) handleBookCheckout(id string, ctx * gin.Context){
+func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){
+	err := ctrler.borrowingRepo.MarkAsCancelled(id, remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Status updated."))
+}
+func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 	body := UpdateBorrowStatusBodyWithDueDate{}
 	err :=  ctx.Bind(&body)
 	if err != nil {
