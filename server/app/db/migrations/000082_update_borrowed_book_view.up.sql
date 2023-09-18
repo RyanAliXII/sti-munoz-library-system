@@ -81,7 +81,7 @@
 	INNER JOIN catalog.source_of_fund on book.fund_source_id = source_of_fund.id 
 	INNER JOIN get_accession_table() as accession on book.id = accession.book_id
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) --  1 means Pending, 2 means Approved, 3 means   
 	GROUP BY 
 	book.id,
 	source_of_fund.id,

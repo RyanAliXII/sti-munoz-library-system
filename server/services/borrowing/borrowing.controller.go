@@ -128,7 +128,7 @@ func (ctrler * Borrowing)handleBookReturn(id string, remarks string, ctx * gin.C
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing)handleBookUnreturn(id string, remarks string, ctx * gin.Context){
-	err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
+	err := ctrler.borrowingRepo.MarkAsUnreturned(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsUnreturnedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
