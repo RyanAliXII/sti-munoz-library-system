@@ -171,7 +171,7 @@ const TransactionByIdPage = () => {
   return (
     <>
       <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Borrowed Book</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Borrowed Books</h1>
       </ContainerNoBackground>
       <Container className="flex px-4 py-6">
         <LoadingBoundary isLoading={isFetching} isError={isError}>
