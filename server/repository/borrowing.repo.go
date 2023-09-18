@@ -17,6 +17,7 @@ type BorrowingRepository interface {
 
 	BorrowBook([]model.BorrowedBook) error
 	GetBorrowingRequests()([]model.BorrowingRequest, error)
+	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 
 }
 type Borrowing struct{
@@ -40,7 +41,7 @@ func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
 
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_view where group_id = ?`
+	query := `SELECT * FROM borrowed_book_view where group_id = $1`
 	err := repo.db.Select(&borrowedBooks, query, groupId)
 	return borrowedBooks, err
 }

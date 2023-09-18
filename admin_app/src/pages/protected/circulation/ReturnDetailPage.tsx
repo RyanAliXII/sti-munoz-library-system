@@ -14,7 +14,11 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 
-import { BorrowedCopy, BorrowingTransaction } from "@definitions/types";
+import {
+  BorrowedBook,
+  BorrowedCopy,
+  BorrowingTransaction,
+} from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -35,18 +39,13 @@ import Tippy from "@tippyjs/react";
 import { AiOutlineEye } from "react-icons/ai";
 import { BsFillQuestionDiamondFill } from "react-icons/bs";
 import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
+import { buildS3Url } from "@definitions/configs/s3";
+import ordinal from "ordinal";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { Get, Patch } = useRequest();
-  const fetchTransaction = async () => {
-    const { data: response } = await Get(
-      `/circulation/transactions/${id}`,
-      {},
-      [apiScope("Checkout.Read")]
-    );
-    return response?.data?.transaction ?? BorrowingTransactionInitialValue;
-  };
+
   const {
     isOpen: isReturnRemarkPromptOpen,
     close: closeReturnRemarkPrompt,
@@ -64,12 +63,19 @@ const TransactionByIdPage = () => {
     close: closeCancellationRemarkPrompt,
     open: openCancellationRemarkPrompt,
   } = useSwitch();
+
+  const fetchTransaction = async () => {
+    const { data: response } = await Get(`/borrowing/requests/${id}`, {}, [
+      apiScope("Checkout.Read"),
+    ]);
+    return response?.data?.borrowedBooks ?? [];
+  };
   const {
-    data: transaction,
+    data: borrowedBooks,
     refetch,
     isError,
     isFetching,
-  } = useQuery<BorrowingTransaction>({
+  } = useQuery<BorrowedBook[]>({
     queryFn: fetchTransaction,
     queryKey: ["transaction"],
     retry: false,
@@ -121,6 +127,13 @@ const TransactionByIdPage = () => {
       refetch();
     },
   });
+
+  const client = borrowedBooks?.[0]?.client ?? {
+    displayName: "",
+    email: "",
+    givenName: "",
+    surname: "",
+  };
   return (
     <>
       <ContainerNoBackground>
@@ -132,17 +145,15 @@ const TransactionByIdPage = () => {
             <div className="flex gap-5">
               <div>
                 <ProfileIcon
-                  givenName={transaction?.client.givenName ?? ""}
-                  surname={transaction?.client.surname ?? ""}
+                  givenName={client.givenName ?? ""}
+                  surname={client.surname ?? ""}
                 ></ProfileIcon>
               </div>
               <div className="flex flex-col">
                 <span className="text-gray-600 font-bold">
-                  {transaction?.client.displayName}
+                  {client.displayName}
                 </span>
-                <small className="text-gray-500">
-                  {transaction?.client.email}
-                </small>
+                <small className="text-gray-500">{client.email}</small>
               </div>
             </div>
           </div>
@@ -166,105 +177,55 @@ const TransactionByIdPage = () => {
               <Thead>
                 <HeadingRow>
                   <Th>Title</Th>
+                  <Th>Created At</Th>
+                  <Th>Due Date</Th>
                   <Th>Copy number</Th>
                   <Th>Accession number</Th>
-                  <Th>Due Date</Th>
                   <Th>Status</Th>
                   <Th>Penalty</Th>
                   <Th></Th>
                 </HeadingRow>
               </Thead>
               <Tbody>
-                {transaction?.borrowedCopies?.map((accession) => {
-                  const isTransactionFinished =
-                    accession.isReturned ||
-                    accession.isCancelled ||
-                    accession.isUnreturned;
+                {borrowedBooks?.map((borrowedBook) => {
                   return (
-                    <BodyRow key={`${accession.number}_${accession.bookId}`}>
-                      <Td>{accession.book.title}</Td>
-                      <Td>{accession.copyNumber}</Td>
-                      <Td>{accession.number}</Td>
-
-                      <Td>{new Date(accession.dueDate).toDateString()}</Td>
-
-                      <Td>
-                        {!isTransactionFinished && "Checked Out"}
-                        {accession.isReturned && "Returned"}
-                        {accession.isCancelled && "Cancelled"}
-                        {accession.isUnreturned && "Unreturned"}
+                    <BodyRow key={borrowedBook.id}>
+                      <Td className="font-bold flex items-center gap-2">
+                        {borrowedBook.book.covers?.[0] ? (
+                          <img
+                            className="rounded"
+                            width={"40px"}
+                            height={"40px"}
+                            src={
+                              buildS3Url(borrowedBook.book.covers?.[0]) ?? ""
+                            }
+                          />
+                        ) : (
+                          <div
+                            className="bg-gray-200 rounded"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                            }}
+                          ></div>
+                        )}
+                        {borrowedBook.book.title}
                       </Td>
-                      <Td>
+                      <Td>{new Date(borrowedBook.dueDate).toDateString()}</Td>
+                      <Td>{new Date(borrowedBook.dueDate).toDateString()}</Td>
+                      <Td>{ordinal(borrowedBook.copyNumber)}</Td>
+                      <Td>{borrowedBook.accessionNumber}</Td>
+
+                      <Td>{borrowedBook.status}</Td>
+                      <Td className="text-red-500">
                         PHP{" "}
-                        {accession.penalty.toLocaleString(undefined, {
+                        {borrowedBook.penalty.toLocaleString(undefined, {
                           maximumFractionDigits: 2,
                           minimumFractionDigits: 2,
                         })}
                       </Td>
 
-                      <Td className="flex gap-2">
-                        <Tippy content="View Book">
-                          <Link
-                            to={`/circulation/transactions/${transaction.id}/books/${accession.bookId}/accessions/${accession.number}`}
-                            className={
-                              ButtonClasses.PrimaryOutlineButtonClasslist +
-                              " flex items-center gap-2 "
-                            }
-                          >
-                            <AiOutlineEye
-                              className="
-                        text-lg"
-                            />
-                          </Link>
-                        </Tippy>
-                        {!isTransactionFinished && (
-                          <>
-                            {" "}
-                            <Tippy content="Mark Book as Returned">
-                              <button
-                                className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
-                                onClick={() => {
-                                  setSelectedCopy(accession);
-                                  openReturnRemarkPrompt();
-                                }}
-                              >
-                                <MdOutlineKeyboardReturn
-                                  className="
-                          text-lg"
-                                />
-                              </button>
-                            </Tippy>
-                            <Tippy content="Mark Book as Unreturned">
-                              <button
-                                className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
-                                onClick={() => {
-                                  setSelectedCopy(accession);
-                                  openUnreturnedRemarkPrompt();
-                                }}
-                              >
-                                <BsFillQuestionDiamondFill
-                                  className="
-                          text-lg"
-                                />
-                              </button>
-                            </Tippy>
-                            <Tippy content="Cancel Borrow Request">
-                              <button
-                                className="flex items-center border p-2  rounded bg-white text-red-500 border-red-500"
-                                onClick={() => {
-                                  setSelectedCopy(accession);
-                                  openCancellationRemarkPrompt();
-                                }}
-                              >
-                                <MdOutlineCancel
-                                  className="
-                          text-lg"
-                                />
-                              </button>
-                            </Tippy>
-                          </>
-                        )}
-                      </Td>
+                      <Td className="flex gap-2"></Td>
                     </BodyRow>
                   );
                 })}

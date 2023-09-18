@@ -25,7 +25,7 @@ type Book struct {
 	Edition       int             `json:"edition" db:"edition"`
 	YearPublished int             `json:"yearPublished" db:"year_published"`
 	ReceivedAt    db.NullableTime `json:"receivedAt" db:"received_at"`
-	DDC           string        `json:"ddc" db:"ddc"`
+	DDC           string          `json:"ddc" db:"ddc"`
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
 
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
@@ -39,9 +39,11 @@ type BookJSON struct {
 
 func (book *BookJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
+
 	if valid {
 		unmarshalErr := json.Unmarshal(val, book)
 		if unmarshalErr != nil {
+			
 			*book = BookJSON{
 				Book: Book{},
 			}
@@ -52,6 +54,7 @@ func (book *BookJSON) Scan(value interface{}) error {
 		}
 
 	}
+	
 	return nil
 
 }

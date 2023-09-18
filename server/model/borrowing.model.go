@@ -18,6 +18,7 @@ type BorrowedBook struct {
 	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
 	Remarks string `json:"remarks" db:"remarks"`
 	Client         AccountJSON     `json:"client" db:"client"`
+	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
 
