@@ -24,10 +24,14 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { ButtonClasses } from "@components/ui/button/Button";
+import {
+  ButtonClasses,
+  PrimaryOutlineButton,
+} from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
 import { useState } from "react";
 import {
+  BookInitialValue,
   BorrowedCopyInitialValue,
   BorrowingTransactionInitialValue,
 } from "@definitions/defaults";
@@ -37,7 +41,7 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
 import { AiOutlineEye } from "react-icons/ai";
-import { BsFillQuestionDiamondFill } from "react-icons/bs";
+import { BsArrowReturnLeft, BsFillQuestionDiamondFill } from "react-icons/bs";
 import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
@@ -84,9 +88,8 @@ const TransactionByIdPage = () => {
     },
   });
 
-  const [selectedCopy, setSelectedCopy] = useState<BorrowedCopy>(
-    BorrowedCopyInitialValue
-  );
+  const [selectedBorrowedBookId, setSelectedBorrowedBookId] =
+    useState<string>("");
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
     updateStatus.mutate({
@@ -111,12 +114,9 @@ const TransactionByIdPage = () => {
 
   const updateStatus = useMutation({
     mutationFn: (body: { status: BorrowStatus; remarks: string }) =>
-      Patch(
-        `/circulation/transactions/${id}/books/${selectedCopy.bookId}/accessions/${selectedCopy.number}`,
-        body,
-        {},
-        [apiScope("Checkout.Edit")]
-      ),
+      Patch(`/circulation/transactions/`, body, {}, [
+        apiScope("Checkout.Edit"),
+      ]),
     onSuccess: () => {
       toast.success("Borrowed book has been updated.");
     },
@@ -225,7 +225,18 @@ const TransactionByIdPage = () => {
                         })}
                       </Td>
 
-                      <Td className="flex gap-2"></Td>
+                      <Td>
+                        <Tippy content="Mark borrowed book as returned.">
+                          <button
+                            className={
+                              ButtonClasses.PrimaryOutlineButtonClasslist
+                            }
+                            onClick={openReturnRemarkPrompt}
+                          >
+                            <BsArrowReturnLeft />
+                          </button>
+                        </Tippy>
+                      </Td>
                     </BodyRow>
                   );
                 })}
