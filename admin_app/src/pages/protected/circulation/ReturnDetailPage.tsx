@@ -14,33 +14,22 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 
-import {
-  BorrowedBook,
-  BorrowedCopy,
-  BorrowingTransaction,
-} from "@definitions/types";
+import { BorrowedBook } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  ButtonClasses,
-  PrimaryOutlineButton,
-} from "@components/ui/button/Button";
+import { ButtonClasses } from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
 import { useState } from "react";
-import {
-  BookInitialValue,
-  BorrowedCopyInitialValue,
-  BorrowingTransactionInitialValue,
-} from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
 import { BorrowStatus } from "@internal/borrow-status";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
-import { BsArrowReturnLeft } from "react-icons/bs";
+import { BsArrowReturnLeft, BsQuestionDiamond } from "react-icons/bs";
+import { GrDocumentMissing } from "react-icons/gr";
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
 const TransactionByIdPage = () => {
@@ -55,7 +44,7 @@ const TransactionByIdPage = () => {
   } = useSwitch();
 
   const {
-    isOpen: isUnreturnedRemarkPrompOpen,
+    isOpen: isUnreturnedRemarkPromptOpen,
     close: closeUnreturnedRemarkPrompt,
     open: openUnreturnedRemarkPrompt,
   } = useSwitch();
@@ -102,13 +91,13 @@ const TransactionByIdPage = () => {
   //     remarks: remarks,
   //   });
   // };
-  // const onConfirmUnreturn = (remarks: string) => {
-  //   closeUnreturnedRemarkPrompt();
-  //   updateStatus.mutate({
-  //     status: "unreturned",
-  //     remarks: remarks,
-  //   });
-  // };
+  const onConfirmUnreturn = (remarks: string) => {
+    closeUnreturnedRemarkPrompt();
+    updateStatus.mutate({
+      status: BorrowStatus.Unreturned,
+      remarks: remarks,
+    });
+  };
 
   const updateStatus = useMutation({
     mutationFn: (body: { status: BorrowStatus; remarks: string }) =>
@@ -231,19 +220,40 @@ const TransactionByIdPage = () => {
                       </Td>
 
                       <Td>
-                        <Tippy content="Mark borrowed book as returned.">
-                          <button
-                            className={
-                              ButtonClasses.PrimaryOutlineButtonClasslist
-                            }
-                            onClick={() => {
-                              setSelectedBorrowedBookId(borrowedBook.id);
-                              openReturnRemarkPrompt();
-                            }}
-                          >
-                            <BsArrowReturnLeft />
-                          </button>
-                        </Tippy>
+                        <div className="flex gap-2">
+                          {borrowedBook.statusId ===
+                            BorrowStatus.CheckedOut && (
+                            <Tippy content="Mark borrowed book as returned.">
+                              <button
+                                className={
+                                  ButtonClasses.PrimaryOutlineButtonClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  openReturnRemarkPrompt();
+                                }}
+                              >
+                                <BsArrowReturnLeft />
+                              </button>
+                            </Tippy>
+                          )}
+                          {borrowedBook.statusId ===
+                            BorrowStatus.CheckedOut && (
+                            <Tippy content="Mark borrowed book as unreturned.">
+                              <button
+                                className={
+                                  ButtonClasses.WarningButtonOutlineClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  openUnreturnedRemarkPrompt();
+                                }}
+                              >
+                                <BsQuestionDiamond />
+                              </button>
+                            </Tippy>
+                          )}
+                        </div>
                       </Td>
                     </BodyRow>
                   );
@@ -271,16 +281,16 @@ const TransactionByIdPage = () => {
         title="Cancellation Remarks"
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
-      />
+      /> */}
       <PromptTextAreaDialog
         close={closeUnreturnedRemarkPrompt}
-        isOpen={isUnreturnedRemarkPrompOpen}
+        isOpen={isUnreturnedRemarkPromptOpen}
         label="Remarks"
         proceedBtnText="Save"
         title="Unreturn Remarks"
         placeholder="Eg. reason for not returning book."
         onProceed={onConfirmUnreturn}
-      /> */}
+      />
     </>
   );
 };

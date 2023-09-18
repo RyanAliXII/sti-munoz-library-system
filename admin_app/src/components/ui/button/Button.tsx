@@ -10,6 +10,7 @@ export enum ButtonClasses {
   PrimaryOutlineButtonClasslist = "bg-white p-2 border border-blue-500 text-blue-500 rounded",
   SecondaryOutlineButtonClasslist = "bg-white p-2 border border-yellow-500 text-yellow-500 rounded",
   LightOutlineButtonClasslist = "bg-white p-2 border border-gray-300  text-gray-500 rounded",
+  WarningButtonOutlineClasslist = "bg-white p-2  text-sm rounded border border-orange-500 text-orange-500 font-semibold",
 }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}

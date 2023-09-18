@@ -109,13 +109,33 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	}
 	 switch(statusId){
 	 	case status.BorrowStatusReturned: 
-			ctrler.borrowingRepo.MarkAsReturned(id, body.Remarks)
+			ctrler.handleBookReturn(id, body.Remarks, ctx)
+			return
+	 	case status.BorrowStatusUnreturned:
+			ctrler.handleBookUnreturn(id, body.Remarks, ctx)
 			return
 	}	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
 	
 }
-
+func (ctrler * Borrowing)handleBookReturn(id string, remarks string, ctx * gin.Context){
+	err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Status updated."))
+}
+func (ctrler * Borrowing)handleBookUnreturn(id string, remarks string, ctx * gin.Context){
+	err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsUnreturnedErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Status updated."))
+}
 func(ctrler * Borrowing)borrowBookAsPending(ctx * gin.Context){
 
 
