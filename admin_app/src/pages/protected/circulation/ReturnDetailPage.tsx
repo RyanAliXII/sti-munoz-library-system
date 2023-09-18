@@ -40,9 +40,7 @@ import { BorrowStatus } from "@internal/borrow-status";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
-import { AiOutlineEye } from "react-icons/ai";
-import { BsArrowReturnLeft, BsFillQuestionDiamondFill } from "react-icons/bs";
-import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
+import { BsArrowReturnLeft } from "react-icons/bs";
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
 const TransactionByIdPage = () => {
@@ -93,24 +91,24 @@ const TransactionByIdPage = () => {
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
     updateStatus.mutate({
-      status: "returned",
+      status: BorrowStatus.Returned,
       remarks: remarks,
     });
   };
-  const onConfirmCancel = (remarks: string) => {
-    closeCancellationRemarkPrompt();
-    updateStatus.mutate({
-      status: "cancelled",
-      remarks: remarks,
-    });
-  };
-  const onConfirmUnreturn = (remarks: string) => {
-    closeUnreturnedRemarkPrompt();
-    updateStatus.mutate({
-      status: "unreturned",
-      remarks: remarks,
-    });
-  };
+  // const onConfirmCancel = (remarks: string) => {
+  //   closeCancellationRemarkPrompt();
+  //   updateStatus.mutate({
+  //     status: "cancelled",
+  //     remarks: remarks,
+  //   });
+  // };
+  // const onConfirmUnreturn = (remarks: string) => {
+  //   closeUnreturnedRemarkPrompt();
+  //   updateStatus.mutate({
+  //     status: "unreturned",
+  //     remarks: remarks,
+  //   });
+  // };
 
   const updateStatus = useMutation({
     mutationFn: (body: { status: BorrowStatus; remarks: string }) =>
@@ -255,7 +253,7 @@ const TransactionByIdPage = () => {
         onProceed={onConfirmReturn}
       />
 
-      <PromptTextAreaDialog
+      {/* <PromptTextAreaDialog
         close={closeCancellationRemarkPrompt}
         isOpen={isCancellationRemarkPromptOpen}
         label="Remarks"
@@ -272,7 +270,7 @@ const TransactionByIdPage = () => {
         title="Unreturn Remarks"
         placeholder="Eg. reason for not returning book."
         onProceed={onConfirmUnreturn}
-      />
+      /> */}
     </>
   );
 };

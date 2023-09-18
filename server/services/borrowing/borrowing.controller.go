@@ -2,6 +2,7 @@ package borrowing
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -90,9 +91,22 @@ func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 	}, "Borrowed books fetched."))
 }
 
-
-
-
+func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
+	 statusId, err := strconv.Atoi(ctx.Param("statusId"))
+	 id := ctx.Param("id")
+	 if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ConvertErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
+		return
+	}
+	 switch(statusId){
+	 case status.BorrowStatusReturned: 
+		ctrler.borrowingRepo.MarkAsReturned(id)
+	
+	}
+	 ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
+	
+}
 
 func(ctrler * Borrowing)borrowBookAsPending(ctx * gin.Context){
 
