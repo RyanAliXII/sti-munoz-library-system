@@ -11,11 +11,11 @@ import (
 
 func BagRoutes (router * gin.RouterGroup) {
 	controller := NewBagController()
-	router.POST("/",middlewares.ValidateToken, middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)
-	router.GET("/",middlewares.ValidateToken, controller.GetBagItems)
-	router.DELETE("/:id",middlewares.ValidateToken, controller.DeleteItemFromBag)
-	router.PATCH("/:id/checklist", middlewares.ValidateToken, controller.CheckItemFromBag)
-	router.PATCH("/checklist", middlewares.ValidateToken, controller.CheckOrUncheckAllItems)
-	router.DELETE("/checklist", middlewares.ValidateToken,  controller.DeleteAllCheckedItems)
-	router.POST("/checklist/checkout", middlewares.ValidateToken, controller.CheckoutCheckedItems)
+	router.POST("/",middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)
+	router.GET("/",controller.GetBagItems)
+	router.DELETE("/:id",controller.DeleteItemFromBag)
+	router.PATCH("/:id/checklist", controller.CheckItemFromBag)
+	router.PATCH("/checklist", controller.CheckOrUncheckAllItems)
+	router.DELETE("/checklist",controller.DeleteAllCheckedItems)
+	router.POST("/checklist/checkout",controller.CheckoutCheckedItems)
 }

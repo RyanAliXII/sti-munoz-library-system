@@ -8,10 +8,10 @@ import (
 
 func SystemRoutes(router *gin.RouterGroup) {
 	ctrler := NewSystemConctroller()
-	router.GET("/modules", middlewares.ValidateToken, ctrler.GetModules)
-	router.POST("/roles", middlewares.ValidateToken, middlewares.ValidateBody[RoleBody], ctrler.CreateRole)
-	router.PUT("/roles/:id",middlewares.ValidateToken, middlewares.ValidateBody[RoleBody], ctrler.UpdateRole)
-	router.POST("/roles/accounts",middlewares.ValidateToken, middlewares.ValidateBody[AssignBody], ctrler.AssignRole)
+	router.GET("/modules",  ctrler.GetModules)
+	router.POST("/roles",  middlewares.ValidateBody[RoleBody], ctrler.CreateRole)
+	router.PUT("/roles/:id", middlewares.ValidateBody[RoleBody], ctrler.UpdateRole)
+	router.POST("/roles/accounts", middlewares.ValidateBody[AssignBody], ctrler.AssignRole)
 
 	router.GET("/roles/accounts",
 	middlewares.ValidatePermissions([]string{"AccessControl.Role.Read"}),
@@ -21,8 +21,8 @@ func SystemRoutes(router *gin.RouterGroup) {
 	middlewares.ValidatePermissions([]string{"AccessControl.Role.Delete"}),
 	ctrler.RemoveRoleAssignment,
 	)
-	router.GET("/roles",middlewares.ValidateToken, ctrler.GetRoles)
-	router.POST("/accounts/verification",middlewares.ValidateToken, middlewares.ValidateBody[AccountBody] ,ctrler.VerifyAccount)
-	router.POST("/accounts/permissions",middlewares.ValidateToken, ctrler.GetAccountRoleAndPermissions)
-	router.GET("/settings", middlewares.ValidateToken, ctrler.GetAppSettings)
+	router.GET("/roles", ctrler.GetRoles)
+	router.POST("/accounts/verification", middlewares.ValidateBody[AccountBody] ,ctrler.VerifyAccount)
+	router.POST("/accounts/permissions", ctrler.GetAccountRoleAndPermissions)
+	router.GET("/settings",  ctrler.GetAppSettings)
 }
