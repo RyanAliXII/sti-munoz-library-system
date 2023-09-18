@@ -12,7 +12,7 @@ const CustomDatePicker = (props: CustomDatePickerProps) => {
       <label className="text-gray-600 text-sm" htmlFor={props?.name}>
         {props.label}
       </label>
-      <div className={`w-full ${props.wrapperClassName}`}>
+      <div className={`w-full ${props.wrapperClassName ?? ""}`}>
         <DatePicker
           {...{
             ...props,

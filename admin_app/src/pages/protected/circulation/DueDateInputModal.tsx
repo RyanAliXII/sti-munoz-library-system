@@ -4,7 +4,6 @@ import { Input } from "@components/ui/form/Input";
 import { ModalProps } from "@definitions/types";
 import React, { useState } from "react";
 import Modal from "react-responsive-modal";
-import { date } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
   onConfirmDate: (date: string) => void;
@@ -27,7 +26,7 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
       onClose={closeModal}
       showCloseIcon={false}
       classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
-      center
+      containerId="dueDateInputOverlay"
       modalId="dueDateInputModal"
     >
       <form>
@@ -38,11 +37,13 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
           <div className="px-2">
             <div>
               <CustomDatePicker
-                popperProps={{ strategy: "fixed" }}
                 name="dueDate"
                 placeholderText="Select due date"
                 value={new Date(dueDate).toDateString()}
+                portalId="dueDateInputOverlay"
                 selected={new Date(dueDate)}
+                minDate={dateNow}
+                className="w-full block"
                 onChange={(date) => {
                   if (!date) return;
                   const dateValue = `${date.getFullYear()}-${
