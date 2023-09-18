@@ -16,3 +16,7 @@ type CheckoutAccessions struct {
 type UpdateBorrowStatusBody struct {
 	Remarks string `json:"remarks"`
 }
+type UpdateBorrowStatusBodyWithDueDate struct {
+	Remarks string `json:"remarks"`
+	DueDate db.NullableDate `json:"dueDate"`
+}

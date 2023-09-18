@@ -101,12 +101,16 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	}
 	 id := ctx.Param("id")
 	 body := UpdateBorrowStatusBody{}
-	 err =  ctx.Bind(&body)
-	 if err != nil {
-		logger.Error(err.Error(), slimlog.Error("BindErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-		return
-	}
+	 // do not bind to body if status id is checkout.
+	 if  statusId == status.BorrowStatusApproved || statusId == status.BorrowStatusReturned || statusId == status.BorrowStatusUnreturned{
+		err =  ctx.Bind(&body)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("BindErr"))
+			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+			return
+		}
+	 }
+	
 	 switch(statusId){
 	 	case status.BorrowStatusReturned: 
 			ctrler.handleBookReturn(id, body.Remarks, ctx)
@@ -116,6 +120,9 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 			return
 		case status.BorrowStatusApproved:
 			ctrler.handleBookApproval(id, body.Remarks, ctx)
+			return
+		case status.BorrowStatusCheckedOut: 
+			ctrler.handleBookCheckout(id, ctx)
 			return
 	 }	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
@@ -140,6 +147,7 @@ func (ctrler * Borrowing)handleBookUnreturn(id string, remarks string, ctx * gin
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 
+
 func (ctrler * Borrowing) handleBookApproval(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsApproved(id, remarks)
 	if err != nil {
@@ -148,6 +156,21 @@ func (ctrler * Borrowing) handleBookApproval(id string, remarks string, ctx * gi
 		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
+}
+func (ctrler * Borrowing) handleBookCheckout(id string, ctx * gin.Context){
+	body := UpdateBorrowStatusBodyWithDueDate{}
+	err :=  ctx.Bind(&body)
+	if err != nil {
+	   logger.Error(err.Error(), slimlog.Error("BindErr"))
+	   ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+	   return
+   	}
+	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
 }
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{

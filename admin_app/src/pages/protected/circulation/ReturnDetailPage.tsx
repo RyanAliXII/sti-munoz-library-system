@@ -39,6 +39,8 @@ import {
 import { GrDocumentMissing } from "react-icons/gr";
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
+import DueDateInputModal from "./DueDateInputModal";
+import { AiFillCheckCircle } from "react-icons/ai";
 const TransactionByIdPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -65,7 +67,11 @@ const TransactionByIdPage = () => {
     close: closeCancellationRemarkPrompt,
     open: openCancellationRemarkPrompt,
   } = useSwitch();
-
+  const {
+    isOpen: isDueDateInputModalOpen,
+    close: closeInputDueDateModal,
+    open: openInputDueDateModal,
+  } = useSwitch();
   const fetchTransaction = async () => {
     const { data: response } = await Get(`/borrowing/requests/${id}`, {}, [
       apiScope("Checkout.Read"),
@@ -95,6 +101,16 @@ const TransactionByIdPage = () => {
       remarks: remarks,
     });
   };
+
+  const onConfirmDueDate = (date: string) => {
+    closeInputDueDateModal();
+    updateStatus.mutate({
+      status: BorrowStatus.CheckedOut,
+      remarks: "",
+      dueDate: date,
+    });
+  };
+
   // const onConfirmCancel = (remarks: string) => {
   //   closeCancellationRemarkPrompt();
   //   updateStatus.mutate({
@@ -118,11 +134,16 @@ const TransactionByIdPage = () => {
   };
 
   const updateStatus = useMutation({
-    mutationFn: (body: { status: BorrowStatus; remarks: string }) =>
+    mutationFn: (body: {
+      status: BorrowStatus;
+      remarks: string;
+      dueDate?: string;
+    }) =>
       Patch(
         `/borrowing/borrowed-books/${selectedBorrowedBookId}/status`,
         {
           remarks: body.remarks,
+          dueDate: body?.dueDate ?? "",
         },
         {
           params: {
@@ -274,6 +295,21 @@ const TransactionByIdPage = () => {
                               </button>
                             </Tippy>
                           )}
+                          {borrowedBook.statusId === BorrowStatus.Approved && (
+                            <Tippy content="Approve borrowing request.">
+                              <button
+                                className={
+                                  ButtonClasses.PrimaryOutlineButtonClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  openInputDueDateModal();
+                                }}
+                              >
+                                <AiFillCheckCircle />
+                              </button>
+                            </Tippy>
+                          )}
                           {borrowedBook.statusId ===
                             BorrowStatus.CheckedOut && (
                             <Tippy content="Mark borrowed book as unreturned.">
@@ -320,7 +356,13 @@ const TransactionByIdPage = () => {
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
       /> */}
+      <DueDateInputModal
+        closeModal={closeInputDueDateModal}
+        isOpen={isDueDateInputModalOpen}
+        onConfirmDate={onConfirmDueDate}
+      />
       <ConfirmDialog
+        key={"forApproval"}
         title="Approve Borrow Request!"
         text="Are you sure you want to approve borrow request?"
         isOpen={isApprovalConfirmationDialogOpen}

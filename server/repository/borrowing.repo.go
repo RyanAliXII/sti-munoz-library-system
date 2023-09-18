@@ -13,6 +13,7 @@ type BorrowingRepository interface {
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
 	MarkAsApproved(id string, remarks string) error 
+	MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate) error
  	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 
 }
@@ -57,10 +58,18 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 }
 
 func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
-		//Mark the book as approved if the book status is pending. The status id for checked out is 3.
+		//Mark the book as approved if the book status is pending. The status id for pending is 1.
 		query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
 		_, err := repo.db.Exec(query, status.BorrowStatusApproved, remarks ,id, status.BorrowStatusPending)
 		return err
+}
+
+func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate) error{
+	//Mark the book as checked out if the book status is approved. The status id for approved is 2.
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and status_id = $5"
+	_, err := repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved)
+	return err 
+
 }
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
