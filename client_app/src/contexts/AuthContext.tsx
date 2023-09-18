@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         surname: user.data.surname,
       };
       await verifyAccount(accountData);
-      await getRolePermissions();
+      // await getRolePermissions();
       return true;
     } catch (error) {
       console.error(error);

@@ -5,6 +5,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/account"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/author"
 	authornum "github.com/RyanAliXII/sti-munoz-library-system/server/services/author_number"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/bag"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/circulation"
@@ -37,4 +38,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	penalty.PenaltyRoutes(grp.Group("/penalties"))
 	stats.StatsRoutes(grp.Group("/stats"))
 	borrowing.BorrowingRoutes(grp.Group("/borrowing"))
+	bag.BagRoutes(grp.Group("/bag"))
 }
