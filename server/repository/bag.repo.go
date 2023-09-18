@@ -33,13 +33,13 @@ func (repo * Bag) AddItemToBag(item model.BagItem) error{
 func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	items := make([]model.BagItem, 0)
 	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked, book.json_format as book,	
-	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available FROM circulation.bag
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available FROM circulation.bag
 	INNER JOIN get_accession_table() as accession on bag.accession_id = accession.id
 	INNER JOIN book_view as book on accession.book_id = book.id
-	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
-	where bag.account_id = $1`
+	LEFT JOIN borrowing.borrowed_book
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	where bag.account_id = $1
+	`
 	selectErr := repo.db.Select(&items, query, accountId,)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("Bag.GetItemsFromBagByAccountId"), slimlog.Error("selectErr"))
