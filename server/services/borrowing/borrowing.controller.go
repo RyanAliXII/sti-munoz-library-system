@@ -18,6 +18,7 @@ type BorrowingController interface {
 	HandleBorrowing(ctx * gin.Context)
 	GetBorrowRequests(ctx * gin.Context)
 	GetBorrowedBooksByGroupId(ctx * gin.Context)
+	UpdateBorrowingStatus(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -92,18 +93,18 @@ func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 }
 
 func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
-	 statusId, err := strconv.Atoi(ctx.Param("statusId"))
+	 statusId, err := strconv.Atoi(ctx.Query("statusId"))
 	 id := ctx.Param("id")
 	 if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ConvertErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid Status Id"))
 		return
 	}
 	 switch(statusId){
 	 case status.BorrowStatusReturned: 
 		ctrler.borrowingRepo.MarkAsReturned(id)
-	
-	}
+		return
+	}	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid Action"))
 	
 }

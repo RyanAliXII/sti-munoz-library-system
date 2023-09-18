@@ -50,7 +50,7 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 func (repo * Borrowing) MarkAsReturned(id string) error {
 	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1 where id = $2 and status_id = $3"
-	_, err := repo.db.Exec(query, id, status.BorrowStatusReturned, status.BorrowStatusCheckedOut)
+	_, err := repo.db.Exec(query, status.BorrowStatusReturned,id, status.BorrowStatusCheckedOut)
 	return err
 }
 func NewBorrowingRepository ()  BorrowingRepository {

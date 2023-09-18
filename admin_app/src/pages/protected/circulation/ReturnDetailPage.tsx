@@ -112,17 +112,24 @@ const TransactionByIdPage = () => {
 
   const updateStatus = useMutation({
     mutationFn: (body: { status: BorrowStatus; remarks: string }) =>
-      Patch(`/circulation/transactions/`, body, {}, [
-        apiScope("Checkout.Edit"),
-      ]),
+      Patch(
+        `/borrowing/borrowed-books/${selectedBorrowedBookId}/status`,
+        {
+          remarks: body.remarks,
+        },
+        {
+          params: {
+            statusId: body.status,
+          },
+        },
+        [apiScope("Checkout.Edit")]
+      ),
     onSuccess: () => {
       toast.success("Borrowed book has been updated.");
+      refetch();
     },
     onError: () => {
       toast.error(ErrorMsg.Update);
-    },
-    onSettled: () => {
-      refetch();
     },
   });
 
@@ -229,7 +236,10 @@ const TransactionByIdPage = () => {
                             className={
                               ButtonClasses.PrimaryOutlineButtonClasslist
                             }
-                            onClick={openReturnRemarkPrompt}
+                            onClick={() => {
+                              setSelectedBorrowedBookId(borrowedBook.id);
+                              openReturnRemarkPrompt();
+                            }}
                           >
                             <BsArrowReturnLeft />
                           </button>
