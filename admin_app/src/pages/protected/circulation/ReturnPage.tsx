@@ -18,6 +18,8 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import TimeAgo from "timeago-react";
+import { BiErrorAlt } from "react-icons/bi";
+import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 
 const BorrowingTransactionPage = () => {
   const { Get } = useRequest();
@@ -47,8 +49,8 @@ const BorrowingTransactionPage = () => {
         <Table>
           <Thead>
             <HeadingRow>
+              <Th>Created At</Th>
               <Th>Client</Th>
-
               <Th></Th>
             </HeadingRow>
           </Thead>
@@ -62,10 +64,12 @@ const BorrowingTransactionPage = () => {
                     navigate(`/circulation/transactions/${request.id}`)
                   }
                 >
-                  <Td>{request.client.displayName}</Td>
-
                   <Td>
                     <TimeAgo datetime={request.createdAt} />
+                  </Td>
+                  <Td>{request.client.displayName}</Td>
+                  <Td>
+                    <RequiresAttentionText request={request} />
                   </Td>
                 </BodyRow>
               );
@@ -76,5 +80,49 @@ const BorrowingTransactionPage = () => {
     </>
   );
 };
-
+export const RequiresAttentionText = ({
+  request,
+}: {
+  request: BorrowRequest;
+}) => {
+  if (request.totalPenalty > 0) {
+    return (
+      <div className="text-red-400 flex items-center gap-1 font-bold">
+        <BiErrorAlt className="text-lg" />
+        <span>
+          Client is past due. Penalty: PHP {""}
+          {request.totalPenalty.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}{" "}
+        </span>
+      </div>
+    );
+  }
+  if (request.totalPending > 0) {
+    return (
+      <div className="font-bold flex items-center gap-1">
+        <AiOutlineWarning className="text-lg" />
+        <span>You have {request.totalPending} pending requests.</span>
+      </div>
+    );
+  }
+  if (request.totalApproved > 0) {
+    return (
+      <div className="font-bold flex items-center gap-1 text-blue-500">
+        <AiOutlineWarning className="text-lg" />
+        <span>You have approved {request.totalApproved} requests.</span>
+      </div>
+    );
+  }
+  if (request.totalCheckedOut > 0) {
+    return (
+      <div className="font-bold flex items-center gap-1 text-green-500">
+        <AiOutlineCheckCircle className="text-lg" />
+        <span>{request.totalCheckedOut} books have been checked out.</span>
+      </div>
+    );
+  }
+  return null;
+};
 export default BorrowingTransactionPage;

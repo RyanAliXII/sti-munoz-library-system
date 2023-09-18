@@ -143,6 +143,13 @@ export type BorrowingTransaction = {
 export type BorrowRequest = {
   id: string;
   client: Account;
+  totalPenalty: number;
+  totalPending: number;
+  totalApproved: number;
+  totalCheckedOut: number;
+  totalReturned: number;
+  totalCancelled: number;
+  totalUnreturned: number;
   accountId: string;
   createdAt: string;
 };

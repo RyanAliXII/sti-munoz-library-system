@@ -31,11 +31,15 @@ func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook) error{
 
 func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
 	requests := make([]model.BorrowingRequest, 0) 
-	query := `SELECT group_id as id, account_id, json_build_object('id',account.id, 'displayName', 
-	display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client, MAX(borrowed_book.created_at) as created_at FROM borrowing.borrowed_book
-	INNER JOIN system.account on account_id = account.id
-	GROUP BY account_id, group_id, account.id
-	ORDER BY MIN(borrowed_book.created_at)
+	query := `SELECT group_id as id, account_id,client, SUM(penalty) as total_penalty, 
+	COUNT(1) filter (where status_id = 1)  as total_pending, 
+	COUNT(1) filter(where status_id = 2) as total_approved, 
+	COUNT(1) filter (where status_id = 3) as total_checked_out, 
+	COUNT(1) filter(where status_id = 4) as total_returned,
+	COUNT(1) filter(where status_id = 5) as total_cancelled,
+	COUNT(1) filter (where status_id = 6) as total_unreturned,
+	MAX(bbv.created_at)  as created_at
+	FROM borrowed_book_view as bbv GROUP BY group_id, account_id, client ORDER BY created_at desc
 	`
 	err := repo.db.Select(&requests, query)
 	return requests, err
