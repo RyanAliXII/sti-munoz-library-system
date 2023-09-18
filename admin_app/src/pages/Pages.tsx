@@ -16,18 +16,16 @@ import AuditPage from "./protected/inventory/AuditPage";
 import AuditScanPage from "./protected/inventory/AuditScanPage";
 import AccountPage from "./protected/client/AccountPage";
 import CheckoutPage from "./protected/circulation/checkout/CheckoutPage";
-import ReturnPage from "./protected/circulation/ReturnPage";
-import ReturnDetailPage from "./protected/circulation/ReturnDetailPage";
+import BorrowRequestPage from "./protected/circulation/BorrowRequestPage";
+import BorrowedBooksViewPage from "./protected/circulation/BorrowedBooksViewPage";
 import AccessControlPage from "./protected/system/access-control/AccessControlPage";
 import AssignRolePage from "./protected/system/AssignRole";
 import PermissionGate from "@components/auth/PermissionGate";
 import Page403 from "./error/Page403";
 import AssignedRolePage from "./protected/system/AssignedRolePage";
-import OnlineBorrowedBookPage from "./protected/circulation/OnlineBorrowedBookPage";
-import OnlineBorrowBookViewPage from "./protected/circulation/OnlineBorrowedBookViewPage";
 import SettingsPage from "./protected/system/settings/SettingsPage";
 import PenaltyPage from "./protected/circulation/penalty/PenaltyPage";
-import BorrowBookViewPage from "./protected/circulation/BorrowedBookViewPage";
+
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -120,19 +118,12 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
+
       <Route
-        path="/circulation/checkout"
+        path="/borrowing/requests"
         element={
           <PermissionGate requiredPermissions={["Borrowing.Access"]}>
-            <CheckoutPage />
-          </PermissionGate>
-        }
-      />
-      <Route
-        path="/circulation/transactions"
-        element={
-          <PermissionGate requiredPermissions={["Borrowing.Access"]}>
-            <ReturnPage />
+            <BorrowRequestPage />
           </PermissionGate>
         }
       />
@@ -162,15 +153,15 @@ const pages = createRoutesFromChildren(
       />
       <Route path="/system/settings" element={<SettingsPage />} />
       <Route
-        path="/circulation/transactions/:id"
+        path="/borrowing/requests/:id"
         element={
           <PermissionGate requiredPermissions={["Borrowing.Access"]}>
-            <ReturnDetailPage />
+            <BorrowedBooksViewPage />
           </PermissionGate>
         }
       />
       <Route
-        path="/circulation/checkout"
+        path="/borrowing/checkout"
         element={
           <PermissionGate requiredPermissions={["Borrowing.Access"]}>
             <CheckoutPage />
@@ -178,28 +169,12 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/circulation/online-borrowed-books"
-        element={
-          <PermissionGate requiredPermissions={["Borrowing.Access"]}>
-            <OnlineBorrowedBookPage />
-          </PermissionGate>
-        }
-      />
-      <Route
-        path="/circulation/online-borrowed-books/:id"
-        element={<OnlineBorrowBookViewPage />}
-      />
-      <Route
-        path="/circulation/penalties"
+        path="/borrowing/penalties"
         element={
           <PermissionGate requiredPermissions={["Penalty.Access"]}>
             <PenaltyPage />
           </PermissionGate>
         }
-      />
-      <Route
-        path="/circulation/transactions/:id/books/:bookId/accessions/:accessionNumber"
-        element={<BorrowBookViewPage />}
       />
     </Route>
 

@@ -21,7 +21,7 @@ import TimeAgo from "timeago-react";
 import { BiErrorAlt } from "react-icons/bi";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 
-const BorrowingTransactionPage = () => {
+const BorrowRequestPage = () => {
   const { Get } = useRequest();
   const fetchTransactions = async () => {
     try {
@@ -60,9 +60,7 @@ const BorrowingTransactionPage = () => {
                 <BodyRow
                   key={request.id}
                   className="cursor-pointer"
-                  onClick={() =>
-                    navigate(`/circulation/transactions/${request.id}`)
-                  }
+                  onClick={() => navigate(`/borrowing/requests/${request.id}`)}
                 >
                   <Td>
                     <TimeAgo datetime={request.createdAt} />
@@ -125,4 +123,4 @@ export const RequiresAttentionText = ({
   }
   return null;
 };
-export default BorrowingTransactionPage;
+export default BorrowRequestPage;

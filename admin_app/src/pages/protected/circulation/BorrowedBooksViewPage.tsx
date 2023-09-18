@@ -36,13 +36,12 @@ import {
   BsHandThumbsUpFill,
   BsQuestionDiamond,
 } from "react-icons/bs";
-import { GrDocumentMissing } from "react-icons/gr";
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
 import DueDateInputModal from "./DueDateInputModal";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { MdOutlineCancel } from "react-icons/md";
-const TransactionByIdPage = () => {
+const BorrowedBooksViewPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { Get, Patch } = useRequest();
@@ -403,4 +402,4 @@ const TransactionByIdPage = () => {
   );
 };
 
-export default TransactionByIdPage;
+export default BorrowedBooksViewPage;
