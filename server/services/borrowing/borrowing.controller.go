@@ -70,7 +70,7 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 	return borrowedBooks, nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
-
+	fmt.Println(ctx.Get("requestorApp"))
 	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
