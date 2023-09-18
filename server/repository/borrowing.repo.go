@@ -18,7 +18,7 @@ type BorrowingRepository interface {
 
 	BorrowBook([]model.BorrowedBook) error
 	GetBorrowingRequests()([]model.BorrowingRequest, error)
-	MarkAsReturned(id string, remarks string)error
+	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
  	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 
