@@ -8,4 +8,5 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	r.POST("/",ctrler.HandleBorrowing)
 	r.GET("/requests",ctrler.GetBorrowRequests)
 	r.GET("/requests/:id", ctrler.GetBorrowedBooksByGroupId)
+	r.PATCH("/borrowed-books/:id/status", ctrler.UpdateBorrowingStatus)
 }
