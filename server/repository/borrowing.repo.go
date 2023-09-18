@@ -19,6 +19,7 @@ type BorrowingRepository interface {
 	BorrowBook([]model.BorrowedBook) error
 	GetBorrowingRequests()([]model.BorrowingRequest, error)
 	MarkAsReturned(id string, remarks string)error
+	MarkAsUnreturned(id string, remarks string) error 
  	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 
 }
@@ -51,6 +52,12 @@ func (repo * Borrowing) MarkAsReturned(id string, remarks string) error {
 	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
 	_, err := repo.db.Exec(query, status.BorrowStatusReturned, remarks ,id, status.BorrowStatusCheckedOut)
+	return err
+}
+func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
+	//Mark the book as unreturned if the book status is checked out. The status id for checked out is 3.
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
+	_, err := repo.db.Exec(query, status.BorrowStatusUnreturned, remarks ,id, status.BorrowStatusCheckedOut)
 	return err
 }
 func NewBorrowingRepository ()  BorrowingRepository {
