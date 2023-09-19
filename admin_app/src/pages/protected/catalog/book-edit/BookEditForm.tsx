@@ -241,9 +241,9 @@ const BookEditForm = () => {
   return (
     <>
       <form onSubmit={submit}>
-        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
-          <h1 className="text-2xl">General Information</h1>
-          <hr className="mb-5"></hr>
+        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10  lg:rounded-md mx-auto mb-10">
+          <h1 className="text-2xl mb-4">General Information</h1>
+
           <FieldRow
             fieldDetails="The title can be found in the cover of the book."
             isRequired
