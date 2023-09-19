@@ -36,6 +36,7 @@ import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
 import { MdOutlineRemoveCircle } from "react-icons/md";
+import { ConfirmDialog } from "@components/ui/dialog/Dialog";
 
 export interface CheckoutAccession extends DetailedAccession {
   dueDate: string;
@@ -63,6 +64,11 @@ const CLIENT_INITIAL_DATA: Account = {
   },
 };
 const CheckoutPage = () => {
+  const {
+    open: openCheckoutConfirmation,
+    close: closeCheckoutConfirmation,
+    isOpen: isCheckoutConfirmationOpen,
+  } = useSwitch();
   const {
     setForm,
     form: checkout,
@@ -119,6 +125,7 @@ const CheckoutPage = () => {
       const data = await validate();
       if (!data) return;
       submitCheckout.mutate(data);
+      closeCheckoutConfirmation();
     } catch (err) {}
   };
   const { Post } = useRequest();
@@ -276,10 +283,25 @@ const CheckoutPage = () => {
         )}
       </ContainerNoBackground>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <PrimaryButton onClick={proceedCheckout}>
+        <PrimaryButton
+          onClick={async () => {
+            try {
+              await validate();
+              openCheckoutConfirmation();
+            } catch (err) {}
+          }}
+        >
           Proceed to checkout
         </PrimaryButton>
       </div>
+      <ConfirmDialog
+        isOpen={isCheckoutConfirmationOpen}
+        key={"forConfirmation"}
+        close={closeCheckoutConfirmation}
+        onConfirm={proceedCheckout}
+        title="Checkout books!"
+        text="Are you want to checkout books?"
+      />
       <BookCopySelectionModal
         book={selectedBook}
         closeModal={closeCopySelection}

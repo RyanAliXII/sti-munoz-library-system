@@ -181,7 +181,6 @@ func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Con
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 
-
 func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsApproved(id, remarks)
 	if err != nil {

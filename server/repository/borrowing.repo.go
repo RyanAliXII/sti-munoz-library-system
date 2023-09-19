@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -63,16 +65,72 @@ func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, 
 	err := repo.db.Select(&borrowedBooks, query, accountId, statusId)
 	return borrowedBooks, err
 }
+
+func (repo * Borrowing)handlePenaltyCreation(id string, transaction * sqlx.Tx) error{
+	
+	borrowedBook := model.BorrowedBook{}
+	err := transaction.Get(&borrowedBook,"SELECT id, account_id, penalty, book, accession_id, due_date, created_at FROM borrowed_book_view where id = $1", id)
+	if err != nil {
+		fmt.Println("IN SELECT")
+		return err
+	}
+	if borrowedBook.Penalty > 0 {
+		borrowedDate := fmt.Sprintf("%s %d %d", borrowedBook.CreatedAt.Month(), borrowedBook.CreatedAt.Day(), borrowedBook.CreatedAt.Year())
+		description := fmt.Sprintf(`
+You have borrowed a book in the library on %s. The book "%s"  was due on %s. Unfortunately, it has  been returned late, incurring a late fee of %.2f.
+Please settle the fee in the cashier. Thank you.`,borrowedDate, borrowedBook.Book.Title, borrowedBook.DueDate, borrowedBook.Penalty)
+		_, err = transaction.Exec("INSERT INTO borrowing.penalty(description, account_id, amount) VALUES($1, $2 ,$3 )", description, borrowedBook.AccountId, borrowedBook.Penalty )
+		if err != nil {
+			fmt.Println("IN SELECT")
+			return err
+		}
+	}
+	return nil
+}
 func (repo * Borrowing) MarkAsReturned(id string, remarks string) error {
 	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	//if has a penalty, insert he penalty in penalty table
+	err = repo.handlePenaltyCreation(id, transaction)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
-	_, err := repo.db.Exec(query, status.BorrowStatusReturned, remarks ,id, status.BorrowStatusCheckedOut)
-	return err
+	_, err = transaction.Exec(query, status.BorrowStatusReturned, remarks ,id, status.BorrowStatusCheckedOut)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+    transaction.Commit() 
+	return nil
 }
+
 func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 	//Mark the book as unreturned if the book status is checked out. The status id for checked out is 3.
+	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	//if has a penalty, insert he penalty in penalty table
+	err = repo.handlePenaltyCreation(id, transaction)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
-	_, err := repo.db.Exec(query, status.BorrowStatusUnreturned, remarks ,id, status.BorrowStatusCheckedOut)
+	_, err = transaction.Exec(query, status.BorrowStatusUnreturned, remarks ,id, status.BorrowStatusCheckedOut)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
 	return err
 }
 func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
