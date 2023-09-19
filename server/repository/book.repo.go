@@ -212,7 +212,7 @@ func (repo *BookRepository) GetAccessionsByBookIdDontIgnoreWeeded(id string) []m
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
 	where book_id =  $1
-	ORDER BY book.created_at DESC
+	ORDER BY copy_number ASC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
 	if selectAccessionErr != nil {
@@ -343,10 +343,10 @@ func (repo *BookRepository)WeedAccession(id string) error{
   _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = NOW() where id = $1", id)
    return err
 }
-func (repo *BookRepository)MarkAsActiveAccession(id string) error{
+func (repo *BookRepository)Recirculate(id string) error{
 	_,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null where id = $1", id)
 	 return err
-  }
+}
 func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 	query := `
@@ -545,5 +545,6 @@ type BookRepositoryInterface interface {
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 	DeleteBookCoversByBookId(bookId string) error 
 	WeedAccession(id string) error
+	Recirculate( id string) error
 	GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession
 }

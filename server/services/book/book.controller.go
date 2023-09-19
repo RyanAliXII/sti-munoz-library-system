@@ -193,6 +193,16 @@ func(ctrler * BookController) WeedAccession (ctx * gin.Context ){
   }
    ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
 }
+func(ctrler * BookController) RecirculateBookCopy (ctx * gin.Context ){
+	id := ctx.Param("id")
+	err := ctrler.bookRepository.Recirculate(id)
+   if err != nil {
+	 logger.Error(err.Error(), slimlog.Error("recirculateErr"))
+	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	 return
+   }
+	ctx.JSON(httpresp.Success200(nil, "Book re-circulated successfully."))
+ }
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
@@ -210,4 +220,5 @@ type BookControllerInterface interface {
 	UpdateBookCover(ctx *gin.Context)
 	DeleteBookCovers (ctx * gin.Context)
 	WeedAccession (ctx * gin.Context )
+	RecirculateBookCopy (ctx * gin.Context )
 }
