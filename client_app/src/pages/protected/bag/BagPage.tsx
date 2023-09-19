@@ -19,9 +19,7 @@ const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
     try {
-      const response = await Get("/circulation/bag", {}, [
-        apiScope("Bag.Read"),
-      ]);
+      const response = await Get("/bag/", {}, [apiScope("Bag.Read")]);
       const { data } = response.data;
       return data?.bag ?? [];
     } catch (error) {
@@ -52,9 +50,7 @@ const BagPage = () => {
   const queryClient = useQueryClient();
   const deleteItemFromBag = useMutation({
     mutationFn: () =>
-      Delete(`/circulation/bag/${selectedItem?.id}`, {}, [
-        apiScope("Bag.Delete"),
-      ]),
+      Delete(`/bag/${selectedItem?.id}`, {}, [apiScope("Bag.Delete")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -73,7 +69,7 @@ const BagPage = () => {
   };
   const checkItem = useMutation({
     mutationFn: (id: string) =>
-      Patch(`/circulation/bag/${id}/checklist`, {}, {}, [apiScope("Bag.Edit")]),
+      Patch(`/bag/${id}/checklist`, {}, {}, [apiScope("Bag.Edit")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -83,9 +79,7 @@ const BagPage = () => {
   });
   const updateChecklist = useMutation({
     mutationFn: (action: "check" | "uncheck") =>
-      Patch(`/circulation/bag/checklist?action=${action}`, {}, {}, [
-        apiScope("Bag.Edit"),
-      ]),
+      Patch(`/bag/checklist?action=${action}`, {}, {}, [apiScope("Bag.Edit")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -94,8 +88,7 @@ const BagPage = () => {
     },
   });
   const deleteCheckedItems = useMutation({
-    mutationFn: () =>
-      Delete("/circulation/bag/checklist", {}, [apiScope("Bag.Delete")]),
+    mutationFn: () => Delete("/bag/checklist", {}, [apiScope("Bag.Delete")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -119,9 +112,7 @@ const BagPage = () => {
   const navigate = useNavigate();
   const checkout = useMutation({
     mutationFn: () =>
-      Post("/circulation/checklist/checkout", {}, {}, [
-        apiScope("Book.Checkout"),
-      ]),
+      Post("/bag/checklist/checkout", {}, {}, [apiScope("Book.Checkout")]),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
       toast.success("Book has been checked out.");

@@ -150,14 +150,15 @@ export type BagItem = {
   isAvailable: boolean;
 };
 
-export type OnlineBorrowedBook = {
+export type BorrowedBook = {
   id?: string;
   accessionId: string;
   accountId: string;
   accessionNumber: number;
   copyNumber: number;
   book: Book;
+  statusId: number;
   penalty: number;
-  status: OnlineBorrowStatus;
+  status: string;
   dueDate: string | null; //timestamp
 };

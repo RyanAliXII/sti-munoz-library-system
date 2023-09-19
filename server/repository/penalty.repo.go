@@ -26,7 +26,7 @@ func(repo * PenaltyRepository) GetPenalties()[]model.Penalty{
 	SELECT penalty.id, description,account_id, amount,settled_at, penalty.created_at, json_build_object('id', account.id, 'displayName', 
 		display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as account,
 		(case when settled_at is not null then true else false end) as is_settled
-		FROM circulation.penalty inner join system.account on penalty.account_id = account.id
+		FROM borrowing.penalty inner join system.account on penalty.account_id = account.id
 		ORDER BY created_at DESC`
 	
 	selectErr := repo.db.Select(&penalties, query)
@@ -38,10 +38,10 @@ func(repo * PenaltyRepository) GetPenalties()[]model.Penalty{
 }
 func (repo * PenaltyRepository)UpdatePenaltySettlement(id string, isSettle bool) error{
 	settleQuery  := `
-		Update circulation.penalty SET settled_at = NOW() where id  = $1
+		Update borrowing.penalty SET settled_at = NOW() where id  = $1
 	`
 	unSettleQuery := `
-	Update circulation.penalty SET settled_at = null where id  = $1
+	Update borrowing.penalty SET settled_at = null where id  = $1
 	`
 
 	if(isSettle){
@@ -64,7 +64,7 @@ func (repo * PenaltyRepository)UpdatePenaltySettlement(id string, isSettle bool)
 }
 func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
 	query := `
-    INSERT INTO circulation.penalty (description, account_id, amount) VALUES ($1, $2, $3)
+    INSERT INTO borrowing.penalty (description, account_id, amount) VALUES ($1, $2, $3)
     `
     _,insertErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount)
     if insertErr != nil {
@@ -75,7 +75,7 @@ func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
 }
 func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty ) error {
 	query := `
-   		 UPDATE circulation.penalty SET description = $1, account_id = $2, amount = $3  where id = $4`
+   		 UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3  where id = $4`
     _,updateErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Id)
     if updateErr != nil {
         logger.Error(updateErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenalty"), slimlog.Error("updateErr"))

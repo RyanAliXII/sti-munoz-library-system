@@ -396,7 +396,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
 	WHERE book.id = $1
-	ORDER BY book.created_at DESC
+	ORDER BY copy_number
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
 	if selectAccessionErr != nil {

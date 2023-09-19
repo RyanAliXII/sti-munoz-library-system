@@ -97,31 +97,25 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
 
   {
-    text: "Circulation",
+    text: "Borrowing",
     to: "/",
     icon: <MdRotate90DegreesCcw className="text-xl" />,
     items: [
       {
-        text: "Online Borrowed Books",
-        requiredPermissions: ["Borrowing.Access"],
-        to: "/circulation/online-borrowed-books",
-        items: [],
-      },
-      {
         text: "Borrowed Books",
         requiredPermissions: ["Borrowing.Access"],
-        to: "/circulation/transactions",
+        to: "/borrowing/requests",
         items: [],
       },
       {
         text: "Borrow Book",
-        to: "/circulation/checkout",
+        to: "/borrowing/checkout",
         requiredPermissions: ["Borrowing.Access"],
         items: [],
       },
       {
         text: "Penalties",
-        to: "/circulation/penalties",
+        to: "/borrowing/penalties",
         requiredPermissions: ["Penalty.Access"],
         items: [],
       },

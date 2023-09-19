@@ -1,9 +1,10 @@
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { buildS3Url } from "@definitions/s3";
-import { OnlineBorrowedBook } from "@definitions/types";
+import { BorrowedBook } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
+  BorrowStatus,
   OnlineBorrowStatus,
   OnlineBorrowStatuses,
   StatusText,
@@ -14,32 +15,29 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 const BorrowedBooksPage = () => {
-  const [seachParams, setSearchParam] = useSearchParams();
+  const [searchParams, setSearchParam] = useSearchParams();
   const { Get } = useRequest();
-  let initialStatus = seachParams.get("status");
-  const STATUSES = [
-    "all",
-    "pending",
-    "approved",
-    "checked-out",
-    "cancelled",
-    "returned",
-  ];
-  const [activeTab, setActiveTab] = useState<OnlineBorrowStatus | "all">(
-    !initialStatus
-      ? "all"
-      : STATUSES.includes(initialStatus)
-      ? (initialStatus as OnlineBorrowStatus)
-      : "all"
-  );
-  const fetchBorrowedBooks = async (activeTab: OnlineBorrowStatus | "all") => {
+
+  const [activeTab, setActiveTab] = useState<BorrowStatus | 0>(() => {
+    let statusId = searchParams.get("statusId");
+    let parsedStatusId = parseInt(statusId ?? "");
+    if (isNaN(parsedStatusId)) {
+      return 0;
+    }
+    return parsedStatusId;
+  });
+  const fetchBorrowedBooks = async (activeTab: BorrowStatus | 0) => {
     try {
+      let params = {};
+      if (activeTab != 0) {
+        params = {
+          statusId: activeTab,
+        };
+      }
       const response = await Get(
-        "/circulation/online/borrowed-books",
+        "/borrowing/borrowed-books",
         {
-          params: {
-            status: activeTab,
-          },
+          params,
         },
         [apiScope("Checkout.Read")]
       );
@@ -54,7 +52,7 @@ const BorrowedBooksPage = () => {
     data: onlineBorrowedBooks,
     isFetching,
     isError,
-  } = useQuery<OnlineBorrowedBook[]>({
+  } = useQuery<BorrowedBook[]>({
     queryFn: () => fetchBorrowedBooks(activeTab),
     queryKey: ["borrowedBooks", activeTab],
   });
@@ -63,55 +61,55 @@ const BorrowedBooksPage = () => {
     <div className="mt-3 container mx-auto px-2" style={{ maxWidth: "800px" }}>
       <div className="mt-5 w-full flex overflow-x-scroll md:overflow-auto overflow-y-hidden ">
         <a
-          className={isTabActive(activeTab, "all")}
+          className={isTabActive(activeTab, 0)}
           onClick={() => {
-            setSearchParam({ status: "all" });
-            setActiveTab("all");
+            setSearchParam({ statusId: "0" });
+            setActiveTab(0);
           }}
         >
           All
         </a>
         <a
-          className={isTabActive(activeTab, OnlineBorrowStatuses.Pending)}
+          className={isTabActive(activeTab, BorrowStatus.Pending)}
           onClick={() => {
-            setSearchParam({ status: OnlineBorrowStatuses.Pending });
-            setActiveTab(OnlineBorrowStatuses.Pending);
+            setSearchParam({ statusId: BorrowStatus.Pending.toString() });
+            setActiveTab(BorrowStatus.Pending);
           }}
         >
           Pending
         </a>
         <a
-          className={isTabActive(activeTab, OnlineBorrowStatuses.Approved)}
+          className={isTabActive(activeTab, BorrowStatus.Approved)}
           onClick={() => {
-            setSearchParam({ status: OnlineBorrowStatuses.Approved });
-            setActiveTab(OnlineBorrowStatuses.Approved);
+            setSearchParam({ statusId: BorrowStatus.Approved.toString() });
+            setActiveTab(BorrowStatus.Approved);
           }}
         >
           Approved
         </a>
         <a
-          className={isTabActive(activeTab, OnlineBorrowStatuses.CheckedOut)}
+          className={isTabActive(activeTab, BorrowStatus.CheckedOut)}
           onClick={() => {
-            setSearchParam({ status: OnlineBorrowStatuses.CheckedOut });
-            setActiveTab(OnlineBorrowStatuses.CheckedOut);
+            setSearchParam({ statusId: BorrowStatus.CheckedOut.toString() });
+            setActiveTab(BorrowStatus.CheckedOut);
           }}
         >
           Borrowed
         </a>
         <a
-          className={isTabActive(activeTab, OnlineBorrowStatuses.Returned)}
+          className={isTabActive(activeTab, BorrowStatus.Returned)}
           onClick={() => {
-            setSearchParam({ status: OnlineBorrowStatuses.Returned });
-            setActiveTab(OnlineBorrowStatuses.Returned);
+            setSearchParam({ statusId: BorrowStatus.Returned.toString() });
+            setActiveTab(BorrowStatus.Returned);
           }}
         >
           Returned
         </a>
         <a
-          className={isTabActive(activeTab, OnlineBorrowStatuses.Cancelled)}
+          className={isTabActive(activeTab, BorrowStatus.Cancelled)}
           onClick={() => {
-            setSearchParam({ status: OnlineBorrowStatuses.Cancelled });
-            setActiveTab(OnlineBorrowStatuses.Cancelled);
+            setSearchParam({ statusId: BorrowStatus.Cancelled.toString() });
+            setActiveTab(BorrowStatus.Cancelled);
           }}
         >
           Cancelled
@@ -129,12 +127,11 @@ const BorrowedBooksPage = () => {
               <div className="h-54 shadow" key={borrowedCopy.id}>
                 <div className="p-2 border border-b text-green-700">
                   <small className="text-xs lg:text-sm">
-                    {borrowedCopy.status === OnlineBorrowStatuses.Pending &&
+                    {borrowedCopy.statusId === BorrowStatus.Pending &&
                       StatusText.Pending}
-                    {borrowedCopy.status === OnlineBorrowStatuses.Approved &&
+                    {borrowedCopy.statusId === BorrowStatus.Approved &&
                       StatusText.Approved}
-                    {borrowedCopy.status ===
-                      OnlineBorrowStatuses.CheckedOut && (
+                    {borrowedCopy.statusId === BorrowStatus.CheckedOut && (
                       <>
                         {`${StatusText.CheckedOut} Please return on `}
                         <span className="underline underline-offset-2">
@@ -142,9 +139,9 @@ const BorrowedBooksPage = () => {
                         </span>
                       </>
                     )}
-                    {borrowedCopy.status === OnlineBorrowStatuses.Returned &&
+                    {borrowedCopy.statusId === BorrowStatus.Returned &&
                       StatusText.Returned}
-                    {borrowedCopy.status === OnlineBorrowStatuses.Cancelled &&
+                    {borrowedCopy.statusId === BorrowStatus.Cancelled &&
                       StatusText.Cancelled}
                   </small>
                 </div>
@@ -177,8 +174,7 @@ const BorrowedBooksPage = () => {
                       </p>
 
                       {borrowedCopy.penalty > 0 &&
-                        borrowedCopy.status ===
-                          OnlineBorrowStatuses.CheckedOut && (
+                        borrowedCopy.statusId === BorrowStatus.CheckedOut && (
                           <small className="text-xs md:text-sm text-error">
                             You are past due. Penalty:{" "}
                             <strong>
@@ -193,8 +189,8 @@ const BorrowedBooksPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center justify-end justify-self-end">
-                    {(borrowedCopy.status === "pending" ||
-                      borrowedCopy.status === "approved") && (
+                    {(borrowedCopy.statusId === BorrowStatus.Pending ||
+                      borrowedCopy.statusId === BorrowStatus.Approved) && (
                       <a
                         role="button"
                         className="text-xs text-error lg:text-sm mr-2"
@@ -212,10 +208,7 @@ const BorrowedBooksPage = () => {
     </div>
   );
 };
-const isTabActive = (
-  activeTab: OnlineBorrowStatus | "all",
-  tab: OnlineBorrowStatus | "all"
-) => {
+const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
   return activeTab === tab
     ? "tab  tab-bordered tab-active inline"
     : "tab tab-bordered inline";

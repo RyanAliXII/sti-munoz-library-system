@@ -56,7 +56,7 @@ const CatalogBookView = () => {
   const queryClient = useQueryClient();
   const addItemToBag = useMutation({
     mutationFn: (item: { accessionId: string }) =>
-      Post("/circulation/bag", item, {}, [apiScope("Bag.Add")]),
+      Post("/bag/", item, {}, [apiScope("Bag.Add")]),
     onSuccess: () => {
       toast.success("Item has been added to bag.");
       queryClient.invalidateQueries(["bagItems"]);
@@ -71,9 +71,7 @@ const CatalogBookView = () => {
 
   const fetchBagItems = async () => {
     try {
-      const response = await Get("/circulation/bag", {}, [
-        apiScope("Bag.Read"),
-      ]);
+      const response = await Get("/bag/", {}, [apiScope("Bag.Read")]);
       const { data } = response.data;
       return data?.bag ?? [];
     } catch (error) {
