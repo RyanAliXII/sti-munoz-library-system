@@ -48,7 +48,7 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
+	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
@@ -56,20 +56,15 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 
 	}
 	dialect := goqu.Dialect("postgres")
-	const DEFAULT_ACCESSION = "accession_main"
-	accession := DEFAULT_ACCESSION
-	if section.HasOwnAccession {
-		accession = string(section.AccessionTable)
-	}
-	table := fmt.Sprintf("accession.%s", accession)
+
 	// insert book accession.
 	var accessionRows []goqu.Record = make([]goqu.Record, 0)
 	for i := 0; i < book.Copies; i++ {
 		copyNumber := i + 1
-		accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), "book_id": book.Id, "copy_number": copyNumber})
+		accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), "book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
 
 	}
-	accessionDs := dialect.From(table).Prepared(true).Insert().Rows(accessionRows)
+	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
 	insertAccessionResult, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
 
@@ -191,8 +186,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	(CASE WHEN bb.accession_number is null then
 		 false else true END) as is_checked_out,
 	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available
-	FROM get_accession_table() 
-	as accession 
+	FROM catalog.accession
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
@@ -390,7 +384,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	accession.book_id,
 	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
 	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
-	FROM get_accession_table() 
+	FROM catalog.accession
 	as accession 
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
