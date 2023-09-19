@@ -190,6 +190,7 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	LEFT JOIN circulation.borrowed_book 
 	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
 	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
+	where weeded_at is null
 	ORDER BY book.created_at DESC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query)
@@ -330,7 +331,7 @@ func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	WHERE book.id = $1
+	WHERE book.id = $1 and weeded_at is null
 	ORDER BY copy_number
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
