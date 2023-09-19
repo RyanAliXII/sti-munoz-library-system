@@ -18,9 +18,16 @@ import {
   ConfirmDialog,
   DangerConfirmDialog,
 } from "@components/ui/dialog/Dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useRequest } from "@hooks/useRequest";
+import { toast } from "react-toastify";
+import { useParams } from "react-router-dom";
+import { Accession } from "@definitions/types";
 
 const EditAccessionPanel = () => {
   const { form: Book } = useBookEditFormContext();
+  const [selectedAccession, setSelectedAccession] = useState<string>("");
   const {
     close: closeWeedingConfirmation,
     open: openWeedingConfirmation,
@@ -31,6 +38,39 @@ const EditAccessionPanel = () => {
     open: openAddCopyConfirmation,
     isOpen: isAddCopyConfirmationOpen,
   } = useSwitch();
+  const { Delete } = useRequest();
+  const queryClient = useQueryClient();
+  const weedBook = useMutation({
+    mutationFn: () => Delete(`/books/accessions/${selectedAccession}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bookAccessions"]);
+      toast.success("Book copy has been weeded.");
+    },
+    onError: (data) => {
+      console.error(data);
+      toast.error("Unknown error occured.");
+    },
+  });
+  const { id } = useParams();
+  const { Get } = useRequest();
+  const fetchAccessions = async () => {
+    try {
+      const { data: response } = await Get(`/books/${id}/accessions`, {
+        params: {
+          ignoreWeeded: false,
+        },
+      });
+      return response?.data?.accessions ?? [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const { data: accessions } = useQuery<Accession[]>({
+    queryFn: fetchAccessions,
+    queryKey: ["bookAccessions"],
+  });
   return (
     <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
       <div className="w-full flex justify-between mb-5">
@@ -57,16 +97,23 @@ const EditAccessionPanel = () => {
             </HeadingRow>
           </Thead>
           <Tbody>
-            {Book.accessions?.map((accession) => {
+            {accessions?.map((accession) => {
               return (
                 <BodyRow key={accession.id}>
                   <Td>{accession.number}</Td>
                   <Td>{accession.copyNumber}</Td>
-                  <Td>Active</Td>
+                  <Td>
+                    {accession.isWeeded ? (
+                      <span className="text-red-400">Weeded</span>
+                    ) : (
+                      <span className="text-green-500">Active</span>
+                    )}
+                  </Td>
                   <Td>
                     <Tippy content="Weed book">
                       <button
                         onClick={() => {
+                          setSelectedAccession(accession?.id ?? "");
                           openWeedingConfirmation();
                         }}
                       >
@@ -85,6 +132,10 @@ const EditAccessionPanel = () => {
         isOpen={isWeedingConfirmationOpen}
         title="Weed Book!"
         text="Are you sure you want to weed this book?"
+        onConfirm={() => {
+          closeWeedingConfirmation();
+          weedBook.mutate();
+        }}
       />
       <ConfirmDialog
         close={closeAddCopyConfirmation}
