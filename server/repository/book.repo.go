@@ -13,7 +13,6 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
 	"github.com/jaevor/go-nanoid"
 	"github.com/jmoiron/sqlx"
@@ -224,64 +223,6 @@ func (repo *BookRepository) Update(book model.Book) error {
 		transaction.Rollback()
 		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))
 		return updateErr
-	}
-
-	//handle when book section has been updated.
-	//temporary implementation, might change later.
-	//TODO: 
-	if oldBookRecord.Section.Id != book.Section.Id {
-		newSection := model.Section{}
-		//get details about the section
-		newSectionGetErr := transaction.Get(&newSection, "Select accession_table from catalog.section where id = $1", book.Section.Id)
-		if newSectionGetErr != nil {
-			transaction.Rollback()
-			logger.Error(newSectionGetErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("newSectionGetErr"))
-			return newSectionGetErr
-		}
-		// get all copies to transfer
-		selectCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Select(
-			goqu.C("id"), goqu.C("number"), goqu.C("copy_number"), goqu.C("book_id"),
-		).Where(goqu.Ex{
-			"book_id": book.Id,
-		})
-		selectCopiesQuery, selectCopiesArgs, _ := selectCopiesDs.ToSQL()
-		accessions := make([]model.Accession, 0)
-		selectAccessionErr := transaction.Select(&accessions, selectCopiesQuery, selectCopiesArgs...)
-		if selectAccessionErr != nil {
-			transaction.Rollback()
-			logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("selectAccessionErr"))
-			return selectAccessionErr
-		}
-		accessionRows := make([]goqu.Record, 0)
-		for _, accession := range accessions {
-			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", newSection.AccessionTable)), "book_id": accession.BookId, "copy_number": accession.CopyNumber})
-		}
-		//transfer copies to the another section's acccession table.
-		insertCopiesDs := dialect.From(goqu.T(newSection.AccessionTable).Schema("accession")).Prepared(true).Insert().Rows(accessionRows)
-		insertCopiesQuery, insertCopiesArgs, _ := insertCopiesDs.ToSQL()
-		insertResult, insertCopiesErr := transaction.Exec(insertCopiesQuery, insertCopiesArgs...)
-
-		if insertCopiesErr != nil {
-			transaction.Rollback()
-			logger.Error(insertCopiesErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertCopiesErr"))
-			return insertCopiesErr
-		}
-		deleteOldCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Delete().Where(exp.Ex{
-			"book_id": book.Id,
-		})
-		//delete copies from old accession table
-		deleteOldCopiesQuery, deleteOldCopiesArgs, _ := deleteOldCopiesDs.ToSQL()
-		deleteOldCopiesResult, deleteCopiesErr := transaction.Exec(deleteOldCopiesQuery, deleteOldCopiesArgs...)
-		if deleteCopiesErr != nil {
-			transaction.Rollback()
-			logger.Error(deleteCopiesErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertCopiesErr"))
-			return insertCopiesErr
-		}
-		insertedCopiesAffectedRows, _ := insertResult.RowsAffected()
-		deletedOldCopiesAffectedRows, _ := deleteOldCopiesResult.RowsAffected()
-		logger.Info("Tranferred copies.", slimlog.AffectedRows(deletedOldCopiesAffectedRows))
-		logger.Info("Book copies inserted.", slimlog.AffectedRows(insertedCopiesAffectedRows))
-
 	}
 	_, deletePersonAsAuthorErr := transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
 	_, deleteOrgAsAuthorErr := transaction.Exec("DELETE FROM catalog.org_book_author where book_id = $1", book.Id)
