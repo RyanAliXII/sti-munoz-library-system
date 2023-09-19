@@ -58,7 +58,7 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.transaction_id is null and obb. id is null then false else true end))),'[]') as accessions
 	FROM inventory.audited_book  
 	INNER JOIN book_view as book on audited_book.book_id = book.id
-	INNER JOIN get_accession_table() as accession on book.id = accession.book_id 
+	INNER JOIN catalog.accession as accession on book.id = accession.book_id 
 
 	LEFT JOIN inventory.audited_accession as aa on accession.id = aa.accession_id AND audited_book.audit_id = aa.audit_id 
 	LEFT JOIN circulation.borrowed_book as bb on accession.book_id = bb.book_id AND  accession.number =  bb. accession_number AND bb.returned_at is null AND bb.cancelled_at is null and bb.unreturned_at is null
@@ -97,7 +97,7 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 	}
 
 	//get the book of scanned accession
-	query := "Select book_id from get_accession_table() where id = $1 LIMIT 1"
+	query := "Select book_id from catalog.accession where id = $1 LIMIT 1"
 
 	accession := model.Accession{}
 	
