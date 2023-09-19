@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -113,7 +114,13 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
 		return
 	}
-	accessions := ctrler.bookRepository.GetAccessionsByBookId(id)
+	var	accessions []model.Accession; 
+	ignoreWeeded := ctx.Query("ignoreWeeded")
+    if ignoreWeeded == "false"{
+          accessions = ctrler.bookRepository.GetAccessionsByBookIdDontIgnoreWeeded(id)
+	}else{
+		accessions = ctrler.bookRepository.GetAccessionsByBookId(id)
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accessions successfully fetched for specific book."))
@@ -162,7 +169,6 @@ func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers updated."))
 }
-
 func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 	bookId := ctx.Param("bookId")
 	_, parseIdErr := uuid.Parse(bookId)
@@ -176,6 +182,16 @@ func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers deleted."))
+}
+func(ctrler * BookController) WeedAccession (ctx * gin.Context ){
+   id := ctx.Param("id")
+   err := ctrler.bookRepository.WeedAccession(id)
+  if err != nil {
+	logger.Error(err.Error(), slimlog.Error("weedingErr"))
+    ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	return
+  }
+   ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{
@@ -193,4 +209,5 @@ type BookControllerInterface interface {
 	UploadBookCover(ctx *gin.Context)
 	UpdateBookCover(ctx *gin.Context)
 	DeleteBookCovers (ctx * gin.Context)
+	WeedAccession (ctx * gin.Context )
 }

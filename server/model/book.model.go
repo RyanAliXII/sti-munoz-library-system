@@ -69,6 +69,7 @@ type Accession struct {
 	BookId       string   `json:"bookId" db:"book_id" copier:"BookId"`
 	IsCheckedOut bool     `json:"isCheckedOut" db:"is_checked_out"`
 	IsAvailable  bool     `json:"isAvailable" db:"is_available"`
+	IsWeeded     bool `json:"isWeeded" db:"is_weeded"`
 	Book         BookJSON `json:"book" db:"book"`
 }
 

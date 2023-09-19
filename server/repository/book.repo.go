@@ -182,20 +182,41 @@ func (repo *BookRepository) GetAccessions() []model.Accession {
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,
-	(CASE WHEN bb.accession_number is null then
-		 false else true END) as is_checked_out,
-	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available
+	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
 	FROM catalog.accession
 	INNER JOIN book_view as book on accession.book_id = book.id 
-	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
+	LEFT JOIN borrowing.borrowed_book
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
 	where weeded_at is null
 	ORDER BY book.created_at DESC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessions"), slimlog.Error("selectAccessionErr"))
+		return accessions
+	}
+	return accessions
+}
+//this function ignore
+func (repo *BookRepository) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession {
+	var accessions []model.Accession = make([]model.Accession, 0)
+	query := `
+	SELECT accession.id, accession.number, copy_number, book.json_format as book,
+	accession.book_id,
+	(CASE WHEN accession.weeded_at is null then false else true END) as is_weeded,
+	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
+	FROM catalog.accession
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	LEFT JOIN borrowing.borrowed_book
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	where book_id =  $1
+	ORDER BY book.created_at DESC
+	`
+	selectAccessionErr := repo.db.Select(&accessions, query, id)
+	if selectAccessionErr != nil {
+		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionsByBookIdDontIgnoreWeeded"), slimlog.Error("selectAccessionErr"))
 		return accessions
 	}
 	return accessions
@@ -318,7 +339,14 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	}
 	return books
 }
-
+func (repo *BookRepository)WeedAccession(id string) error{
+  _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = NOW() where id = $1", id)
+   return err
+}
+func (repo *BookRepository)MarkAsActiveAccession(id string) error{
+	_,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null where id = $1", id)
+	 return err
+  }
 func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 	query := `
@@ -516,4 +544,6 @@ type BookRepositoryInterface interface {
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 	DeleteBookCoversByBookId(bookId string) error 
+	WeedAccession(id string) error
+	GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession
 }
