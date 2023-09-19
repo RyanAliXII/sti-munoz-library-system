@@ -6,6 +6,7 @@ import { BookEditFormProvider } from "./BookEditFormContext";
 import BookEditForm from "./BookEditForm";
 import { useState } from "react";
 import EditAccessionPanel from "./EditAccessionPanel";
+import { useSearchParams } from "react-router-dom";
 
 enum BookEditTab {
   BookInfo = 1,
@@ -24,7 +25,18 @@ const isPanelActive = (activeTab: BookEditTab, tab: BookEditTab) => {
   return "hidden";
 };
 const BookEditPage = () => {
-  const [activeTab, setActiveTab] = useState<BookEditTab>(BookEditTab.BookInfo);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<BookEditTab>(() => {
+    const tabId = searchParams.get("tab");
+    const parsedTabId = parseInt(tabId ?? "");
+    if (!isNaN(parsedTabId)) {
+      if (parsedTabId == BookEditTab.Accessions) {
+        return BookEditTab.Accessions;
+      }
+    }
+    return BookEditTab.BookInfo;
+  });
+
   return (
     <BookEditFormProvider>
       <div className="w-11/12 mx-auto">
@@ -35,6 +47,9 @@ const BookEditPage = () => {
               aria-current="page"
               className={isActive(activeTab, BookEditTab.BookInfo)}
               onClick={() => {
+                setSearchParams({
+                  tab: BookEditTab.BookInfo.toString(),
+                });
                 setActiveTab(BookEditTab.BookInfo);
               }}
             >
@@ -46,6 +61,9 @@ const BookEditPage = () => {
               role="button"
               className={isActive(activeTab, BookEditTab.Accessions)}
               onClick={() => {
+                setSearchParams({
+                  tab: BookEditTab.Accessions.toString(),
+                });
                 setActiveTab(BookEditTab.Accessions);
               }}
             >

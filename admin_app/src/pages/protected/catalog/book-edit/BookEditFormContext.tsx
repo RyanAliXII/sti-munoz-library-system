@@ -22,6 +22,7 @@ const INITIAL_FORM_DATA: Book = {
   section: {
     name: "Select section.",
     id: 0,
+    prefix: "",
     hasOwnAccession: false,
   },
   publisher: {
