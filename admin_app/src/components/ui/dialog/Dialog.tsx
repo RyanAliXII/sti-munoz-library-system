@@ -6,6 +6,7 @@ import {
   PrimaryButton,
 } from "../button/Button";
 import { useState } from "react";
+import { Input, InputProps } from "../form/Input";
 
 type DialogProps = {
   title?: string;
@@ -176,6 +177,68 @@ export const PromptTextAreaDialog = ({
           <PrimaryButton
             onClick={() => {
               onProceed?.(text);
+            }}
+          >
+            {proceedBtnText}
+          </PrimaryButton>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+type PromptInputDialogProps = {
+  title?: string;
+  label?: string;
+  placeholder?: string;
+  isOpen: boolean;
+  proceedBtnText?: string;
+  close: () => void;
+  onProceed?: () => void;
+  type?: string;
+  error?: string;
+  inputProps?: InputProps;
+};
+export const PromptInputDialog = ({
+  title,
+  close,
+  isOpen,
+  onProceed,
+  proceedBtnText,
+  inputProps,
+}: PromptInputDialogProps) => {
+  if (!isOpen) return null;
+  return (
+    <Modal
+      showCloseIcon={false}
+      open={isOpen}
+      center
+      styles={{
+        modalContainer: {
+          boxShadow: "none",
+        },
+        modal: {
+          padding: 0,
+          borderRadius: "3px",
+          border: "none",
+          boxShadow: "none",
+        },
+      }}
+      onClose={close}
+    >
+      <div className="w-96 rounded">
+        <div className="header w-full h-10 px-2 py-2 text-lg font-medium  text-gray-600">
+          <span>{title}</span>
+        </div>
+        <div className="px-2 h-28 flex items-center">
+          <div className="w-full ">
+            <Input {...inputProps} />
+          </div>
+        </div>
+        <div className="flex gap-2 h-30 p-2 w-full justify-end">
+          <LighButton onClick={close}>Cancel</LighButton>
+          <PrimaryButton
+            onClick={() => {
+              onProceed?.();
             }}
           >
             {proceedBtnText}

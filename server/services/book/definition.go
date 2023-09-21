@@ -56,6 +56,11 @@ type BookCoverUploadBody struct {
 	BookId string                  `form:"bookId" binding:"required,uuid"`
 }
 
+type AddBookCopyBody struct {
+	Copies int `json:"copies" binding:"required,min=1"`
+
+}
+
 
 type WeedingBody struct {
 	Remarks string `json:"remarks" binding:"required"`
