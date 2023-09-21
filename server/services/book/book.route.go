@@ -47,9 +47,8 @@ func BookRoutes(router *gin.RouterGroup) {
 	middlewares.ValidateBody[BookBody], 
 	controller.UpdateBook)
 	
-	
-	router.DELETE("/accessions/:id", controller.WeedAccession)
-	router.PATCH("/accessions/:id", controller.RecirculateBookCopy)
+
+	router.PATCH("/accessions/:id/status", controller.UpdateAccessionStatus)
 	
 
 }
