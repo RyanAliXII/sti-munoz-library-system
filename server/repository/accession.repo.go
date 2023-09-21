@@ -11,7 +11,7 @@ type AccessionRepository interface {
 	GetAccessions() []model.Accession
 	GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession 
 	GetAccessionsByBookId(id string) []model.Accession 
-	WeedAccession(id string) error
+	WeedAccession(id string, remarks string) error
 	Recirculate(id string) error
 }
 type Accession struct {
@@ -63,12 +63,12 @@ func (repo *Accession) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.
 	return accessions
 }
 
-func (repo *Accession)WeedAccession(id string) error{
-	_,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = NOW() where id = $1", id)
+func (repo *Accession)WeedAccession(id string, remarks string) error{
+	_,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = NOW(), remarks = $1 where id = $2", remarks, id)
 	 return err
   }
   func (repo *Accession)Recirculate(id string) error{
-	  _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null where id = $1", id)
+	  _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null, remarks = '' where id = $1", id)
 	   return err
   }
   func (repo *Accession) GetAccessionsByBookId(id string) []model.Accession {
@@ -92,7 +92,7 @@ func (repo *Accession)WeedAccession(id string) error{
 		  return accessions
 	  }
 	  return accessions
-  }
+}
 func NewAccessionRepository () AccessionRepository{
 	return &Accession{
 		db: db.Connect(),

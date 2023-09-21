@@ -17,6 +17,7 @@ import { useSwitch } from "@hooks/useToggle";
 import {
   ConfirmDialog,
   DangerConfirmDialog,
+  PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -26,6 +27,12 @@ import { useParams } from "react-router-dom";
 import { Accession } from "@definitions/types";
 import { GiRecycle } from "react-icons/gi";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import { text } from "stream/consumers";
+
+enum Action {
+  Weed = 1,
+  Recirculate = 2,
+}
 const EditAccessionPanel = () => {
   const [selectedAccession, setSelectedAccession] = useState<string>("");
   const {
@@ -43,21 +50,21 @@ const EditAccessionPanel = () => {
     open: openRecirculateConfirmation,
     isOpen: isReculateConfirmationOpen,
   } = useSwitch();
-  const { Delete, Patch } = useRequest();
+  const { Patch } = useRequest();
   const queryClient = useQueryClient();
-  const weedBook = useMutation({
-    mutationFn: () => Delete(`/books/accessions/${selectedAccession}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["bookAccessions"]);
-      toast.success("Book copy has been weeded.");
-    },
-    onError: (data) => {
-      console.error(data);
-      toast.error("Unknown error occured.");
-    },
-  });
-  const recirculate = useMutation({
-    mutationFn: () => Patch(`/books/accessions/${selectedAccession}`),
+  const updateAccessionStatus = useMutation({
+    mutationFn: ({ remarks, action }: { remarks?: string; action: Action }) =>
+      Patch(
+        `/books/accessions/${selectedAccession}/status`,
+        {
+          remarks: remarks ?? "",
+        },
+        {
+          params: {
+            action: action,
+          },
+        }
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries(["bookAccessions"]);
       toast.success("Book copy has been re-circulated.");
@@ -168,7 +175,23 @@ const EditAccessionPanel = () => {
           </Table>
         </LoadingBoundaryV2>
       </div>
-      <DangerConfirmDialog
+      <PromptTextAreaDialog
+        key={"forWeeding"}
+        close={closeWeedingConfirmation}
+        isOpen={isWeedingConfirmationOpen}
+        title="Weeding Remarks"
+        label="Remarks"
+        placeholder="Reason for weeding the book"
+        proceedBtnText="Proceed"
+        onProceed={(text) => {
+          closeWeedingConfirmation();
+          updateAccessionStatus.mutate({
+            action: Action.Weed,
+            remarks: text,
+          });
+        }}
+      />
+      {/* <DangerConfirmDialog
         key={"forWeeding"}
         close={closeWeedingConfirmation}
         isOpen={isWeedingConfirmationOpen}
@@ -178,7 +201,7 @@ const EditAccessionPanel = () => {
           closeWeedingConfirmation();
           weedBook.mutate();
         }}
-      />
+      /> */}
       <ConfirmDialog
         key={"forAddingCopy"}
         close={closeAddCopyConfirmation}
@@ -193,7 +216,7 @@ const EditAccessionPanel = () => {
         title="Re-circulate book copy!"
         onConfirm={() => {
           closeRecirculateConfirmation();
-          recirculate.mutate();
+          updateAccessionStatus.mutate({ action: Action.Recirculate });
         }}
         text="Are you sure you want to re-circulate this book? This copy will be available again?"
       />

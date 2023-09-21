@@ -184,26 +184,51 @@ func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers deleted."))
 }
-func(ctrler * BookController) WeedAccession (ctx * gin.Context ){
-   id := ctx.Param("id")
-   err := ctrler.accessionRepo.WeedAccession(id)
-  if err != nil {
-	logger.Error(err.Error(), slimlog.Error("weedingErr"))
-    ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	return
-  }
-   ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
-}
-func(ctrler * BookController) RecirculateBookCopy (ctx * gin.Context ){
+
+ func (ctrler *  BookController) UpdateAccessionStatus(ctx * gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.accessionRepo.Recirculate(id)
-   if err != nil {
-	 logger.Error(err.Error(), slimlog.Error("recirculateErr"))
+	status, err := strconv.Atoi(ctx.Query("action"))
+	const (
+		weed = 1
+		recirculate = 2
+	)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("convErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	}
+	switch(status){
+		case weed: 
+			ctrler.handleWeeding(id, ctx);
+			return
+		case recirculate: 
+			ctrler.handleRecirculation(id, ctx)
+			return 
+	}
+   ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+
+ }
+ func(ctrler * BookController) handleWeeding (id string, ctx * gin.Context ){
+    body := WeedingBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+    err := ctrler.accessionRepo.WeedAccession(id, body.Remarks)
+    if err != nil {
+	 logger.Error(err.Error(), slimlog.Error("weedingErr"))
 	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 	 return
    }
-	ctx.JSON(httpresp.Success200(nil, "Book re-circulated successfully."))
+	ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
  }
+ func(ctrler * BookController) handleRecirculation ( id string,  ctx * gin.Context ){
+	 
+	 err := ctrler.accessionRepo.Recirculate(id)
+	if err != nil {
+	  logger.Error(err.Error(), slimlog.Error("recirculateErr"))
+	  ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	  return
+	}
+	 ctx.JSON(httpresp.Success200(nil, "Book re-circulated successfully."))
+  }
+ 
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
@@ -221,6 +246,5 @@ type BookControllerInterface interface {
 	UploadBookCover(ctx *gin.Context)
 	UpdateBookCover(ctx *gin.Context)
 	DeleteBookCovers (ctx * gin.Context)
-	WeedAccession (ctx * gin.Context )
-	RecirculateBookCopy (ctx * gin.Context )
+	UpdateAccessionStatus(ctx * gin.Context) 
 }
