@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS catalog.unique_idx_accession_number_section
