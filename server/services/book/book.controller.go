@@ -15,6 +15,7 @@ import (
 
 type BookController struct {
 	bookRepository repository.BookRepositoryInterface
+	accessionRepo repository.AccessionRepository
 }
 
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
@@ -90,7 +91,7 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	}, "Book fetched."))
 }
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
-	accessions := ctrler.bookRepository.GetAccessions()
+	accessions := ctrler.accessionRepo.GetAccessions()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accession Fetched."))
@@ -117,9 +118,9 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 	var	accessions []model.Accession; 
 	ignoreWeeded := ctx.Query("ignoreWeeded")
     if ignoreWeeded == "false"{
-          accessions = ctrler.bookRepository.GetAccessionsByBookIdDontIgnoreWeeded(id)
+          accessions = ctrler.accessionRepo.GetAccessionsByBookIdDontIgnoreWeeded(id)
 	}else{
-		accessions = ctrler.bookRepository.GetAccessionsByBookId(id)
+		accessions = ctrler.accessionRepo.GetAccessionsByBookId(id)
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
@@ -185,7 +186,7 @@ func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 }
 func(ctrler * BookController) WeedAccession (ctx * gin.Context ){
    id := ctx.Param("id")
-   err := ctrler.bookRepository.WeedAccession(id)
+   err := ctrler.accessionRepo.WeedAccession(id)
   if err != nil {
 	logger.Error(err.Error(), slimlog.Error("weedingErr"))
     ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -195,7 +196,7 @@ func(ctrler * BookController) WeedAccession (ctx * gin.Context ){
 }
 func(ctrler * BookController) RecirculateBookCopy (ctx * gin.Context ){
 	id := ctx.Param("id")
-	err := ctrler.bookRepository.Recirculate(id)
+	err := ctrler.accessionRepo.Recirculate(id)
    if err != nil {
 	 logger.Error(err.Error(), slimlog.Error("recirculateErr"))
 	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -206,6 +207,7 @@ func(ctrler * BookController) RecirculateBookCopy (ctx * gin.Context ){
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
+		accessionRepo: repository.NewAccessionRepository(),
 	}
 }
 

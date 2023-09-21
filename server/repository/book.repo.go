@@ -176,51 +176,6 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	}
 	return book
 }
-func (repo *BookRepository) GetAccessions() []model.Accession {
-	var accessions []model.Accession = make([]model.Accession, 0)
-
-	query := `
-	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id,
-	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
-	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
-	FROM catalog.accession
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	where weeded_at is null
-	ORDER BY book.created_at DESC
-	`
-	selectAccessionErr := repo.db.Select(&accessions, query)
-	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessions"), slimlog.Error("selectAccessionErr"))
-		return accessions
-	}
-	return accessions
-}
-//this function ignore
-func (repo *BookRepository) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession {
-	var accessions []model.Accession = make([]model.Accession, 0)
-	query := `
-	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id,
-	(CASE WHEN accession.weeded_at is null then false else true END) as is_weeded,
-	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
-	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
-	FROM catalog.accession
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	where book_id =  $1
-	ORDER BY copy_number ASC
-	`
-	selectAccessionErr := repo.db.Select(&accessions, query, id)
-	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionsByBookIdDontIgnoreWeeded"), slimlog.Error("selectAccessionErr"))
-		return accessions
-	}
-	return accessions
-}
 
 func (repo *BookRepository) Update(book model.Book) error {
 	oldBookRecord := repo.GetOne(book.Id)
@@ -339,36 +294,7 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	}
 	return books
 }
-func (repo *BookRepository)WeedAccession(id string) error{
-  _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = NOW() where id = $1", id)
-   return err
-}
-func (repo *BookRepository)Recirculate(id string) error{
-	_,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null where id = $1", id)
-	 return err
-}
-func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
-	var accessions []model.Accession = make([]model.Accession, 0)
-	query := `
-	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id,
-	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
-	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
-	FROM catalog.accession
-	as accession 
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	WHERE book.id = $1 and weeded_at is null
-	ORDER BY copy_number
-	`
-	selectAccessionErr := repo.db.Select(&accessions, query, id)
-	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionByBookId"), slimlog.Error("selectAccessionErr"))
-		return accessions
-	}
-	return accessions
-}
+
 func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
 	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
@@ -537,14 +463,10 @@ type BookRepositoryInterface interface {
 	New(model.Book) (string, error)
 	Get() []model.Book
 	GetOne(id string) model.Book
-	GetAccessions() []model.Accession
 	Update(model.Book) error
 	Search(Filter) []model.Book
-	GetAccessionsByBookId(id string) []model.Accession
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 	DeleteBookCoversByBookId(bookId string) error 
-	WeedAccession(id string) error
-	Recirculate( id string) error
-	GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession
+
 }
