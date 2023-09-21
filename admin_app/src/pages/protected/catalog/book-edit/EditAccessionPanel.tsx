@@ -17,6 +17,7 @@ import { useSwitch } from "@hooks/useToggle";
 import {
   ConfirmDialog,
   DangerConfirmDialog,
+  PromptInputDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,22 +29,28 @@ import { Accession } from "@definitions/types";
 import { GiRecycle } from "react-icons/gi";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { text } from "stream/consumers";
+import { useForm } from "@hooks/useForm";
+import { number, object, string } from "yup";
 
 enum Action {
   Weed = 1,
   Recirculate = 2,
 }
+type NewCopiesBody = {
+  copies: number;
+};
 const EditAccessionPanel = () => {
   const [selectedAccession, setSelectedAccession] = useState<string>("");
+  const { form: book } = useBookEditFormContext();
   const {
-    close: closeWeedingConfirmation,
-    open: openWeedingConfirmation,
-    isOpen: isWeedingConfirmationOpen,
+    close: closeWeedingDialog,
+    open: openWeedingDialog,
+    isOpen: isWeedingDialogOpen,
   } = useSwitch();
   const {
-    close: closeAddCopyConfirmation,
-    open: openAddCopyConfirmation,
-    isOpen: isAddCopyConfirmationOpen,
+    close: closeAddCopyDialog,
+    open: openAddCopyDialog,
+    isOpen: isAddCopyDialogOpen,
   } = useSwitch();
   const {
     close: closeRecirculateConfirmation,
@@ -52,6 +59,32 @@ const EditAccessionPanel = () => {
   } = useSwitch();
   const { Patch } = useRequest();
   const queryClient = useQueryClient();
+
+  const { errors, handleFormInput, validate, removeFieldError } =
+    useForm<NewCopiesBody>({
+      initialFormData: {
+        copies: 0,
+      },
+      schema: object({
+        copies: number()
+          .required("Number of copies is required.")
+          .typeError("Number of copies is required.")
+          .min(1, "Number of copies must be greater than zero."),
+      }),
+    });
+
+  const newCopies = useMutation({
+    mutationFn: (form: NewCopiesBody) =>
+      Patch(`/books/${book.id}/copies`, form),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bookAccessions"]);
+      toast.success("New copies has been added.");
+    },
+    onError: (data) => {
+      console.error(data);
+      toast.error("Unknown error occured.");
+    },
+  });
   const updateAccessionStatus = useMutation({
     mutationFn: ({ remarks, action }: { remarks?: string; action: Action }) =>
       Patch(
@@ -106,7 +139,7 @@ const EditAccessionPanel = () => {
         <PrimaryButton
           className="flex items-center gap-2"
           onClick={() => {
-            openAddCopyConfirmation();
+            openAddCopyDialog();
           }}
         >
           <AiOutlinePlus />
@@ -147,7 +180,7 @@ const EditAccessionPanel = () => {
                             }
                             onClick={() => {
                               setSelectedAccession(accession?.id ?? "");
-                              openWeedingConfirmation();
+                              openWeedingDialog();
                             }}
                           >
                             <BsFillTrashFill className="text-lg text-red-400" />
@@ -177,37 +210,49 @@ const EditAccessionPanel = () => {
       </div>
       <PromptTextAreaDialog
         key={"forWeeding"}
-        close={closeWeedingConfirmation}
-        isOpen={isWeedingConfirmationOpen}
+        close={closeWeedingDialog}
+        isOpen={isWeedingDialogOpen}
         title="Weeding Remarks"
         label="Remarks"
         placeholder="Reason for weeding the book"
         proceedBtnText="Proceed"
         onProceed={(text) => {
-          closeWeedingConfirmation();
+          closeWeedingDialog();
           updateAccessionStatus.mutate({
             action: Action.Weed,
             remarks: text,
           });
         }}
       />
-      {/* <DangerConfirmDialog
-        key={"forWeeding"}
-        close={closeWeedingConfirmation}
-        isOpen={isWeedingConfirmationOpen}
-        title="Weed Book!"
-        text="Are you sure you want to weed this book?"
-        onConfirm={() => {
-          closeWeedingConfirmation();
-          weedBook.mutate();
-        }}
-      /> */}
-      <ConfirmDialog
+
+      <PromptInputDialog
         key={"forAddingCopy"}
-        close={closeAddCopyConfirmation}
-        isOpen={isAddCopyConfirmationOpen}
-        title="New Copy!"
-        text="Are you sure you want to add new copy? This action is irreversible."
+        close={() => {
+          removeFieldError("copies");
+          closeAddCopyDialog();
+        }}
+        isOpen={isAddCopyDialogOpen}
+        placeholder="copies"
+        title="Add Copy"
+        error={errors?.copies}
+        inputProps={{
+          label: "Number of copies",
+          type: "number",
+          name: "copies",
+          onChange: handleFormInput,
+          error: errors?.copies,
+          placeholder: "Enter number of new copies to add",
+        }}
+        proceedBtnText="Proceed"
+        onProceed={async () => {
+          closeAddCopyDialog();
+          try {
+            const parsed = await validate();
+            newCopies.mutate(parsed ?? { copies: 0 });
+          } catch (error) {
+            console.log(error);
+          }
+        }}
       />
       <ConfirmDialog
         key={"forRecirculate"}

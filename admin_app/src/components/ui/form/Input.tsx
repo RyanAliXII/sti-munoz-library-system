@@ -1,12 +1,11 @@
 import React, { ButtonHTMLAttributes } from "react";
 
-interface InputProps extends HTMLInputProps {
+interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface InputProps extends HTMLInputProps {
   label?: string;
   error?: any;
   wrapperclass?: string;
-  // props?: HTMLInputProps;
 }
-interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 export enum InputClasses {
   InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 
   rounded transition ease-in-out

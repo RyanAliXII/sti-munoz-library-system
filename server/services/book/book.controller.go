@@ -174,6 +174,7 @@ func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 	bookId := ctx.Param("bookId")
 	_, parseIdErr := uuid.Parse(bookId)
 	if parseIdErr != nil {
+		logger.Error(parseIdErr.Error(), slimlog.Error("parseIdErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
@@ -227,7 +228,25 @@ func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 	  return
 	}
 	 ctx.JSON(httpresp.Success200(nil, "Book re-circulated successfully."))
-  }
+}
+
+func(ctrler * BookController)AddBookCopies(ctx * gin.Context){
+	id := ctx.Param("id")
+	body := AddBookCopyBody{}
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("convErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	err = ctrler.bookRepository.AddBookCopies(id, body.Copies)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("addBookCopiesErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "New copies added."))
+}
  
 func NewBookController() BookControllerInterface {
 	return &BookController{
@@ -247,4 +266,5 @@ type BookControllerInterface interface {
 	UpdateBookCover(ctx *gin.Context)
 	DeleteBookCovers (ctx * gin.Context)
 	UpdateAccessionStatus(ctx * gin.Context) 
+	AddBookCopies(ctx * gin.Context)
 }

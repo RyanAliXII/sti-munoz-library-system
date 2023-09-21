@@ -451,6 +451,43 @@ func (repo * BookRepository) DeleteBookCoversByBookId(bookId string) error {
 	}
 	return nil
 }
+
+func (repo * BookRepository)AddBookCopies(id string, copies int) error{
+	if copies == 0 { 
+		return nil
+	}
+	transaction, err := repo.db.Beginx()
+	if err != nil{ 
+		transaction.Rollback()
+		return err
+	}
+	book := model.Book{}
+	err = transaction.Get(&book, "SELECT section, copies FROM book_view where id = $1", id)
+	if err  != nil{
+		transaction.Rollback()
+		return err
+	}
+	dialect := goqu.Dialect("postgres")
+	var accessionRows []goqu.Record = make([]goqu.Record, 0)
+	for i := 0; i < copies; i++{
+			book.Copies++
+			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", book.Section.AccessionTable)), "book_id": id, "copy_number": book.Copies, "section_id": book.Section.Id})
+	}
+	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
+	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
+	_, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
+	if insertAccessionErr != nil {
+		transaction.Rollback()
+		return insertAccessionErr
+	}
+    _, err = transaction.Exec("UPDATE catalog.book SET copies = copies + $1 where id = $2", copies, id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -467,6 +504,7 @@ type BookRepositoryInterface interface {
 	Search(Filter) []model.Book
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
+	AddBookCopies(id string, copies int) error
 	DeleteBookCoversByBookId(bookId string) error 
 
 }

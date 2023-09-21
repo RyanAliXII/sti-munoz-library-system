@@ -18,7 +18,8 @@ func BookRoutes(router *gin.RouterGroup) {
 	router.GET("/:id",
 	middlewares.ValidatePermissions([]string{"Book.Read"}),
 	controller.GetBookById)
-	
+	 
+	router.PATCH("/:id/copies",middlewares.ValidateBody[AddBookCopyBody],controller.AddBookCopies)
 	router.POST("/",
 	middlewares.ValidatePermissions([]string{"Book.Add"}),
 	middlewares.ValidateBody[BookBody], 
@@ -49,6 +50,5 @@ func BookRoutes(router *gin.RouterGroup) {
 	
 
 	router.PATCH("/accessions/:id/status", controller.UpdateAccessionStatus)
-	
 
 }
