@@ -13,6 +13,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/publisher"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/scanner"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/section"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/stats"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/system"
@@ -38,4 +39,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	stats.StatsRoutes(grp.Group("/stats"))
 	borrowing.BorrowingRoutes(grp.Group("/borrowing"))
 	bag.BagRoutes(grp.Group("/bag"))
+	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"))
 }
