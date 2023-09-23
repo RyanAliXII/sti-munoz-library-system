@@ -40,9 +40,11 @@ import { toast } from "react-toastify";
 import Tippy from "@tippyjs/react";
 import { Form } from "react-router-dom";
 import { AxiosError, AxiosResponse } from "axios";
+import { BsTrash, BsTrash2, BsTrashFill } from "react-icons/bs";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 
 const ScannerAccount = () => {
-  const { Get } = useRequest();
+  const { Get, Delete } = useRequest();
   const [selectedAccount, setSelectedAccount] = useState<ScannerAccountType>({
     description: "",
     username: "",
@@ -61,6 +63,17 @@ const ScannerAccount = () => {
     queryFn: fetchAccounts,
     queryKey: ["scannerAccounts"],
   });
+  const queryClient = useQueryClient();
+  const deleteAccount = useMutation({
+    mutationFn: () => Delete(`/scanner-accounts/${selectedAccount.id}`),
+    onSuccess: () => {
+      toast.success("Account deleted successfully");
+      queryClient.invalidateQueries(["scannerAccounts"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occurred.");
+    },
+  });
   const {
     close: closeAddAccountModal,
     isOpen: isAddAccountModalOpen,
@@ -70,6 +83,11 @@ const ScannerAccount = () => {
     close: closeEditAccountModal,
     isOpen: isEditAccountModalOpen,
     open: openEditAccountModal,
+  } = useSwitch();
+  const {
+    close: closeDeleteConfirmation,
+    isOpen: isDeleteConfirmationOpen,
+    open: openDeleteConfirmation,
   } = useSwitch();
   return (
     <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
@@ -100,7 +118,7 @@ const ScannerAccount = () => {
                   <BodyRow key={account.id}>
                     <Td>{account.username}</Td>
                     <Td>{account.description}</Td>
-                    <Td>
+                    <Td className="flex gap-2">
                       <Tippy content="Edit Account">
                         <button
                           onClick={() => {
@@ -113,6 +131,18 @@ const ScannerAccount = () => {
                           }
                         >
                           <AiOutlineEdit />
+                        </button>
+                      </Tippy>
+                      <Tippy content="Delete Account">
+                        <button
+                          onClick={() => {
+                            setSelectedAccount(account);
+                            openDeleteConfirmation();
+                          }}
+                          type="button"
+                          className={ButtonClasses.DangerButtonOutlineClasslist}
+                        >
+                          <BsTrashFill />
                         </button>
                       </Tippy>
                     </Td>
@@ -133,6 +163,15 @@ const ScannerAccount = () => {
         account={selectedAccount}
         closeModal={closeEditAccountModal}
         isOpen={isEditAccountModalOpen}
+      />
+      <DangerConfirmDialog
+        close={closeDeleteConfirmation}
+        isOpen={isDeleteConfirmationOpen}
+        title="Delete Scanner Account!"
+        text="Are you sure you want to delete this account?"
+        onConfirm={() => {
+          deleteAccount.mutate();
+        }}
       />
     </div>
   );
