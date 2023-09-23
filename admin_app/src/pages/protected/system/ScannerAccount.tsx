@@ -39,6 +39,7 @@ import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
 import Tippy from "@tippyjs/react";
 import { Form } from "react-router-dom";
+import { AxiosError, AxiosResponse } from "axios";
 
 const ScannerAccount = () => {
   const { Get } = useRequest();
@@ -138,21 +139,21 @@ const ScannerAccount = () => {
 };
 
 const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
-  const { errors, handleFormInput, validate } = useForm<ScannerAccountType>({
-    initialFormData: {
-      description: "",
-      username: "",
-      password: "",
-    },
-    schema: NewAccountValidation,
-  });
+  const { errors, handleFormInput, validate, setErrors } =
+    useForm<ScannerAccountType>({
+      initialFormData: {
+        description: "",
+        username: "",
+        password: "",
+      },
+      schema: NewAccountValidation,
+    });
 
   const handleSubmit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
       const body = await validate();
       if (body) {
-        closeModal();
         newAccount.mutate(body);
       }
     } catch (error) {
@@ -163,13 +164,18 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
   const queryClient = useQueryClient();
   const newAccount = useMutation({
     mutationFn: (body: ScannerAccountType) => Post("/scanner-accounts/", body),
-    onError: (err) => {
-      console.error(err);
-      toast.error("Unknown error occured.");
+    onError: (err: AxiosError<any, any>) => {
+      const { data } = err?.response?.data;
+      if (data?.errors) {
+        setErrors(data?.errors);
+        return;
+      }
+      closeModal();
     },
     onSuccess: () => {
       toast.success("Account has been created.");
       queryClient.invalidateQueries(["scannerAccounts"]);
+      closeModal();
     },
   });
   return (
@@ -238,7 +244,7 @@ const EditAccountModal = ({
   closeModal,
   account,
 }: EditAccountModalProps) => {
-  const { errors, handleFormInput, validate, setForm, form } =
+  const { errors, handleFormInput, validate, setForm, form, setErrors } =
     useForm<ScannerAccountType>({
       initialFormData: {
         description: "",
@@ -257,7 +263,6 @@ const EditAccountModal = ({
     try {
       const body = await validate();
       if (body) {
-        closeModal();
         newAccount.mutate(body);
       }
     } catch (error) {
@@ -269,13 +274,19 @@ const EditAccountModal = ({
   const newAccount = useMutation({
     mutationFn: (body: ScannerAccountType) =>
       Put(`/scanner-accounts/${form.id}`, body),
-    onError: (err) => {
-      console.error(err);
+    onError: (err: AxiosError<any, any>) => {
+      const { data } = err?.response?.data;
+      if (data?.errors) {
+        setErrors(data?.errors);
+        return;
+      }
+      closeModal();
       toast.error("Unknown error occured.");
     },
     onSuccess: () => {
       toast.success("Account has been updated.");
       queryClient.invalidateQueries(["scannerAccounts"]);
+      closeModal();
     },
   });
   return (

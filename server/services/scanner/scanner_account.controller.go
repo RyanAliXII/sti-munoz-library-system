@@ -22,10 +22,22 @@ type ScannerAccount struct{
 func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 	body := model.ScannerAccount{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	fieldsErr, err := body.ValidateUsernameIfTaken()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ValidateUsernameIfTaken"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
+		return
+	}
+	if(len(fieldsErr) > 0){
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors":  fieldsErr,
+		}, "Unknown error ocurred."))
+		return
+	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("hashingErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
 		return
 	}
 	body.Password = string(hashedPassword)
@@ -51,9 +63,21 @@ func(ctrler * ScannerAccount) GeAccounts(ctx * gin.Context ){
 func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 	id := ctx.Param("id")
 	body := model.ScannerAccount{}
-	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	body.Id = id
-	var err error;
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	fieldsErr, err := body.ValidateUsernameIfTakenOnUpdate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ValidateUsernameIfTaken"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
+		return
+	}
+	if(len(fieldsErr) > 0){
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors":  fieldsErr,
+		}, "Unknown error ocurred."))
+		return
+	}
+	
 	if(len(body.Password) > 0) {
 		hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 		if hashErr != nil {
