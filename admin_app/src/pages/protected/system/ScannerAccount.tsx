@@ -23,6 +23,8 @@ import { AiOutlinePlus } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { NewAccountValidation } from "./schema";
 import { BaseSyntheticEvent, FormEventHandler } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useRequest } from "@hooks/useRequest";
 
 const ScannerAccount = () => {
   const {
@@ -66,8 +68,6 @@ const ScannerAccount = () => {
   );
 };
 
-// interface NewAccountModalProps extends ModalProps {
-// }
 const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
   const { errors, form, handleFormInput, validate } =
     useForm<ScannerAccountType>({
@@ -81,11 +81,18 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
   const handleSubmit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
-      await validate();
+      const body = await validate();
+      if (body) {
+        newAccount.mutate(body);
+      }
     } catch (error) {
       console.error(error);
     }
   };
+  const { Post } = useRequest();
+  const newAccount = useMutation({
+    mutationFn: (body: ScannerAccountType) => Post("/scanner-accounts/", body),
+  });
   return (
     <Modal
       open={isOpen}
