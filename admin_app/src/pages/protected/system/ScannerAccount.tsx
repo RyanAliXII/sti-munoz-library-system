@@ -11,6 +11,8 @@ import {
   Tbody,
   Th,
   Thead,
+  BodyRow,
+  Td,
 } from "@components/ui/table/Table";
 import {
   ModalProps,
@@ -23,11 +25,25 @@ import { AiOutlinePlus } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { NewAccountValidation } from "./schema";
 import { BaseSyntheticEvent, FormEventHandler } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
 
 const ScannerAccount = () => {
+  const { Get } = useRequest();
+  const fetchAccounts = async () => {
+    try {
+      const { data: response } = await Get("/scanner-accounts/");
+
+      return response?.data?.scannerAccounts ?? [];
+    } catch (error) {
+      return [];
+    }
+  };
+  const { data: scannerAccounts } = useQuery<ScannerAccountType[]>({
+    queryFn: fetchAccounts,
+    queryKey: ["scannerAccounts"],
+  });
   const {
     close: closeAddAccountModal,
     isOpen: isAddAccountModalOpen,
@@ -57,7 +73,16 @@ const ScannerAccount = () => {
                 <Th></Th>
               </HeadingRow>
             </Thead>
-            <Tbody></Tbody>
+            <Tbody>
+              {scannerAccounts?.map((account) => {
+                return (
+                  <BodyRow key={account.id}>
+                    <Td>{account.username}</Td>
+                    <Td>{account.description}</Td>
+                  </BodyRow>
+                );
+              })}
+            </Tbody>
           </Table>
         </LoadingBoundaryV2>
       </div>
@@ -91,6 +116,7 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
     }
   };
   const { Post } = useRequest();
+  const queryClient = useQueryClient();
   const newAccount = useMutation({
     mutationFn: (body: ScannerAccountType) => Post("/scanner-accounts/", body),
     onError: (err) => {
@@ -99,6 +125,7 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
     },
     onSuccess: () => {
       toast.success("Account has been created.");
+      queryClient.invalidateQueries(["scannerAccounts"]);
     },
   });
   return (

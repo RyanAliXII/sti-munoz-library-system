@@ -8,5 +8,5 @@ import (
 func ScannerAccountRoutes (router * gin.RouterGroup){
 	ctrler := NewScannerAccountController()
 	router.POST("/",middlewares.ValidateBody[NewAccountBody] ,ctrler.NewAccount)
-	
+	router.GET("/", ctrler.GeAccounts)
 }
