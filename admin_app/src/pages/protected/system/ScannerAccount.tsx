@@ -288,7 +288,7 @@ const EditAccountModal = ({
     >
       <form onSubmit={handleSubmit}>
         <div className="w-full h-46 mt-2">
-          <div className="px-2 mb-3">
+          <div className="px-2 mb-2">
             <h1 className="text-xl font-medium">Edit Account</h1>
           </div>
           <div className="px-2 mb-3">
@@ -300,7 +300,16 @@ const EditAccountModal = ({
               error={errors?.username}
             />
           </div>
-
+          <div className="px-2 mb-2">
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              onChange={handleFormInput}
+              value={form.password}
+              error={errors?.password}
+            />
+          </div>
           <div className="px-2 mb-3">
             <label className={InputClasses.LabelClasslist}>Description</label>
             <textarea
