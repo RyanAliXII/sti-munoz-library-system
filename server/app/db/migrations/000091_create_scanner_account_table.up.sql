@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS system.scanner_account(
         username varchar(50) NOT NULL,
         password varchar(50) NOT NULL,
         description text DEFAULT '',
+        deleted_at timestamptz,
         created_at timestamptz default now()
 )
