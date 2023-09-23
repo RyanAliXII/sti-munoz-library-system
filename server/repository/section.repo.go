@@ -26,23 +26,6 @@ func (repo *SectionRepository) New(section model.Section) error {
 	if section.HasOwnAccession {
 		t := time.Now().Unix()
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
-		var query string = fmt.Sprintf(`
-		CREATE TABLE accession.%s(
-			id uuid primary key DEFAULT uuid_generate_v4(),
-			number integer UNIQUE,
-			book_id uuid,
-			copy_number int,
-			created_at timestamptz DEFAULT NOW(),
-			deleted_at timestamptz,
-			FOREIGN KEY(book_id) REFERENCES catalog.book(id)
-		)
-	`, tableName)
-		_, createErr := transaction.Exec(query)
-		if createErr != nil {
-			transaction.Rollback()
-			logger.Error(createErr.Error(), slimlog.Function("SectionRepository.New"))
-			return createErr
-		}
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
 		if insertErr != nil {
 			transaction.Rollback()

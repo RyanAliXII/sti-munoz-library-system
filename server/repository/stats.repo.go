@@ -16,7 +16,7 @@ func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
 	var stats model.LibraryStats
 	query := `
 	SELECT (SELECT COUNT(*) FROM system.account) as accounts, 
-		(SELECT COUNT(*) FROM get_accession_table() ) as books, 
+		(SELECT COUNT(*) FROM catalog.accession ) as books, 
 		(SELECT COALESCE(SUM(amount),0) FROM circulation.penalty) as penalties,
 		(SELECT COALESCE(SUM(amount),0) FROM circulation.penalty where penalty.settled_at is not null) as settled_penalties,
 		(SELECT COALESCE(SUM(amount),0) FROM circulation.penalty where penalty.settled_at is null) as unsettled_penalties,

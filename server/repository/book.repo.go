@@ -13,7 +13,6 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
 	"github.com/jaevor/go-nanoid"
 	"github.com/jmoiron/sqlx"
@@ -48,7 +47,7 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT  accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
+	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
@@ -56,20 +55,15 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 
 	}
 	dialect := goqu.Dialect("postgres")
-	const DEFAULT_ACCESSION = "accession_main"
-	accession := DEFAULT_ACCESSION
-	if section.HasOwnAccession {
-		accession = string(section.AccessionTable)
-	}
-	table := fmt.Sprintf("accession.%s", accession)
+
 	// insert book accession.
 	var accessionRows []goqu.Record = make([]goqu.Record, 0)
 	for i := 0; i < book.Copies; i++ {
 		copyNumber := i + 1
-		accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), "book_id": book.Id, "copy_number": copyNumber})
+		accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), "book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
 
 	}
-	accessionDs := dialect.From(table).Prepared(true).Insert().Rows(accessionRows)
+	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
 	insertAccessionResult, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
 
@@ -182,30 +176,6 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	}
 	return book
 }
-func (repo *BookRepository) GetAccessions() []model.Accession {
-	var accessions []model.Accession = make([]model.Accession, 0)
-
-	query := `
-	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id,
-	(CASE WHEN bb.accession_number is null then
-		 false else true END) as is_checked_out,
-	(CASE WHEN bb.accession_number is not null or obb.accession_id is not null then false else true END) as is_available
-	FROM get_accession_table() 
-	as accession 
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	LEFT JOIN circulation.borrowed_book 
-	as bb on accession.book_id = bb.book_id AND accession.number = bb.accession_number AND returned_at is NULL AND unreturned_at is NULL AND cancelled_at is NULL
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id and obb.status != 'returned' and obb.status != 'cancelled' and obb.status != 'unreturned'
-	ORDER BY book.created_at DESC
-	`
-	selectAccessionErr := repo.db.Select(&accessions, query)
-	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessions"), slimlog.Error("selectAccessionErr"))
-		return accessions
-	}
-	return accessions
-}
 
 func (repo *BookRepository) Update(book model.Book) error {
 	oldBookRecord := repo.GetOne(book.Id)
@@ -230,64 +200,6 @@ func (repo *BookRepository) Update(book model.Book) error {
 		transaction.Rollback()
 		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))
 		return updateErr
-	}
-
-	//handle when book section has been updated.
-	//temporary implementation, might change later.
-	//TODO: 
-	if oldBookRecord.Section.Id != book.Section.Id {
-		newSection := model.Section{}
-		//get details about the section
-		newSectionGetErr := transaction.Get(&newSection, "Select accession_table from catalog.section where id = $1", book.Section.Id)
-		if newSectionGetErr != nil {
-			transaction.Rollback()
-			logger.Error(newSectionGetErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("newSectionGetErr"))
-			return newSectionGetErr
-		}
-		// get all copies to transfer
-		selectCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Select(
-			goqu.C("id"), goqu.C("number"), goqu.C("copy_number"), goqu.C("book_id"),
-		).Where(goqu.Ex{
-			"book_id": book.Id,
-		})
-		selectCopiesQuery, selectCopiesArgs, _ := selectCopiesDs.ToSQL()
-		accessions := make([]model.Accession, 0)
-		selectAccessionErr := transaction.Select(&accessions, selectCopiesQuery, selectCopiesArgs...)
-		if selectAccessionErr != nil {
-			transaction.Rollback()
-			logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("selectAccessionErr"))
-			return selectAccessionErr
-		}
-		accessionRows := make([]goqu.Record, 0)
-		for _, accession := range accessions {
-			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", newSection.AccessionTable)), "book_id": accession.BookId, "copy_number": accession.CopyNumber})
-		}
-		//transfer copies to the another section's acccession table.
-		insertCopiesDs := dialect.From(goqu.T(newSection.AccessionTable).Schema("accession")).Prepared(true).Insert().Rows(accessionRows)
-		insertCopiesQuery, insertCopiesArgs, _ := insertCopiesDs.ToSQL()
-		insertResult, insertCopiesErr := transaction.Exec(insertCopiesQuery, insertCopiesArgs...)
-
-		if insertCopiesErr != nil {
-			transaction.Rollback()
-			logger.Error(insertCopiesErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertCopiesErr"))
-			return insertCopiesErr
-		}
-		deleteOldCopiesDs := dialect.From(goqu.T(oldBookRecord.Section.AccessionTable).Schema("accession")).Prepared(true).Delete().Where(exp.Ex{
-			"book_id": book.Id,
-		})
-		//delete copies from old accession table
-		deleteOldCopiesQuery, deleteOldCopiesArgs, _ := deleteOldCopiesDs.ToSQL()
-		deleteOldCopiesResult, deleteCopiesErr := transaction.Exec(deleteOldCopiesQuery, deleteOldCopiesArgs...)
-		if deleteCopiesErr != nil {
-			transaction.Rollback()
-			logger.Error(deleteCopiesErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertCopiesErr"))
-			return insertCopiesErr
-		}
-		insertedCopiesAffectedRows, _ := insertResult.RowsAffected()
-		deletedOldCopiesAffectedRows, _ := deleteOldCopiesResult.RowsAffected()
-		logger.Info("Tranferred copies.", slimlog.AffectedRows(deletedOldCopiesAffectedRows))
-		logger.Info("Book copies inserted.", slimlog.AffectedRows(insertedCopiesAffectedRows))
-
 	}
 	_, deletePersonAsAuthorErr := transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
 	_, deleteOrgAsAuthorErr := transaction.Exec("DELETE FROM catalog.org_book_author where book_id = $1", book.Id)
@@ -383,28 +295,6 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	return books
 }
 
-func (repo *BookRepository) GetAccessionsByBookId(id string) []model.Accession {
-	var accessions []model.Accession = make([]model.Accession, 0)
-	query := `
-	SELECT accession.id, accession.number, copy_number, book.json_format as book,
-	accession.book_id,
-	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
-	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
-	FROM get_accession_table() 
-	as accession 
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	WHERE book.id = $1
-	ORDER BY copy_number
-	`
-	selectAccessionErr := repo.db.Select(&accessions, query, id)
-	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionByBookId"), slimlog.Error("selectAccessionErr"))
-		return accessions
-	}
-	return accessions
-}
 func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
 	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
@@ -561,6 +451,43 @@ func (repo * BookRepository) DeleteBookCoversByBookId(bookId string) error {
 	}
 	return nil
 }
+
+func (repo * BookRepository)AddBookCopies(id string, copies int) error{
+	if copies == 0 { 
+		return nil
+	}
+	transaction, err := repo.db.Beginx()
+	if err != nil{ 
+		transaction.Rollback()
+		return err
+	}
+	book := model.Book{}
+	err = transaction.Get(&book, "SELECT section, copies FROM book_view where id = $1", id)
+	if err  != nil{
+		transaction.Rollback()
+		return err
+	}
+	dialect := goqu.Dialect("postgres")
+	var accessionRows []goqu.Record = make([]goqu.Record, 0)
+	for i := 0; i < copies; i++{
+			book.Copies++
+			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", book.Section.AccessionTable)), "book_id": id, "copy_number": book.Copies, "section_id": book.Section.Id})
+	}
+	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
+	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
+	_, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
+	if insertAccessionErr != nil {
+		transaction.Rollback()
+		return insertAccessionErr
+	}
+    _, err = transaction.Exec("UPDATE catalog.book SET copies = copies + $1 where id = $2", copies, id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -573,11 +500,11 @@ type BookRepositoryInterface interface {
 	New(model.Book) (string, error)
 	Get() []model.Book
 	GetOne(id string) model.Book
-	GetAccessions() []model.Accession
 	Update(model.Book) error
 	Search(Filter) []model.Book
-	GetAccessionsByBookId(id string) []model.Accession
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
+	AddBookCopies(id string, copies int) error
 	DeleteBookCoversByBookId(bookId string) error 
+
 }
