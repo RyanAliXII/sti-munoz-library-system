@@ -5,8 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 func ScannerAccountRoutes (router * gin.RouterGroup){
 	ctrler := NewScannerAccountController()
 	router.POST("/",middlewares.ValidateBody[NewAccountBody] ,ctrler.NewAccount)

@@ -25,6 +25,7 @@ import { NewAccountValidation } from "./schema";
 import { BaseSyntheticEvent, FormEventHandler } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
+import { toast } from "react-toastify";
 
 const ScannerAccount = () => {
   const {
@@ -69,20 +70,20 @@ const ScannerAccount = () => {
 };
 
 const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
-  const { errors, form, handleFormInput, validate } =
-    useForm<ScannerAccountType>({
-      initialFormData: {
-        description: "",
-        username: "",
-      },
-      schema: NewAccountValidation,
-    });
+  const { errors, handleFormInput, validate } = useForm<ScannerAccountType>({
+    initialFormData: {
+      description: "",
+      username: "",
+    },
+    schema: NewAccountValidation,
+  });
 
   const handleSubmit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
       const body = await validate();
       if (body) {
+        closeModal();
         newAccount.mutate(body);
       }
     } catch (error) {
@@ -92,6 +93,13 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
   const { Post } = useRequest();
   const newAccount = useMutation({
     mutationFn: (body: ScannerAccountType) => Post("/scanner-accounts/", body),
+    onError: (err) => {
+      console.error(err);
+      toast.error("Unknown error occured.");
+    },
+    onSuccess: () => {
+      toast.success("Account has been created.");
+    },
   });
   return (
     <Modal
