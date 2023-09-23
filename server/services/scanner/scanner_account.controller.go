@@ -13,6 +13,7 @@ import (
 type ScannerAccountController interface{
 	NewAccount(ctx * gin.Context)
 	GeAccounts(ctx * gin.Context )
+	UpdateAccount(ctx * gin.Context)
 }
 type ScannerAccount struct{
 	scannerAccountRepo repository.ScannerAccountRepository
@@ -23,7 +24,7 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("hasingErr"))
+		logger.Error(err.Error(), slimlog.Error("hashingErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
 		return
 	}
@@ -47,8 +48,32 @@ func(ctrler * ScannerAccount) GeAccounts(ctx * gin.Context ){
 	}, "Accounts fetched."))
 
 }
-
-
+func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
+	id := ctx.Param("id")
+	body := model.ScannerAccount{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	body.Id = id
+	var err error;
+	if(len(body.Password) > 0) {
+		hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+		if hashErr != nil {
+			logger.Error(err.Error(), slimlog.Error("hashingErr"))
+			ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
+			return
+		}
+		body.Password = string(hashedPassword)
+		err = ctrler.scannerAccountRepo.UpdateAccountWithPassword(body)
+	}else{
+		err = ctrler.scannerAccountRepo.UpdateAccount(body)
+	}
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Account updated."))
+	
+}	
 
 func NewScannerAccountController()ScannerAccountController{
 	return &ScannerAccount{
