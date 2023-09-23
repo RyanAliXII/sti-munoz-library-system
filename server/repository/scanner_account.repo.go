@@ -22,7 +22,7 @@ func(repo * ScannerAccount) NewAccount(account model.ScannerAccount) error {
 }
 func (repo *ScannerAccount)GetAccounts() ([]model.ScannerAccount, error){
 	accounts := make([]model.ScannerAccount, 0)
-	err := repo.db.Select(&accounts, "SELECT id, username, description from system.scanner_account")
+	err := repo.db.Select(&accounts, "SELECT id, username, description from system.scanner_account where deleted_at IS NULl")
 	return accounts, err
 }
 func(repo * ScannerAccount) UpdateAccount(account model.ScannerAccount) error {
