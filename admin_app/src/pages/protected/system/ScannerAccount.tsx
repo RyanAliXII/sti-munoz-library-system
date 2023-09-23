@@ -1,5 +1,9 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import {
+  ButtonClasses,
+  LighButton,
+  PrimaryButton,
+} from "@components/ui/button/Button";
 import {
   Input,
   InputClasses,
@@ -21,20 +25,32 @@ import {
 import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
 
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import Modal from "react-responsive-modal";
-import { NewAccountValidation } from "./schema";
-import { BaseSyntheticEvent, FormEventHandler } from "react";
+import { EditAccountValidation, NewAccountValidation } from "./schema";
+import {
+  BaseSyntheticEvent,
+  FormEventHandler,
+  useEffect,
+  useState,
+} from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
+import Tippy from "@tippyjs/react";
+import { Form } from "react-router-dom";
 
 const ScannerAccount = () => {
   const { Get } = useRequest();
+  const [selectedAccount, setSelectedAccount] = useState<ScannerAccountType>({
+    description: "",
+    username: "",
+    id: "",
+    password: "",
+  });
   const fetchAccounts = async () => {
     try {
       const { data: response } = await Get("/scanner-accounts/");
-
       return response?.data?.scannerAccounts ?? [];
     } catch (error) {
       return [];
@@ -48,6 +64,11 @@ const ScannerAccount = () => {
     close: closeAddAccountModal,
     isOpen: isAddAccountModalOpen,
     open: openAddAccountModal,
+  } = useSwitch();
+  const {
+    close: closeEditAccountModal,
+    isOpen: isEditAccountModalOpen,
+    open: openEditAccountModal,
   } = useSwitch();
   return (
     <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
@@ -70,7 +91,6 @@ const ScannerAccount = () => {
                 <Th>Username</Th>
                 <Th>Description</Th>
                 <Th></Th>
-                <Th></Th>
               </HeadingRow>
             </Thead>
             <Tbody>
@@ -79,6 +99,22 @@ const ScannerAccount = () => {
                   <BodyRow key={account.id}>
                     <Td>{account.username}</Td>
                     <Td>{account.description}</Td>
+                    <Td>
+                      <Tippy content="Edit Account">
+                        <button
+                          onClick={() => {
+                            setSelectedAccount(account);
+                            openEditAccountModal();
+                          }}
+                          type="button"
+                          className={
+                            ButtonClasses.PrimaryOutlineButtonClasslist
+                          }
+                        >
+                          <AiOutlineEdit />
+                        </button>
+                      </Tippy>
+                    </Td>
                   </BodyRow>
                 );
               })}
@@ -87,8 +123,15 @@ const ScannerAccount = () => {
         </LoadingBoundaryV2>
       </div>
       <NewAccountModal
+        key={"add"}
         closeModal={closeAddAccountModal}
         isOpen={isAddAccountModalOpen}
+      />
+      <EditAccountModal
+        key={"edit"}
+        account={selectedAccount}
+        closeModal={closeEditAccountModal}
+        isOpen={isEditAccountModalOpen}
       />
     </div>
   );
@@ -99,6 +142,7 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
     initialFormData: {
       description: "",
       username: "",
+      password: "",
     },
     schema: NewAccountValidation,
   });
@@ -161,6 +205,106 @@ const NewAccountModal = ({ isOpen, closeModal }: ModalProps) => {
           <div className="px-2 mb-2">
             <label className={InputClasses.LabelClasslist}>Description</label>
             <textarea
+              className={
+                errors?.description
+                  ? TextAreaClasses.ErrorClasslist
+                  : TextAreaClasses.DefaultClasslist
+              }
+              onChange={handleFormInput}
+              name="description"
+              maxLength={150}
+            />
+            <div className="h-2 flex items-center mt-2">
+              <small className="text-red-500 ml-1">{errors?.description}</small>
+            </div>
+          </div>
+
+          <div className="flex gap-1 mt-2 p-2">
+            <PrimaryButton>Save</PrimaryButton>
+            <LighButton onClick={closeModal} type="button">
+              Cancel
+            </LighButton>
+          </div>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+interface EditAccountModalProps extends ModalProps {
+  account: ScannerAccountType;
+}
+const EditAccountModal = ({
+  isOpen,
+  closeModal,
+  account,
+}: EditAccountModalProps) => {
+  const { errors, handleFormInput, validate, setForm, form } =
+    useForm<ScannerAccountType>({
+      initialFormData: {
+        description: "",
+        username: "",
+      },
+      schema: EditAccountValidation,
+    });
+  useEffect(() => {
+    if (isOpen) {
+      setForm(account);
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (event: BaseSyntheticEvent) => {
+    event.preventDefault();
+    try {
+      const body = await validate();
+      if (body) {
+        closeModal();
+        newAccount.mutate(body);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const { Put } = useRequest();
+  const queryClient = useQueryClient();
+  const newAccount = useMutation({
+    mutationFn: (body: ScannerAccountType) =>
+      Put(`/scanner-accounts/${form.id}`, body),
+    onError: (err) => {
+      console.error(err);
+      toast.error("Unknown error occured.");
+    },
+    onSuccess: () => {
+      toast.success("Account has been updated.");
+      queryClient.invalidateQueries(["scannerAccounts"]);
+    },
+  });
+  return (
+    <Modal
+      open={isOpen}
+      onClose={closeModal}
+      showCloseIcon={false}
+      classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
+      center
+    >
+      <form onSubmit={handleSubmit}>
+        <div className="w-full h-46 mt-2">
+          <div className="px-2 mb-3">
+            <h1 className="text-xl font-medium">Edit Account</h1>
+          </div>
+          <div className="px-2 mb-3">
+            <Input
+              label="Username"
+              name="username"
+              value={form.username}
+              onChange={handleFormInput}
+              error={errors?.username}
+            />
+          </div>
+
+          <div className="px-2 mb-3">
+            <label className={InputClasses.LabelClasslist}>Description</label>
+            <textarea
+              value={form.description}
               className={
                 errors?.description
                   ? TextAreaClasses.ErrorClasslist
