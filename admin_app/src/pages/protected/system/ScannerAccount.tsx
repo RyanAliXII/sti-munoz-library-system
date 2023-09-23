@@ -170,6 +170,7 @@ const ScannerAccount = () => {
         title="Delete Scanner Account!"
         text="Are you sure you want to delete this account?"
         onConfirm={() => {
+          closeDeleteConfirmation();
           deleteAccount.mutate();
         }}
       />

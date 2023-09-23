@@ -14,6 +14,7 @@ type ScannerAccountController interface{
 	NewAccount(ctx * gin.Context)
 	GeAccounts(ctx * gin.Context )
 	UpdateAccount(ctx * gin.Context)
+	DeleteAccount(ctx * gin.Context)
 }
 type ScannerAccount struct{
 	scannerAccountRepo repository.ScannerAccountRepository
@@ -98,6 +99,16 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Account updated."))
 	
 }	
+func(ctrler  *ScannerAccount)DeleteAccount(ctx * gin.Context) {
+	id := ctx.Param("id")
+	err := ctrler.scannerAccountRepo.DeleteAccountById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("deleteErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Account deleted."))
+}
 
 func NewScannerAccountController()ScannerAccountController{
 	return &ScannerAccount{
