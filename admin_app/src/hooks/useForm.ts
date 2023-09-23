@@ -30,6 +30,7 @@ export interface UseFormType<T> {
   form: T;
   errors: any;
   resetForm: () => void;
+  setErrors: (errors: {}) => void;
   registerFormGroup: (el: any) => (el: any) => void;
 }
 export const useForm = <T extends object>({
@@ -43,6 +44,7 @@ export const useForm = <T extends object>({
   const removeErrors = () => {
     setErrors(() => undefined);
   };
+
   const formGroupRefs = useRef<any>({});
   const setFieldValue = (fieldName: string, value: any) => {
     const update = set(form, fieldName, value) as T;
@@ -135,6 +137,9 @@ export const useForm = <T extends object>({
   };
 
   return {
+    setErrors: (errors: any) => {
+      setErrors(errors);
+    },
     form,
     setForm,
     errors,
