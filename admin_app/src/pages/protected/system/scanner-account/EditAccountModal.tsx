@@ -16,7 +16,7 @@ import {
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 
 interface EditAccountModalProps extends ModalProps {
-  account: ScannerAccountType;
+  account: ScannerAccount;
 }
 const EditAccountModal = ({
   isOpen,
