@@ -61,6 +61,15 @@ services:
       - ./client_app/src:/node/dev/client/src
     depends_on:
       - server
+  scanner_app:
+    container_name: scanner_app
+    image: ryanali12/sti-munoz-library-scanner-app
+    ports:
+      - "5209:5209"
+    volumes:
+      - ./scanner_app:/node/dev/scanner
+    depends_on:
+      - server
   postgres:
     container_name: postgres
     restart: always
