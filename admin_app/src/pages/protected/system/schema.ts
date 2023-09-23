@@ -32,3 +32,10 @@ export const NewAccountValidation = object({
     .required("Description is required.")
     .min(1, "Description is required."),
 });
+
+export const EditAccountValidation = object({
+  username: string().required("Username is required."),
+  description: string()
+    .required("Description is required.")
+    .min(1, "Description is required."),
+});

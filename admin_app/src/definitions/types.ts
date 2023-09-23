@@ -228,5 +228,6 @@ export type LibraryStats = {
 export type ScannerAccount = {
   id?: string;
   description: string;
+  password?: string;
   username: string;
 };
