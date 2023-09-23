@@ -10,4 +10,5 @@ func ScannerAccountRoutes (router * gin.RouterGroup){
 	router.POST("/",middlewares.ValidateBody[NewAccountBody] ,ctrler.NewAccount)
 	router.GET("/", ctrler.GeAccounts)
 	router.PUT("/:id",middlewares.ValidateBody[UpdateAccountBody] ,ctrler.UpdateAccount)
+	router.DELETE("/:id",ctrler.DeleteAccount )
 }

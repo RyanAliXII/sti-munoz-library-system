@@ -11,6 +11,7 @@ type ScannerAccountRepository interface {
 	GetAccounts() ([]model.ScannerAccount, error)
 	UpdateAccount(account model.ScannerAccount) error
 	UpdateAccountWithPassword(account model.ScannerAccount) error 
+	DeleteAccountById(id string) error
 }
 
 type ScannerAccount struct {
@@ -31,6 +32,10 @@ func(repo * ScannerAccount) UpdateAccount(account model.ScannerAccount) error {
 }
 func(repo * ScannerAccount) UpdateAccountWithPassword(account model.ScannerAccount) error {
 	_, err := repo.db.Exec("Update system.scanner_account set username = $1, password = $2, description = $3  where id = $4", account.Username,account.Password, account.Description, account.Id)
+	return err	
+}
+func(repo * ScannerAccount)DeleteAccountById(id string) error {
+	_, err := repo.db.Exec("Update system.scanner_account set deleted_at = now() where id = $1", id)
 	return err	
 }
 func NewScannerAccountRepository()ScannerAccountRepository {
