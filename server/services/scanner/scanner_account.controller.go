@@ -12,6 +12,7 @@ import (
 
 type ScannerAccountController interface{
 	NewAccount(ctx * gin.Context)
+	GeAccounts(ctx * gin.Context )
 }
 type ScannerAccount struct{
 	scannerAccountRepo repository.ScannerAccountRepository
@@ -36,6 +37,17 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 	ctx.JSON(httpresp.Success200(nil, "Account created."))
 
 }
+func(ctrler * ScannerAccount) GeAccounts(ctx * gin.Context ){
+	accounts, err := ctrler.scannerAccountRepo.GetAccounts()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("getAccountsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"scannerAccounts": accounts, 
+	}, "Accounts fetched."))
+
+}
+
 
 
 func NewScannerAccountController()ScannerAccountController{
