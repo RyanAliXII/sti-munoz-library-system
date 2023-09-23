@@ -224,3 +224,9 @@ export type LibraryStats = {
   unreturnedBooks: number;
   cancelledBooks: number;
 };
+
+export type ScannerAccount = {
+  id?: string;
+  description: string;
+  username: string;
+};
