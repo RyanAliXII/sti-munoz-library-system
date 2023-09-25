@@ -1,13 +1,20 @@
-import { QueryClient, QueryClientProvider } from "react-query";
+import { useQuery } from "react-query";
 import "./assets/css/tailwind.css";
 import Login from "./pages/Login";
+import axiosClient from "@definitions/config/axios";
 const App = () => {
-  const queryClient = new QueryClient();
+  const checkAuth = async () => {
+    const { data: response } = await axiosClient.post("/auth");
+    return response?.data?.account ?? { username: "", description: "" };
+  };
+  const {} = useQuery({
+    queryFn: checkAuth,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <Login />
-      </QueryClientProvider>
+      <Login />
     </>
   );
 };
