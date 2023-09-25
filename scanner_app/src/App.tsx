@@ -6,7 +6,11 @@ import Ellipsis from "./assets/images/Ellipsis.svg";
 import Scanner from "./pages/Scanner";
 const App = () => {
   const checkAuth = async () => {
-    const { data: response } = await axiosClient.post("/auth");
+    const { data: response } = await axiosClient.post(
+      "/auth",
+      {},
+      { withCredentials: true }
+    );
     return response?.data?.account ?? { username: "", description: "" };
   };
   const { isFetching, isError, refetch } = useQuery({

@@ -21,6 +21,8 @@ type ScannerController interface {
 
 type Scanner struct {
 	ScannerAccountRepo repository.ScannerAccountRepository
+	ClientLogRepo repository.ClientLogRepository
+	accountRepo repository.AccountRepositoryInterface
 
 }
 func(c * Scanner) Login (ctx * gin.Context){
@@ -77,9 +79,16 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 	}, "Ok") )
 }
 func(c * Scanner) LogClient (ctx * gin.Context){
-	//id := ctx.Param("id")
+	id := ctx.Param("clientId")
+	err := c.ClientLogRepo.NewLog(id)
+	if err != nil {
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail400(nil,"Unknown error occured."))
+		return
+	}
+	account := c.accountRepo.GetAccountById(id)
 	ctx.JSON(httpresp.Success200(gin.H{
-
+		"client": account,
 	}, "Ok") )
 }
 
@@ -88,5 +97,7 @@ func(c * Scanner) LogClient (ctx * gin.Context){
 func NewScannerController () ScannerController{
 	return &Scanner{
 		ScannerAccountRepo: repository.NewScannerAccountRepository(),
+		ClientLogRepo: repository.NewClientLog(),
+		accountRepo: repository.NewAccountRepository(),
 	}
 }
