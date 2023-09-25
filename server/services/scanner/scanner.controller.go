@@ -16,6 +16,7 @@ import (
 type ScannerController interface {
 	Login (ctx * gin.Context)
 	IsAuth (ctx * gin.Context)
+	LogClient (ctx * gin.Context)
 }
 
 type Scanner struct {
@@ -75,6 +76,13 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 		"account": account,
 	}, "Ok") )
 }
+func(c * Scanner) LogClient (ctx * gin.Context){
+	//id := ctx.Param("id")
+	ctx.JSON(httpresp.Success200(gin.H{
+
+	}, "Ok") )
+}
+
 
 
 func NewScannerController () ScannerController{
