@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
@@ -47,7 +48,25 @@ func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	transaction.Commit()
 	return nil
 }
-func (repo * ClientLog)GetLogs() ()
+func (repo * ClientLog) GetLogs() ([]model.ClientLog, error) {
+	clientLogs := make([]model.ClientLog, 0)
+	query := `
+	SELECT cl.id,json_build_object('id', account.id, 
+	'givenName', account.given_name,
+	 'surname', account.surname, 
+	'displayName',account.display_name,
+	 'email', account.email) as account,  json_build_object('id', scanner_account.id, 
+	'username', scanner_account.username,
+	 'description', scanner_account.description 
+	) as scanner,
+	cl.created_at
+	FROM system.client_log as cl
+	INNER JOIN system.account on cl.client_id = account.id
+	INNER JOIN system.scanner_account on cl.scanner_id = scanner_account.id
+	ORDER BY cl.created_at DESC`
+	err := repo.db.Select(&clientLogs, query)
+	return clientLogs, err
+}
 func NewClientLog()ClientLogRepository {
 	return &ClientLog{db : db.Connect()}
 }
