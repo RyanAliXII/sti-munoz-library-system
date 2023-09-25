@@ -8,6 +8,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/bag"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
+	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	fundsrc "github.com/RyanAliXII/sti-munoz-library-system/server/services/fund_source"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
@@ -40,4 +41,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	borrowing.BorrowingRoutes(grp.Group("/borrowing"))
 	bag.BagRoutes(grp.Group("/bag"))
 	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"))
+	clientlog.ClientLogRoutes(grp.Group("/client-logs"))
 }
