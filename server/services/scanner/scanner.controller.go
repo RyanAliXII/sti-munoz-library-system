@@ -1,8 +1,11 @@
 package scanner
 
 import (
+	"net/http"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -12,6 +15,7 @@ import (
 
 type ScannerController interface {
 	Login (ctx * gin.Context)
+	IsAuth (ctx * gin.Context)
 }
 
 type Scanner struct {
@@ -51,7 +55,25 @@ func(c * Scanner) Login (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Logged In") )
+	ctx.JSON(httpresp.Success200(nil, "Ok") )
+}
+func(c * Scanner) IsAuth (ctx * gin.Context){
+	session := sessions.Default(ctx)
+	sessionVal := session.Get("account")
+	if(sessionVal == nil){
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	account := model.ScannerAccount{}
+	err := account.Bind(sessionVal)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindAccountErr"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return 
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"account": account,
+	}, "Ok") )
 }
 
 
