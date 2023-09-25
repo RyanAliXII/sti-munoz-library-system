@@ -12,7 +12,7 @@ import (
 
 
 type ClientLogRepository interface {
-
+	GetLogs() ([]model.ClientLog, error)
 	NewLog(clientId string, scannerId string) error
 }
 
