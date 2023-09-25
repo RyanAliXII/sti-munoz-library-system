@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { CameraDevice, Html5Qrcode } from "html5-qrcode";
 import { useMutation } from "react-query";
 import axiosClient from "@definitions/config/axios";
-const Scanner = () => {
+const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
   const readerRef = useRef<HTMLDivElement | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
@@ -11,7 +11,6 @@ const Scanner = () => {
     displayName: "",
     email: "",
   });
-
   let scannerRef = useRef<Html5Qrcode | null>(null);
   useEffect(() => {
     if (scannerRef.current == null) {
@@ -104,6 +103,23 @@ const Scanner = () => {
     : "w-full border border-gray-300 outline outline-4 outline-green-500 rounded dark:border-gray-700 max-w-lg";
   return (
     <div className="h-screen w-full flex flex-col items-center  justify-center dark:bg-gray-800">
+      <div
+        className="w-11/12 lg:w-10/12 flex mb-5 px-1"
+        style={{ maxWidth: "1250px" }}
+      >
+        <button
+          type="button"
+          className="px-3 bg-blue-500 text-white rounded py-2 self-start"
+          onClick={() => {
+            const isConfirmed = confirm("Are you want to end the session?");
+            if (isConfirmed) {
+              revalidateAuth();
+            }
+          }}
+        >
+          End Session
+        </button>
+      </div>
       <section
         id="settings"
         className="w-11/12 lg:w-10/12 mb-5 px-1"

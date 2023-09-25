@@ -19,20 +19,17 @@ const App = () => {
     refetchOnWindowFocus: false,
     queryKey: ["account"],
   });
+  const revalidateAuth = () => {
+    refetch();
+  };
 
   if (isFetching) {
     return <Loader />;
   }
   if (isError) {
-    return (
-      <Login
-        revalidateAuth={() => {
-          refetch();
-        }}
-      />
-    );
+    return <Login revalidateAuth={revalidateAuth} />;
   }
-  return <Scanner />;
+  return <Scanner revalidateAuth={revalidateAuth} />;
 };
 
 const Loader = () => {
