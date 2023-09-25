@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CameraDevice, Html5Qrcode } from "html5-qrcode";
+import { useMutation } from "react-query";
+import axiosClient from "@definitions/config/axios";
 const Scanner = () => {
   const readerRef = useRef<HTMLDivElement | null>(null);
   const [_, setCameras] = useState<CameraDevice[]>([]);
@@ -15,13 +17,26 @@ const Scanner = () => {
         { facingMode: "environment" },
         { fps: 10 },
         (result) => {
-          console.log(result);
+          log.mutate(result);
+          scanner.pause();
+          setTimeout(() => {
+            scanner.resume();
+          }, 1000);
         },
         () => {}
       );
       await initCameras();
     }
   };
+  const log = useMutation({
+    mutationFn: (clientId: string) =>
+      axiosClient.post(
+        `/logs/clients/${clientId}`,
+        {},
+        { withCredentials: true }
+      ),
+    onSettled: () => {},
+  });
   const initCameras = async () => {
     try {
       const cameraIds = await Html5Qrcode.getCameras();
