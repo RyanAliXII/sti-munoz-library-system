@@ -47,7 +47,7 @@ func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	transaction.Commit()
 	return nil
 }
-
+func (repo * ClientLog)GetLogs() ()
 func NewClientLog()ClientLogRepository {
 	return &ClientLog{db : db.Connect()}
 }

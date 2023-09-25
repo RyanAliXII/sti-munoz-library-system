@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 
@@ -54,4 +55,27 @@ func (m * ScannerAccount) ValidateUsernameIfTakenOnUpdate() ( map[string]string,
 		},nil
 	}
 	return map[string]string{}, nil
+}
+
+type ScannerAccountJSON struct {
+	ScannerAccount
+}
+func (account *ScannerAccountJSON) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+	INITIAL_DATA_ON_ERROR := ScannerAccountJSON{
+		ScannerAccount: ScannerAccount{},
+	}
+	if valid {
+		unmarshalErr := json.Unmarshal(val, account)
+		if unmarshalErr != nil {
+			*account = INITIAL_DATA_ON_ERROR
+		}
+	} else {
+		*account = INITIAL_DATA_ON_ERROR
+	}
+	return nil
+
+}
+func (account ScannerAccountJSON) Value(value interface{}) (driver.Value, error) {
+	return account, nil
 }
