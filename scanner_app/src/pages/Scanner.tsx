@@ -2,7 +2,6 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { CameraDevice, Html5Qrcode } from "html5-qrcode";
 import { useMutation } from "react-query";
 import axiosClient from "@definitions/config/axios";
-import { verify } from "crypto";
 const Scanner = () => {
   const readerRef = useRef<HTMLDivElement | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
@@ -132,13 +131,7 @@ const Scanner = () => {
         className="w-11/12 lg:w-10/12 flex flex-col lg:flex-row border p-2 gap-1 items-center rounded dark:border-gray-700"
         style={{ maxWidth: "1250px" }}
       >
-        <div
-          ref={readerRef}
-          id="reader"
-          className={scannerViewClass}
-
-          // style={{ maxWidth: "400px" }}
-        ></div>
+        <div ref={readerRef} id="reader" className={scannerViewClass}></div>
 
         {!hasScanned && (
           <div className="w-full items-center flex lg:justify-center px-1 max-w-lg lg:max-w-none">
