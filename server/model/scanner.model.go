@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/json"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 )
 
@@ -10,6 +12,11 @@ type ScannerAccount struct {
 	Username string `json:"username" db:"username"`
 	Password string `json:"password,omitempty" db:"password"`
 	Description string `json:"description" db:"description"`
+}
+func (m ScannerAccount) ToBytes()([]byte, error){
+	m.Password = ""
+	b, err := json.Marshal(m)
+	return b, err
 }
 func (m * ScannerAccount) ValidateUsernameIfTaken() ( map[string]string, error,) {
 	db := db.Connect()
