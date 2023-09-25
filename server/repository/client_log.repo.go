@@ -55,7 +55,7 @@ func (repo * ClientLog) GetLogs() ([]model.ClientLog, error) {
 	'givenName', account.given_name,
 	 'surname', account.surname, 
 	'displayName',account.display_name,
-	 'email', account.email) as account,  json_build_object('id', scanner_account.id, 
+	 'email', account.email) as client,  json_build_object('id', scanner_account.id, 
 	'username', scanner_account.username,
 	 'description', scanner_account.description 
 	) as scanner,
