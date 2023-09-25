@@ -2,11 +2,7 @@ import axiosClient from "@definitions/config/axios";
 import { BaseSyntheticEvent, useState } from "react";
 import { useMutation } from "react-query";
 
-const Login = () => {
-  // const [form, _] = useState({
-  //   username: "",
-  //   password: "",
-  // });
+const Login = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
   const login = useMutation({
     mutationFn: (form: any) =>
       axiosClient.post("/login", form, {
@@ -15,6 +11,9 @@ const Login = () => {
           "Content-Type": "application/json",
         },
       }),
+    onSuccess: () => {
+      revalidateAuth();
+    },
   });
 
   const handleSubmit = (event: BaseSyntheticEvent) => {
