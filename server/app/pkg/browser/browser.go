@@ -37,6 +37,9 @@ func NewBrowser() (*Browser, error){
 	var err error = nil
 	once.Do(func ()  {
 		path, _ := launcher.LookPath()
+		if(path == ""){
+			panic("Chromium binary not found.")
+		}
 		launcher := launcher.New().Headless(true).Bin(path).Leakless(true)
 		url, err := launcher.Launch()
 		if err != nil {
