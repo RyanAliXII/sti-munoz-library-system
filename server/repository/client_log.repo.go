@@ -12,13 +12,13 @@ import (
 
 type ClientLogRepository interface {
 
-	NewLog(clientId string) error
+	NewLog(clientId string, scannerId string) error
 }
 
 type ClientLog struct {
 	db * sqlx.DB
 }
-func(repo *ClientLog) NewLog(clientId string) error {
+func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	transaction, err := repo.db.Beginx()
 	if err != nil {
 		transaction.Rollback()
@@ -38,7 +38,7 @@ func(repo *ClientLog) NewLog(clientId string) error {
 		transaction.Rollback()
 		return err
 	}
-	_, err = transaction.Exec("INSERT INTO system.client_log(client_id)VALUES($1)", clientId)
+	_, err = transaction.Exec("INSERT INTO system.client_log(client_id, scanner_id)VALUES($1,$2)", clientId, scannerId)
 	if err != nil {
 		fmt.Println("INSERT ERR")
 		transaction.Rollback()
