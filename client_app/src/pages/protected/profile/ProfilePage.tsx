@@ -35,20 +35,12 @@ const ProfilePage = () => {
   const qrRef = useRef<HTMLDivElement | null>(null);
   const downloadQRCode = async () => {
     if (!qrRef.current) return;
-    const qrCanvas = await html2canvas(qrRef.current, { scale: 2 });
-    const doc = new jsPDF("l", "px", [300, 300]);
-    doc.addImage(qrCanvas, 100, 60, 100, 100);
-    doc.text(`LIBRARY PASS`, 150, 50, { align: "center" });
-    doc.text(
-      `${user.givenName.toUpperCase()} ${user.surname.toUpperCase()}`,
-      150,
-      180,
-      {
-        align: "center",
-      }
-    );
-
-    doc.save(user.id);
+    const qrCanvas = await html2canvas(qrRef.current, { scale: 5 });
+    const img = qrCanvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.download = `${user.id}.png`;
+    link.href = img;
+    link.click();
   };
 
   if (!account) return <Loader />;
@@ -150,11 +142,17 @@ const ProfilePage = () => {
           </Link>
         </div>
         <div className="flex flex-col mt-10 items-center gap-3">
-          <div ref={qrRef}>
+          <div ref={qrRef} className="flex flex-col items-center p-3">
             <QRCode
               value={account?.id ?? "none"}
-              className="w-28 h-28 lg:w-32 lg:h-32"
+              style={{ width: "2.0in", height: "2.0in" }}
             />
+            <div className="text-center mt-4">
+              <h2 className="font-bold">STI Munoz Library Pass</h2>
+              <p>
+                {user.givenName} {user.surname}
+              </p>
+            </div>
           </div>
           <div>
             <button
