@@ -17,6 +17,7 @@ type ScannerController interface {
 	Login (ctx * gin.Context)
 	IsAuth (ctx * gin.Context)
 	LogClient (ctx * gin.Context)
+	Logout (ctx * gin.Context)
 }
 
 type Scanner struct {
@@ -92,6 +93,18 @@ func(c * Scanner) LogClient (ctx * gin.Context){
 		"client": account,
 	}, "Ok") )
 }
+
+func(c * Scanner) Logout (ctx * gin.Context){
+	session := sessions.Default(ctx)
+	session.Options(sessions.Options{MaxAge: -1})
+	session.Clear()
+	err := session.Save()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("saveSessionErr"))
+	}
+	ctx.JSON(httpresp.Success200(nil, "Ok"))
+}
+
 
 
 
