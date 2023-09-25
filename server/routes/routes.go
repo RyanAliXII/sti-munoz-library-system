@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/printables"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/scanner"
 	"github.com/gin-gonic/gin"
 )
 
@@ -9,4 +10,5 @@ import (
 func Register(r * gin.Engine){
 	printables.RegisterPrintablesGeneratorRoutes(r.Group("/printables-generator"))
 	printables.RegisterPrintablesRoutes(r.Group("/printables"))
+	scanner.ScannerRoutes(r.Group("/scanner/"))
 }

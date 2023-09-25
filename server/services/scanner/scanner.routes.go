@@ -12,3 +12,9 @@ func ScannerAccountRoutes (router * gin.RouterGroup){
 	router.PUT("/:id",middlewares.ValidateBody[UpdateAccountBody] ,ctrler.UpdateAccount)
 	router.DELETE("/:id",ctrler.DeleteAccount )
 }
+
+func ScannerRoutes(router * gin.RouterGroup){
+	ctrler := NewScannerController()
+	router.POST("/login", ctrler.Login)
+
+}
