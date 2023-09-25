@@ -224,3 +224,17 @@ export type LibraryStats = {
   unreturnedBooks: number;
   cancelledBooks: number;
 };
+
+export type ScannerAccount = {
+  id?: string;
+  description: string;
+  password?: string;
+  username: string;
+};
+
+export type ClientLog = {
+  id: string;
+  client: Account;
+  scanner: ScannerAccount;
+  createdAt: string;
+};

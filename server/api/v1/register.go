@@ -8,11 +8,13 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/bag"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
+	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	fundsrc "github.com/RyanAliXII/sti-munoz-library-system/server/services/fund_source"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/publisher"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/scanner"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/section"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/stats"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/system"
@@ -32,10 +34,11 @@ func RegisterAPIV1(router *gin.Engine) {
 	book.BookRoutes(grp.Group("/books"))
 	inventory.InventoryRoutes(grp.Group("/inventory"))
 	account.ClientRoutes(grp.Group("/accounts"))
-	// circulation.CirculationRoutes(grp.Group("/circulation"))
 	system.SystemRoutes(grp.Group("/system"))
 	penalty.PenaltyRoutes(grp.Group("/penalties"))
 	stats.StatsRoutes(grp.Group("/stats"))
 	borrowing.BorrowingRoutes(grp.Group("/borrowing"))
 	bag.BagRoutes(grp.Group("/bag"))
+	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"))
+	clientlog.ClientLogRoutes(grp.Group("/client-logs"))
 }

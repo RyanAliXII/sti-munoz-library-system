@@ -17,6 +17,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       ADMIN_APP_URL: ${ADMIN_APP_URL}
       CLIENT_APP_URL: ${CLIENT_APP_URL}
+      SCANNER_APP_URL: ${SCANNER_APP_URL}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -35,6 +36,7 @@ services:
       APP_ID: ${API_APP_ID}
       TENANT_ID: ${API_APP_TENANT_ID}
       CRYPTO_SECRET: ${CRYPTO_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
       GIN_MODE: release
     depends_on:
       - postgres
@@ -59,6 +61,15 @@ services:
       - "5202:5202"
     volumes:
       - ./client_app/src:/node/dev/client/src
+    depends_on:
+      - server
+  scanner_app:
+    container_name: scanner_app
+    image: ryanali12/sti-munoz-library-scanner-app
+    ports:
+      - "5209:5209"
+    volumes:
+      - ./scanner_app:/node/dev/scanner
     depends_on:
       - server
   postgres:

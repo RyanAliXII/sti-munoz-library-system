@@ -25,6 +25,8 @@ import Page403 from "./error/Page403";
 import AssignedRolePage from "./protected/system/AssignedRolePage";
 import SettingsPage from "./protected/system/settings/SettingsPage";
 import PenaltyPage from "./protected/circulation/penalty/PenaltyPage";
+import ScannerAccountPage from "./protected/system/scanner-account/ScannerAccountPage";
+import ClientLogPage from "./protected/system/client-log/ClientLogPage";
 
 const pages = createRoutesFromChildren(
   <>
@@ -176,6 +178,8 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
+      <Route path="/scanner-accounts" element={<ScannerAccountPage />} />
+      <Route path="/client-logs" element={<ClientLogPage />} />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>
