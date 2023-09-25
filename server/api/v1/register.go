@@ -34,7 +34,6 @@ func RegisterAPIV1(router *gin.Engine) {
 	book.BookRoutes(grp.Group("/books"))
 	inventory.InventoryRoutes(grp.Group("/inventory"))
 	account.ClientRoutes(grp.Group("/accounts"))
-	// circulation.CirculationRoutes(grp.Group("/circulation"))
 	system.SystemRoutes(grp.Group("/system"))
 	penalty.PenaltyRoutes(grp.Group("/penalties"))
 	stats.StatsRoutes(grp.Group("/stats"))
