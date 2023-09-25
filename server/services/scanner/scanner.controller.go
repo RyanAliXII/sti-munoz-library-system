@@ -79,14 +79,15 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 	}, "Ok") )
 }
 func(c * Scanner) LogClient (ctx * gin.Context){
-	id := ctx.Param("clientId")
-	err := c.ClientLogRepo.NewLog(id)
+	clientId := ctx.Param("clientId")
+	scannerId := ctx.GetString("accountId")
+	err := c.ClientLogRepo.NewLog(clientId, scannerId)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail400(nil,"Unknown error occured."))
 		return
 	}
-	account := c.accountRepo.GetAccountById(id)
+	account := c.accountRepo.GetAccountById(clientId)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"client": account,
 	}, "Ok") )
