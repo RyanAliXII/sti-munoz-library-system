@@ -231,3 +231,10 @@ export type ScannerAccount = {
   password?: string;
   username: string;
 };
+
+export type ClientLog = {
+  id: string;
+  client: Account;
+  scanner: ScannerAccount;
+  createdAt: string;
+};

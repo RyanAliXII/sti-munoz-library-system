@@ -9,5 +9,5 @@ type ClientLog struct {
 	Id string `json:"id" db:"id"`
 	Client AccountJSON `json:"client" db:"client"`
 	Scanner ScannerAccountJSON `json:"scanner" db:"scanner"`
-	CreatedAt db.NullableTime `json:"created_at" db:"created_at"`
+	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
