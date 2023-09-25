@@ -28,13 +28,13 @@ func(repo *ClientLog) NewLog(clientId string) error {
 	//if has logged 10 mins ago then dont log in the database.
 	//record count is defaulted to 1, this will assume that the user has logged 10 mins ago
 	recordCount := 1 
-	err = repo.db.Get(&recordCount, "SELECT count(1) as recordCount FROM system.client_log where client_id = $1 and created_at < NOW() + INTERVAL '10 minutes'  LIMIT 1", clientId)
+	err = repo.db.Get(&recordCount, "SELECT count(1) as recordCount FROM system.client_log where client_id = $1 and created_at > NOW() - INTERVAL '10 minutes'  LIMIT 1", clientId)
 	if err != nil {
 		fmt.Println("GetERR")
 		return err
 	}
     if recordCount == 1 {
-		logger.Info("Client has been logged in , wait for atleast 10 minutes", zap.String("clientId", clientId))
+		logger.Info("Client has been logged in, wait for atleast 10 minutes", zap.String("clientId", clientId))
 		transaction.Rollback()
 		return err
 	}
