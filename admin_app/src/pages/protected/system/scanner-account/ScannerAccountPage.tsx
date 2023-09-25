@@ -39,7 +39,11 @@ const ScannerAccountPage = () => {
       return [];
     }
   };
-  const { data: scannerAccounts } = useQuery<ScannerAccountType[]>({
+  const {
+    data: scannerAccounts,
+    isFetching,
+    isError,
+  } = useQuery<ScannerAccountType[]>({
     queryFn: fetchAccounts,
     queryKey: ["scannerAccounts"],
   });
@@ -83,7 +87,7 @@ const ScannerAccountPage = () => {
       </div>
 
       <div>
-        <LoadingBoundaryV2 isError={false} isLoading={false}>
+        <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
           <Table>
             <Thead>
               <HeadingRow>
