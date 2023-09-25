@@ -12,6 +12,7 @@ type ScannerAccountRepository interface {
 	UpdateAccount(account model.ScannerAccount) error
 	UpdateAccountWithPassword(account model.ScannerAccount) error 
 	DeleteAccountById(id string) error
+	GetAccountByUsername(username string)(model.ScannerAccount, error)
 }
 
 type ScannerAccount struct {
@@ -20,6 +21,11 @@ type ScannerAccount struct {
 func(repo * ScannerAccount) NewAccount(account model.ScannerAccount) error {
 	_, err := repo.db.Exec("INSERT INTO system.scanner_account(username, password, description) VALUES($1, $2, $3)", account.Username, account.Password, account.Description)
 	return err	
+}
+func(repo * ScannerAccount)GetAccountByUsername(username string)(model.ScannerAccount, error){
+	account := model.ScannerAccount{}
+	err := repo.db.Get(&account, "SELECT id,username,password,description FROM system.scanner_account WHERE UPPER(username) = UPPER($1) and deleted_at is null", username)
+	return account, err
 }
 func (repo *ScannerAccount)GetAccounts() ([]model.ScannerAccount, error){
 	accounts := make([]model.ScannerAccount, 0)

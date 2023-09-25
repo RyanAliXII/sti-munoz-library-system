@@ -94,6 +94,12 @@ func initSesssionStore(router * gin.Engine){
 	db := db.Connect()
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	store, err := postgres.NewStore(db.DB,[]byte(sessionSecret))
+	SCANNER_APP := os.Getenv("SCANNER_APP_URL")
+	store.Options(sessions.Options{
+		MaxAge: 60 * 60 * 16, // expired in 16 hrs
+		Domain: SCANNER_APP,
+		HttpOnly: true,
+	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewStoreErr"), slimlog.Function("initSession"))
 		return 
