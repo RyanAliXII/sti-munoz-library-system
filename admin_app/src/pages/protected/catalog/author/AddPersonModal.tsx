@@ -46,8 +46,6 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     },
   });
 
-  // if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
-
   return (
     <Modal
       open={isOpen}
