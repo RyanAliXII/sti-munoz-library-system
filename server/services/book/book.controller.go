@@ -1,12 +1,14 @@
 package book
 
 import (
+	"io"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/gocarina/gocsv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -32,7 +34,41 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		},
 	}, "New book added."))
 }
+func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
+	fileHeader, fileHeaderErr := ctx.FormFile("file")
+	if fileHeaderErr != nil {
+		ctx.JSON(httpresp.Fail400(nil, "No files uploaded."))
+		return
+	}
+	file, fileErr := fileHeader.Open()
+	// defer file.Close()
+	if fileErr != nil {
+		file.Close()
+		logger.Error(fileErr.Error(), slimlog.Function("BookController.ImportBooks"), slimlog.Error("fileErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
 
+	booksImports := make([]model.BookImport, 0)
+	bytesFile, toBytesErr := io.ReadAll(file)
+	if toBytesErr != nil {
+		logger.Error(toBytesErr.Error(), slimlog.Function("BookController.ImportBook"), slimlog.Error("toBytesErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
+		return gocsv.LazyCSVReader(in)
+	})
+	parseErr := gocsv.UnmarshalBytes(bytesFile, &booksImports)
+
+	if parseErr != nil {
+		logger.Error(parseErr.Error(), slimlog.Function("BookController.ImportBook"), slimlog.Error("parseErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	ctrler.bookRepository.ImportBooks(booksImports)	
+	file.Close()
+}
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 
 	const (
@@ -267,4 +303,5 @@ type BookControllerInterface interface {
 	DeleteBookCovers (ctx * gin.Context)
 	UpdateAccessionStatus(ctx * gin.Context) 
 	AddBookCopies(ctx * gin.Context)
+	ImportBooks(ctx * gin.Context)
 }

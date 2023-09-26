@@ -33,6 +33,20 @@ type Book struct {
 	Covers     pq.StringArray  `json:"covers" db:"covers"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
+
+type BookImport struct {
+	Title         string `json:"title" db:"title" csv:"title"`
+	Description   string `json:"description" db:"description" csv:"description"`
+	AccessionNumber int `json:"accessionNumber" db:"accession" csv:"accession_number"`
+	ISBN          string `json:"isbn" db:"isbn" csv:"isbn"`
+	Copies        int    `json:"copies" db:"copies" csv:"copies"`
+	Pages         int    `json:"pages" db:"pages" csv:"pages"`
+	Edition       int  	 `json:"edition" db:"edition" csv:"edition"`
+	Author        string `json:"author" db:"author" csv:"author"`
+	Publisher 	  string `json:"publisher" db:"publisher" csv:"publisher"`
+	DDC           string `json:"ddc" db:"ddc" csv:"ddc"`
+	AuthorNumber  string  `json:"authorNumber" db:"author_number" csv:"author_number"`
+}
 type BookJSON struct {
 	Book
 }
