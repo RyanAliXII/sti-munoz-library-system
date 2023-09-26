@@ -6,6 +6,7 @@ import {
   SecondaryButton,
   ButtonClasses,
   LighButton,
+  PrimaryOutlineButton,
 } from "@components/ui/button/Button";
 import {
   BodyRow,
@@ -20,12 +21,10 @@ import {
 import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState } from "react";
-import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
+import React, { useRef, useState } from "react";
+import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
 import TimeAgo from "timeago-react";
 import Container, {
@@ -40,6 +39,8 @@ import LoadingBoundary, {
 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
 import axios from "axios";
+import { TbDatabaseImport } from "react-icons/tb";
+import ImportBooksModal from "./ImportBooksModal";
 
 const BookPage = () => {
   const {
@@ -78,17 +79,41 @@ const BookPage = () => {
     queryFn: fetchBooks,
     queryKey: ["books"],
   });
+
+  const {
+    close: closeImportModal,
+    open: openImportModal,
+    isOpen: isImportModalOpen,
+  } = useSwitch();
   return (
     <>
       <ContainerNoBackground className="flex gap-2 justify-between px-0 mb-0 lg:mb-4">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold text-gray-700">Books</h1>
+          <div className="mt-1 gap-2 flex items-center">
+            <HasAccess requiredPermissions={["Book.Access"]}>
+              <Link
+                to="/books/new"
+                className={`${ButtonClasses.PrimaryButtonDefaultClasslist} px-3 py-2.5 gap-0.5 flex items-center`}
+              >
+                <AiOutlinePlus className="text-lg" />
+                New Book
+              </Link>
+              <PrimaryOutlineButton
+                className="flex items-center gap-0.5"
+                onClick={openImportModal}
+              >
+                <TbDatabaseImport className="text-lg" />
+                Import
+              </PrimaryOutlineButton>
+            </HasAccess>
+          </div>
         </div>
         <div className="gap-2 items-center lg:basis-9/12 lg:flex">
-          <div className="w-5/12 hidden lg:block">
+          {/* <div className="w-5/12 hidden lg:block">
             <Input type="text" label="Search" placeholder="Search..."></Input>
-          </div>
-          <div className="hidden lg:block">
+          </div> */}
+          {/* <div className="hidden lg:block">
             <CustomDatePicker
               label="Year Published"
               wrapperclass="flex flex-col"
@@ -101,17 +126,7 @@ const BookPage = () => {
           </div>
           <div className="w-3/12 hidden lg:block mb-4 ">
             <CustomSelect label="Section" />
-          </div>
-          <div className="w-32 mt-1">
-            <HasAccess requiredPermissions={["Book.Access"]}>
-              <Link
-                to="/books/new"
-                className={`${ButtonClasses.PrimaryButtonDefaultClasslist} py-2.5`}
-              >
-                New Book
-              </Link>
-            </HasAccess>
-          </div>
+          </div> */}
         </div>
       </ContainerNoBackground>
       <ContainerNoBackground className="px-0 flex gap-2 lg:hidden">
@@ -197,6 +212,10 @@ const BookPage = () => {
         closeModal={closePrintablesModal}
         isOpen={isPrintablesModalOpen}
         book={selectedBookForPrintingPrintables}
+      />
+      <ImportBooksModal
+        closeModal={closeImportModal}
+        isOpen={isImportModalOpen}
       />
     </>
   );
