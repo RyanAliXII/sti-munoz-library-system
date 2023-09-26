@@ -38,7 +38,7 @@ export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
 };
 export const EDIT_AUTHOR_INITIAL_FORM: Author = {
-  id: 0,
+  id: "",
   name: "",
 };
 const AuthorPage = () => {
