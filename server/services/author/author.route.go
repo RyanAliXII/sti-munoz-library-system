@@ -16,24 +16,6 @@ func AuthorRoutes(router *gin.RouterGroup) {
 	middlewares.ValidatePermissions([]string{"Author.Add"}),
 	middlewares.ValidateBody[AuthorBody], controller.NewAuthor)
 
-	router.GET("/organizations", 
-	middlewares.ValidatePermissions([]string{"Author.Read"}),
-	controller.GetOrganizations)
-
-	router.POST("/organizations", 
-	middlewares.ValidatePermissions([]string{"Author.Add"}),
-	middlewares.ValidateBody[OrganizationBody], 
-	controller.NewOrganizationAsAuthor)
-
-	router.PUT("/organizations/:id", 
-	middlewares.ValidatePermissions([]string{"Author.Edit"}),
-	middlewares.ValidateBody[OrganizationBody], 
-	controller.UpdateOrganization)
-
-	router.DELETE("/organizations/:id", 
-	middlewares.ValidatePermissions([]string{"Author.Delete"}),
-	controller.DeleteOrganization)
-
 	router.PUT("/:id/", 
 	middlewares.ValidatePermissions([]string{"Author.Edit"}),
 	middlewares.ValidateBody[AuthorBody], 

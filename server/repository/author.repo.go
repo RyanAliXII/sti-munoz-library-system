@@ -95,36 +95,6 @@ func (repo *AuthorRepository) Update(id int, author model.Author) error {
 	return updateErr
 }
 
-func (repo *AuthorRepository) NewOrganization(org model.OrgAsAuthor) (model.OrgAsAuthor, error) {
-	newOrg := model.OrgAsAuthor{}
-	insertErr := repo.db.Get(&newOrg,"INSERT INTO catalog.organization(name)VALUES($1) RETURNING id,name", org.Name)
-	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function(NEW_ORG), slimlog.Error("insertErr"))
-	}
-	return newOrg,insertErr
-}
-func (repo *AuthorRepository) GetOrganizations(filter  Filter) []model.OrgAsAuthor {
-	orgs := make([]model.OrgAsAuthor, 0)
-	selectErr := repo.db.Select(&orgs, "Select id,name from catalog.organization where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
-	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(GET_ORGS), slimlog.Error("selectErr"))
-	}
-	return orgs
-}
-func (repo *AuthorRepository) DeleteOrganization(id int) error {
-	_, deleteErr := repo.db.Exec("UPDATE catalog.organization SET deleted_at  = NOW() Where id = $1", id)
-	if deleteErr != nil {
-		logger.Error(deleteErr.Error(), slimlog.Function(DELETE_ORG), slimlog.Error("deleteErr"))
-	}
-	return deleteErr
-}
-func (repo *AuthorRepository) UpdateOrganization(org model.OrgAsAuthor) error {
-	_, updateErr := repo.db.Exec("UPDATE catalog.organization SET name = $1 Where id = $2", org.Name, org.Id)
-	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function(UPDATE_ORG), slimlog.Error("updateErr"))
-	}
-	return updateErr
-}
 
 func NewAuthorRepository() AuthorRepositoryInterface {
 	db := postgresdb.GetOrCreateInstance()
@@ -139,8 +109,4 @@ type AuthorRepositoryInterface interface {
 	GetAuthoredBook(string) []model.Author
 	Delete(id int) error
 	Update(id int, author model.Author) error
-	NewOrganization(org model.OrgAsAuthor) (model.OrgAsAuthor, error)
-	GetOrganizations(filter  Filter) []model.OrgAsAuthor
-	DeleteOrganization(id int) error
-	UpdateOrganization(org model.OrgAsAuthor) error
 }
