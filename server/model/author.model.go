@@ -12,7 +12,7 @@ type PersonAsAuthor struct {
 	Surname    string `json:"surname" db:"surname"`
 }
 type Author struct {
-	Id         int    `json:"id" db:"id"`
+	Id    string    `json:"id" db:"id"`
 	Name  string `json:"name" db:"name"`
 }
 type OrgAsAuthor struct {

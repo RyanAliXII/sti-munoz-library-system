@@ -44,19 +44,19 @@ func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.Author) {
 	}
 	return authors
 }
-func (repo *AuthorRepository) Delete(id int) error {
+func (repo *AuthorRepository) Delete(id string) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.author SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
-		logger.Error(prepareErr.Error(), zap.Int("authorId", id), slimlog.Function(DELETE_AUTHOR), slimlog.Error("prepareErr"))
+		logger.Error(prepareErr.Error(), zap.String("authorId", id), slimlog.Function(DELETE_AUTHOR), slimlog.Error("prepareErr"))
 		return prepareErr
 	}
 	deleteResult, deleteErr := deleteStmt.Exec(id)
 	affected, getAffectedErr := deleteResult.RowsAffected()
 	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
-		logger.Warn(getAffectedErr.Error(), zap.Int("authorId", id), slimlog.Function(DELETE_AUTHOR))
+		logger.Warn(getAffectedErr.Error(), zap.String("authorId", id), slimlog.Function(DELETE_AUTHOR))
 	}
-	logger.Info("model.Author deleted", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
+	logger.Info("model.Author deleted", zap.String("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
 	return deleteErr
 }
 func (repo *AuthorRepository) GetAuthoredBook(bookId string) []model.Author {
@@ -74,24 +74,24 @@ func (repo *AuthorRepository) GetAuthoredBook(bookId string) []model.Author {
 	}
 	return authors
 }
-func (repo *AuthorRepository) Update(id int, author model.Author) error {
+func (repo *AuthorRepository) Update(id string, author model.Author) error {
 
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.author SET name = $1 where id = $2")
 	if prepareErr != nil {
-		logger.Error(prepareErr.Error(), zap.Int("authorId", id), slimlog.Function(UPDATE_AUTHOR), slimlog.Error("prepareErr"))
+		logger.Error(prepareErr.Error(), zap.String("authorId", id), slimlog.Function(UPDATE_AUTHOR), slimlog.Error("prepareErr"))
 		return prepareErr
 	}
 	updateResult, updateErr := updateStmt.Exec(author.Name, id)
 	if updateErr != nil {
-		logger.Error(updateErr.Error(), zap.Int("authorId", id), slimlog.Function(UPDATE_AUTHOR), slimlog.Error("updateErr"))
+		logger.Error(updateErr.Error(), zap.String("authorId", id), slimlog.Function(UPDATE_AUTHOR), slimlog.Error("updateErr"))
 		return updateErr
 	}
 	affected, getAffectedErr := updateResult.RowsAffected()
 	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
-		logger.Warn(getAffectedErr.Error(), zap.Int("authordId", id), slimlog.Function(UPDATE_AUTHOR))
+		logger.Warn(getAffectedErr.Error(), zap.String("authordId", id), slimlog.Function(UPDATE_AUTHOR))
 	}
-	logger.Info("model.Author updated", zap.Int("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_AUTHOR))
+	logger.Info("model.Author updated", zap.String("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_AUTHOR))
 	return updateErr
 }
 
@@ -107,6 +107,6 @@ type AuthorRepositoryInterface interface {
 	New(model.Author) (model.Author, error)
 	Get(*filter.Filter ) []model.Author
 	GetAuthoredBook(string) []model.Author
-	Delete(id int) error
-	Update(id int, author model.Author) error
+	Delete(id string) error
+	Update(id string, author model.Author) error
 }
