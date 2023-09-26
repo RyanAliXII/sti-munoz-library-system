@@ -18,8 +18,7 @@ type AuthorController struct {
 }
 
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
-	var author model.PersonAsAuthor = model.PersonAsAuthor{}
-
+	var author model.Author= model.Author{}
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
 	newAuthor, insertErr := ctrler.authorRepository.New(author)
 	if insertErr != nil {
@@ -29,7 +28,7 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"author": newAuthor,
-	}, "PersonAsAuthor has been added."))
+	}, "Author has been added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 
@@ -67,7 +66,7 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		logger.Warn(castErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
 	}
-	var author model.PersonAsAuthor
+	var author model.Author;
 	bindingErr := ctx.ShouldBindBodyWith(&author, binding.JSON)
 	if bindingErr != nil {
 		logger.Error(bindingErr.Error())
