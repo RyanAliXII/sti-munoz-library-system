@@ -15,7 +15,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "react-toastify";
-import { PersonAuthor } from "@definitions/types";
+import { Author, PersonAuthor } from "@definitions/types";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import { ErrorMsg } from "@definitions/var";
 import { EDIT_AUTHOR_INITIAL_FORM } from "../AuthorPage";
@@ -49,7 +49,7 @@ const PersonAsAuthor = () => {
     close: closeConfirmDialog,
   } = useSwitch();
 
-  const [selectedRow, setSelectedRow] = useState<PersonAuthor>(
+  const [selectedRow, setSelectedRow] = useState<Author>(
     EDIT_AUTHOR_INITIAL_FORM
   );
   const { Get, Delete } = useRequest();
@@ -118,7 +118,7 @@ const PersonAsAuthor = () => {
     data: authors,
     isError,
     isFetching,
-  } = useQuery<PersonAuthor[]>({
+  } = useQuery<Author[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors", currentPage],
   });
@@ -140,9 +140,7 @@ const PersonAsAuthor = () => {
             <Table>
               <Thead>
                 <HeadingRow>
-                  <Th>Given name</Th>
-                  <Th>Middle name/initial</Th>
-                  <Th>Surname</Th>
+                  <Th>Author</Th>
                   <Th></Th>
                 </HeadingRow>
               </Thead>
@@ -210,7 +208,7 @@ const PersonAsAuthor = () => {
 };
 
 type AuthorTableRowType = {
-  author: PersonAuthor;
+  author: Author;
   openEditModal: () => void;
   openDialog?: () => void;
 };
@@ -222,9 +220,7 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
 }) => {
   return (
     <BodyRow>
-      <Td>{author.givenName}</Td>
-      <Td>{author.middleName}</Td>
-      <Td>{author.surname}</Td>
+      <Td>{author.name}</Td>
       <Td className="p-2 flex gap-2 items-center">
         <HasAccess requiredPermissions={["Author.Access"]}>
           <Tippy content="Edit Author">
