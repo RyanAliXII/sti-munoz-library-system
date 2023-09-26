@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
@@ -490,11 +491,17 @@ func (repo * BookRepository)AddBookCopies(id string, copies int) error{
 	return nil
 }
 func (repo * BookRepository)ImportBooks(books []model.BookImport) error{
-	
+		
 		for _, book := range books {
-		cleanedTitle := strings.Replace(book.Title, " ", "", -1)
-		cleanedTitle = strings.ToLower(cleanedTitle)
-		fmt.Println(cleanedTitle)
+			cleanedTitle := strings.Map(func(r rune) rune {
+				if(unicode.IsSpace(r)){
+					return -1
+				}
+				return r
+			}, book.Title)
+
+			cleanedTitle = strings.ToLower(cleanedTitle)
+			fmt.Println(cleanedTitle)
 		// lastTitle = cleanedTitle
 	}
 
