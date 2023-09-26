@@ -1,8 +1,6 @@
 package author
 
 import (
-	"strconv"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -45,12 +43,7 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 }
 
 func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
-	id, castErr := strconv.Atoi(ctx.Param("id"))
-	if castErr != nil {
-		logger.Warn(castErr.Error())
-		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
-		return
-	}
+	id := ctx.Param("id")
 	err := ctrler.authorRepository.Delete(id)
 	if err != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{}, err.Error()))
@@ -61,11 +54,7 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 }
 
 func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
-	id, castErr := strconv.Atoi(ctx.Param("id"))
-	if castErr != nil {
-		logger.Warn(castErr.Error())
-		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
-	}
+	id := ctx.Param("id")
 	var author model.Author;
 	bindingErr := ctx.ShouldBindBodyWith(&author, binding.JSON)
 	if bindingErr != nil {
