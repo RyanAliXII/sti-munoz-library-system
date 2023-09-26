@@ -1,7 +1,7 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
 
-import { PersonAuthor, EditModalProps } from "@definitions/types";
+import { Author, ModalProps, PersonAuthor } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,13 +13,16 @@ import { EDIT_AUTHOR_INITIAL_FORM } from "../AuthorPage";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 
-const EditAuthorPersonModal: React.FC<EditModalProps<PersonAuthor>> = ({
+interface EditModalProps<T> extends ModalProps {
+  formData: T;
+}
+const EditAuthorPersonModal: React.FC<EditModalProps<Author>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
   const { form, errors, removeErrors, setForm, validate, handleFormInput } =
-    useForm<PersonAuthor>({
+    useForm<Author>({
       initialFormData: EDIT_AUTHOR_INITIAL_FORM,
       schema: CreateAuthorSchema,
     });
@@ -60,7 +63,6 @@ const EditAuthorPersonModal: React.FC<EditModalProps<PersonAuthor>> = ({
       closeModal();
     },
   });
-  if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
   return (
     <Modal
       open={isOpen}
@@ -70,38 +72,18 @@ const EditAuthorPersonModal: React.FC<EditModalProps<PersonAuthor>> = ({
       center
     >
       <form onSubmit={submit}>
-        <div className="w-full h-96 mt-2">
+        <div className="w-full h-48 mt-2">
           <div className="px-2 mb-3">
             <h1 className="text-xl font-medium">Edit Author</h1>
           </div>
           <div className="px-2 mb-2">
             <Input
-              label="Given name"
-              error={errors?.givenName}
+              label="name"
+              error={errors?.name}
               type="text"
-              name="givenName"
+              name="name"
               onChange={handleFormInput}
-              value={form.givenName}
-            />
-          </div>
-          <div className="px-2 mb-2">
-            <Input
-              label="Middle name/initial"
-              error={errors?.middleName}
-              type="text"
-              name="middleName"
-              onChange={handleFormInput}
-              value={form.middleName}
-            />
-          </div>
-          <div className="px-2 mb-2">
-            <Input
-              label="Surname"
-              error={errors?.surname}
-              type="text"
-              name="surname"
-              onChange={handleFormInput}
-              value={form.surname}
+              value={form.name}
             />
           </div>
           <div className="flex gap-1 p-2">

@@ -1,6 +1,6 @@
 import "react-responsive-modal/styles.css";
 
-import { PersonAuthor } from "@definitions/types";
+import { Author, PersonAuthor } from "@definitions/types";
 
 import { ContainerNoBackground } from "@components/ui/container/Container";
 
@@ -10,16 +10,12 @@ import { useState } from "react";
 import OrganizationAsAuthor from "./organization/OrganizationAsAuthor";
 import PublisherAsAuthor from "./publisher/PublisherAsAuthor";
 
-export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
-  givenName: "",
-  middleName: "",
-  surname: "",
+export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
+  name: "",
 };
-export const EDIT_AUTHOR_INITIAL_FORM: PersonAuthor = {
+export const EDIT_AUTHOR_INITIAL_FORM: Author = {
   id: 0,
-  givenName: "",
-  middleName: "",
-  surname: "",
+  name: "",
 };
 enum Tab {
   Person = "Person",
