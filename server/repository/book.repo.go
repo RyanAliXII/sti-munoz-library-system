@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
+	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
@@ -488,6 +489,17 @@ func (repo * BookRepository)AddBookCopies(id string, copies int) error{
 	transaction.Commit()
 	return nil
 }
+func (repo * BookRepository)ImportBooks(books []model.BookImport) error{
+	
+		for _, book := range books {
+		cleanedTitle := strings.Replace(book.Title, " ", "", -1)
+		cleanedTitle = strings.ToLower(cleanedTitle)
+		fmt.Println(cleanedTitle)
+		// lastTitle = cleanedTitle
+	}
+
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -506,5 +518,6 @@ type BookRepositoryInterface interface {
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 	AddBookCopies(id string, copies int) error
 	DeleteBookCoversByBookId(bookId string) error 
+	ImportBooks(books []model.BookImport) error
 
 }

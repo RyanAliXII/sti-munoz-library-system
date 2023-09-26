@@ -24,6 +24,10 @@ func BookRoutes(router *gin.RouterGroup) {
 	middlewares.ValidatePermissions([]string{"Book.Add"}),
 	middlewares.ValidateBody[BookBody], 
 	controller.NewBook)
+
+	router.POST("/bulk",
+	middlewares.ValidatePermissions([]string{"Book.Add"}),
+	controller.ImportBooks)
 	
 	router.POST("/covers", 
 	middlewares.ValidatePermissions([]string{"Book.Cover.Add"}),
