@@ -1,4 +1,5 @@
 DROP VIEW IF EXISTS borrowed_book_view;
+DROP VIEW IF EXISTS online_borrowed_book_view;
 DROP VIEW IF EXISTS book_view;
 ALTER TABLE IF EXISTS catalog.book
 ALTER COLUMN ddc TYPE varchar(10) USING ddc::varchar(10);
