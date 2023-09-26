@@ -24,7 +24,7 @@ export type Author = {
   name: string;
 };
 export type Publisher = {
-  id?: number;
+  id?: string;
   name: string;
 };
 export type Source = {
