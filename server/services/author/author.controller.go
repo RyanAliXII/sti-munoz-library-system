@@ -78,78 +78,7 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor Updated"))
 }
-func (ctrler *AuthorController) NewOrganizationAsAuthor(ctx *gin.Context) {
-	org := model.OrgAsAuthor{}
-	ctx.ShouldBindBodyWith(&org, binding.JSON)
-	newOrg, newErr := ctrler.authorRepository.NewOrganization(org)
-	if newErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
-	ctrler.recordMetadataRepository.InvalidateOrgAsAuthor()
-	ctx.JSON(httpresp.Success200(gin.H{
-		"organization": newOrg,
-	}, "New organization has been added."))
-}
 
-func (ctrler *AuthorController) GetOrganizations(ctx *gin.Context) {
-	page := ctx.Query("page")
-	parsedPage, parsePageErr := strconv.Atoi(page)
-	if parsePageErr != nil {
-		ctx.JSON(httpresp.Fail400(gin.H{}, "Invalid page number."))
-        return
-	}
-	if parsedPage <= 0 {
-		parsedPage = 1
-	}
-	const NumberOfRowsToFetch = 30
-	orgs := ctrler.authorRepository.GetOrganizations(repository.Filter{Page: parsedPage,
-		Limit: NumberOfRowsToFetch,
-		Offset: ( parsedPage - 1) * NumberOfRowsToFetch, })
-	metaData, metaErr := ctrler.recordMetadataRepository.GetOrgAsAuthorMetadata(NumberOfRowsToFetch)
-	if metaErr != nil {
-		ctx.JSON(httpresp.Fail500(gin.H{
-			"message": "Unknown error occured",
-		}, "Invalid page number."))
-        return
-	}
-	ctx.JSON(httpresp.Success200(gin.H{
-		"organizations": orgs,
-		"metaData": metaData,
-	}, "Organizations fetched."))
-}
-func (ctrler *AuthorController) DeleteOrganization(ctx *gin.Context) {
-	id := ctx.Param("id")
-	parsedId, parsingErr := strconv.Atoi(id)
-	if parsingErr != nil {
-		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
-		return
-	}
-	deleteErr := ctrler.authorRepository.DeleteOrganization(parsedId)
-	if deleteErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
-	ctrler.recordMetadataRepository.InvalidateOrgAsAuthor()
-	ctx.JSON(httpresp.Success200(nil, "Organization deleted."))
-}
-func (ctrler *AuthorController) UpdateOrganization(ctx *gin.Context) {
-	id := ctx.Param("id")
-	parsedId, parsingErr := strconv.Atoi(id)
-	if parsingErr != nil {
-		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
-		return
-	}
-	org := model.OrgAsAuthor{}
-	ctx.ShouldBindBodyWith(&org, binding.JSON)
-	org.Id = parsedId
-	updateErr := ctrler.authorRepository.UpdateOrganization(org)
-	if updateErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
-	ctx.JSON(httpresp.Success200(nil, "Organization deleted."))
-}
 func NewAuthorController() AuthorControllerInterface {
 
 	return &AuthorController{
@@ -164,8 +93,5 @@ type AuthorControllerInterface interface {
 	GetAuthors(ctx *gin.Context)
 	DeleteAuthor(ctx *gin.Context)
 	UpdateAuthor(ctx *gin.Context)
-	NewOrganizationAsAuthor(ctx *gin.Context)
-	GetOrganizations(ctx *gin.Context)
-	DeleteOrganization(ctx *gin.Context)
-	UpdateOrganization(ctx *gin.Context)
+
 }
