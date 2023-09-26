@@ -22,7 +22,7 @@ import {
   BodyRow,
 } from "@components/ui/table/Table";
 
-import { EditModalProps, ModalProps } from "@definitions/types";
+import { ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useSwitch } from "@hooks/useToggle";
@@ -302,6 +302,9 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
+interface EditModalProps<T> extends ModalProps {
+  formData: T;
+}
 const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
   isOpen,
   closeModal,
