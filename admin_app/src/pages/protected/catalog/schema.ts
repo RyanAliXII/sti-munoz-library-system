@@ -1,15 +1,9 @@
 import { array, number, object, string } from "yup";
 import validator from "validator";
 export const CreateAuthorSchema = object().shape({
-  givenName: string()
-    .max(100, "Input should not exceed 100 characters.")
-    .required("Given name cannot be empty."),
-  middleName: string()
-    .max(100, "Input should not exceed 100 characters.")
-    .notRequired(),
-  surname: string()
-    .max(100, "Input should not exceed 100 characters.")
-    .required("Surname cannot be empty."),
+  name: string()
+    .max(100, "Name should not exceed 100 characters.")
+    .required("Name is required."),
 });
 export const SectionSchema = object().shape({
   name: string().required("Name is required field"),

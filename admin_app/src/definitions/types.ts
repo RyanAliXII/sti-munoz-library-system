@@ -19,7 +19,10 @@ export type PersonAuthor = {
   middleName?: string;
   surname: string;
 };
-
+export type Author = {
+  id: number;
+  name: string;
+};
 export type Publisher = {
   id?: number;
   name: string;
