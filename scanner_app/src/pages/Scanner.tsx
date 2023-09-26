@@ -167,10 +167,12 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
         {!hasScanned && (
           <div className="w-full items-center flex lg:justify-center px-1 max-w-lg lg:max-w-none">
             <div>
-              <h2 className=" text-green-500 text-lg md:text-2xl lg:text-3xl font-bold">
-                Ready to Scan...
+              <h2 className=" text-gray-300 text-lg md:text-2xl lg:text-3xl font-bold">
+                Scanning QR Code...
               </h2>
-              <p className="text-gray-500">Point your QR Code in the camera.</p>
+              <p className="text-gray-500 dark:text-gray-300">
+                Point your QR Code in the camera.
+              </p>
             </div>
           </div>
         )}
@@ -178,13 +180,15 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
           <div className="w-full items-center flex lg:justify-center max-w-lg lg:max-w-none">
             <div>
               <h2 className=" text-green-500 text-lg md:text-2xl lg:text-3xl font-bold">
-                You can now enter the library.
+                Library Pass Scanned!
               </h2>
-              <div className="px-1 lg:px-2">
-                <h3 className="text-lg md:text-xl text-gray-600">
+              <div className="px-1 ">
+                <h3 className="text-lg md:text-xl text-gray-600 dark:text-gray-300">
                   {client.displayName}
                 </h3>
-                <p className="text-gray-500 md:text-lg">{client.email}</p>
+                <p className="text-gray-500 md:text-lg dark:text-gray-300">
+                  {client.email}
+                </p>
               </div>
             </div>
           </div>
