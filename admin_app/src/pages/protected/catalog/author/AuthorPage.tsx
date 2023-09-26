@@ -1,14 +1,38 @@
 import "react-responsive-modal/styles.css";
 
-import { Author, PersonAuthor } from "@definitions/types";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
+import React, { useState } from "react";
+import {
+  Tbody,
+  BodyRow,
+  HeadingRow,
+  Table,
+  Td,
+  Th,
+  Thead,
+} from "@components/ui/table/Table";
 
-import { ContainerNoBackground } from "@components/ui/container/Container";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import PersonAsAuthor from "./person/PersonAsAuthor";
-import { useState } from "react";
+import { toast } from "react-toastify";
+import { Author } from "@definitions/types";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 
-import OrganizationAsAuthor from "./organization/OrganizationAsAuthor";
-import PublisherAsAuthor from "./publisher/PublisherAsAuthor";
+import { useSwitch } from "@hooks/useToggle";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import EditAuthorModal from "./EditAuthorModal";
+import AddAuthorModal from "./AddPersonModal";
+import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
+import { useRequest } from "@hooks/useRequest";
+import HasAccess from "@components/auth/HasAccess";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import { apiScope } from "@definitions/configs/msal/scopes";
+import Tippy from "@tippyjs/react";
+import ReactPaginate from "react-paginate";
+import usePaginate from "@hooks/usePaginate";
+import { ErrorMsg } from "@definitions/var";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
@@ -17,88 +41,220 @@ export const EDIT_AUTHOR_INITIAL_FORM: Author = {
   id: 0,
   name: "",
 };
-enum Tab {
-  Person = "Person",
-  Organization = "Organization",
-  Publisher = "Publisher",
-}
-enum Classes {
-  Active = "inline-block py-2 px-2 text-blue-400 border border-blue-400  rounded-lg active cursor-pointer",
-  Default = "inline-block py-2 px-2 text-gray-400 border  rounded-lg cursor-pointer",
-}
-type ActiveTab = "Person" | "Organization" | "Publisher";
-const checkActive = (key: string, state: string) => {
-  if (key === state) {
-    return Classes.Active;
-  }
-  return Classes.Default;
-};
 const AuthorPage = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>(Tab.Person);
+  const {
+    isOpen: isAddModalOpen,
+    open: openAddModal,
+    close: closeAddModal,
+  } = useSwitch();
+
+  const {
+    isOpen: isEditModalOpen,
+    open: openEditModal,
+    close: closeEditModal,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmDialogOpen,
+    open: openConfirmDialog,
+    close: closeConfirmDialog,
+  } = useSwitch();
+
+  const [selectedRow, setSelectedRow] = useState<Author>(
+    EDIT_AUTHOR_INITIAL_FORM
+  );
+  const { Get, Delete } = useRequest();
+
+  const {
+    currentPage,
+    totalPages,
+    setTotalPages,
+    nextPage,
+    previousPage,
+    setCurrentPage,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
+  const fetchAuthors = async () => {
+    try {
+      const { data: response } = await Get(
+        "/authors/",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+        [apiScope("Author.Read")]
+      );
+      setTotalPages(response?.data?.metaData?.pages ?? 0);
+      return response.data.authors ?? [];
+    } catch (error) {
+      toast.error(ErrorMsg.Get);
+      console.error(error);
+      return [];
+    }
+  };
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () =>
+      Delete(`/authors/${selectedRow?.id}/`, {}, [apiScope("Author.Delete")]),
+    onSuccess: () => {
+      /*
+        validate first if deleted row is the last item from the page
+        by checking the current active page rows length
+        if the current page is empty then go to previous page
+      */
+
+      if (authors?.length === 1 && totalPages > 1) {
+        previousPage();
+      } else {
+        queryClient.invalidateQueries(["authors"]);
+      }
+
+      toast.success("Author has been deleted.");
+    },
+    onError: (error) => {
+      toast.error(ErrorMsg.Delete);
+      console.error(error);
+    },
+    onSettled: () => {
+      closeConfirmDialog();
+    },
+  });
+  const onConfirmDialog = () => {
+    mutation.mutate();
+  };
+  const {
+    data: authors,
+    isError,
+    isFetching,
+  } = useQuery<Author[]>({
+    queryFn: fetchAuthors,
+    queryKey: ["authors", currentPage],
+  });
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
+
   return (
     <>
-      <ContainerNoBackground>
-        <div className="w-full flex gap-10">
-          <h1 className="text-3xl font-bold text-gray-700">Authors</h1>
-          <div>
-            <nav className="mb-6">
-              <ul className="flex flex-wrap text-sm font-medium text-center gap-2 text-gray-500  border-gray-200 ">
-                <li className="mr-2">
-                  <a
-                    aria-current="page"
-                    className={checkActive(Tab.Person, activeTab)}
-                    onClick={() => {
-                      setActiveTab(Tab.Person);
-                    }}
-                  >
-                    Person as Author
-                  </a>
-                </li>
-                <li className="mr-2">
-                  <a
-                    aria-current="page"
-                    className={checkActive(Tab.Organization, activeTab)}
-                    onClick={() => {
-                      setActiveTab(Tab.Organization);
-                    }}
-                  >
-                    Organization as Author
-                  </a>
-                </li>
-
-                <li className="mr-2">
-                  <a
-                    aria-current="page"
-                    className={checkActive(Tab.Publisher, activeTab)}
-                    onClick={() => {
-                      setActiveTab(Tab.Publisher);
-                    }}
-                  >
-                    Publisher as Author
-                  </a>
-                </li>
-              </ul>
-            </nav>
+      <HasAccess requiredPermissions={["Author.Access"]}>
+        <ContainerNoBackground className="flex gap-2">
+          <div className="w-full">
+            <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
           </div>
-        </div>
+        </ContainerNoBackground>
+      </HasAccess>
+      <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
+        <Container>
+          <div className="w-full">
+            <Table>
+              <Thead>
+                <HeadingRow>
+                  <Th>Author</Th>
+                  <Th></Th>
+                </HeadingRow>
+              </Thead>
+
+              <Tbody>
+                {authors?.map((author, index) => (
+                  <AuthorTableRow
+                    author={author}
+                    openEditModal={() => {
+                      setSelectedRow({ ...author });
+                      openEditModal();
+                    }}
+                    openDialog={() => {
+                      setSelectedRow({ ...author });
+                      openConfirmDialog();
+                    }}
+                    key={author.id}
+                  ></AuthorTableRow>
+                ))}
+              </Tbody>
+            </Table>
+          </div>
+          <HasAccess requiredPermissions={["Author.Access"]}>
+            <AddAuthorModal
+              isOpen={isAddModalOpen}
+              closeModal={closeAddModal}
+            />
+          </HasAccess>
+          <HasAccess requiredPermissions={["Author.Access"]}>
+            <EditAuthorModal
+              isOpen={isEditModalOpen}
+              formData={selectedRow}
+              closeModal={closeEditModal}
+            />
+          </HasAccess>
+          <DangerConfirmDialog
+            close={closeConfirmDialog}
+            isOpen={isConfirmDialogOpen}
+            title="Delete Author"
+            text="Are you sure that you want to delete this author?"
+            onConfirm={onConfirmDialog}
+          />
+        </Container>
+      </LoadingBoundaryV2>
+      <ContainerNoBackground>
+        <ReactPaginate
+          nextLabel="Next"
+          pageLinkClassName="border px-3 py-0.5  text-center rounded"
+          pageRangeDisplayed={5}
+          pageCount={totalPages}
+          disabledClassName="opacity-60 pointer-events-none"
+          onPageChange={({ selected }) => {
+            setCurrentPage(selected + 1);
+          }}
+          className={paginationClass}
+          previousLabel="Previous"
+          previousClassName="px-2 border text-gray-500 py-1 rounded"
+          nextClassName="px-2 border text-blue-500 py-1 rounded"
+          renderOnZeroPageCount={null}
+          activeClassName="border-none bg-blue-500 text-white rounded"
+        />
       </ContainerNoBackground>
-      <TabContent activeTab={activeTab} />
     </>
   );
 };
-type TabContentProps = {
-  activeTab: ActiveTab;
+
+type AuthorTableRowType = {
+  author: Author;
+  openEditModal: () => void;
+  openDialog?: () => void;
 };
-const TabContent = ({ activeTab }: TabContentProps) => {
-  switch (activeTab) {
-    case Tab.Person:
-      return <PersonAsAuthor key="PersonAsAuthor" />;
-    case Tab.Organization:
-      return <OrganizationAsAuthor key="OrgAsAuthor" />;
-    case Tab.Publisher:
-      return <PublisherAsAuthor key="PublisherAsAuthor" />;
-    default:
-      return null;
-  }
+
+const AuthorTableRow: React.FC<AuthorTableRowType> = ({
+  author,
+  openEditModal,
+  openDialog,
+}) => {
+  return (
+    <BodyRow>
+      <Td>{author.name}</Td>
+      <Td className="p-2 flex gap-2 items-center">
+        <HasAccess requiredPermissions={["Author.Access"]}>
+          <Tippy content="Edit Author">
+            <button
+              className={ButtonClasses.SecondaryOutlineButtonClasslist}
+              onClick={openEditModal}
+            >
+              <AiOutlineEdit className="cursor-pointer  text-xl" />
+            </button>
+          </Tippy>
+        </HasAccess>
+        <HasAccess requiredPermissions={["Author.Access"]}>
+          <Tippy content="Delete Author">
+            <button
+              className={ButtonClasses.DangerButtonOutlineClasslist}
+              onClick={openDialog}
+            >
+              <AiOutlineDelete className="cursor-pointer   text-xl" />
+            </button>
+          </Tippy>
+        </HasAccess>
+      </Td>
+    </BodyRow>
+  );
 };
+
 export default AuthorPage;
