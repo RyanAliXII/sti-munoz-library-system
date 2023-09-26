@@ -1,8 +1,6 @@
 package publisher
 
 import (
-	"strconv"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -10,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"go.uber.org/zap"
 )
 
 type PublisherController struct {
@@ -22,7 +19,6 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
 	publisher,insertErr := ctrler.publisherRepository.New(publisher)
-	
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
 		return
@@ -48,12 +44,8 @@ func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	}, "Publishers successfully fetched."))
 }
 func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
-	id, castErr := strconv.Atoi(ctx.Param("id"))
-	if castErr != nil {
-		logger.Warn(castErr.Error(), zap.String("error", "castErr"))
-		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
-		return
-	}
+	id := ctx.Param("id")
+	
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
 	updateErr := ctrler.publisherRepository.Update(id, publisher)
@@ -65,12 +57,7 @@ func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
 
 }
 func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
-	id, castErr := strconv.Atoi(ctx.Param("id"))
-	if castErr != nil {
-		logger.Warn(castErr.Error(), zap.String("error", "castErr"))
-		ctx.JSON(httpresp.Fail400(gin.H{}, castErr.Error()))
-		return
-	}
+	id := ctx.Param("id")
 	deleteErr := ctrler.publisherRepository.Delete(id)
 	if deleteErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, deleteErr.Error()))
