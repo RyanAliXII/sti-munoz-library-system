@@ -38,38 +38,38 @@ func (repo *PublisherRepository) New(publisher model.Publisher) (model.Publisher
 	}
 	return newPublisher, insertErr
 }
-func (repo *PublisherRepository) Delete(id int) error {
+func (repo *PublisherRepository) Delete(id string) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.publisher SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
-		logger.Error(prepareErr.Error(), zap.Int("publisherId", id), slimlog.Function(DELETE_PUBLISHER))
+		logger.Error(prepareErr.Error(), zap.String("publisherId", id), slimlog.Function(DELETE_PUBLISHER))
 		return prepareErr
 	}
 	deleteResult, deleteErr := deleteStmt.Exec(id)
 	affected, getAffectedErr := deleteResult.RowsAffected()
 	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
-		logger.Warn(getAffectedErr.Error(), zap.Int("publisherId", id), slimlog.Function(DELETE_PUBLISHER))
+		logger.Warn(getAffectedErr.Error(), zap.String("publisherId", id), slimlog.Function(DELETE_PUBLISHER))
 	}
-	logger.Info("model.Publisher Deleted", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_PUBLISHER))
+	logger.Info("model.Publisher Deleted", zap.String("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_PUBLISHER))
 	return deleteErr
 }
-func (repo *PublisherRepository) Update(id int, publisher model.Publisher) error {
+func (repo *PublisherRepository) Update(id string, publisher model.Publisher) error {
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.publisher SET name=$1 where id=$2")
 	if prepareErr != nil {
-		logger.Error(prepareErr.Error(), zap.Int("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
+		logger.Error(prepareErr.Error(), zap.String("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
 		return prepareErr
 	}
 	updateResult, updateErr := updateStmt.Exec(publisher.Name, id)
 	if updateErr != nil {
-		logger.Error(updateErr.Error(), zap.Int("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
+		logger.Error(updateErr.Error(), zap.String("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
 		return updateErr
 	}
 	affected, getAffectedErr := updateResult.RowsAffected()
 	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
-		logger.Warn(getAffectedErr.Error(), zap.Int("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
+		logger.Warn(getAffectedErr.Error(), zap.String("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
 	}
-	logger.Info("model.Publisher Updated", zap.Int("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
+	logger.Info("model.Publisher Updated", zap.String("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
 	return updateErr
 }
 func NewPublisherRepository() PublisherRepositoryInterface {
@@ -81,6 +81,6 @@ func NewPublisherRepository() PublisherRepositoryInterface {
 type PublisherRepositoryInterface interface {
 	Get(*filter.Filter) []model.Publisher
 	New(publisher model.Publisher) (model.Publisher, error)
-	Delete(id int) error
-	Update(id int, publisher model.Publisher) error
+	Delete(id string) error
+	Update(id string, publisher model.Publisher) error
 }
