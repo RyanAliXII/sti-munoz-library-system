@@ -1,24 +1,42 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
+
+import { Author, ModalProps, PersonAuthor } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent } from "react";
-import Modal from "react-responsive-modal";
+import React, { BaseSyntheticEvent, useEffect } from "react";
 import { toast } from "react-toastify";
-import { CreateAuthorSchema } from "../../schema";
-import { ModalProps, Author } from "@definitions/types";
-import { ADD_AUTHOR_INITIAL_FORM } from "../AuthorPage";
+import { CreateAuthorSchema } from "../schema";
+import Modal from "react-responsive-modal";
+import { EDIT_AUTHOR_INITIAL_FORM } from "./AuthorPage";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 
-const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, validate, handleFormInput, resetForm } = useForm<
-    Omit<Author, "id">
-  >({
-    initialFormData: ADD_AUTHOR_INITIAL_FORM,
-    schema: CreateAuthorSchema,
-  });
+interface EditModalProps<T> extends ModalProps {
+  formData: T;
+}
+const EditAuthorPersonModal: React.FC<EditModalProps<Author>> = ({
+  isOpen,
+  closeModal,
+  formData,
+}) => {
+  const { form, errors, removeErrors, setForm, validate, handleFormInput } =
+    useForm<Author>({
+      initialFormData: EDIT_AUTHOR_INITIAL_FORM,
+      schema: CreateAuthorSchema,
+    });
+  useEffect(() => {
+    setForm(() => {
+      return { ...formData };
+    });
+  }, [formData]);
+  useEffect(() => {
+    if (!isOpen) {
+      removeErrors();
+    }
+  }, [isOpen]);
+
   const queryClient = useQueryClient();
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
@@ -29,25 +47,22 @@ const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       console.error(error);
     }
   };
-  const { Post } = useRequest();
+  const { Put } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/authors/", form, {}, [apiScope("Author.Add")]),
+    mutationFn: () =>
+      Put(`/authors/${formData.id}/`, form, {}, [apiScope("Author.Edit")]),
     onSuccess: () => {
-      toast.success("New author has been added.");
+      toast.success("Author has been updated.");
       queryClient.invalidateQueries(["authors"]);
     },
     onError: (error) => {
-      toast.error(ErrorMsg.New);
+      toast.error(ErrorMsg.Delete);
       console.error(error);
     },
     onSettled: () => {
       closeModal();
-      resetForm();
     },
   });
-
-  // if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
-
   return (
     <Modal
       open={isOpen}
@@ -57,13 +72,13 @@ const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       center
     >
       <form onSubmit={submit}>
-        <div className="w-full h-44">
+        <div className="w-full h-48 mt-2">
           <div className="px-2 mb-3">
-            <h1 className="text-xl font-medium">New Author</h1>
+            <h1 className="text-xl font-medium">Edit Author</h1>
           </div>
           <div className="px-2 mb-2">
             <Input
-              label="Person's name or organization's name"
+              label="name"
               error={errors?.name}
               type="text"
               name="name"
@@ -72,8 +87,8 @@ const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
             />
           </div>
           <div className="flex gap-1 p-2">
-            <PrimaryButton>Submit</PrimaryButton>
-            <LighButton type="button" onClick={closeModal}>
+            <PrimaryButton>Update author</PrimaryButton>
+            <LighButton onClick={closeModal} type="button">
               Cancel
             </LighButton>
           </div>
@@ -82,5 +97,4 @@ const AddAuthorPersonModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-
-export default AddAuthorPersonModal;
+export default EditAuthorPersonModal;
