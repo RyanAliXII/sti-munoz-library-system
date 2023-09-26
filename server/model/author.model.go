@@ -5,11 +5,16 @@ import (
 	"encoding/json"
 )
 
+type PersonAsAuthor struct {
+	Id         int    `json:"id" db:"id"`
+	GivenName  string `json:"givenName" db:"given_name"`
+	MiddleName string `json:"middleName" db:"middle_name"`
+	Surname    string `json:"surname" db:"surname"`
+}
 type Author struct {
 	Id         int    `json:"id" db:"id"`
 	Name  string `json:"name" db:"name"`
 }
-
 type OrgAsAuthor struct {
 	Id   int    `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
@@ -42,27 +47,27 @@ func (copy AuthorsJSON) Value(value interface{}) (driver.Value, error) {
 	return copy, nil
 }
 
-// type PeopleAsAuthorJSON []struct {
-// 	PersonAsAuthor
-// }
+type PeopleAsAuthorJSON []struct {
+	PersonAsAuthor
+}
 
-// func (instance *PeopleAsAuthorJSON) Scan(value interface{}) error {
-// 	val, valid := value.([]byte)
+func (instance *PeopleAsAuthorJSON) Scan(value interface{}) error {
+	val, valid := value.([]byte)
 
-// 	if valid {
-// 		unmarshalErr := json.Unmarshal(val, instance)
-// 		if unmarshalErr != nil {
-// 			*instance = make(PeopleAsAuthorJSON, 0)
-// 		}
-// 	} else {
-// 		*instance = make(PeopleAsAuthorJSON, 0)
-// 	}
-// 	return nil
+	if valid {
+		unmarshalErr := json.Unmarshal(val, instance)
+		if unmarshalErr != nil {
+			*instance = make(PeopleAsAuthorJSON, 0)
+		}
+	} else {
+		*instance = make(PeopleAsAuthorJSON, 0)
+	}
+	return nil
 
-// }
-// func (copy PeopleAsAuthorJSON) Value(value interface{}) (driver.Value, error) {
-// 	return copy, nil
-// }
+}
+func (copy PeopleAsAuthorJSON) Value(value interface{}) (driver.Value, error) {
+	return copy, nil
+}
 
 type OrgsAsAuthorJSON []struct {
 	Id   int    `json:"id" db:"id"`
