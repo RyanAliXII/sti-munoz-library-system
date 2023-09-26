@@ -66,7 +66,10 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	ctrler.bookRepository.ImportBooks(booksImports)	
+	err := ctrler.bookRepository.ImportBooks(booksImports)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ImportBooksErr"))
+	}	
 	file.Close()
 }
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
