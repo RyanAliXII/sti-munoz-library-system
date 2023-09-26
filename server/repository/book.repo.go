@@ -491,20 +491,48 @@ func (repo * BookRepository)AddBookCopies(id string, copies int) error{
 	return nil
 }
 func (repo * BookRepository)ImportBooks(books []model.BookImport) error{
-		
-		for _, book := range books {
-			cleanedTitle := strings.Map(func(r rune) rune {
-				if(unicode.IsSpace(r)){
+	var bookTitleId string;
+	var maxAccessionNumber int;
+	var author model.Author
+	var publisher model.Publisher
+	if (len(books) == 0){
+			return nil
+	}
+	transaction, err  := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	for _, book := range books {
+		if(book.AccessionNumber > maxAccessionNumber ){
+				maxAccessionNumber = book.AccessionNumber
+		}
+		bookTitleId = strings.Map(func(r rune) rune {
+			if(unicode.IsSpace(r)){
 					return -1
 				}
-				return r
-			}, book.Title)
-
-			cleanedTitle = strings.ToLower(cleanedTitle)
-			fmt.Println(cleanedTitle)
-		// lastTitle = cleanedTitle
-	}
-
+				return unicode.To(unicode.LowerCase, r)
+		}, book.Title)
+		if bookTitleId == "" {
+				book.Title = "Untitled"
+		}
+		err := transaction.Get(&author, "INSERT INTO catalog.author(name) VALUES($1) returning id", book.Author)
+		if err != nil {
+            transaction.Rollback()
+			return err
+		}	
+		err = transaction.Get(&publisher, "INSERT INTO catalog.publisher(name) VALUES ($1) returning id", book.Publisher)
+		if err != nil {
+			transaction.Rollback()
+			return err
+			}
+		}
+	
+   transaction.Rollback()
+   fmt.Println(bookTitleId)
+   fmt.Println(author)
+   fmt.Println(maxAccessionNumber)
+   fmt.Println(publisher)
 	return nil
 }
 func NewBookRepository() BookRepositoryInterface {
