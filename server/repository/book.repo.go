@@ -608,7 +608,19 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 		copyNumber ++;
 		lastBookTitleId = bookTitleId
 	 }
-	
+	accesionCounter := model.AccessionCounter{}
+
+	err = transaction.Get(&accesionCounter, "SELECT accession, last_value FROM catalog.section INNER JOIN accession.counter on section.accession_table = counter.accession where id = $1", sectionId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if maxAccessionNumber > accesionCounter.LastValue {
+		_, err = transaction.Exec("UPDATE accession.counter set last_value = $1 where accession = $2", maxAccessionNumber, accesionCounter.Accession)
+		if err  != nil {
+			transaction.Rollback()
+		}
+	}
 	if(len(accessionRows) > 0){
 		authorDs := dialect.From(goqu.T("author").Schema("catalog")).Prepared(true).Insert().Rows(authorRows)
 		query, args, _ := authorDs.ToSQL()
