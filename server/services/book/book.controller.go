@@ -36,6 +36,12 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 }
 func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
+	sectionId := ctx.PostForm("sectionId")
+	parsedSectionId, err := strconv.Atoi(sectionId)
+	if err != nil {
+		ctx.JSON(httpresp.Fail400(nil, "Invalid sectionId"))
+		return 
+	}
 	if fileHeaderErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, "No files uploaded."))
 		return
@@ -66,7 +72,7 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err := ctrler.bookRepository.ImportBooks(booksImports)
+	err = ctrler.bookRepository.ImportBooks(booksImports, parsedSectionId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ImportBooksErr"))
 	}	
