@@ -118,3 +118,9 @@ type BookCover struct {
 	BookId string `json:"bookId" db:"book_id"`
 	Path   string `json:"path" db:"path"`
 }
+
+
+type AccessionCounter struct {
+	Accession string `json:"accession" db:"accession"`
+	LastValue int `json:"lastValue" db:"last_value"`
+}
