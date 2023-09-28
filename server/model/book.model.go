@@ -39,12 +39,15 @@ type BookImport struct {
 	Description   string `json:"description" db:"description" csv:"description"`
 	AccessionNumber int `json:"accessionNumber" db:"accession" csv:"accession_number"`
 	ISBN          string `json:"isbn" db:"isbn" csv:"isbn"`
+	YearPublished int `json:"year_published" db:"year_published" csv:"year_published"`
 	Copies        int    `json:"copies" db:"copies" csv:"copies"`
 	Pages         int    `json:"pages" db:"pages" csv:"pages"`
 	Edition       int  	 `json:"edition" db:"edition" csv:"edition"`
+	CostPrice	  int `json:"cost_price" db:"cost_price"`
 	Author        string `json:"author" db:"author" csv:"author"`
 	Publisher 	  string `json:"publisher" db:"publisher" csv:"publisher"`
 	DDC           string `json:"ddc" db:"ddc" csv:"ddc"`
+	SourceOfFund string `json:"source_of_fund" db:"source_of_fund" csv:"source_of_fund"`
 	AuthorNumber  string  `json:"authorNumber" db:"author_number" csv:"author_number"`
 }
 type BookJSON struct {
