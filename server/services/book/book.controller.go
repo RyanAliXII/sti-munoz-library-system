@@ -1,6 +1,8 @@
 package book
 
 import (
+	"encoding/csv"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -47,16 +49,16 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		return
 	}
 	file, fileErr := fileHeader.Open()
-	// defer file.Close()
 	if fileErr != nil {
 		file.Close()
 		logger.Error(fileErr.Error(), slimlog.Function("BookController.ImportBooks"), slimlog.Error("fileErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-
+	defer file.Close()
 	booksImports := make([]model.BookImport, 0)
 	bytesFile, toBytesErr := io.ReadAll(file)
+
 	if toBytesErr != nil {
 		logger.Error(toBytesErr.Error(), slimlog.Function("BookController.ImportBook"), slimlog.Error("toBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
@@ -68,6 +70,25 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	parseErr := gocsv.UnmarshalBytes(bytesFile, &booksImports)
 
 	if parseErr != nil {
+		
+		csvParseErr, isParseErr := parseErr.(*csv.ParseError);
+		
+		if isParseErr {
+			message := "There's a problem with the value."
+			numErr, isNumError := csvParseErr.Err.(*strconv.NumError)
+			if isNumError  {
+				message = fmt.Sprintf("Expected value is numerical. Given value: %s", numErr.Num)
+			}
+			ctx.JSON(httpresp.Fail400(gin.H{
+				"errors": gin.H{
+					"row": csvParseErr.Line,
+					"column": csvParseErr.Column,
+					"message": message,
+					
+				},
+			}, "Invalid CSV structure or format."))
+			return
+		} 
 		logger.Error(parseErr.Error(), slimlog.Function("BookController.ImportBook"), slimlog.Error("parseErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
@@ -78,7 +99,7 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}	
-	file.Close()
+	
 }
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 
