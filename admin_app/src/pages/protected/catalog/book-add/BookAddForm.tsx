@@ -139,11 +139,8 @@ const BookAddForm = () => {
     setFieldValue("section", option);
     removeFieldError("section");
   };
-  const handleSourceSelect = (option: SingleValue<Source>) => {
-    setFieldValue("fundSource", option);
-    removeFieldError("fundSource");
-  };
-  const handlePublisherSelect = (option: SingleValue<Source>) => {
+
+  const handlePublisherSelect = (option: SingleValue<Publisher>) => {
     setFieldValue("publisher", option);
     removeFieldError("publisher");
   };
@@ -201,10 +198,6 @@ const BookAddForm = () => {
     setFieldValue("description", content);
   };
 
-  const numberOfSelectedAuthors =
-    form.authors.people.length +
-    form.authors.organizations.length +
-    form.authors.publishers.length;
   useEffect(() => {
     return () => {
       uppy.cancelAll();
@@ -318,24 +311,7 @@ const BookAddForm = () => {
               </PrimaryOutlineButton>
             </div>
           </FieldRow>
-          <FieldRow
-            isRequired
-            label="Source of Fund"
-            fieldDetails="This refers on how the book is acquired."
-            ref={registerFormGroup("fundSource.value")}
-          >
-            <CustomSelect
-              className="w-full"
-              name="fundSource"
-              wrapperclass="flex flex-col"
-              onChange={handleSourceSelect}
-              value={form.fundSource}
-              getOptionLabel={(option) => option.name}
-              getOptionValue={(option) => option?.id?.toString() ?? ""}
-              error={errors?.fundSource?.id}
-              options={sourceOfFunds}
-            />
-          </FieldRow>
+
           <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
             <Input
               error={errors?.costPrice}
@@ -434,7 +410,7 @@ const BookAddForm = () => {
             className="mb-10 overflow-y-auto scroll-smooth"
             style={{ maxHeight: "300px" }}
           >
-            {numberOfSelectedAuthors === 0 ? (
+            {form.authors.length === 0 ? (
               <div className="flex items-center h-10 justify-center">
                 <small className="text-gray-400">No authors selected.</small>
               </div>
