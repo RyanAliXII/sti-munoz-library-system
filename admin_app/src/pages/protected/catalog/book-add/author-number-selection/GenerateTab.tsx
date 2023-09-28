@@ -74,10 +74,6 @@ const GenerateTab = () => {
       ? `${form.title.substring(0, TITLE_CHARACTER_LIMIT)}...`
       : form.title;
 
-  const numberOfAuthorSelected =
-    form.authors.organizations.length +
-    form.authors.people.length +
-    form.authors.publishers.length;
   return (
     <>
       <div>
@@ -121,7 +117,7 @@ const GenerateTab = () => {
         </div>
       </div>
       <hr></hr>
-      {numberOfAuthorSelected === 0 ? (
+      {form.authors.length === 0 ? (
         <div className="h-80 w-full flex items-center justify-center flex-col">
           <small className="text-sm text-gray-400 ">
             You have not selected any authors. Please select one to generate.
@@ -143,62 +139,13 @@ const GenerateTab = () => {
               </HeadingRow>
             </Thead>
             <Tbody>
-              {form.authors.people.map((author) => {
+              {form.authors.map((author) => {
                 return (
                   <BodyRow
                     className="cursor-pointer"
                     key={author.id}
                     onClick={() => {
-                      generateAuthorNumberByAuthor(
-                        author.givenName,
-                        author.surname,
-                        "person"
-                      );
-                    }}
-                  >
-                    {/* <Td>
-                      <Input
-                        wrapperclass="flex items-center h-4"
-                        type="checkbox"
-                        readOnly
-                      ></Input>
-                    </Td> */}
-                    <Td>{author.givenName}</Td>
-                  </BodyRow>
-                );
-              })}
-              {form.authors.organizations.map((author) => {
-                return (
-                  <BodyRow
-                    className="cursor-pointer"
-                    key={author.id}
-                    onClick={() => {
-                      generateAuthorNumberByAuthor("none", author.name, "org");
-                    }}
-                  >
-                    {/* <Td>
-                      <Input
-                        wrapperclass="flex items-center h-4"
-                        type="checkbox"
-                        readOnly
-                      ></Input>
-                    </Td> */}
-                    <Td>{author.name}</Td>
-                  </BodyRow>
-                );
-              })}
-
-              {form.authors.publishers.map((author) => {
-                return (
-                  <BodyRow
-                    className="cursor-pointer"
-                    key={author.id}
-                    onClick={() => {
-                      generateAuthorNumberByAuthor(
-                        "none",
-                        author.name,
-                        "publisher"
-                      );
+                      // generateAuthorNumberByAuthor("person");
                     }}
                   >
                     {/* <Td>
