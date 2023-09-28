@@ -39,11 +39,11 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	insertBookQuery := `INSERT INTO catalog.book(
-		title, isbn, description, copies, pages, section_id, publisher_id, fund_source_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`
+		title, isbn, description, copies, pages, section_id, publisher_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`
 
 	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Copies, book.Pages,
-		book.Section.Id, book.Publisher.Id, book.FundSource.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
+		book.Section.Id, book.Publisher.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt.Time, book.Id, book.AuthorNumber, book.DDC)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
 		return book.Id, insertBookErr
@@ -81,10 +81,10 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	logger.Info("Added new book.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedBookRows))
 	logger.Info("model.Accession added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAccessionRows))
 
-	if len(book.Authors.People) > 0 {
+	if len(book.Authors) > 0 {
 		rows := make([]goqu.Record, 0)
 
-		for _, p := range book.Authors.People {
+		for _, p := range book.Authors{
 			rows = append(rows, goqu.Record{"book_id": book.Id, "author_id": p.Id})
 		}
 		ds := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(rows)
@@ -94,39 +94,6 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 		if insertAuthorErr != nil {
 			transaction.Rollback()
 			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert people"))
-			return book.Id, insertAuthorErr
-		}
-	}
-
-	if len(book.Authors.Organizations) > 0 {
-		rows := make([]goqu.Record, 0)
-
-		for _, org := range book.Authors.Organizations {
-			rows = append(rows, goqu.Record{"book_id": book.Id, "org_id": org.Id})
-		}
-		ds := dialect.From("catalog.org_book_author").Prepared(true).Insert().Rows(rows)
-		query, args, _ := ds.ToSQL()
-
-		_, insertAuthorErr := transaction.Exec(query, args...)
-		if insertAuthorErr != nil {
-			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert orgs"))
-			return book.Id, insertAuthorErr
-		}
-	}
-	if len(book.Authors.Publishers) > 0 {
-		rows := make([]goqu.Record, 0)
-
-		for _, publisher := range book.Authors.Publishers {
-			rows = append(rows, goqu.Record{"book_id": book.Id, "publisher_id": publisher.Id})
-		}
-		ds := dialect.From("catalog.publisher_book_author").Prepared(true).Insert().Rows(rows)
-		query, args, _ := ds.ToSQL()
-
-		_, insertAuthorErr := transaction.Exec(query, args...)
-		if insertAuthorErr != nil {
-			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert publisher"))
 			return book.Id, insertAuthorErr
 		}
 	}
@@ -141,7 +108,8 @@ func (repo *BookRepository) Get() []model.Book {
 	title, 
 	isbn, 
 	description, 
-	copies, pages,
+	copies, 
+	pages,
 	cost_price,
 	edition,
 	year_published, 
@@ -171,8 +139,8 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	ddc, 
 	author_number, 
 	created_at, 
-	fund_source, section, publisher, authors, accessions, covers FROM book_view
-	 where id = $1 ORDER BY created_at DESC`
+	section, publisher, authors, accessions, covers FROM book_view
+	where id = $1 ORDER BY created_at DESC`
 	selectErr := repo.db.Get(&book, query, id)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOne"), slimlog.Error("SelectErr"))
@@ -194,10 +162,10 @@ func (repo *BookRepository) Update(book model.Book) error {
 	}
 
 	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6,
-	fund_source_id = $7, cost_price= $8, edition = $9, year_published = $10, received_at = $11, author_number = $12, ddc = $13 where id = $14 `
+	 cost_price= $7, edition = $8, year_published = $9, received_at = $10, author_number = $11, ddc = $12 where id = $13`
 
 	//update book
-	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.Section.Id, book.Publisher.Id, book.FundSource.Id,
+	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.Section.Id, book.Publisher.Id,
 		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Id)
 	if updateErr != nil {
 		transaction.Rollback()
@@ -214,10 +182,10 @@ func (repo *BookRepository) Update(book model.Book) error {
 		return deleteErr
 	}
 
-	if len(book.Authors.People) > 0 {
+	if len(book.Authors) > 0 {
 		rows := make([]goqu.Record, 0)
 
-		for _, p := range book.Authors.People {
+		for _, p := range book.Authors {
 			rows = append(rows, goqu.Record{"book_id": book.Id, "author_id": p.Id})
 		}
 		ds := dialect.From("catalog.book_author").Prepared(true).Insert().Rows(rows)
@@ -231,38 +199,8 @@ func (repo *BookRepository) Update(book model.Book) error {
 		}
 	}
 
-	if len(book.Authors.Organizations) > 0 {
-		rows := make([]goqu.Record, 0)
+	
 
-		for _, org := range book.Authors.Organizations {
-			rows = append(rows, goqu.Record{"book_id": book.Id, "org_id": org.Id})
-		}
-		ds := dialect.From("catalog.org_book_author").Prepared(true).Insert().Rows(rows)
-		query, args, _ := ds.ToSQL()
-
-		_, insertAuthorErr := transaction.Exec(query, args...)
-		if insertAuthorErr != nil {
-			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert orgs"))
-			return insertAuthorErr
-		}
-	}
-	if len(book.Authors.Publishers) > 0 {
-		rows := make([]goqu.Record, 0)
-
-		for _, publisher := range book.Authors.Publishers {
-			rows = append(rows, goqu.Record{"book_id": book.Id, "publisher_id": publisher.Id})
-		}
-		ds := dialect.From("catalog.publisher_book_author").Prepared(true).Insert().Rows(rows)
-		query, args, _ := ds.ToSQL()
-
-		_, insertAuthorErr := transaction.Exec(query, args...)
-		if insertAuthorErr != nil {
-			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert publisher"))
-			return insertAuthorErr
-		}
-	}
 
 	updatedBookRows, _ := updateResult.RowsAffected()
 	logger.Info("Book updated.", slimlog.AffectedRows(updatedBookRows))
@@ -277,7 +215,7 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	title, 
 	isbn, 
 	description, 
-	copies, pages,
+	pages,
 	cost_price,
 	edition,
 	year_published, 
@@ -285,7 +223,7 @@ func (repo *BookRepository) Search(filter Filter) []model.Book {
 	ddc, 
 	author_number, 
 	created_at, 
-	fund_source, section, publisher, authors, accessions, covers FROM book_view
+	section, publisher, authors, accessions, covers FROM book_view
 	WHERE search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
 	ORDER BY created_at DESC
 	LIMIT $2 OFFSET $3
