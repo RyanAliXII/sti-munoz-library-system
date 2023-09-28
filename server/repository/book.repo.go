@@ -117,8 +117,8 @@ func (repo *BookRepository) Get() []model.Book {
 	ddc, 
 	author_number, 
 	created_at, 
-	fund_source, section, publisher, authors, accessions, covers FROM book_view
-	ORDER BY created_at DESC`
+	section, publisher, authors, accessions, covers FROM book_view
+	ORDER BY created_at DESC LIMIT 50`
 	selectErr := repo.db.Select(&books, query)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
