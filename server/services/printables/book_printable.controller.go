@@ -26,15 +26,6 @@ func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
 		 return
 	}
 	authors := make([]string, 0)
-	for _, author := range book.Authors.People {
-		authors = append(authors, fmt.Sprintf("%s %s", author.GivenName, author.Surname))
-	}
-	for _, author := range book.Authors.Organizations {
-		authors = append(authors, author.Name)
-	}
-	for _, author := range book.Authors.Publishers {
-		authors = append(authors,author.Name)
-	}
 	ctx.HTML(http.StatusOK, "printables-generator/books/index", gin.H{
 		"book": book,
 		"authors": authors,

@@ -14,12 +14,12 @@ type Book struct {
 	Title       string `json:"title" db:"title"`
 	Description string `json:"description" db:"description"`
 	ISBN        string `json:"isbn" db:"isbn"`
-	Copies      int    `json:"copies" db:"copies"`
 	Pages       int    `json:"pages" db:"pages"`
 
+	Copies		int `json:"copies" db:"copies"`
 	Section    SectionJSON    `json:"section" db:"section"`
 	Publisher  PublisherJSON  `json:"publisher" db:"publisher"`
-	FundSource FundSourceJSON `json:"fundSource" db:"fund_source"`
+	SourceOfFund string `json:"source_of_fund" db:"source_of_fund"`
 
 	CostPrice     float32         `json:"costPrice" db:"cost_price"`
 	Edition       int             `json:"edition" db:"edition"`

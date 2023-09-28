@@ -4,6 +4,7 @@
 	pages,
 	cost_price,
 	edition,
+	count(accession) as copies,
 	year_published,
 	received_at,
 	ddc,
