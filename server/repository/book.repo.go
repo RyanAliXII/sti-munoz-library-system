@@ -531,6 +531,13 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 				"title": book.Title,
 				"publisher_id" : publisherId,
 				"section_id" :sectionId,
+				"year_published": book.YearPublished,
+				"ddc": book.DDC,
+				"author_number": book.AuthorNumber,
+				"edition": book.Edition,
+				"cost_price": book.CostPrice,
+				"isbn": book.ISBN,
+				"source_of_fund": book.SourceOfFund,
 			})
 			bookAuthorRows = append(bookAuthorRows, goqu.Record{
 				"book_id":  lastBookId,
@@ -559,14 +566,13 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 			transaction.Rollback()
 		}
 	}
-	if(len(accessionRows) > 0){
+	if(len(authorRows) > 0){
 		authorDs := dialect.From(goqu.T("author").Schema("catalog")).Prepared(true).Insert().Rows(authorRows)
 		query, args, _ := authorDs.ToSQL()
 		_, err = transaction.Exec(query, args...)
 		if err  != nil {	
-			fmt.Println("IN INSERT AUTHOR")
 			transaction.Rollback()
-			return err
+			return fmt.Errorf("insert authors: %s", err.Error())
 		}
 	}
 	if(len(publisherRows) > 0){
@@ -574,9 +580,8 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 		query, args, _ := publisherDs.ToSQL()
 		_, err = transaction.Exec(query, args...)
 		if err  != nil {	
-			fmt.Println("IN INSERT PUBLISHER")
 			transaction.Rollback()
-			return err
+			return fmt.Errorf("insert publisher: %s", err.Error())
 		}
 	}
    if(len(bookRows) > 0){
@@ -584,9 +589,8 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 	query, args, _ := bookDs.ToSQL()
 	_, err = transaction.Exec(query, args...)
 	if err  != nil {	
-		fmt.Println("IN INSERT BOOK")
 		transaction.Rollback()
-		return err
+		return fmt.Errorf("insert book: %s", err.Error())
 	}
    }
 	if(len(bookAuthorRows) > 0){
@@ -594,9 +598,8 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 		query, args, _ := bookAuthorDs.ToSQL()
 		_, err = transaction.Exec(query, args...)
 		if err  != nil {	
-			fmt.Println("IN INSERT BOOKAUTHOR")
 			transaction.Rollback()
-			return err
+			return fmt.Errorf("insert book_author: %s", err.Error())
 		}
 	}
 	if(len(accessionRows) > 0){
@@ -604,9 +607,8 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 		query, args, _ := accessionDs.ToSQL()
 		_, err = transaction.Exec(query, args...)
 		if err  != nil {	
-			fmt.Println("IN INSERT ACCESSION")
 			transaction.Rollback()
-			return err
+			return fmt.Errorf("insert accession: %s", err.Error())
 		}
 	}
 
