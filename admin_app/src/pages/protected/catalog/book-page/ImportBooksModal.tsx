@@ -1,21 +1,25 @@
-import { useMsal } from "@azure/msal-react";
 import { PrimaryButton } from "@components/ui/button/Button";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { InputClasses } from "@components/ui/form/Input";
-import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import axiosClient from "@definitions/configs/axios";
+
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { ModalProps, Section } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
-import { useQuery } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
-import XHRUpload from "@uppy/xhr-upload";
 import { AxiosError } from "axios";
+
 import { FormEvent, useEffect, useState } from "react";
-import { MdOutlineError } from "react-icons/md";
+
 import Modal from "react-responsive-modal";
+import { toast } from "react-toastify";
 import { number, object, string } from "yup";
 
 const TW0_SECONDS = 2000;
@@ -57,7 +61,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
 
     queryKey: ["sections"],
   });
-
+  const queryClient = useQueryClient();
   const { form, setForm, errors, validate } = useForm<Section>({
     initialFormData: INITIAL_FORM_VALUE,
     schema: object({
@@ -68,32 +72,37 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
     }),
   });
   const { Post } = useRequest();
-
+  const importBooks = useMutation({
+    mutationFn: (formData: FormData) => Post("/books/bulk", formData),
+    onSuccess: () => {
+      uppy.getFiles().forEach((uppyFile) => {
+        uppy.removeFile(uppyFile.id);
+      });
+      queryClient.invalidateQueries(["books"]);
+      toast.success("Books imported.");
+    },
+    onError: (error: AxiosError<any, any>) => {
+      if (error.response?.status === 400) {
+        const { data } = error.response?.data;
+        const specificError = data?.errors as ParseErr;
+        if (specificError) {
+          setError(specificError);
+        }
+      }
+    },
+  });
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await validate();
     try {
+      await validate();
       if (uppy.getFiles().length === 0) return;
       setError(undefined);
       const formData = new FormData();
       const file = uppy.getFiles()[0].data;
       formData.append("file", file);
       formData.append("sectionId", form?.id?.toString() ?? "");
-      await Post("/books/bulk", formData);
-      uppy.getFiles().forEach((uppyFile) => {
-        uppy.removeFile(uppyFile.id);
-      });
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 400) {
-          const { data } = error.response?.data;
-          const specificError = data?.errors as ParseErr;
-          if (specificError) {
-            setError(specificError);
-          }
-        }
-      }
-    }
+      importBooks.mutate(formData);
+    } catch (error) {}
   };
   useEffect(() => {
     if (!isOpen) {
@@ -105,7 +114,6 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
     <Modal
       open={isOpen}
       onClose={closeModal}
-      styles={{}}
       showCloseIcon={false}
       classNames={{
         modal: "w-11/12  lg:w-12/12  xl: rounded h-[900-px]",
@@ -161,7 +169,9 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
             />
           </div>
 
-          <PrimaryButton>Submit</PrimaryButton>
+          <PrimaryButton isLoading={importBooks.isLoading}>
+            Submit
+          </PrimaryButton>
         </div>
       </form>
     </Modal>
