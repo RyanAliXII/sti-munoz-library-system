@@ -1,4 +1,9 @@
-import { ModalProps, Organization, PersonAuthor } from "@definitions/types";
+import {
+  Author,
+  ModalProps,
+  Organization,
+  PersonAuthor,
+} from "@definitions/types";
 import React, { BaseSyntheticEvent, useState } from "react";
 import { CreateAuthorSchema, OrganizationValidation } from "../schema";
 import { useRequest } from "@hooks/useRequest";
@@ -19,12 +24,6 @@ export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
 };
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  if (!isOpen) return null;
-
-  const [activeTab, setActiveTab] = useState<"Person" | "Org">("Person");
-  const activeTabClass =
-    "basis-1/2 border-blue-500 flex justify-center rounded text-blue-500 rounded p-2";
-  const nonActiveClass = "flex justify-center basis-1/2 p-2 text-gray-400";
   return (
     <Modal
       open={isOpen}
@@ -34,42 +33,23 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       showCloseIcon={false}
       center
     >
-      <div className="w-full flex rounded border mb-5">
-        <div
-          className={activeTab === "Person" ? activeTabClass : nonActiveClass}
-          role="button"
-          onClick={() => {
-            setActiveTab("Person");
-          }}
-        >
-          <span> Person as Author</span>
+      <div className="w-full  rounded  mb-5">
+        <h1 className="text-lg p-3">New Author</h1>
+        <div>
+          <AuthorForm closeModal={closeModal} />
         </div>
-        <div
-          className={activeTab === "Org" ? activeTabClass : nonActiveClass}
-          role="button"
-          onClick={() => {
-            setActiveTab("Org");
-          }}
-        >
-          Organization as Author
-        </div>
-      </div>
-      <div>
-        {activeTab === "Person" ? (
-          <PersonForm closeModal={closeModal} />
-        ) : (
-          <OrganizationForm closeModal={closeModal} />
-        )}
       </div>
     </Modal>
   );
 };
 
-const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
+const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
   const { form, errors, validate, handleFormInput, resetForm } = useForm<
-    Omit<PersonAuthor, "id">
+    Omit<Author, "id">
   >({
-    initialFormData: ADD_AUTHOR_INITIAL_FORM,
+    initialFormData: {
+      name: "",
+    },
     schema: CreateAuthorSchema,
   });
 
@@ -92,13 +72,10 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
       queryClient.invalidateQueries(["authors"]);
       const { data } = response.data;
       if (data?.author?.id) {
-        const author = data?.author as PersonAuthor;
+        const author = data?.author as Author;
         setAddBookForm((prev) => ({
           ...prev,
-          authors: {
-            ...prev.authors,
-            people: [...prev.authors.people, author],
-          },
+          authors: [...prev.authors, author],
         }));
       }
     },
@@ -113,108 +90,20 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
   });
   return (
     <form onSubmit={submit}>
-      <div className="w-full h-80">
+      <div className="w-full ">
         <div className="px-2 mb-2">
           <Input
-            label="Given name"
-            error={errors?.givenName}
-            type="text"
-            name="givenName"
-            onChange={handleFormInput}
-            value={form.givenName}
-          />
-        </div>
-        <div className="px-2 mb-2">
-          <Input
-            label="Middle name/initial"
-            error={errors?.middleName}
-            type="text"
-            name="middleName"
-            onChange={handleFormInput}
-            value={form.middleName}
-          />
-        </div>
-        <div className="px-2 mb-2">
-          <Input
-            label="Surname"
-            error={errors?.surname}
-            type="text"
-            name="surname"
-            onChange={handleFormInput}
-            value={form.surname}
-          />
-        </div>
-        <div className="flex gap-1 p-2">
-          <PrimaryButton>Add author</PrimaryButton>
-          <LighButton type="button" onClick={closeModal}>
-            Cancel
-          </LighButton>
-        </div>
-      </div>
-    </form>
-  );
-};
-
-const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
-  const queryClient = useQueryClient();
-  const { form, errors, handleFormInput, validate, resetForm } = useForm({
-    initialFormData: {
-      name: "",
-    },
-    schema: OrganizationValidation,
-  });
-  const { setForm: setAddBookForm } = useBookAddFormContext();
-  const { Post } = useRequest();
-  const submit = async (event: BaseSyntheticEvent) => {
-    event.preventDefault();
-    try {
-      const data = await validate();
-      if (!data) return;
-      newOrganization.mutate(data);
-    } catch {}
-  };
-  const newOrganization = useMutation({
-    mutationFn: (data: { name: string }) =>
-      Post("/authors/organizations", data, {}, [apiScope("Author.Add")]),
-    onSuccess: (response) => {
-      toast.success("New organization has been added.");
-      queryClient.invalidateQueries(["authors"]);
-      const { data } = response.data;
-      if (data?.organization?.id) {
-        const organization = data.organization as Organization;
-        setAddBookForm((prev) => ({
-          ...prev,
-          authors: {
-            ...prev.authors,
-            organizations: [...prev.authors.organizations, organization],
-          },
-        }));
-      }
-    },
-    onError: () => {
-      toast.error(ErrorMsg.New);
-    },
-    onSettled: () => {
-      resetForm();
-      closeModal();
-    },
-  });
-
-  return (
-    <form onSubmit={submit}>
-      <div className="w-full h-36 mt-2">
-        <div className="px-2">
-          <Input
-            label="Name"
+            label="Peron's name or organization's name"
             error={errors?.name}
             type="text"
             name="name"
-            value={form.name}
             onChange={handleFormInput}
+            value={form.name}
           />
         </div>
-        <div className="flex gap-1 mt-2 p-2">
-          <PrimaryButton>Add organization</PrimaryButton>
+
+        <div className="flex gap-1 p-2">
+          <PrimaryButton>Add author</PrimaryButton>
           <LighButton type="button" onClick={closeModal}>
             Cancel
           </LighButton>

@@ -21,13 +21,11 @@ const GenerateTab = () => {
   const { Get } = useRequest();
   const generateByTitle = async () => {
     // remove selected author check mark if there is any.
-
     const { data: response } = await Get("/author-numbers/generator", {
       params: {
         title: form.title,
       },
     });
-
     const authorNumber: AuthorNumber = response.data.authorNumber;
     if (authorNumber) {
       if (!authorNumber?.number || !authorNumber?.surname) {
@@ -148,13 +146,6 @@ const GenerateTab = () => {
                       // generateAuthorNumberByAuthor("person");
                     }}
                   >
-                    {/* <Td>
-                      <Input
-                        wrapperclass="flex items-center h-4"
-                        type="checkbox"
-                        readOnly
-                      ></Input>
-                    </Td> */}
                     <Td>{author.name}</Td>
                   </BodyRow>
                 );
