@@ -46,18 +46,14 @@ export interface Book {
   edition: number;
   costPrice: number;
   section: Section;
-  fundSource: Source;
+  sourceOfFund: string;
   publisher: Publisher;
   pages: number;
   yearPublished: number;
   receivedAt: string; //iso-string  date
   ddc: string;
   description: string;
-  authors: {
-    people: PersonAuthor[];
-    organizations: Organization[];
-    publishers: Publisher[];
-  };
+  authors: Author[];
   covers: string[];
   authorNumber: string;
   accessions: Accession[];

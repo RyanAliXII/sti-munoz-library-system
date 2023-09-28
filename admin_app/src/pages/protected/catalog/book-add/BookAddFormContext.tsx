@@ -14,24 +14,18 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
     initialFormData: {
       title: "",
       isbn: "",
-      authors: {
-        organizations: [],
-        people: [],
-        publishers: [],
-      },
+      sourceOfFund: "",
       section: {
-        name: "",
-        id: 0,
         hasOwnAccession: false,
+        name: "",
+        prefix: "",
+        id: 0,
       },
       publisher: {
         name: "",
-        id: 0,
+        id: "",
       },
-      fundSource: {
-        name: "",
-        id: 0,
-      },
+      authors: [],
       copies: 1,
       receivedAt: new Date().toISOString(),
       authorNumber: "",

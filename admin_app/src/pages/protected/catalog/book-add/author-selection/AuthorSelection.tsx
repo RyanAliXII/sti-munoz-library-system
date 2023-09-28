@@ -9,12 +9,12 @@ import {
 } from "@components/ui/table/Table";
 
 import { useQuery } from "@tanstack/react-query";
-import { PersonAuthor } from "@definitions/types";
+import { Author, PersonAuthor } from "@definitions/types";
 import { useMemo } from "react";
 import { useBookAddFormContext } from "../BookAddFormContext";
 import { useRequest } from "@hooks/useRequest";
 
-const PersonAsAuthorSelection = () => {
+const AuthorSelection = () => {
   const { Get } = useRequest();
   const fetchAuthors = async () => {
     try {
@@ -27,44 +27,36 @@ const PersonAsAuthorSelection = () => {
   };
   const { setForm, form } = useBookAddFormContext();
 
-  const { data: authors } = useQuery<PersonAuthor[]>({
+  const { data: authors } = useQuery<Author[]>({
     queryFn: fetchAuthors,
     queryKey: ["authors"],
   });
-  const selectAuthor = (author: PersonAuthor) => {
-    setForm((prev) => ({
-      ...prev,
-      authors: { ...prev.authors, people: [...prev.authors.people, author] },
-    }));
+  const selectAuthor = (author: Author) => {
+    setForm((prev) => ({ ...prev, authors: [...prev.authors, author] }));
   };
-  const removeAuthor = (author: PersonAuthor) => {
+  const removeAuthor = (author: Author) => {
     setForm((prev) => ({
       ...prev,
-      authors: {
-        ...prev.authors,
-        people: prev.authors.people.filter((person) => person.id != author.id),
-      },
+      authors: prev.authors.filter((a) => a.id != author.id) ?? [],
     }));
   };
   const selectedCache = useMemo(
     () =>
-      form.authors.people.reduce<Object>(
+      form.authors.reduce<Object>(
         (a, author) => ({
           ...a,
           [author.id ?? ""]: author,
         }),
         {}
       ),
-    [form.authors.people]
+    [form.authors]
   );
   return (
     <Table className="w-full border-b-0">
       <Thead>
         <HeadingRow>
           <Th></Th>
-          <Th>Given name</Th>
-          <Th>Middle name/initial</Th>
-          <Th>Surname</Th>
+          <Th>Name</Th>
         </HeadingRow>
       </Thead>
       <Tbody>
@@ -92,9 +84,7 @@ const PersonAsAuthorSelection = () => {
                   className="h-4 w-4 border"
                 />
               </Td>
-              <Td>{author.givenName}</Td>
-              <Td>{author.middleName}</Td>
-              <Td>{author.surname}</Td>
+              <Td>{author.name}</Td>
             </BodyRow>
           );
         })}
@@ -103,4 +93,4 @@ const PersonAsAuthorSelection = () => {
   );
 };
 
-export default PersonAsAuthorSelection;
+export default AuthorSelection;
