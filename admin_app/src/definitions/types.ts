@@ -57,7 +57,7 @@ export interface Book {
   covers: string[];
   authorNumber: string;
   accessions: Accession[];
-  createdAt: string; //iso-string date
+  createdAt?: string; //iso-string date
 }
 
 export type AuthorNumber = {

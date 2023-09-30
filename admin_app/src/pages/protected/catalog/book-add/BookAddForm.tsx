@@ -36,6 +36,7 @@ import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
+import { format } from "date-fns";
 
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
@@ -100,17 +101,7 @@ const BookAddForm = () => {
       return [];
     }
   };
-  const fetchSourceofFunds = async () => {
-    try {
-      const { data: response } = await Get("/source-of-funds/", {}, [
-        apiScope("SOF.Read"),
-      ]);
-      return response.data?.sources ?? [];
-    } catch (error) {
-      console.log(error);
-      return [];
-    }
-  };
+
   const fetchSections = async () => {
     try {
       const { data: response } = await Get("/sections/", {}, [
@@ -126,10 +117,7 @@ const BookAddForm = () => {
     queryFn: fetchPublishers,
     queryKey: ["publishers"],
   });
-  const { data: sourceOfFunds } = useQuery<Source[]>({
-    queryFn: fetchSourceofFunds,
-    queryKey: ["sources"],
-  });
+
   const { data: sections } = useQuery<Section[]>({
     queryFn: fetchSections,
     queryKey: ["sections"],
@@ -184,13 +172,13 @@ const BookAddForm = () => {
       uppy.upload().finally(() => {
         uppy.cancelAll();
       });
+      resetForm();
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
       console.error(error);
     },
     onSettled: () => {
-      resetForm();
       window.scrollTo({ behavior: "smooth", top: 0 });
     },
   });
@@ -351,7 +339,8 @@ const BookAddForm = () => {
             <CustomDatePicker
               onChange={(date) => {
                 if (!date) return;
-                setFieldValue("receivedAt", date.toISOString());
+
+                setFieldValue("receivedAt", format(date, "yyyy-MM-dd"));
               }}
               selected={new Date(form.receivedAt)}
             />

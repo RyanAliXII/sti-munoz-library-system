@@ -3,7 +3,7 @@ import { Book } from "@definitions/types";
 import { useForm, UseFormType } from "@hooks/useForm";
 import React, { createContext, useContext } from "react";
 import { NewBookSchemaValidation } from "../schema";
-
+import { format } from "date-fns";
 export const BookAddFormContext = createContext({} as BookAddContextType);
 interface BookAddContextType extends UseFormType<Book> {}
 export const useBookAddFormContext = () => {
@@ -27,7 +27,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       },
       authors: [],
       copies: 1,
-      receivedAt: new Date().toISOString(),
+      receivedAt: format(new Date(), "yyyy-MM-dd"),
       authorNumber: "",
       ddc: "",
       costPrice: 0,
@@ -38,7 +38,6 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
 
       yearPublished: new Date().getFullYear(),
       accessions: [],
-      createdAt: "",
       covers: [],
     },
     schema: NewBookSchemaValidation,
