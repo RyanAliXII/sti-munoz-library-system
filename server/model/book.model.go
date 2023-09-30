@@ -24,7 +24,7 @@ type Book struct {
 	CostPrice     float32         `json:"costPrice" db:"cost_price"`
 	Edition       int             `json:"edition" db:"edition"`
 	YearPublished int             `json:"yearPublished" db:"year_published"`
-	ReceivedAt    db.NullableTime `json:"receivedAt" db:"received_at"`
+	ReceivedAt    db.NullableDate `json:"receivedAt" db:"received_at"`
 	DDC           string          `json:"ddc" db:"ddc"`
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
 

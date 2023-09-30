@@ -131,17 +131,21 @@ export const NewBookSchemaValidation = object().shape({
   author: array().notRequired(),
   authorNumber: string()
     .notRequired()
-    .test("check-ddc", "Invalid ISBN number.", (value: string | undefined) => {
-      if (!value) return true;
-      if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
-    }),
+    .test(
+      "check-ddc",
+      "Invalid author number.",
+      (value: string | undefined) => {
+        if (!value) return true;
+        if (value.length === 0) return true;
+        return value.length > 0;
+      }
+    ),
   ddc: string()
     .notRequired()
-    .test("check-ddc", "Invalid ISBN number.", (value: string | undefined) => {
+    .test("check-ddc", "Invalid DDC value.", (value: string | undefined) => {
       if (!value) return true;
       if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
+      return value.length > 0;
     }),
 });
 
@@ -200,17 +204,21 @@ export const UpdateBookSchemaValidation = object().shape({
   author: array().notRequired(),
   authorNumber: string()
     .notRequired()
-    .test("check-ddc", "Invalid ISBN number.", (value: string | undefined) => {
-      if (!value) return true;
-      if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
-    }),
+    .test(
+      "check-ddc",
+      "Invalid author number.",
+      (value: string | undefined) => {
+        if (!value) return true;
+        if (value.length === 0) return true;
+        return value.length > 0;
+      }
+    ),
   ddc: string()
     .notRequired()
-    .test("check-ddc", "Invalid ISBN number.", (value: string | undefined) => {
+    .test("check-ddc", "Invalid DDC value.", (value: string | undefined) => {
       if (!value) return true;
       if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
+      return value.length > 0;
     }),
 });
 

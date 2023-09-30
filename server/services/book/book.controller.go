@@ -24,17 +24,19 @@ type BookController struct {
 
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
 	var book = model.Book{}
-	ctx.ShouldBindBodyWith(&book, binding.JSON)
-	bookId, newBookErr := ctrler.bookRepository.New(book)
-	if newBookErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
+	err := ctx.ShouldBindBodyWith(&book, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
+		return 
 	}
-	ctx.JSON(httpresp.Success200(gin.H{
-		"book": gin.H{
-			"id": bookId,
-		},
-	}, "New book added."))
+	fmt.Println(book)
+	// bookId, newBookErr := ctrler.bookRepository.New(book)
+	// if newBookErr != nil {
+	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	// 	return
+	// }
+	ctx.JSON(httpresp.Success200(nil, "New book added."))
 }
 func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
