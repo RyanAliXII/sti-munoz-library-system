@@ -31,11 +31,11 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		return 
 	}
 	fmt.Println(book)
-	// bookId, newBookErr := ctrler.bookRepository.New(book)
-	// if newBookErr != nil {
-	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	// 	return
-	// }
+	_, newBookErr := ctrler.bookRepository.New(book)
+	if newBookErr != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "New book added."))
 }
 func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
@@ -169,7 +169,12 @@ func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 
 func (ctrler *BookController) UpdateBook(ctx *gin.Context) {
 	body := model.Book{}
-	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
+		return 
+	}
 	updateErr := ctrler.bookRepository.Update(body)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail(500, nil, "Unknown error occured."))
