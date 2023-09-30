@@ -13,12 +13,9 @@ export const useBookEditFormContext = () => {
 const INITIAL_FORM_DATA: Book = {
   title: "",
   isbn: "",
-  authors: {
-    organizations: [],
-    people: [],
-    publishers: [],
-  },
+  authors: [],
   copies: 1,
+  sourceOfFund: "",
   section: {
     name: "Select section.",
     id: 0,
@@ -27,12 +24,9 @@ const INITIAL_FORM_DATA: Book = {
   },
   publisher: {
     name: "Select publisher.",
-    id: 0,
+    id: "",
   },
-  fundSource: {
-    name: "Select source of fund.",
-    id: 0,
-  },
+
   receivedAt: new Date().toISOString(),
   authorNumber: "",
   ddc: "",

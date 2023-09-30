@@ -106,10 +106,7 @@ const BookEditForm = () => {
     queryFn: fetchPublishers,
     queryKey: ["publishers"],
   });
-  const { data: sourceOfFunds } = useQuery<Source[]>({
-    queryFn: fetchSourceofFunds,
-    queryKey: ["sources"],
-  });
+
   const { data: sections } = useQuery<Section[]>({
     queryFn: fetchSections,
     queryKey: ["sections"],
@@ -128,10 +125,7 @@ const BookEditForm = () => {
     setFieldValue("section", option);
     removeFieldError("section");
   };
-  const handleSourceSelect = (option: SingleValue<Source>) => {
-    setFieldValue("fundSource", option);
-    removeFieldError("fundSource");
-  };
+
   const handlePublisherSelect = (option: SingleValue<Publisher>) => {
     setFieldValue("publisher", option);
     removeFieldError("publisher");
@@ -234,16 +228,12 @@ const BookEditForm = () => {
       uppy.cancelAll();
     };
   }, []);
-  const numberOfSelectedAuthors =
-    form.authors.people.length +
-    form.authors.organizations.length +
-    form.authors.publishers.length;
+
   return (
     <>
       <form onSubmit={submit}>
         <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10  lg:rounded-md mx-auto mb-10">
           <h1 className="text-2xl mb-4">General Information</h1>
-
           <FieldRow
             fieldDetails="The title can be found in the cover of the book."
             isRequired
@@ -332,24 +322,7 @@ const BookEditForm = () => {
               </PrimaryOutlineButton>
             </div>
           </FieldRow>
-          <FieldRow
-            isRequired
-            label="Source of Fund"
-            fieldDetails="This refers on how the book is acquired."
-            ref={registerFormGroup("fundSource.value")}
-          >
-            <CustomSelect
-              className="w-full"
-              name="fundSource"
-              wrapperclass="flex flex-col"
-              onChange={handleSourceSelect}
-              value={form.fundSource}
-              getOptionLabel={(option) => option.name}
-              getOptionValue={(option) => option?.id?.toString() ?? ""}
-              error={errors?.fundSource?.id}
-              options={sourceOfFunds}
-            />
-          </FieldRow>
+
           <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
             <Input
               error={errors?.costPrice}
@@ -452,7 +425,7 @@ const BookEditForm = () => {
             className="mb-10 overflow-y-auto scroll-smooth"
             style={{ maxHeight: "300px" }}
           >
-            {numberOfSelectedAuthors === 0 ? (
+            {form.authors.length === 0 ? (
               <div className="flex items-center h-10 justify-center">
                 <small className="text-gray-400">No authors selected.</small>
               </div>
