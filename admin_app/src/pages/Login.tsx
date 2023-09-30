@@ -1,6 +1,5 @@
 import { loginRequest } from "@definitions/configs/msal/msal.config";
 import { useMsal } from "@azure/msal-react";
-import { FaUniversalAccess } from "react-icons/fa";
 
 const Login = () => {
   const { instance: msalClient } = useMsal();

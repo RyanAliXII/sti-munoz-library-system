@@ -84,15 +84,7 @@ const BookEditForm = () => {
       return [];
     }
   };
-  const fetchSourceofFunds = async () => {
-    try {
-      const { data: response } = await Get("/source-of-funds/");
-      return response.data?.sources ?? [];
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  };
+
   const fetchSections = async () => {
     try {
       const { data: response } = await Get("/sections/");
