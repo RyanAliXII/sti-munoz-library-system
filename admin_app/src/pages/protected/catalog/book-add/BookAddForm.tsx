@@ -228,7 +228,6 @@ const BookAddForm = () => {
           </FieldRow>
           <FieldRow
             fieldDetails="ISBN can be 13 or 9 characters."
-            isRequired={true}
             label="ISBN"
             ref={registerFormGroup("isbn")}
           >
@@ -259,7 +258,6 @@ const BookAddForm = () => {
               error={errors?.pages}
               type="number"
               value={form.pages}
-              min={1}
               onChange={handleFormInput}
               placeholder="Number of pages"
               name="pages"
@@ -349,11 +347,7 @@ const BookAddForm = () => {
               yearItemNumber={9}
             />
           </FieldRow>
-          <FieldRow
-            isRequired
-            label="Date Received"
-            ref={registerFormGroup("receivedAt")}
-          >
+          <FieldRow label="Date Received" ref={registerFormGroup("receivedAt")}>
             <CustomDatePicker
               onChange={(date) => {
                 if (!date) return;
@@ -423,7 +417,6 @@ const BookAddForm = () => {
 
           <FieldRow
             fieldDetails="The book classification based on Dewey Decimal Classification"
-            isRequired
             label="DDC"
             ref={registerFormGroup("ddc")}
           >
@@ -448,7 +441,6 @@ const BookAddForm = () => {
           </FieldRow>
           <FieldRow
             label="Author number"
-            isRequired
             fieldDetails="The author number based on C.A. Cutter's Three-Figure Author
                 Table"
             ref={registerFormGroup("authorNumber")}
