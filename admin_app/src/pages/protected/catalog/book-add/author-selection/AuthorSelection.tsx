@@ -9,7 +9,7 @@ import {
 } from "@components/ui/table/Table";
 
 import { useQuery } from "@tanstack/react-query";
-import { Author, PersonAuthor } from "@definitions/types";
+import { Author } from "@definitions/types";
 import { useMemo } from "react";
 import { useBookAddFormContext } from "../BookAddFormContext";
 import { useRequest } from "@hooks/useRequest";
