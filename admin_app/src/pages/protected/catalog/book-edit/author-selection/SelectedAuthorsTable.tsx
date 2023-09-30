@@ -18,10 +18,7 @@ const SelectedAuthorsTable = () => {
   const removeAuthor = (author: Author) => {
     setForm((prev) => ({
       ...prev,
-      authors: {
-        ...prev.authors,
-        people: prev.authors.filter((a) => a.id != author.id),
-      },
+      authors: prev.authors.filter((a) => a.id != author.id),
     }));
   };
 

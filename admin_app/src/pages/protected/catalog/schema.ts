@@ -155,17 +155,15 @@ export const UpdateBookSchemaValidation = object().shape({
     .required("Book title is required."),
   isbn: string()
     .required()
-    .test("check-isbn", "Invalid ISBN number.", (value) =>
-      validator.isISBN(value ?? " ")
-    ),
+    .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
+      if (!value) return true;
+      if (value.length === 0) return true;
+      return validator.isISBN(value ?? " ");
+    }),
   pages: number()
     .typeError("Value must not be empty and should be numeric.")
     .integer(NUMBER_NO_DECIMAL)
-    .test(
-      "check-if-greater-than-0",
-      "Value should be greater than 0",
-      (value) => (value ?? 0) > 0
-    ),
+    .min(0, "Pages should not be less than 0"),
   section: object().shape({
     name: string().notRequired(),
     id: number()
@@ -180,13 +178,7 @@ export const UpdateBookSchemaValidation = object().shape({
       .required("Publisher is required.")
       .uuid("Please select a publisher"),
   }),
-  fundSource: object().shape({
-    name: string().notRequired(),
-    id: number()
-      .integer(NUMBER_NO_DECIMAL)
-      .required("Source of fund is required.")
-      .min(1, "Please select a source."),
-  }),
+
   costPrice: number()
     .typeError("Value must not be empty and should be numeric.")
     .min(0, "The cost price must not be less than 0.")

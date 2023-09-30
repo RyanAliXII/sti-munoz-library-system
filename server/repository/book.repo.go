@@ -39,10 +39,10 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	insertBookQuery := `INSERT INTO catalog.book(
-		title, isbn, description, copies, pages, section_id, publisher_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`
+		title, isbn, description,  pages, section_id, publisher_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`
 
-	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Copies, book.Pages,
+	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Pages,
 		book.Section.Id, book.Publisher.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.Id, book.AuthorNumber, book.DDC)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
@@ -420,11 +420,6 @@ func (repo * BookRepository)AddBookCopies(id string, copies int) error{
 	if insertAccessionErr != nil {
 		transaction.Rollback()
 		return insertAccessionErr
-	}
-    _, err = transaction.Exec("UPDATE catalog.book SET copies = copies + $1 where id = $2", copies, id)
-	if err != nil {
-		transaction.Rollback()
-		return err
 	}
 	transaction.Commit()
 	return nil
