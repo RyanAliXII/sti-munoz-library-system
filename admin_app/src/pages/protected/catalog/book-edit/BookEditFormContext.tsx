@@ -3,6 +3,7 @@ import { Book } from "@definitions/types";
 import { useForm, UseFormType } from "@hooks/useForm";
 import React, { createContext, useContext } from "react";
 import { UpdateBookSchemaValidation } from "../schema";
+import { format } from "date-fns";
 
 export const BookEditFormContext = createContext({} as BookAddContextType);
 interface BookAddContextType extends UseFormType<Book> {}
@@ -27,7 +28,7 @@ const INITIAL_FORM_DATA: Book = {
     id: "",
   },
 
-  receivedAt: new Date().toISOString(),
+  receivedAt: format(new Date(), "yyyy-MM-dd"),
   authorNumber: "",
   ddc: "",
   costPrice: 0,
@@ -37,7 +38,6 @@ const INITIAL_FORM_DATA: Book = {
   pages: 1,
 
   yearPublished: new Date().getFullYear(),
-  createdAt: "",
   accessions: [],
   covers: [],
 };
