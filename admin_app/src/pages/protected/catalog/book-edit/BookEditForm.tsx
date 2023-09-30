@@ -7,7 +7,7 @@ import {
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect } from "react";
 
-import { Section, Publisher, Source, Book } from "@definitions/types";
+import { Section, Publisher, Book } from "@definitions/types";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { SingleValue } from "react-select";
@@ -34,7 +34,7 @@ import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
-import { isValid } from "date-fns";
+import { format, isValid } from "date-fns";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
@@ -194,11 +194,13 @@ const BookEditForm = () => {
     refetchOnWindowFocus: false,
     retry: false,
     onSuccess: async (data) => {
-      let receivedAt = data?.receivedAt;
+      let receivedAt = new Date(data.receivedAt);
+      delete data["createdAt"];
       if (!isValid(receivedAt)) {
-        receivedAt = new Date().toISOString();
+        receivedAt = new Date();
       }
-      setForm({ ...data, receivedAt: receivedAt });
+      let strReceivedAt = format(receivedAt, "yyyy-MM-dd");
+      setForm({ ...data, receivedAt: strReceivedAt });
 
       for (const cover of data.covers) {
         try {
@@ -365,7 +367,7 @@ const BookEditForm = () => {
             <CustomDatePicker
               onChange={(date) => {
                 if (!date) return;
-                setFieldValue("receivedAt", date.toISOString());
+                setFieldValue("receivedAt", format(date, "yyyy-MM-dd"));
               }}
               selected={new Date(form.receivedAt)}
             />
