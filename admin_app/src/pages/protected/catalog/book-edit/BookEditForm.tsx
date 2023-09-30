@@ -34,7 +34,7 @@ import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
-
+import { isValid } from "date-fns";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
@@ -194,7 +194,12 @@ const BookEditForm = () => {
     refetchOnWindowFocus: false,
     retry: false,
     onSuccess: async (data) => {
-      setForm({ ...data });
+      let receivedAt = data?.receivedAt;
+      if (!isValid(receivedAt)) {
+        receivedAt = new Date().toISOString();
+      }
+      setForm({ ...data, receivedAt: receivedAt });
+
       for (const cover of data.covers) {
         try {
           const response = await fetch(buildS3Url(cover));
