@@ -33,12 +33,12 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
 		return 
 	}
-	fmt.Println(book)
 	_, newBookErr := ctrler.bookRepository.New(book)
 	if newBookErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
+	ctrler.recordMetadataRepo.InvalidateBook()
 	ctx.JSON(httpresp.Success200(nil, "New book added."))
 }
 func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
@@ -103,7 +103,8 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		logger.Error(err.Error(), slimlog.Error("ImportBooksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
-	}	
+	}
+	ctrler.recordMetadataRepo.InvalidateBook()	
 	
 }
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
