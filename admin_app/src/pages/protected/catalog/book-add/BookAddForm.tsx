@@ -11,7 +11,7 @@ import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { Section, Publisher, Source, Book } from "@definitions/types";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { SingleValue } from "react-select";
+import { MultiValue, SingleValue } from "react-select";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 
@@ -37,7 +37,7 @@ import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format } from "date-fns";
-
+import CreatableSelect from "react-select/creatable";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -467,6 +467,23 @@ const BookAddForm = () => {
                 Browse
               </PrimaryOutlineButton>
             </div>
+          </FieldRow>
+          <FieldRow
+            fieldDetails="Add texts related to this title to improve search results"
+            label="Search Tags"
+            ref={registerFormGroup("searchTags")}
+          >
+            <CreatableSelect
+              isMulti
+              onChange={(
+                newValue: MultiValue<{ value: string; label: string }>
+              ) => {
+                setFieldValue(
+                  "searchTags",
+                  newValue.map((v) => v.value)
+                );
+              }}
+            />
           </FieldRow>
           <AuthorSelectionModal
             closeModal={closeAuthorSelection}

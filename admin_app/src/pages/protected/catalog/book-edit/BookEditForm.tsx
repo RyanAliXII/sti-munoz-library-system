@@ -10,7 +10,7 @@ import { BaseSyntheticEvent, useEffect } from "react";
 import { Section, Publisher, Book } from "@definitions/types";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { SingleValue } from "react-select";
+import { MultiValue, SingleValue } from "react-select";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
@@ -35,6 +35,7 @@ import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format, isValid } from "date-fns";
+import CreatableSelect from "react-select/creatable";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
@@ -500,6 +501,26 @@ const BookEditForm = () => {
                 Browse
               </SecondaryButton>
             </div>
+          </FieldRow>
+          <FieldRow
+            fieldDetails="Add texts related to this title to improve search results"
+            label="Search Tags"
+            ref={registerFormGroup("ddc")}
+          >
+            <CreatableSelect
+              isMulti
+              value={
+                form?.searchTags?.map((v) => ({ value: v, label: v })) ?? []
+              }
+              onChange={(
+                newValue: MultiValue<{ value: string; label: string }>
+              ) => {
+                setFieldValue(
+                  "searchTags",
+                  newValue.map((v) => v.value)
+                );
+              }}
+            />
           </FieldRow>
           <AuthorSelectionModal
             closeModal={closeAuthorSelection}
