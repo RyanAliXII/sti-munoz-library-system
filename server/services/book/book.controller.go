@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -20,6 +21,7 @@ import (
 type BookController struct {
 	bookRepository repository.BookRepositoryInterface
 	accessionRepo repository.AccessionRepository
+	recordMetadataRepo repository.RecordMetadataRepository
 }
 
 func (ctrler *BookController) NewBook(ctx *gin.Context) {
@@ -137,9 +139,15 @@ func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 	}
 	var books []model.Book = make([]model.Book, 0)
 	books = ctrler.bookRepository.Get()
-
+	metadata, metaErr := ctrler.recordMetadataRepo.GetBookMetadata(30) // group rows by 30
+	if metaErr != nil {
+		logger.Error(metaErr.Error(), slimlog.Error("GetBookMetadataErr"))
+		 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		 return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"books": books,
+		"metadata": metadata, 
 	}, "Books fetched."))
 }
 
@@ -327,6 +335,9 @@ func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
 		accessionRepo: repository.NewAccessionRepository(),
+		recordMetadataRepo: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
+			CacheExpiration: time.Minute * 5,
+		}),
 	}
 }
 
