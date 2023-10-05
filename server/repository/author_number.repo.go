@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	cutters "github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -23,7 +24,7 @@ type AuthorNumberRepository struct {
 	db      *sqlx.DB
 }
 
-func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
+func (repo *AuthorNumberRepository) Get(filter filter.Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutters LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 
@@ -32,7 +33,7 @@ func (repo *AuthorNumberRepository) Get(filter Filter) []model.AuthorNumber {
 	}
 	return table
 }
-func (repo *AuthorNumberRepository) Search(filter Filter) []model.AuthorNumber {
+func (repo *AuthorNumberRepository) Search(filter filter.Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutters WHERE surname ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 
@@ -68,8 +69,8 @@ func NewAuthorNumberRepository() AuthorNumberRepositoryInterface {
 }
 
 type AuthorNumberRepositoryInterface interface {
-	Get(filter Filter) []model.AuthorNumber
-	Search(filter Filter) []model.AuthorNumber
+	Get(filter.Filter) []model.AuthorNumber
+	Search(filter.Filter) []model.AuthorNumber
 	Generate(firstname string, lastname string) cutters.AuthorNumber
 	GenerateByTitle(title string) cutters.AuthorNumber
 }
