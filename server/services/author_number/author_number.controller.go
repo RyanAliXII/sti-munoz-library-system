@@ -1,11 +1,8 @@
 package authornum
 
 import (
-	"strconv"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
 	"github.com/gin-gonic/gin"
@@ -43,37 +40,34 @@ func (ctrler *AuthorNumberController) GenerateAuthorNumber(ctx *gin.Context) {
 }
 func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
 
-	const (
-		DEFAULT_OFFSET = 0
-		DEFAULT_LIMIT  = 50
-	)
+	
 
-	var filter repository.Filter = repository.Filter{}
-	offset := ctx.Query("offset")
-	limit := ctx.Query("limit")
-	keyword := ctx.Query("keyword")
-	parsedOffset, offsetConvErr := strconv.Atoi(offset)
-	if offsetConvErr != nil {
-		filter.Offset = DEFAULT_OFFSET
-	} else {
-		filter.Offset = parsedOffset
-	}
+	// var filter repository.Filter = repository.Filter{}
+	// offset := ctx.Query("offset")
+	// limit := ctx.Query("limit")
+	// keyword := ctx.Query("keyword")
+	// parsedOffset, offsetConvErr := strconv.Atoi(offset)
+	// if offsetConvErr != nil {
+	// 	filter.Offset = DEFAULT_OFFSET
+	// } else {
+	// 	filter.Offset = parsedOffset
+	// }
 
-	parsedLimit, limitConvErr := strconv.Atoi(limit)
-	if limitConvErr != nil {
-		filter.Limit = DEFAULT_LIMIT
-	} else {
-		filter.Limit = parsedLimit
-	}
+	// parsedLimit, limitConvErr := strconv.Atoi(limit)
+	// if limitConvErr != nil {
+	// 	filter.Limit = DEFAULT_LIMIT
+	// } else {
+	// 	filter.Limit = parsedLimit
+	// }
 
-	var table []model.AuthorNumber
-	if len(keyword) > 0 {
-		filter.Keyword = keyword
-		table = ctrler.authorNumberRepository.Search(filter)
-	} else {
-		table = ctrler.authorNumberRepository.Get(filter)
-	}
-	ctx.JSON(httpresp.Success200(gin.H{"table": table}, "Author numbers returned."))
+	// var table []model.AuthorNumber
+	// if len(keyword) > 0 {
+	// 	filter.Keyword = keyword
+	// 	table = ctrler.authorNumberRepository.Search(filter)
+	// } else {
+	// 	table = ctrler.authorNumberRepository.Get(filter)
+	// }
+	//ctx.JSON(httpresp.Success200(gin.H{"table": table}, "Author numbers returned."))
 
 }
 func (ctrler *AuthorNumberController) GetAuthorNumbersByInitial(ctx *gin.Context) {}

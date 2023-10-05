@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -30,6 +31,7 @@ type BookRepository struct {
 }
 
 func (repo *BookRepository) New(book model.Book) (string, error) {
+	
 	id := uuid.New().String()
 	book.Id = id
 	transaction, transactErr := repo.db.Beginx()
@@ -102,7 +104,7 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	return book.Id, nil
 }
 
-func (repo *BookRepository) Get() []model.Book {
+func (repo *BookRepository) Get(filter filter.Filter) []model.Book {
 	var books []model.Book = make([]model.Book, 0)
 	query := `SELECT id, 
 	title, 
@@ -118,8 +120,8 @@ func (repo *BookRepository) Get() []model.Book {
 	author_number, 
 	created_at, 
 	section, publisher, authors, accessions, covers FROM book_view
-	ORDER BY created_at DESC LIMIT 50`
-	selectErr := repo.db.Select(&books, query)
+	ORDER BY created_at DESC LIMIT $1  OFFSET $2`
+	selectErr := repo.db.Select(&books, query, filter.Limit, filter)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
 	}
@@ -208,7 +210,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 	transaction.Commit()
 	return nil
 }
-func (repo *BookRepository) Search(filter Filter) []model.Book {
+func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	var books []model.Book = make([]model.Book, 0)
 	query := `
 	SELECT id, 
@@ -620,10 +622,10 @@ func NewBookRepository() BookRepositoryInterface {
 
 type BookRepositoryInterface interface {
 	New(model.Book) (string, error)
-	Get() []model.Book
+	Get(filter filter.Filter) []model.Book
 	GetOne(id string) model.Book
 	Update(model.Book) error
-	Search(Filter) []model.Book
+	Search(filter.Filter) []model.Book
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
 	AddBookCopies(id string, copies int) error
