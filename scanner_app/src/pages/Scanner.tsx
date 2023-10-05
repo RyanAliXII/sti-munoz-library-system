@@ -7,7 +7,7 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
   const readerRef = useRef<HTMLDivElement | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
-  const [hasScanned, setHasScanned] = useState(false);
+
   const [client, setClient] = useState({
     displayName: "",
     email: "",
@@ -42,16 +42,18 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
         {},
         { withCredentials: true }
       ),
+
     onSettled: (response) => {
-      if (response?.status === 200) {
+      if (response) {
         const { data } = response.data;
+        console.log(data);
         setClient(data?.client);
-        setHasScanned(true);
-        setTimeout(() => {
-          scannerRef.current?.resume();
-          setHasScanned(false);
-        }, 1500);
       }
+
+      setTimeout(() => {
+        scannerRef.current?.resume();
+        log.reset();
+      }, 1500);
     },
   });
   const initCameras = async () => {
@@ -94,7 +96,6 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
   };
   const onSuccessScan = (value: string) => {
     scannerRef.current?.pause(true);
-    setHasScanned(true);
     log.mutate(value);
   };
   const onErrorScan = () => {};
@@ -108,9 +109,11 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
       revalidateAuth();
     },
   });
-  const scannerViewClass = !hasScanned
-    ? "w-full border border-gray-300 rounded dark:border-gray-700 max-w-lg"
-    : "w-full border border-gray-300 outline outline-4 outline-green-500 rounded dark:border-gray-700 max-w-lg";
+  const scannerViewClass = log.isSuccess
+    ? "w-full border border-gray-300 outline outline-4 outline-green-500 rounded dark:border-gray-700 max-w-lg"
+    : log.isError
+    ? "w-full border border-gray-300 outline outline-4 outline-red-500 rounded dark:border-gray-700 max-w-lg"
+    : "w-full border border-gray-300 rounded dark:border-gray-700 max-w-lg";
   return (
     <div
       className="h-screen w-full flex flex-col items-center  justify-center dark:bg-gray-800"
@@ -164,7 +167,7 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
       >
         <div ref={readerRef} id="reader" className={scannerViewClass}></div>
 
-        {!hasScanned && (
+        {log.isIdle && (
           <div className="w-full items-center flex lg:justify-center px-1 max-w-lg lg:max-w-none">
             <div>
               <h2 className=" text-gray-300 text-lg md:text-2xl lg:text-3xl font-bold">
@@ -176,7 +179,7 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
             </div>
           </div>
         )}
-        {hasScanned && (
+        {log.isSuccess && (
           <div className="w-full items-center flex lg:justify-center max-w-lg lg:max-w-none">
             <div>
               <h2 className=" text-green-500 text-lg md:text-2xl lg:text-3xl font-bold">
@@ -190,6 +193,15 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
                   {client.email}
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+        {log.isError && (
+          <div className="w-full items-center flex lg:justify-center max-w-lg lg:max-w-none">
+            <div>
+              <h2 className=" text-red-500 text-lg md:text-2xl lg:text-3xl font-bold">
+                Library Pass Failed to Scan
+              </h2>
             </div>
           </div>
         )}
