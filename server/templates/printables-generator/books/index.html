@@ -42,6 +42,7 @@
     }
     .card-content {
       width: fit-content;
+      max-width: 300px;
     }
     .main-text {
       font-size: medium;
@@ -99,12 +100,15 @@
               <div class="text" style="margin-top: 2px">
                 <span>{{$.book.Publisher.Name}}, {{$.book.YearPublished}}</span>
               </div>
+              {{if ne $.book.Pages 0}}
               <div class="text-small" style="margin-top: 4px">
                 <span>{{$.book.Pages}} p.</span>
               </div>
+              {{end}} {{if ge (len $.book.ISBN) 1}}
               <div class="text-small" style="margin-top: 2px">
                 <span>ISBN : {{$.book.ISBN}}</span>
               </div>
+              {{end}}
             </div>
           </div>
         </div>
@@ -139,12 +143,15 @@
               <div class="text" style="margin-top: 2px">
                 <span>{{$.book.Publisher.Name}}, {{$.book.YearPublished}}</span>
               </div>
+              {{if ne $.book.Pages 0}}
               <div class="text-small" style="margin-top: 4px">
                 <span>{{$.book.Pages}} p.</span>
               </div>
+              {{end}} {{if ge (len $.book.ISBN) 1}}
               <div class="text-small" style="margin-top: 2px">
                 <span>ISBN : {{$.book.ISBN}}</span>
               </div>
+              {{end}}
             </div>
           </div>
         </div>
@@ -159,9 +166,11 @@
             <div>
               <span class="main-text">{{$.book.Section.Prefix}}</span>
             </div>
+            {{if ge (len $.book.DDC) 1}}
             <div>
               <span class="text">{{firstchar $.book.Title}}{{$.book.DDC}}</span>
             </div>
+            {{end}}
             <div>
               <span class="text">{{$.book.AuthorNumber}}</span>
             </div>

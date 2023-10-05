@@ -25,7 +25,12 @@ func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
 		 ctx.JSON(httpresp.Fail404(nil, "Book not found."))
 		 return
 	}
+	
 	authors := make([]string, 0)
+
+	for _, author := range book.Authors {
+		authors = append(authors, author.Name)
+	}
 	ctx.HTML(http.StatusOK, "printables-generator/books/index", gin.H{
 		"book": book,
 		"authors": authors,
