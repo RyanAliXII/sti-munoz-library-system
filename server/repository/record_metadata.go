@@ -128,7 +128,10 @@ func (repo * RecordMetadataRepository)GetBookSearchMetadata(filter filter.Filter
 	meta := Metadata{}
     query := `
 	SELECT  CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records 
-	FROM catalog.book WHERE search_vector @@ websearch_to_tsquery('english', $2) OR search_vector @@ plainto_tsquery('simple', $2)
+	FROM book_view WHERE search_vector @@ websearch_to_tsquery('english', $2) 
+	OR search_vector @@ plainto_tsquery('simple', $2)
+	OR search_tag_vector @@ websearch_to_tsquery('english', $2) 
+	OR search_tag_vector @@ plainto_tsquery('simple', $2)
   	`
  	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	return meta, err
@@ -152,7 +155,12 @@ func (repo * RecordMetadataRepository)GetAccessionMetadata(rowsLimit int)(Metada
 func (repo * RecordMetadataRepository)GetAccessionSearchMetadata(filter filter.Filter)(Metadata, error){
 	meta := Metadata{}
 	query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.accession 
-	INNER JOIN catalog.book on accession.book_id = book.id where book.search_vector @@ websearch_to_tsquery('english', $2) OR search_vector @@ plainto_tsquery('simple', $2)`
+	INNER JOIN book_view as book on accession.book_id = book.id where book.search_vector @@ websearch_to_tsquery('english', $2) 
+	OR search_vector @@ plainto_tsquery('simple', $2)
+	OR search_tag_vector @@ websearch_to_tsquery('english', $2) 
+	OR search_tag_vector @@ plainto_tsquery('simple', $2)
+	`
+	
 	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	
 	return meta, err
