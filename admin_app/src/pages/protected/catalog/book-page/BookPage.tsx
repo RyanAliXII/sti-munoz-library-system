@@ -39,6 +39,8 @@ import Tippy from "@tippyjs/react";
 import axios from "axios";
 import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
+import ReactPaginate from "react-paginate";
+import usePaginate from "@hooks/usePaginate";
 
 const BookPage = () => {
   const {
@@ -46,13 +48,32 @@ const BookPage = () => {
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
-
+  const {
+    currentPage,
+    totalPages,
+    setTotalPages,
+    nextPage,
+    previousPage,
+    setCurrentPage,
+  } = usePaginate({
+    initialPage: 1,
+    numberOfPages: 0,
+  });
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get("/books/", {}, [
-        apiScope("Book.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/books/",
+        {
+          params: {
+            page: currentPage,
+          },
+        },
+        [apiScope("Book.Read")]
+      );
+      if (response?.data?.metadata) {
+        setTotalPages(response?.data?.metadata?.pages ?? 0);
+      }
       return response?.data?.books ?? [];
     } catch (error) {
       console.error(error);
@@ -75,7 +96,7 @@ const BookPage = () => {
     isFetching,
   } = useQuery<Book[]>({
     queryFn: fetchBooks,
-    queryKey: ["books"],
+    queryKey: ["books", currentPage],
   });
 
   const {
@@ -83,6 +104,9 @@ const BookPage = () => {
     open: openImportModal,
     isOpen: isImportModalOpen,
   } = useSwitch();
+
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
   return (
     <>
       <ContainerNoBackground className="flex gap-2 justify-between px-0 mb-0 lg:mb-4">
@@ -146,7 +170,7 @@ const BookPage = () => {
           <CustomSelect label="Section" />
         </div>
       </ContainerNoBackground>
-      <LoadingBoundary isLoading={isFetching} isError={isError}>
+      <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
         <Container className="lg:p-0">
           {" "}
           <Table>
@@ -204,7 +228,25 @@ const BookPage = () => {
             </Tbody>
           </Table>
         </Container>
-      </LoadingBoundary>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className={paginationClass}
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
+      </LoadingBoundaryV2>
 
       <BookPrintablesModal
         closeModal={closePrintablesModal}
