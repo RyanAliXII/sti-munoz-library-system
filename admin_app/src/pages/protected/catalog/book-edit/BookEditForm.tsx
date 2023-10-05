@@ -249,6 +249,20 @@ const BookEditForm = () => {
             />
           </FieldRow>
           <FieldRow
+            fieldDetails="Main topic or theme that a book explores, addressing specific ideas, events, or concepts within a broader field of knowledge or narrative"
+            label="Subject"
+            ref={registerFormGroup("subject")}
+          >
+            <Input
+              wrapperclass="flex flex-col "
+              error={errors?.subject}
+              value={form.subject}
+              onChange={handleFormInput}
+              placeholder="Book subject"
+              name="subject"
+            />
+          </FieldRow>
+          <FieldRow
             fieldDetails="ISBN can be 13 or 9 characters."
             isRequired={true}
             label="ISBN"
