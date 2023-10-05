@@ -107,8 +107,6 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	
 }
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
-
-
 	var books []model.Book = make([]model.Book, 0)
 	filter := filter.ExtractFilter(ctx)
 	books = ctrler.bookRepository.Get(filter)
@@ -118,6 +116,15 @@ func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 		 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		 return
 	}
+	if len(filter.Keyword) > 0 {
+		books := ctrler.bookRepository.Search(filter)
+		ctx.JSON(httpresp.Success200(gin.H{
+			"books": books,
+			"metadata": metadata, 
+		}, "Books fetched."))
+		return 
+	}
+	
 	ctx.JSON(httpresp.Success200(gin.H{
 		"books": books,
 		"metadata": metadata, 

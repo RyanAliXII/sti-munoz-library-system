@@ -19,7 +19,7 @@ import {
 import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 
@@ -32,9 +32,7 @@ import Container, {
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
-import LoadingBoundary, {
-  LoadingBoundaryV2,
-} from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
 import axios from "axios";
 import { TbDatabaseImport } from "react-icons/tb";
@@ -42,6 +40,7 @@ import ImportBooksModal from "./ImportBooksModal";
 import ReactPaginate from "react-paginate";
 import usePaginate from "@hooks/usePaginate";
 import { isValid } from "date-fns";
+import useDebounce from "@hooks/useDebounce";
 
 const BookPage = () => {
   const {
@@ -73,9 +72,11 @@ const BookPage = () => {
       initialPage: initCurrentPage,
       numberOfPages: 0,
     });
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
   useEffect(() => {
     setUrlSearchParams({ page: currentPage.toString() });
   }, [currentPage]);
+
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
@@ -84,6 +85,7 @@ const BookPage = () => {
         {
           params: {
             page: currentPage,
+            keyword: searchKeyword,
           },
         },
         [apiScope("Book.Read")]
@@ -98,7 +100,18 @@ const BookPage = () => {
       return [];
     }
   };
+  const searchDebounce = useDebounce();
 
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    searchDebounce(
+      () => {
+        setSearchKeyword(event.target.value);
+        setCurrentPage(1);
+      },
+      null,
+      500
+    );
+  };
   const [
     selectedBookForPrintingPrintables,
     setSelectedBookForPrintingPrintables,
@@ -114,7 +127,7 @@ const BookPage = () => {
     isFetching,
   } = useQuery<Book[]>({
     queryFn: fetchBooks,
-    queryKey: ["books", currentPage],
+    queryKey: ["books", currentPage, searchKeyword],
   });
 
   const {
@@ -153,7 +166,11 @@ const BookPage = () => {
       </ContainerNoBackground>
       <ContainerNoBackground>
         <div className="lg:flex gap-2">
-          <Input type="text" placeholder="Search..."></Input>
+          <Input
+            type="text"
+            placeholder="Search..."
+            onChange={handleSearch}
+          ></Input>
           <div className="w-full lg:w-5/12  mb-4 ">
             <CustomSelect placeholder="Section" />
           </div>
@@ -168,7 +185,7 @@ const BookPage = () => {
               <HeadingRow>
                 <Th>Date Received</Th>
                 <Th>Title</Th>
-                {/* <Th className="hidden lg:block">ISBN</Th> */}
+
                 <Th>Copies</Th>
                 <Th>Year Published</Th>
 

@@ -2,6 +2,8 @@ package filter
 
 import (
 	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,7 +33,13 @@ func ExtractFilter(ctx * gin.Context ) Filter {
 		}
 	}
 	filter.Offset = (filter.Page - 1) * filter.Limit
-	filter.Keyword = ctx.Query("keyword")
+	keyword := strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r){
+			return  -1
+		}
+		return r
+	}, ctx.Query("keyword") )
+	filter.Keyword = keyword
 	return filter
 }
 
@@ -45,7 +53,13 @@ func(filter * Filter) ExtractFilter(ctx *gin.Context){
 		}
 	}
 	filter.Offset = (filter.Page - 1) * filter.Limit
-	filter.Keyword = ctx.Query("keyword")
+	keyword := strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r){
+			return  -1
+		}
+		return r
+	}, ctx.Query("keyword") )
+	filter.Keyword =  keyword
 }
 
 
