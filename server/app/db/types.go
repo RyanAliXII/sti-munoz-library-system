@@ -45,7 +45,6 @@ func (nd *NullableDate) Scan(value interface{}) error {
 
 	parsedDate, isValidTime := value.(time.Time)
 	if isValidTime {
-	
 		*nd = NullableDate(parsedDate.Format(LayoutISO))
 		return nil
 	}
@@ -64,12 +63,16 @@ func (nd NullableDate) Value() (driver.Value, error) {
 }
 
 func (nd * NullableDate) UnmarshalJSON(d []byte) error {
+	if(string(d) == "null"){
+		*nd = NullableDate("")
+		return nil
+	}
 	unquotedDate, unquoteErr := strconv.Unquote(string(d))
 	if unquoteErr != nil {
 		return unquoteErr
 	}
 	_, parseErr := time.Parse(LayoutISO, unquotedDate)
-	
+	fmt.Println(parseErr)
 	if parseErr != nil {
 		return parseErr
 	}

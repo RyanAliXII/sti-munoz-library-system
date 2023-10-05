@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 
@@ -47,7 +48,7 @@ type BookImport struct {
 	Author        string `json:"author" db:"author" csv:"author"`
 	Publisher 	  string `json:"publisher" db:"publisher" csv:"publisher"`
 	DDC           string `json:"ddc" db:"ddc" csv:"ddc"`
-	SourceOfFund string `json:"source_of_fund" db:"source_of_fund" csv:"source_of_fund"`
+	SourceOfFund string `json:"sourceOfFund" db:"source_of_fund" csv:"source_of_fund"`
 	AuthorNumber  string  `json:"authorNumber" db:"author_number" csv:"author_number"`
 }
 type BookJSON struct {
@@ -56,11 +57,10 @@ type BookJSON struct {
 
 func (book *BookJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)
-
 	if valid {
 		unmarshalErr := json.Unmarshal(val, book)
 		if unmarshalErr != nil {
-			
+			fmt.Println(unmarshalErr)
 			*book = BookJSON{
 				Book: Book{},
 			}
