@@ -1,7 +1,7 @@
 DROP VIEW IF EXISTS borrowed_book_view;
 DROP VIEW IF EXISTS book_view;
- CREATE OR REPLACE VIEW book_view as 
- SELECT book.id,title, isbn, 
+CREATE OR REPLACE VIEW book_view as 
+SELECT book.id,title, isbn, 
 	description, 
 	pages,
 	cost_price,
@@ -14,6 +14,8 @@ DROP VIEW IF EXISTS book_view;
 	author_number,
 	book.created_at,
 	authors.list as authors,
+	setweight(to_tsvector('english', search_tag.concatenated), 'A') :: tsvector search_tag_vector,  
+	COALESCE(search_tag.list, '{}' ) as search_tags,
 	jsonb_build_object('id', section.id, 'name', section.name, 'hasOwnAccession',(CASE WHEN section.accession_table is not null then true else false end), 'accessionTable', accession_table, 'prefix', section.prefix) as section,
 	jsonb_build_object('id', publisher.id, 'name', publisher.name) as publisher,
 	COALESCE(jsonb_agg(jsonb_build_object('id', accession.id, 'number', accession.number, 'copyNumber', accession.copy_number, 'isAvailable', (CASE WHEN bb.accession_id is not null then false else true END) )), '[]') as accessions,
@@ -44,6 +46,9 @@ DROP VIEW IF EXISTS book_view;
     LEFT JOIN (SELECT book_author.book_id, COALESCE(jsonb_agg(jsonb_build_object('id', author.id, 'name', author.name)), '[]') as list
 			   FROM catalog.book_author INNER JOIN catalog.author on book_author.author_id = author.id GROUP BY book_author.book_id) 
 	as authors on book.id = authors.book_id
+	LEFT JOIN (
+		SELECT book_id, string_agg(name, ', ') as concatenated, array_agg(name) as list   from catalog.search_tag GROUP BY book_id
+	) as search_tag on book.id = search_tag.book_id
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 	--  1 means Pending, 2 means Approved, 3 means checked-out 
 	GROUP BY 
@@ -52,7 +57,10 @@ DROP VIEW IF EXISTS book_view;
 	publisher.id,
 	authors.list,
 	section.id,
-	publisher.id;
+	publisher.id,
+	search_tag.concatenated,
+	search_tag.list;
+	
 
 CREATE OR REPLACE VIEW borrowed_book_view as 
 SELECT bb.id, bb.group_id, bb.account_id, bb.accession_id, bb.due_date, accession.number, bb.remarks,

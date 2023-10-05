@@ -99,6 +99,20 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 			return book.Id, insertAuthorErr
 		}
 	}
+	if len(book.SearchTags) > 0 {
+		rows := make([]goqu.Record, 0)
+		for _, tag := range book.SearchTags {
+			rows = append(rows, goqu.Record{"book_id": book.Id, "name": tag})
+		}
+		ds := dialect.From("catalog.search_tag").Prepared(true).Insert().Rows(rows)
+		query, args, _ := ds.ToSQL()
+		_, insertTagsErr:= transaction.Exec(query, args...)
+		if insertTagsErr != nil {
+			transaction.Rollback()
+			logger.Error(insertTagsErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertTagsErr"))
+			return book.Id, insertTagsErr
+		}
+	}
 
 	transaction.Commit()
 	return book.Id, nil
@@ -202,7 +216,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 		_, insertAuthorErr := transaction.Exec(query, args...)
 		if insertAuthorErr != nil {
 			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertAuthorErr"))
+			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertAuthorErr"))
 			return insertAuthorErr
 		}
 	}
@@ -216,7 +230,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 		_, insertTagsErr:= transaction.Exec(query, args...)
 		if insertTagsErr != nil {
 			transaction.Rollback()
-			logger.Error(insertTagsErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertTagsErr"))
+			logger.Error(insertTagsErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertTagsErr"))
 			return insertTagsErr
 		}
 	}
