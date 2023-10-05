@@ -36,7 +36,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
 
       edition: 0,
       pages: 1,
-
+      searchTags: [],
       yearPublished: new Date().getFullYear(),
       accessions: [],
       covers: [],
