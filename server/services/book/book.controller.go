@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -107,38 +108,10 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 }
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 
-	const (
-		DEFAULT_OFFSET = 0
-		DEFAULT_LIMIT  = 50
-	)
-	var filter repository.Filter = repository.Filter{}
-	offset := ctx.Query("offset")
-	limit := ctx.Query("limit")
-	keyword := ctx.Query("keyword")
 
-	parsedOffset, offsetConvErr := strconv.Atoi(offset)
-	if offsetConvErr != nil {
-		filter.Offset = DEFAULT_OFFSET
-	} else {
-		filter.Offset = parsedOffset
-	}
-
-	parsedLimit, limitConvErr := strconv.Atoi(limit)
-	if limitConvErr != nil {
-		filter.Limit = DEFAULT_LIMIT
-	} else {
-		filter.Limit = parsedLimit
-	}
-	if len(keyword) > 0 {
-		filter.Keyword = keyword
-		books := ctrler.bookRepository.Search(filter)
-		ctx.JSON(httpresp.Success200(gin.H{
-			"books": books,
-		}, "Books fetched."))
-		return
-	}
 	var books []model.Book = make([]model.Book, 0)
-	books = ctrler.bookRepository.Get()
+	filter := filter.ExtractFilter(ctx)
+	books = ctrler.bookRepository.Get(filter)
 	metadata, metaErr := ctrler.recordMetadataRepo.GetBookMetadata(30) // group rows by 30
 	if metaErr != nil {
 		logger.Error(metaErr.Error(), slimlog.Error("GetBookMetadataErr"))
