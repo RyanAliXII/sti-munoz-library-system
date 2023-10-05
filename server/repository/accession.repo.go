@@ -55,7 +55,10 @@ func (repo *Accession) SearchAccession(filter filter.Filter) []model.Accession {
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
 	where weeded_at is null and (
-		search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
+		search_vector @@ websearch_to_tsquery('english', $1) 
+		OR search_vector @@ plainto_tsquery('simple', $1)
+		OR search_tag_vector @@ websearch_to_tsquery('english', $1) 
+		OR search_tag_vector @@ plainto_tsquery('simple', $1)
 	)
 	ORDER BY book.created_at DESC
 	LIMIT $2 OFFSET $3
