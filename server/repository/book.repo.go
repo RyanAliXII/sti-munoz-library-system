@@ -121,7 +121,7 @@ func (repo *BookRepository) Get(filter filter.Filter) []model.Book {
 	created_at, 
 	section, publisher, authors, accessions, covers FROM book_view
 	ORDER BY created_at DESC LIMIT $1  OFFSET $2`
-	selectErr := repo.db.Select(&books, query, filter.Limit, filter)
+	selectErr := repo.db.Select(&books, query, filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
 	}
