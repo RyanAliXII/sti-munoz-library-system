@@ -115,7 +115,17 @@ func (repo *RecordMetadataRepository) GetDDCSearchMetadata(filter * filter.Filte
 	}
 	return meta, getMetaErr
 }
+func(repo * RecordMetadataRepository)GetBookMetadata(rowsLimit int) (Metadata, error) {
+	now := time.Now()
 
+	if repo.recordMetadataCache.Book.IsValid && repo.recordMetadataCache.Account.ValidUntil.After(now){
+		return repo.recordMetadataCache.Book.Metadata, nil
+	}
+	meta := Metadata{}
+    query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.book`
+	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
+	return meta, getMetaErr
+}
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
 	recordMetaDataCache.Author.IsValid = false
 }
@@ -150,6 +160,7 @@ type RecordMetadataCache struct{
 	Publisher MetadataCache
 	Account MetadataCache
 	DDC MetadataCache
+	Book MetadataCache
 }
 
 var once sync.Once
@@ -186,6 +197,14 @@ func newRecordMetadataCache (config  RecordMetadataConfig) *RecordMetadataCache 
 				},
 				ValidUntil: time.Now().Add(config.CacheExpiration),
 		   },
+		  Book: MetadataCache{
+			IsValid: false,
+			Metadata: Metadata{
+				Records: 0,
+				Pages: 0,
+			},
+			ValidUntil: time.Now().Add(config.CacheExpiration),
+		  },
 
 		}
 	})
