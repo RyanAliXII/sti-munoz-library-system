@@ -200,10 +200,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 			return insertAuthorErr
 		}
 	}
-
 	
-
-
 	updatedBookRows, _ := updateResult.RowsAffected()
 	logger.Info("Book updated.", slimlog.AffectedRows(updatedBookRows))
 
@@ -218,6 +215,7 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	isbn, 
 	description, 
 	pages,
+	cop
 	cost_price,
 	edition,
 	year_published, 

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -28,12 +29,12 @@ func (repo *RecordMetadataRepository) GetAuthorMetadata(rowsLimit int) (Metadata
 		meta := Metadata{}
         query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.author where deleted_at is null`
 		getMetaErr := repo.db.Get(&meta, query, rowsLimit)
-		if getMetaErr != nil {
-			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetPersonAsAuthorMetadata"))
+		if getMetaErr == nil {
+			recordMetaDataCache.Author.IsValid = true
+			recordMetaDataCache.Author.Metadata = meta
+			recordMetaDataCache.Author.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
 		}
-		recordMetaDataCache.Author.IsValid = true
-		recordMetaDataCache.Author.Metadata = meta
-		recordMetaDataCache.Author.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
+	
 		return meta, getMetaErr
 }
 
@@ -45,12 +46,11 @@ func (repo *RecordMetadataRepository) GetPublisherMetadata(rowsLimit int) (Metad
 	meta := Metadata{}
     query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.publisher where deleted_at is null`
 	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
-	if getMetaErr != nil {
-			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetPublisherMetadata"))
+	if getMetaErr == nil {
+		recordMetaDataCache.Publisher.IsValid = true
+		recordMetaDataCache.Publisher.Metadata = meta
+		recordMetaDataCache.Publisher.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
 	}
-	recordMetaDataCache.Publisher.IsValid = true
-	recordMetaDataCache.Publisher.Metadata = meta
-	recordMetaDataCache.Publisher.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
 	return meta, getMetaErr
 }
 func (repo *RecordMetadataRepository) GetAccountMetadata (rowsLimit int) (Metadata, error) {
@@ -61,12 +61,11 @@ func (repo *RecordMetadataRepository) GetAccountMetadata (rowsLimit int) (Metada
 	meta := Metadata{}
     query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM system.account`
 	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
-	if getMetaErr != nil {
-			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetAccountMetadata"))
+	if getMetaErr == nil {
+			recordMetaDataCache.Account.IsValid = true
+			recordMetaDataCache.Account.Metadata = meta
+			recordMetaDataCache.Account.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
 	}
-	recordMetaDataCache.Account.IsValid = true
-	recordMetaDataCache.Account.Metadata = meta
-	recordMetaDataCache.Account.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
 	return meta, getMetaErr
 }
 func (repo *RecordMetadataRepository) GetAccountSearchMetadata (filter * filter.Filter) (Metadata, error) {
@@ -90,12 +89,12 @@ func (repo *RecordMetadataRepository) GetDDCMetadata(rowsLimit int) (Metadata, e
 	meta := Metadata{}
     query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.ddc`
 	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
-	if getMetaErr != nil {
-			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetDDCMetadata"))
+	if getMetaErr == nil {
+		recordMetaDataCache.DDC.IsValid= true
+		recordMetaDataCache.DDC.Metadata = meta
+		recordMetaDataCache.DDC.ValidUntil = time.Now().Add(repo.config.CacheExpiration)	
 	}
-	recordMetaDataCache.DDC.IsValid= true
-	recordMetaDataCache.DDC.Metadata = meta
-	recordMetaDataCache.DDC.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
+
 	return meta, getMetaErr
 }
 func (repo *RecordMetadataRepository) GetDDCSearchMetadata(filter * filter.Filter) (Metadata, error) {
@@ -135,6 +134,23 @@ func (repo * RecordMetadataRepository)GetBookSearchMetadata(filter filter.Filter
  	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	return meta, err
 }
+
+func (repo * RecordMetadataRepository)GetAccessionMetadata(rowsLimit int)(Metadata, error){
+		now := time.Now()
+		if repo.recordMetadataCache.Accession.IsValid && repo.recordMetadataCache.Accession.ValidUntil.After(now){
+			fmt.Println("USING CACHE")
+			return repo.recordMetadataCache.Accession.Metadata, nil
+		}
+		meta := Metadata{}
+		query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.accession`
+		err := repo.db.Get(&meta, query, rowsLimit)
+		if err == nil  {
+			repo.recordMetadataCache.Accession.Metadata = meta
+			repo.recordMetadataCache.Accession.IsValid = true
+			repo.recordMetadataCache.Accession.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
+		}
+		return meta, err
+}
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
 	recordMetaDataCache.Author.IsValid = false
 }
@@ -160,7 +176,6 @@ type RecordMetadataConfig struct{
 	CacheExpiration time.Duration 
 
 }
-
 type MetadataCache struct {
 	IsValid bool 
 	Metadata Metadata
@@ -173,6 +188,7 @@ type RecordMetadataCache struct{
 	Account MetadataCache
 	DDC MetadataCache
 	Book MetadataCache
+	Accession MetadataCache
 }
 
 var once sync.Once
@@ -216,6 +232,14 @@ func newRecordMetadataCache (config  RecordMetadataConfig) *RecordMetadataCache 
 				Pages: 0,
 			},
 			ValidUntil: time.Now().Add(config.CacheExpiration),
+		  },
+		  Accession: MetadataCache{
+			IsValid: false,
+			Metadata: Metadata{
+				Records: 0,
+				Pages: 0,
+			},
+			ValidUntil:  time.Now().Add(config.CacheExpiration),
 		  },
 
 		}

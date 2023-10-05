@@ -19,14 +19,51 @@ import { useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import ReactPaginate from "react-paginate";
+import { useSearchParams } from "react-router-dom";
+import usePaginate from "@hooks/usePaginate";
+import { useEffect, useState } from "react";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
+  const [params, setUrlSearchParams] = useSearchParams();
+  const initCurrentPage = () => {
+    const page = params.get("page");
+    if (!page) {
+      setUrlSearchParams({ page: "1" });
+      return 1;
+    }
+    const parsedPage = parseInt(page);
+    if (isNaN(parsedPage)) {
+      setUrlSearchParams({ page: "1" });
+      return 1;
+    }
+    if (parsedPage <= 0) {
+      setUrlSearchParams({ page: "1" });
+      return 1;
+    }
+    return parsedPage;
+  };
+
+  const { currentPage, totalPages, setTotalPages, setCurrentPage } =
+    usePaginate({
+      initialPage: initCurrentPage,
+      numberOfPages: 1,
+    });
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  useEffect(() => {
+    setUrlSearchParams({ page: currentPage.toString() });
+  }, [currentPage]);
+
   const fetchAccessions = async () => {
     try {
       const { data: response } = await Get("/books/accessions", {}, [
         apiScope("Accession.Read"),
       ]);
+
+      if (response?.data?.metadata) {
+        setTotalPages(response?.data?.metadata?.pages ?? 1);
+      }
       return response?.data?.accessions ?? [];
     } catch {
       return [];
@@ -40,6 +77,8 @@ const AccessionPage = () => {
     queryFn: fetchAccessions,
     queryKey: ["accessions"],
   });
+  const paginationClass =
+    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
   return (
     <>
       <ContainerNoBackground>
@@ -89,6 +128,25 @@ const AccessionPage = () => {
             </Tbody>
           </Table>
         </Container>
+        <ContainerNoBackground>
+          <ReactPaginate
+            nextLabel="Next"
+            pageLinkClassName="border px-3 py-0.5  text-center rounded"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            forcePage={currentPage - 1}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            className={paginationClass}
+            previousLabel="Previous"
+            previousClassName="px-2 border text-gray-500 py-1 rounded"
+            nextClassName="px-2 border text-blue-500 py-1 rounded"
+            renderOnZeroPageCount={null}
+            activeClassName="border-none bg-blue-500 text-white rounded"
+          />
+        </ContainerNoBackground>
       </LoadingBoundary>
     </>
   );
