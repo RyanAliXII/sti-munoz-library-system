@@ -16,17 +16,15 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     url.searchParams.append("accountId", user.id ?? "");
     const socket = new WebSocket(url);
     socket.onopen = () => {
-      console.debug("socket connected.");
+      console.log("socket connected.");
     };
     socket.onmessage = (message) => {
       toast.info(message.data);
     };
 
-    // return () => {
-    //   if (socket.OPEN) {
-    //     socket.close();
-    //   }
-    // };
+    return () => {
+      socket.close();
+    };
   }, []);
   return <SocketContext.Provider value={{}}>{children}</SocketContext.Provider>;
 };
