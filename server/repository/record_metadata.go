@@ -126,6 +126,15 @@ func(repo * RecordMetadataRepository)GetBookMetadata(rowsLimit int) (Metadata, e
 	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
 	return meta, getMetaErr
 }
+func (repo * RecordMetadataRepository)GetBookSearchMetadata(filter filter.Filter)(Metadata, error){
+	meta := Metadata{}
+    query := `
+	SELECT  CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records 
+	FROM catalog.book WHERE search_vector @@ websearch_to_tsquery('english', $2) OR search_vector @@ plainto_tsquery('simple', $2)
+  	`
+ 	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
+	return meta, err
+}
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
 	recordMetaDataCache.Author.IsValid = false
 }
