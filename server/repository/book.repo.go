@@ -129,6 +129,7 @@ func (repo *BookRepository) Get(filter filter.Filter) []model.Book {
 	pages,
 	cost_price,
 	edition,
+	search_tags,
 	year_published, 
 	received_at, 
 	ddc, 
@@ -147,7 +148,8 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	query := `SELECT id, 
 	title, 
 	isbn,
-	subject, 
+	subject,
+	search_tags, 
 	description, 
 	copies, pages,
 	cost_price,
@@ -258,7 +260,10 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	author_number, 
 	created_at, 
 	section, publisher, authors, accessions, covers FROM book_view
-	WHERE search_vector @@ websearch_to_tsquery('english', $1) OR search_vector @@ plainto_tsquery('simple', $1)
+	WHERE search_vector @@ websearch_to_tsquery('english', $1) 
+	OR search_vector @@ plainto_tsquery('simple', $1) 
+	OR search_tag_vector @@ websearch_to_tsquery('english', $1) 
+	OR search_tag_vector @@ plainto_tsquery('simple', $1)
 	ORDER BY created_at DESC
 	LIMIT $2 OFFSET $3
 	`
