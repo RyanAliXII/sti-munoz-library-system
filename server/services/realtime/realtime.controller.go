@@ -1,7 +1,6 @@
 package realtime
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -40,15 +39,15 @@ func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
 func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Context) {
 	accountId := ctx.Query("accountId")
 	defer func() {
-		logger.Info("Reader Exited", zap.String("accountId", accountId))
+		logger.Info("Reader Exited.", zap.String("accountId", accountId))
 		connection.Close()
 	}()
   
 	//connection.SetReadDeadline(time.Now().Add(pongWait))
 	//connection.SetPongHandler(func(string) error { connection.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, b, err := connection.ReadMessage()
-		fmt.Println(string(b))
+		_, _, err := connection.ReadMessage()
+		
 		if err != nil {
 			logger.Error(err.Error())
 			break
@@ -63,13 +62,11 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 	// go notificationBroadcaster.ListenByAccountId(accountId, context)
 	
 	defer func() {
-		fmt.Println("WRITER EXITED")
+		logger.Info("Writer Exited.", zap.String("accountId", accountId))
 		connection.Close()
 		ticker.Stop()
 	}() 
 	for range ticker.C {
-			fmt.Println(accountId)
-			
 			connection.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := connection.WriteMessage(websocket.PingMessage, nil); err != nil {	
 				logger.Error(err.Error())

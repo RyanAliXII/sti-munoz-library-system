@@ -1,6 +1,8 @@
 package ddc
 
 import (
+	"time"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -42,7 +44,9 @@ func (ctrler *DDCController) GetDDC(ctx *gin.Context) {
 func NewDDCController() DDCControllerInterface {
 	return &DDCController{
 		ddcRepository: repository.NewDDCRepository(),
-		recordMetadataRepository: repository.NewRecordMetadataRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
+			CacheExpiration: time.Duration(time.Minute * 10),
+	   }),
 	}
 
 }

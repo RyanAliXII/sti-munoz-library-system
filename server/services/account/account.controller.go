@@ -3,6 +3,7 @@ package account
 import (
 	"io"
 	"path/filepath"
+	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
@@ -119,7 +120,9 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
-		recordMetadataRepository: repository.NewRecordMetadataRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
+			CacheExpiration: time.Minute * 5,
+	   }),
 		validator: validator.New(),
 	}
 
