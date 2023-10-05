@@ -41,11 +41,11 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	insertBookQuery := `INSERT INTO catalog.book(
-		title, isbn, description,  pages, section_id, publisher_id, cost_price, edition, year_published, received_at, id, author_number, ddc)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`
+		title, isbn, description,  pages, section_id, publisher_id, cost_price, edition, year_published, received_at, id, author_number, ddc, subject)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`
 
 	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Pages,
-		book.Section.Id, book.Publisher.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.Id, book.AuthorNumber, book.DDC)
+		book.Section.Id, book.Publisher.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.Id, book.AuthorNumber, book.DDC, book.Subject)
 	if insertBookErr != nil {
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
 		return book.Id, insertBookErr
@@ -164,11 +164,11 @@ func (repo *BookRepository) Update(book model.Book) error {
 	}
 
 	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6,
-	 cost_price= $7, edition = $8, year_published = $9, received_at = $10, author_number = $11, ddc = $12 where id = $13`
+	 cost_price= $7, edition = $8, year_published = $9, received_at = $10, author_number = $11, ddc = $12, subject = $13 where id = $14`
 
 	//update book
 	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.Section.Id, book.Publisher.Id,
-		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Id)
+		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Subject, book.Id)
 	if updateErr != nil {
 		transaction.Rollback()
 		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))

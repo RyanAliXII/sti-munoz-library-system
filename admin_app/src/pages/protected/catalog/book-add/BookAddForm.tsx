@@ -37,7 +37,7 @@ import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format } from "date-fns";
-import Creatable, { useCreatable } from "react-select/creatable";
+
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -154,6 +154,7 @@ const BookAddForm = () => {
       ),
     onSuccess: async ({ data: response }) => {
       toast.success("Book has been added");
+      resetForm();
       if (!response?.data?.book?.id) {
         uppy.cancelAll();
         return;
@@ -172,7 +173,6 @@ const BookAddForm = () => {
       uppy.upload().finally(() => {
         uppy.cancelAll();
       });
-      resetForm();
     },
     onError: (error) => {
       toast.error(ErrorMsg.New);
@@ -217,11 +217,12 @@ const BookAddForm = () => {
           <FieldRow
             fieldDetails="Main topic or theme that a book explores, addressing specific ideas, events, or concepts within a broader field of knowledge or narrative"
             label="Subject"
+            ref={registerFormGroup("subject")}
           >
             <Input
               wrapperclass="flex flex-col "
-              error={errors?.title}
-              value={form.title}
+              error={errors?.subject}
+              value={form.subject}
               onChange={handleFormInput}
               placeholder="Book subject"
               name="subject"
