@@ -12,6 +12,7 @@ import (
 type Book struct {
 	Id          string `json:"id" db:"id"`
 	Title       string `json:"title" db:"title"`
+	Subject		string `json:"subject" db:"subject"`
 	Description string `json:"description" db:"description"`
 	ISBN        string `json:"isbn" db:"isbn"`
 	Pages       int    `json:"pages" db:"pages"`

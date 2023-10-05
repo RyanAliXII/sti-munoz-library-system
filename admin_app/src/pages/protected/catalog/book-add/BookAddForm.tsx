@@ -1,4 +1,4 @@
-import { Input } from "@components/ui/form/Input";
+import { Input, SelectClasses } from "@components/ui/form/Input";
 
 import {
   PrimaryButton,
@@ -37,7 +37,7 @@ import { apiScope } from "@definitions/configs/msal/scopes";
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format } from "date-fns";
-
+import Creatable, { useCreatable } from "react-select/creatable";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -212,6 +212,20 @@ const BookAddForm = () => {
               onChange={handleFormInput}
               placeholder="Book title"
               name="title"
+            />
+          </FieldRow>
+          <FieldRow
+            fieldDetails="Main topic or theme that a book explores, addressing specific ideas, events, or concepts within a broader field of knowledge or narrative"
+            isRequired
+            label="Subject"
+          >
+            <Input
+              wrapperclass="flex flex-col "
+              error={errors?.title}
+              value={form.title}
+              onChange={handleFormInput}
+              placeholder="Book subject"
+              name="subject"
             />
           </FieldRow>
           <FieldRow
