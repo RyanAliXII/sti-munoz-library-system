@@ -216,7 +216,6 @@ const BookAddForm = () => {
           </FieldRow>
           <FieldRow
             fieldDetails="Main topic or theme that a book explores, addressing specific ideas, events, or concepts within a broader field of knowledge or narrative"
-            isRequired
             label="Subject"
           >
             <Input

@@ -24,9 +24,7 @@ export const SourceofFundSchema = object().shape({
 const NUMBER_NO_DECIMAL = "Value should be numeric and not in decimal format.";
 
 export const BookSchema = object().shape({
-  title: string()
-    .max(150, "Character should not exceed 150")
-    .required("Book title is required."),
+  title: string().required("Book title is required."),
   isbn: string()
     .notRequired()
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
@@ -79,9 +77,8 @@ export const BookSchema = object().shape({
 });
 
 export const NewBookSchemaValidation = object().shape({
-  title: string()
-    .max(150, "Character should not exceed 150")
-    .required("Book title is required."),
+  title: string().required("Book title is required."),
+  subject: string().notRequired(),
   isbn: string()
     .notRequired()
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
@@ -150,9 +147,7 @@ export const NewBookSchemaValidation = object().shape({
 });
 
 export const UpdateBookSchemaValidation = object().shape({
-  title: string()
-    .max(150, "Character should not exceed 150")
-    .required("Book title is required."),
+  title: string().required("Book title is required."),
   isbn: string()
     .notRequired()
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
