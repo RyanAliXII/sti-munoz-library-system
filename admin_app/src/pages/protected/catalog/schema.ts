@@ -154,7 +154,7 @@ export const UpdateBookSchemaValidation = object().shape({
     .max(150, "Character should not exceed 150")
     .required("Book title is required."),
   isbn: string()
-    .required()
+    .notRequired()
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
       if (!value) return true;
       if (value.length === 0) return true;
