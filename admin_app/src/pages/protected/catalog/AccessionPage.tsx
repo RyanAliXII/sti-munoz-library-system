@@ -22,7 +22,8 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import ReactPaginate from "react-paginate";
 import { useSearchParams } from "react-router-dom";
 import usePaginate from "@hooks/usePaginate";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import useDebounce from "@hooks/useDebounce";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
@@ -55,11 +56,29 @@ const AccessionPage = () => {
     setUrlSearchParams({ page: currentPage.toString() });
   }, [currentPage]);
 
+  const searchDebounce = useDebounce();
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    searchDebounce(
+      () => {
+        setSearchKeyword(event.target.value);
+        setCurrentPage(1);
+      },
+      null,
+      500
+    );
+  };
   const fetchAccessions = async () => {
     try {
-      const { data: response } = await Get("/books/accessions", {}, [
-        apiScope("Accession.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/books/accessions",
+        {
+          params: {
+            page: currentPage,
+            keyword: searchKeyword,
+          },
+        },
+        [apiScope("Accession.Read")]
+      );
 
       if (response?.data?.metadata) {
         setTotalPages(response?.data?.metadata?.pages ?? 1);
@@ -75,7 +94,7 @@ const AccessionPage = () => {
     isError,
   } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessions,
-    queryKey: ["accessions"],
+    queryKey: ["accessions", currentPage, searchKeyword],
   });
   const paginationClass =
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
@@ -84,23 +103,16 @@ const AccessionPage = () => {
       <ContainerNoBackground>
         <h1 className="text-3xl font-bold text-gray-700">Accession</h1>
       </ContainerNoBackground>
-      <ContainerNoBackground className="flex gap-2">
-        <div className="w-5/12">
-          <Input type="text" label="Search" placeholder="Search.."></Input>
-        </div>
-        <div>
-          <CustomDatePicker
-            label="Year Published"
-            wrapperclass="flex flex-col"
-            selected={new Date()}
-            onChange={() => {}}
-            showYearPicker
-            dateFormat="yyyy"
-            yearItemNumber={9}
-          />
-        </div>
-        <div className="w-3/12">
-          <CustomSelect label="Section" />
+      <ContainerNoBackground>
+        <div className="lg:flex gap-2">
+          <Input
+            type="text"
+            placeholder="Search..."
+            onChange={handleSearch}
+          ></Input>
+          <div className="w-full lg:w-5/12  mb-4 ">
+            <CustomSelect placeholder="Section" />
+          </div>
         </div>
       </ContainerNoBackground>
       <LoadingBoundary isError={isError} isLoading={isFetching}>
@@ -117,7 +129,7 @@ const AccessionPage = () => {
             <Tbody>
               {accessions?.map((accession) => {
                 return (
-                  <BodyRow key={`${accession.copyNumber}_${accession.bookId}`}>
+                  <BodyRow key={accession.id}>
                     <Td>{accession.number}</Td>
                     <Td>{accession.book.title}</Td>
                     <Td>{accession.book.section.name}</Td>

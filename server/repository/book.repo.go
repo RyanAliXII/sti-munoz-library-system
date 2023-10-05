@@ -215,7 +215,7 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	isbn, 
 	description, 
 	pages,
-	cop
+	copies,
 	cost_price,
 	edition,
 	year_published, 
