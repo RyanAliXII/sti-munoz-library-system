@@ -72,7 +72,6 @@ func (nd * NullableDate) UnmarshalJSON(d []byte) error {
 		return unquoteErr
 	}
 	_, parseErr := time.Parse(LayoutISO, unquotedDate)
-	fmt.Println(parseErr)
 	if parseErr != nil {
 		return parseErr
 	}

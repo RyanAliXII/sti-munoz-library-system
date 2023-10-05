@@ -3,7 +3,6 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 
@@ -60,7 +59,6 @@ func (book *BookJSON) Scan(value interface{}) error {
 	if valid {
 		unmarshalErr := json.Unmarshal(val, book)
 		if unmarshalErr != nil {
-			fmt.Println(unmarshalErr)
 			*book = BookJSON{
 				Book: Book{},
 			}
