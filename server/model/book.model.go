@@ -32,6 +32,7 @@ type Book struct {
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
 	Accessions AccessionsJSON  `json:"accessions" db:"accessions"`
 	Covers     pq.StringArray  `json:"covers" db:"covers"`
+	SearchTags pq.StringArray  `json:"searchTags" db:"search_tags"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
 

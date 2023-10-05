@@ -58,6 +58,7 @@ export interface Book {
   covers: string[];
   authorNumber: string;
   accessions: Accession[];
+  searchTags: string[];
   createdAt?: string; //iso-string date
 }
 

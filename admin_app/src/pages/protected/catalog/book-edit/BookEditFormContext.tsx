@@ -41,6 +41,7 @@ const INITIAL_FORM_DATA: Book = {
   yearPublished: new Date().getFullYear(),
   accessions: [],
   covers: [],
+  searchTags: [],
 };
 
 export const BookEditFormProvider: React.FC<BaseProps> = ({ children }) => {
