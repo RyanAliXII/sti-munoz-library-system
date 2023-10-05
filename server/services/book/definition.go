@@ -18,6 +18,7 @@ type MetadataString struct {
 type BookBody struct {
 	Id            string    `json:"id" `
 	Title         string    `json:"title" binding:"required"`
+	Subject 	  string 	`json:"subject"`
 	Description   string    `json:"description"`
 	ISBN          string    `json:"isbn"  binding:"omitempty,required,min=1,max=150,isbn"`
 	Copies        int       `json:"copies" binding:"required,gte=1"`
