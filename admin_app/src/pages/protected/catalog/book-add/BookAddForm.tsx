@@ -475,6 +475,7 @@ const BookAddForm = () => {
           >
             <CreatableSelect
               isMulti
+              value={form.searchTags.map((v) => ({ value: v, label: v }))}
               onChange={(
                 newValue: MultiValue<{ value: string; label: string }>
               ) => {
