@@ -157,22 +157,29 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 	
 	filter := filter.ExtractFilter(ctx)
-	metadata, err := ctrler.recordMetadataRepo.GetAccessionMetadata(filter.Limit)
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAccessionMetadataErr"))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
-		return
-	} 
+
 	if len(filter.Keyword) > 0 {
 		accessions := ctrler.accessionRepo.SearchAccession(filter)
+		metadata, err := ctrler.recordMetadataRepo.GetAccessionSearchMetadata(filter)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetAccessionMetadataErr"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+			return
+		} 
 		ctx.JSON(httpresp.Success200(gin.H{
 			"accessions": accessions,
 			"metadata": metadata,
 		}, "Accession Fetched."))
 		return
 	}
+	
 	accessions := ctrler.accessionRepo.GetAccessions(filter)
-	// 30 per page
+	metadata, err := ctrler.recordMetadataRepo.GetAccessionMetadata(filter.Limit)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAccessionMetadataErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+		return
+	} 
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 		"metadata": metadata,
