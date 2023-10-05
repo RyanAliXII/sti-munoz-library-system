@@ -1,6 +1,8 @@
 package author
 
 import (
+	"time"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -23,7 +25,7 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return
 	}
-	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
+	ctrler.recordMetadataRepository.InvalidateAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"author": newAuthor,
 	}, "Author has been added."))
@@ -32,7 +34,7 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 
 	filter := filter.ExtractFilter(ctx)
 	authors := ctrler.authorRepository.Get(&filter)
-	metaData, metaErr := ctrler.recordMetadataRepository.GetPersonAsAuthorMetadata(filter.Limit)
+	metaData, metaErr := ctrler.recordMetadataRepository.GetAuthorMetadata(filter.Limit)
 	if metaErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"message": "Unknown error occured",
@@ -49,7 +51,7 @@ func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(gin.H{}, err.Error()))
 		return
 	}
-	ctrler.recordMetadataRepository.InvalidatePersonAsAuthor()
+	ctrler.recordMetadataRepository.InvalidateAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor deleted."))
 }
 
@@ -72,7 +74,9 @@ func NewAuthorController() AuthorControllerInterface {
 
 	return &AuthorController{
 		authorRepository: repository.NewAuthorRepository(),
-		recordMetadataRepository: repository.NewRecordMetadataRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
+			 CacheExpiration: time.Minute * 5,
+		}),
 	}
 
 }
