@@ -23,7 +23,6 @@ type Accession struct {
 
 func (repo *Accession) GetAccessions(filter filter.Filter) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
-
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,
@@ -46,7 +45,6 @@ func (repo *Accession) GetAccessions(filter filter.Filter) []model.Accession {
 }
 func (repo *Accession) SearchAccession(filter filter.Filter) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
-
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,

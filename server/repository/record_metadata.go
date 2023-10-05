@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -138,7 +137,6 @@ func (repo * RecordMetadataRepository)GetBookSearchMetadata(filter filter.Filter
 func (repo * RecordMetadataRepository)GetAccessionMetadata(rowsLimit int)(Metadata, error){
 		now := time.Now()
 		if repo.recordMetadataCache.Accession.IsValid && repo.recordMetadataCache.Accession.ValidUntil.After(now){
-			fmt.Println("USING CACHE")
 			return repo.recordMetadataCache.Accession.Metadata, nil
 		}
 		meta := Metadata{}
@@ -151,6 +149,14 @@ func (repo * RecordMetadataRepository)GetAccessionMetadata(rowsLimit int)(Metada
 		}
 		return meta, err
 }
+func (repo * RecordMetadataRepository)GetAccessionSearchMetadata(filter filter.Filter)(Metadata, error){
+	meta := Metadata{}
+	query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.accession 
+	INNER JOIN catalog.book on accession.book_id = book.id where book.search_vector @@ websearch_to_tsquery('english', $2) OR search_vector @@ plainto_tsquery('simple', $2)`
+	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
+	
+	return meta, err
+}
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
 	recordMetaDataCache.Author.IsValid = false
 }
@@ -162,6 +168,9 @@ func (repo *RecordMetadataRepository) InvalidateAccount() {
 }
 func (repo * RecordMetadataRepository) InvalidateBook(){
 	recordMetaDataCache.Book.IsValid = false
+}
+func(repo * RecordMetadataRepository) InvalidateAccession(){
+	recordMetaDataCache.Accession.IsValid = false
 }
 func NewRecordMetadataRepository (config RecordMetadataConfig) RecordMetadataRepository{
 	db := postgresdb.GetOrCreateInstance()
