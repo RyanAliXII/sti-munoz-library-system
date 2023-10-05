@@ -41,6 +41,7 @@ import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
 import ReactPaginate from "react-paginate";
 import usePaginate from "@hooks/usePaginate";
+import { isValid } from "date-fns";
 
 const BookPage = () => {
   const {
@@ -52,8 +53,7 @@ const BookPage = () => {
     currentPage,
     totalPages,
     setTotalPages,
-    nextPage,
-    previousPage,
+
     setCurrentPage,
   } = usePaginate({
     initialPage: 1,
@@ -176,11 +176,12 @@ const BookPage = () => {
           <Table>
             <Thead>
               <HeadingRow>
+                <Th>Date Received</Th>
                 <Th>Title</Th>
                 {/* <Th className="hidden lg:block">ISBN</Th> */}
                 <Th>Copies</Th>
                 <Th>Year Published</Th>
-                <Th>Date Received</Th>
+
                 <Th></Th>
               </HeadingRow>
             </Thead>
@@ -188,14 +189,19 @@ const BookPage = () => {
               {books?.map((book) => {
                 return (
                   <BodyRow key={book.id}>
+                    <Td>
+                      {isValid(new Date(book.receivedAt))
+                        ? new Date(book.receivedAt).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "2-digit", year: "numeric" }
+                          )
+                        : "Unspecified"}
+                    </Td>
                     <Td>{book.title}</Td>
                     {/* <Td className="hidden lg:block">{book.isbn}</Td> */}
                     <Td>{book.copies}</Td>
                     <Td>{book.yearPublished}</Td>
-                    <Td>
-                      {" "}
-                      <TimeAgo datetime={book.receivedAt}></TimeAgo>
-                    </Td>
+
                     <Td className="flex gap-3">
                       <Tippy content="View Printables">
                         <button
