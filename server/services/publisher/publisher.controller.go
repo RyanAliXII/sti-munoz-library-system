@@ -1,6 +1,8 @@
 package publisher
 
 import (
+	"time"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -69,7 +71,9 @@ func (ctrler *PublisherController) DeletePublisher(ctx *gin.Context) {
 func NewPublisherController() PublisherControllerInterface {
 	return &PublisherController{
 		publisherRepository: repository.NewPublisherRepository(),
-		recordMetadataRepository: repository.NewRecordMetadataRepository(),
+		recordMetadataRepository: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
+			CacheExpiration: time.Minute * 5,
+	   }),
 	}
 
 }
