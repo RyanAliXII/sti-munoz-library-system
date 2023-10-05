@@ -144,6 +144,9 @@ func (repo *RecordMetadataRepository) InvalidatePublisher() {
 func (repo *RecordMetadataRepository) InvalidateAccount() {
 	recordMetaDataCache.Account.IsValid = false
 }
+func (repo * RecordMetadataRepository) InvalidateBook(){
+	recordMetaDataCache.Book.IsValid = false
+}
 func NewRecordMetadataRepository (config RecordMetadataConfig) RecordMetadataRepository{
 	db := postgresdb.GetOrCreateInstance()
 	return RecordMetadataRepository{
