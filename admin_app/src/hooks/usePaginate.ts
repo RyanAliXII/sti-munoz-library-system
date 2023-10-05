@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-const usePaginate = ({ initialPage = 1, numberOfPages = 0 }) => {
+const usePaginate = ({
+  initialPage = 1,
+  numberOfPages = 0,
+}: {
+  initialPage: number | (() => number);
+  numberOfPages: number;
+}) => {
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
   const [totalPages, setTotalPages] = useState<number>(numberOfPages);
 

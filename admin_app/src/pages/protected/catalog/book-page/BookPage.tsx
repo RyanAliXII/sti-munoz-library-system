@@ -19,11 +19,11 @@ import {
 import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import TimeAgo from "timeago-react";
 import Container, {
   ContainerNoBackground,
@@ -49,16 +49,33 @@ const BookPage = () => {
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
-  const {
-    currentPage,
-    totalPages,
-    setTotalPages,
+  const [params, setUrlSearchParams] = useSearchParams();
+  const initCurrentPage = () => {
+    const page = params.get("page");
+    if (!page) {
+      setUrlSearchParams({ page: "1" });
+      return 1;
+    }
+    const parsedPage = parseInt(page);
+    if (isNaN(parsedPage)) {
+      setUrlSearchParams({ page: "1" });
+      return 1;
+    }
+    if (parsedPage <= 0) {
+      setUrlSearchParams({ page: "1" });
+      return 1;
+    }
+    return parsedPage;
+  };
 
-    setCurrentPage,
-  } = usePaginate({
-    initialPage: 1,
-    numberOfPages: 0,
-  });
+  const { currentPage, totalPages, setTotalPages, setCurrentPage } =
+    usePaginate({
+      initialPage: initCurrentPage,
+      numberOfPages: 0,
+    });
+  useEffect(() => {
+    setUrlSearchParams({ page: currentPage.toString() });
+  }, [currentPage]);
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
@@ -72,7 +89,8 @@ const BookPage = () => {
         [apiScope("Book.Read")]
       );
       if (response?.data?.metadata) {
-        setTotalPages(response?.data?.metadata?.pages ?? 0);
+        const page = response?.data?.metadata?.pages;
+        setTotalPages(page ?? 0);
       }
       return response?.data?.books ?? [];
     } catch (error) {
@@ -131,45 +149,17 @@ const BookPage = () => {
             </HasAccess>
           </div>
         </div>
-        <div className="gap-2 items-center lg:basis-9/12 lg:flex">
-          {/* <div className="w-5/12 hidden lg:block">
-            <Input type="text" label="Search" placeholder="Search..."></Input>
-          </div> */}
-          {/* <div className="hidden lg:block">
-            <CustomDatePicker
-              label="Year Published"
-              wrapperclass="flex flex-col"
-              selected={new Date()}
-              onChange={() => {}}
-              showYearPicker
-              dateFormat="yyyy"
-              yearItemNumber={9}
-            />
+        <div className="gap-2 items-center lg:basis-9/12 lg:flex"></div>
+      </ContainerNoBackground>
+      <ContainerNoBackground>
+        <div className="lg:flex gap-2">
+          <Input type="text" placeholder="Search..."></Input>
+          <div className="w-full lg:w-5/12  mb-4 ">
+            <CustomSelect placeholder="Section" />
           </div>
-          <div className="w-3/12 hidden lg:block mb-4 ">
-            <CustomSelect label="Section" />
-          </div> */}
         </div>
       </ContainerNoBackground>
-      <ContainerNoBackground className="px-0 flex gap-2 lg:hidden">
-        <div className="w-5/12">
-          <Input type="text" label="Search" placeholder="Search.."></Input>
-        </div>
-        <div>
-          <CustomDatePicker
-            label="Year Published"
-            wrapperclass="flex flex-col"
-            selected={new Date()}
-            onChange={() => {}}
-            showYearPicker
-            dateFormat="yyyy"
-            yearItemNumber={9}
-          />
-        </div>
-        <div className="w-3/12">
-          <CustomSelect label="Section" />
-        </div>
-      </ContainerNoBackground>
+
       <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
         <Container className="lg:p-0">
           {" "}
@@ -240,6 +230,7 @@ const BookPage = () => {
             pageLinkClassName="border px-3 py-0.5  text-center rounded"
             pageRangeDisplayed={5}
             pageCount={totalPages}
+            forcePage={currentPage - 1}
             disabledClassName="opacity-60 pointer-events-none"
             onPageChange={({ selected }) => {
               setCurrentPage(selected + 1);
