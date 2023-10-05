@@ -2,23 +2,25 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
 
 type AccessionRepository interface {
-	GetAccessions() []model.Accession
+	GetAccessions(filter filter.Filter) []model.Accession
 	GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.Accession 
 	GetAccessionsByBookId(id string) []model.Accession 
 	WeedAccession(id string, remarks string) error
 	Recirculate(id string) error
+	
 }
 type Accession struct {
 	db *sqlx.DB
 }
 
-func (repo *Accession) GetAccessions() []model.Accession {
+func (repo *Accession) GetAccessions(filter filter.Filter) []model.Accession {
 	var accessions []model.Accession = make([]model.Accession, 0)
 
 	query := `
@@ -32,8 +34,9 @@ func (repo *Accession) GetAccessions() []model.Accession {
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
 	where weeded_at is null
 	ORDER BY book.created_at DESC
+	LIMIT $1 OFFSET $2
 	`
-	selectAccessionErr := repo.db.Select(&accessions, query)
+	selectAccessionErr := repo.db.Select(&accessions, query, filter.Limit, filter.Offset)
 	if selectAccessionErr != nil {
 		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessions"), slimlog.Error("selectAccessionErr"))
 		return accessions
