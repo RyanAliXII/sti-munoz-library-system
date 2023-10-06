@@ -1,16 +1,13 @@
 import { PopupRequest, Configuration } from "@azure/msal-browser";
 
-export const CLIENT_ID = "1b3617d9-7634-43f9-acf2-bd45c0b45ad6";
-export const API_CLIENT_ID = "770a2b1b-6004-4a51-94a8-cd008797ba92";
-
-const uri = import.meta.env.PROD
-  ? "https://stimunozlibrary.online:5201"
-  : "http://localhost:5201";
+export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+export const API_CLIENT_ID = import.meta.env.VITE_API_CLIENT_ID;
+export const uri = import.meta.env.VITE_REDIRECT_URI;
+export const TENANT_ID = import.meta.env.VITE_TENANT_ID;
 const msalConfig: Configuration = {
   auth: {
     clientId: CLIENT_ID,
-    authority:
-      "https://login.microsoftonline.com/87731d3d-9f08-4782-b34e-5979bb65be87",
+    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
     redirectUri: uri,
     postLogoutRedirectUri: uri,
   },
