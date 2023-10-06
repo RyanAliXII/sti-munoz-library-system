@@ -5,6 +5,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -31,9 +32,20 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	}, "Author has been added."))
 }
 func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
-
 	filter := filter.ExtractFilter(ctx)
-	authors := ctrler.authorRepository.Get(&filter)
+	if len(filter.Keyword) > 0 {
+		metaData, metaErr := ctrler.recordMetadataRepository.GetAuthorSearchMetadata(filter)
+		if metaErr != nil {
+			logger.Error(metaErr.Error(), slimlog.Error("AuthorSearchMetadataErr"))
+			ctx.JSON(httpresp.Fail500(gin.H{
+				"message": "Unknown error occured",
+			}, "Invalid page number."))
+			return
+		}
+		authors := ctrler.authorRepository.Search(&filter)
+		ctx.JSON(httpresp.Success200(gin.H{"authors": authors, "metaData": metaData,}, "Authors fetched."))
+		return
+	}
 	metaData, metaErr := ctrler.recordMetadataRepository.GetAuthorMetadata(filter.Limit)
 	if metaErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{
@@ -41,6 +53,7 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 		}, "Invalid page number."))
         return
 	}
+	authors := ctrler.authorRepository.Get(&filter)
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors, "metaData": metaData,}, "Authors fetched."))
 }
 
