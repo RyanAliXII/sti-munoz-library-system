@@ -108,7 +108,8 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	ctrler.recordMetadataRepo.InvalidateBook()	
+	ctrler.recordMetadataRepo.InvalidateBook()
+	ctrler.recordMetadataRepo.InvalidateAccession()	
 	
 }
 func (ctrler *BookController) GetBooks(ctx *gin.Context) {
