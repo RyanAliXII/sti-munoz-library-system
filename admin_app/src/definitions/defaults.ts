@@ -3,29 +3,25 @@ import { Account, Book, BorrowedCopy, BorrowingTransaction } from "./types";
 export const BookInitialValue: Book = {
   title: "",
   isbn: "",
-  authors: {
-    organizations: [],
-    people: [],
-    publishers: [],
-  },
+  authors: [],
   section: {
     name: "",
     id: 0,
+    prefix: "",
     hasOwnAccession: false,
   },
   publisher: {
     name: "",
-    id: 0,
+    id: "",
   },
-  fundSource: {
-    name: "",
-    id: 0,
-  },
+  searchTags: [],
+  subject: "",
+  sourceOfFund: "",
   covers: [],
   copies: 1,
   receivedAt: new Date().toISOString(),
   authorNumber: "",
-  ddc: 0,
+  ddc: "",
   costPrice: 0,
   description: "",
 
@@ -55,6 +51,7 @@ export const AccountInitialValue: Account = {
 };
 export const BorrowedCopyInitialValue: BorrowedCopy = {
   book: BookInitialValue,
+  isWeeded: false,
   isReturned: false,
   bookId: "",
   copyNumber: 0,
