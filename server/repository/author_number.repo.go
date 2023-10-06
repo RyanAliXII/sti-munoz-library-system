@@ -35,7 +35,7 @@ func (repo *AuthorNumberRepository) Get(filter filter.Filter) []model.AuthorNumb
 }
 func (repo *AuthorNumberRepository) Search(filter filter.Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
-	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutters WHERE surname ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
+	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutter_sanborn WHERE surname ILIKE $1 OR number ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(SEARCH_AUTHOR_NUMBERS), slimlog.Error("selectErr"))
