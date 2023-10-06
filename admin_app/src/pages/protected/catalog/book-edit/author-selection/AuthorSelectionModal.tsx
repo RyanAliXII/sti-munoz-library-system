@@ -16,11 +16,12 @@ const AuthorSelectionModal = ({ closeModal, isOpen }: ModalProps) => {
       <Modal
         open={isOpen}
         onClose={closeModal}
-        center
         showCloseIcon={false}
         styles={{
           modal: {
             maxWidth: "none",
+            maxHeight: "90vh",
+            minHeight: "90vh",
           },
         }}
         classNames={{
