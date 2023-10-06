@@ -70,6 +70,9 @@ services:
     environment:
       VITE_REDIRECT_URI: ${CLIENT_APP_URL}
       VITE_SERVER_URL: ${SERVER_URL}
+      VITE_CLIENT_ID: ${CLIENT_APP_CLIENT_ID}
+      VITE_TENANT_ID: ${CLIENT_APP_TENANT_ID}
+      VITE_API_CLIENT_ID: ${API_APP_CLIENT_ID}
       VITE_S3_URL: ${S3_URL}
   scanner_app:
     container_name: scanner_app
