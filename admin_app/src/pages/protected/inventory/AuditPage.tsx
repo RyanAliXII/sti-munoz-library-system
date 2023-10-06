@@ -9,7 +9,7 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import { Audit, EditModalProps, ModalProps } from "@definitions/types";
+import { Audit, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AiOutlineEdit, AiOutlineScan } from "react-icons/ai";
@@ -201,7 +201,9 @@ const NewAuditModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     </Modal>
   );
 };
-
+interface EditModalProps<T> extends ModalProps {
+  formData: T;
+}
 const EditAuditModal: React.FC<EditModalProps<Audit>> = ({
   isOpen,
   closeModal,
