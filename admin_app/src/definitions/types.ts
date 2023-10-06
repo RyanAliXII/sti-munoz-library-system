@@ -64,7 +64,7 @@ export interface Book {
 
 export type AuthorNumber = {
   id?: number;
-  number: number;
+  number: string;
   surname: string;
 };
 export type Accession = {
