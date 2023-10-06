@@ -55,7 +55,7 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_view where account_id = $1`
+	query := `SELECT * FROM borrowed_book_view where account_id = $1 and status_id != 6`
 	err := repo.db.Select(&borrowedBooks, query, accountId)
 	return borrowedBooks, err
 }
@@ -118,6 +118,13 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 		transaction.Rollback()
 		return err
 	}
+	borrowedBook := model.BorrowedBook{}
+
+	err = repo.db.Get(&borrowedBook, "SELECT accession_id from borrowed_book_view where id = $1", id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
 	//if has a penalty, insert he penalty in penalty table
 	err = repo.handlePenaltyCreation(id, transaction)
 	if err != nil {
@@ -126,6 +133,11 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 	}
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
 	_, err = transaction.Exec(query, status.BorrowStatusUnreturned, remarks ,id, status.BorrowStatusCheckedOut)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec("UPDATE catalog.accession SET weeded_at = now(), remarks = 'Borrowed and not returned.' where id = $1", borrowedBook.AccessionId)
 	if err != nil {
 		transaction.Rollback()
 		return err
