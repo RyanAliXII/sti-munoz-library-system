@@ -48,7 +48,6 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	year_published,
 	received_at,
 	ddc,
-	fund_source,
 	publisher,
 	authors
 	author_number,
@@ -75,7 +74,6 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	ddc,
 	author_number,
 	book.created_at,
-	fund_source,
 	publisher,
 	authors,
 	covers
