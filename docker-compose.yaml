@@ -83,6 +83,8 @@ services:
       - ./scanner_app:/node/dev/scanner
     depends_on:
       - server
+    environment:
+      VITE_SERVER_URL: ${SERVER_URL}
   postgres:
     container_name: postgres
     restart: always
