@@ -239,7 +239,7 @@ const BagPage = () => {
                         unavailableClass
                       }
                     >
-                      {item.book.title}
+                      {item.book.title} - {item.accessionNumber}
                     </Link>
 
                     <p
@@ -248,8 +248,10 @@ const BagPage = () => {
                         unavailableClass
                       }
                     >
-                      {item.book.section.name} - {item.book.ddc} -{" "}
-                      {item.book.authorNumber}
+                      {item.book.section.name}{" "}
+                      {item.book.ddc.length > 0 && `- ${item.book.ddc}`}
+                      {item.book.authorNumber.length > 0 &&
+                        `- ${item.book.authorNumber}`}
                     </p>
                     <p
                       className={

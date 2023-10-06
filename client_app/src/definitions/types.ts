@@ -15,21 +15,16 @@ export interface ModalProps {
 export interface EditModalProps<T> extends ModalProps {
   formData: T;
 }
-export type PersonAuthor = {
-  id?: number;
-  givenName: string;
-  middleName?: string;
-  surname: string;
+export type Author = {
+  id?: string;
+  name: string;
 };
 
 export type Publisher = {
   id?: number;
   name: string;
 };
-export type Source = {
-  id?: number;
-  name: string;
-};
+
 export type Section = {
   id?: number;
   name: string;
@@ -42,24 +37,17 @@ export interface Book {
   isbn: string;
   copies: number;
   edition: number;
-  costPrice: number;
   section: Section;
-  fundSource: Source;
   publisher: Publisher;
   pages: number;
   yearPublished: number;
   receivedAt: string; //iso-string  date
-  ddc: number;
+  ddc: string;
   description: string;
-  authors: {
-    people: PersonAuthor[];
-    organizations: Organization[];
-    publishers: Publisher[];
-  };
+  authors: Author[];
   covers: string[];
   authorNumber: string;
   accessions: Accession[];
-  createdAt: string; //iso-string date
 }
 
 export type AuthorNumber = {
