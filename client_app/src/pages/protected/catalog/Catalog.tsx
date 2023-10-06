@@ -84,12 +84,14 @@ const Catalog = () => {
         if (book.covers.length > 0) {
           bookCover = buildS3Url(book.covers[0]);
         }
-        const peopleAuthors = book?.authors.people?.map(
-          (author) => `${author.givenName} ${author.surname}`
-        );
-        const orgAuthors = book?.authors.organizations?.map((org) => org.name);
-        const publisherAuthors = book?.authors.publishers.map((p) => p.name);
-        const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
+
+        const authors = book.authors.map((author) => author.name);
+        // const peopleAuthors = book?.authors.people?.map(
+        //   (author) => `${author.givenName} ${author.surname}`
+        // );
+        // const orgAuthors = book?.authors.organizations?.map((org) => org.name);
+        // const publisherAuthors = book?.authors.publishers.map((p) => p.name);
+        // const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
         const isBookAvailable = book.accessions.some(
           (a) => a.isAvailable === true
         );
@@ -132,14 +134,17 @@ const Catalog = () => {
               >
                 {book.title}
               </Link>
-              <p className="text-xs md:text-sm lg:text-base">
-                by {authors.join(",")}
-              </p>
+              {authors.length > 0 && (
+                <p className="text-xs md:text-sm lg:text-base">
+                  by {authors.join(",")}
+                </p>
+              )}
               <p className="text-xs md:text-sm lg:text-base text-gray-500">
                 Published in {book.yearPublished}
               </p>
               <p className="text-xs md:text-sm lg:text-base text-gray-500">
-                {book.section.name} - {book.ddc} - {book.authorNumber}
+                {book.section.name} {book.ddc.length > 0 && `- ${book.ddc}`}{" "}
+                {book.authorNumber.length > 0 && `- ${book.authorNumber}`}
               </p>
               {isBookAvailable && (
                 <p className="text-xs md:text-sm text-success">Available</p>
