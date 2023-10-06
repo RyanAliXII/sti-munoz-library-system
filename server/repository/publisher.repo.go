@@ -29,6 +29,15 @@ func (repo *PublisherRepository) Get(filter * filter.Filter) []model.Publisher {
 	}
 	return publishers
 }
+
+func (repo *PublisherRepository) Search(filter * filter.Filter) []model.Publisher {
+	var publishers []model.Publisher = make([]model.Publisher, 0)
+	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null and name ILIKE '%' || $1 || '%'  ORDER BY created_at DESC LIMIT $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function(GET_PUBLISHERS))
+	}
+	return publishers
+}
 func (repo *PublisherRepository) New(publisher model.Publisher) (model.Publisher, error) {
 	newPublisher := model.Publisher{}
  	insertErr := repo.db.Get(&newPublisher,"INSERT INTO catalog.publisher(name)VALUES($1) RETURNING id, name", publisher.Name)
@@ -83,4 +92,5 @@ type PublisherRepositoryInterface interface {
 	New(publisher model.Publisher) (model.Publisher, error)
 	Delete(id string) error
 	Update(id string, publisher model.Publisher) error
+	Search(filter * filter.Filter) []model.Publisher 
 }
