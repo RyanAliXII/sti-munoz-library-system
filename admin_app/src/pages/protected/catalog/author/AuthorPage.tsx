@@ -3,7 +3,7 @@ import "react-responsive-modal/styles.css";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import React, { useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import {
   Tbody,
   BodyRow,
@@ -33,6 +33,9 @@ import Tippy from "@tippyjs/react";
 import ReactPaginate from "react-paginate";
 import usePaginate from "@hooks/usePaginate";
 import { ErrorMsg } from "@definitions/var";
+import { Input } from "@components/ui/form/Input";
+import { useSearchParams } from "react-router-dom";
+import useDebounce from "@hooks/useDebounce";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
@@ -63,7 +66,8 @@ const AuthorPage = () => {
     EDIT_AUTHOR_INITIAL_FORM
   );
   const { Get, Delete } = useRequest();
-
+  const [params, setUrlSearchParams] = useSearchParams();
+  const [keyword, setKeyword] = useState("");
   const {
     currentPage,
     totalPages,
@@ -72,9 +76,37 @@ const AuthorPage = () => {
     previousPage,
     setCurrentPage,
   } = usePaginate({
-    initialPage: 1,
-    numberOfPages: 0,
+    initialPage: () => {
+      const page = params.get("page");
+      if (!page) {
+        return 1;
+      }
+      const parsedPage = parseInt(page);
+      if (isNaN(parsedPage)) {
+        return 1;
+      }
+      if (parsedPage <= 0) {
+        return 1;
+      }
+      return parsedPage;
+    },
+    numberOfPages: 1,
   });
+
+  useEffect(() => {
+    setUrlSearchParams({ page: currentPage.toString() });
+  }, [currentPage]);
+  const searchDebounce = useDebounce();
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    searchDebounce(
+      () => {
+        setKeyword(event.target.value);
+        setCurrentPage(1);
+      },
+      "",
+      500
+    );
+  };
   const fetchAuthors = async () => {
     try {
       const { data: response } = await Get(
@@ -82,6 +114,7 @@ const AuthorPage = () => {
         {
           params: {
             page: currentPage,
+            keyword: keyword,
           },
         },
         [apiScope("Author.Read")]
@@ -130,7 +163,7 @@ const AuthorPage = () => {
     isFetching,
   } = useQuery<Author[]>({
     queryFn: fetchAuthors,
-    queryKey: ["authors", currentPage],
+    queryKey: ["authors", currentPage, keyword],
   });
   const paginationClass =
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
@@ -144,6 +177,13 @@ const AuthorPage = () => {
           </div>
         </ContainerNoBackground>
       </HasAccess>
+      <ContainerNoBackground>
+        <Input
+          type="text"
+          placeholder="Search Author"
+          onChange={handleSearch}
+        />
+      </ContainerNoBackground>
       <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
         <Container>
           <div className="w-full">
@@ -205,6 +245,7 @@ const AuthorPage = () => {
           onPageChange={({ selected }) => {
             setCurrentPage(selected + 1);
           }}
+          forcePage={currentPage - 1}
           className={paginationClass}
           previousLabel="Previous"
           previousClassName="px-2 border text-gray-500 py-1 rounded"

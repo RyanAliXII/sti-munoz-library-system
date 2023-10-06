@@ -35,10 +35,16 @@ func (repo *AuthorRepository) New(author model.Author) (model.Author, error) {
 }
 func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.Author) {
 	authors := make([]model.Author, 0)
-	if filter.Page <= 0 {
-		filter.Page = 1
-	}
+
 	selectErr := repo.db.Select(&authors, "SELECT id, name FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", filter.Limit, filter.Offset)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
+	}
+	return authors
+}
+func (repo *AuthorRepository) Search(filter * filter.Filter) ([]model.Author) {
+	authors := make([]model.Author, 0)
+	selectErr := repo.db.Select(&authors, "SELECT id, name FROM catalog.author where deleted_at IS NULL AND name ILIKE '%' || $1 || '%'  ORDER BY created_at DESC LIMIT  $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
 	}
@@ -109,4 +115,5 @@ type AuthorRepositoryInterface interface {
 	GetAuthoredBook(string) []model.Author
 	Delete(id string) error
 	Update(id string, author model.Author) error
+	Search(filter * filter.Filter) ([]model.Author)
 }
