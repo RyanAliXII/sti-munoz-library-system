@@ -13,59 +13,32 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 import { PrimaryButton } from "@components/ui/button/Button";
-import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
+import useCutter from "@hooks/use-cutter/useCutter";
+import { useState } from "react";
 
 const GenerateTab = () => {
   const { form, setFieldValue, removeFieldError } = useBookAddFormContext();
-  const { Get } = useRequest();
+  const generateAuthorNumber = useCutter();
   const generateByTitle = async () => {
-    // remove selected author check mark if there is any.
-    const { data: response } = await Get("/author-numbers/generator", {
-      params: {
-        title: form.title,
-      },
-    });
-    const authorNumber: AuthorNumber = response.data.authorNumber;
-    if (authorNumber) {
-      if (!authorNumber?.number || !authorNumber?.surname) {
-        return;
-      }
-    }
-    setFieldValue(
-      "authorNumber",
-      `${authorNumber.surname.charAt(0)}${authorNumber.number}`
-    );
+    const authorNumber = generateAuthorNumber(form.title);
+    setFieldValue("authorNumber", authorNumber);
     removeFieldError("authorNumber");
     toast.info("Author number has been generated for title.");
   };
-
-  const generateAuthorNumberByAuthor = async (
-    givenName: string,
-    surname: string,
-    type: string
-  ) => {
-    const { data: response } = await Get("/author-numbers/generator", {
-      params: {
-        givenName: givenName,
-        surname: surname,
-      },
-    });
-    const authorNumber: AuthorNumber = response.data.authorNumber;
-    if (authorNumber) {
-      if (!authorNumber?.number || !authorNumber?.surname) {
-        return;
-      }
-    }
-    setFieldValue(
-      "authorNumber",
-      `${authorNumber.surname.charAt(0)}${authorNumber.number}`
-    );
-
+  const generateAuthorNumberByAuthor = async (name: string) => {
+    const authorNumber = generateAuthorNumber(name);
+    setFieldValue("authorNumber", authorNumber);
     removeFieldError("authorNumber");
-    toast.info("Author number has been generated for author.");
+    toast.info("Author number has been generated for author");
   };
-
+  const generateAuthorNumberByText = async () => {
+    const authorNumber = generateAuthorNumber(text);
+    setFieldValue("authorNumber", authorNumber);
+    removeFieldError("authorNumber");
+    toast.info("Author number has been generated for author");
+  };
+  const [text, setText] = useState("");
   const TITLE_CHARACTER_LIMIT = 25;
   const title =
     form.title.length > 25
@@ -113,6 +86,31 @@ const GenerateTab = () => {
             </PrimaryButton>
           </div>
         </div>
+        <div className="lg:grid lg:grid-cols-9 lg:gap-2 ">
+          <div className="flex justify-end mb-3 flex-col h-20 lg:h-24 lg:mb-0 lg:col-span-2 lg:justify-center">
+            <div>
+              <Input
+                type="text"
+                label="Generate based on the text you have given."
+                onChange={(event) => {
+                  setText(event.target.value);
+                }}
+                value={text}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center h-20 lg:h-24 col-span-7 gap-2">
+            <PrimaryButton
+              type="button"
+              onClick={generateAuthorNumberByText}
+              className="w-28 lg:w-36 disabled:bg-blue-200 mt-1"
+              disabled={text.length === 0}
+            >
+              Generate
+            </PrimaryButton>
+          </div>
+        </div>
       </div>
       <hr></hr>
       {form.authors.length === 0 ? (
@@ -143,7 +141,7 @@ const GenerateTab = () => {
                     className="cursor-pointer"
                     key={author.id}
                     onClick={() => {
-                      // generateAuthorNumberByAuthor("person");
+                      generateAuthorNumberByAuthor(author.name);
                     }}
                   >
                     <Td>{author.name}</Td>

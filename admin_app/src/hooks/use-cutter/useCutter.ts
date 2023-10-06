@@ -75,8 +75,8 @@ const useCutter = () => {
         cutter = cutter.replace("0", "");
         break;
       }
-      return cutter;
     }
+    return cutter;
   };
   return generate;
 };
