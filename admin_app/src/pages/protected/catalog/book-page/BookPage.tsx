@@ -16,7 +16,7 @@ import {
   Thead,
 } from "@components/ui/table/Table";
 
-import { Book, ModalProps } from "@definitions/types";
+import { Book } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import { ChangeEvent, useState } from "react";
