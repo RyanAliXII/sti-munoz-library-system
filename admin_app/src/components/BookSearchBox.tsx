@@ -82,21 +82,7 @@ const BookSearchBox = ({ selectBook, label }: BookSearchBoxProps) => {
                   })}
                 >
                   {books?.map((book, index) => {
-                    const peopleAuthors = book?.authors.people?.map(
-                      (author) => `${author.givenName} ${author.surname}`
-                    );
-                    const orgAuthors = book?.authors.organizations?.map(
-                      (org) => org.name
-                    );
-                    const publisherAuthors = book?.authors.publishers.map(
-                      (p) => p.name
-                    );
-                    const authors = [
-                      ...peopleAuthors,
-                      ...orgAuthors,
-                      ...publisherAuthors,
-                    ];
-
+                    const authors = book.authors?.map((a) => a.name);
                     return (
                       <li
                         {...getItemProps({

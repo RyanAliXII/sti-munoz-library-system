@@ -31,7 +31,7 @@ func (repo *Accession) GetAccessions(filter filter.Filter) []model.Accession {
 	FROM catalog.accession
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where weeded_at is null
 	ORDER BY book.created_at DESC
 	LIMIT $1 OFFSET $2
@@ -53,7 +53,7 @@ func (repo *Accession) SearchAccession(filter filter.Filter) []model.Accession {
 	FROM catalog.accession
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where (
 		search_vector @@ websearch_to_tsquery('english', $1) 
 		OR search_vector @@ plainto_tsquery('simple', $1)
@@ -113,7 +113,7 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 	  as accession 
 	  INNER JOIN book_view as book on accession.book_id = book.id 
 	  LEFT JOIN borrowing.borrowed_book
-	  as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	  as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	  WHERE book.id = $1 and weeded_at is null
 	  ORDER BY copy_number
 	  `
