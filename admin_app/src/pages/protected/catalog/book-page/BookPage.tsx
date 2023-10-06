@@ -53,16 +53,13 @@ const BookPage = () => {
   const initCurrentPage = () => {
     const page = params.get("page");
     if (!page) {
-      setUrlSearchParams({ page: "1" });
       return 1;
     }
     const parsedPage = parseInt(page);
     if (isNaN(parsedPage)) {
-      setUrlSearchParams({ page: "1" });
       return 1;
     }
     if (parsedPage <= 0) {
-      setUrlSearchParams({ page: "1" });
       return 1;
     }
     return parsedPage;

@@ -36,6 +36,14 @@ func (repo *RecordMetadataRepository) GetAuthorMetadata(rowsLimit int) (Metadata
 	
 		return meta, getMetaErr
 }
+func (repo *RecordMetadataRepository) GetAuthorSearchMetadata(filter filter.Filter) (Metadata, error) {
+
+	meta := Metadata{}
+	query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.author where deleted_at is null and name ILIKE '%' || $2 || '%' `
+	getMetaErr := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
+
+	return meta, getMetaErr
+}
 
 func (repo *RecordMetadataRepository) GetPublisherMetadata(rowsLimit int) (Metadata, error) {
 	now := time.Now()
