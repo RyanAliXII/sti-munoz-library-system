@@ -44,15 +44,16 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
       onClose={closeModal}
       open={isOpen}
       showCloseIcon={false}
-      center
       styles={{
         modal: {
           maxWidth: "none",
+          minHeight: "90vh",
+          maxHeight: "90vh",
         },
       }}
       classNames={{
         modalContainer: "",
-        modal: "w-11/12 lg:w-9/12 rounded h-[600px]",
+        modal: "w-11/12 lg:w-9/12 rounded",
       }}
     >
       <div>

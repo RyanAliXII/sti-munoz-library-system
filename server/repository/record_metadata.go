@@ -176,10 +176,23 @@ func (repo * RecordMetadataRepository)GetAccessionSearchMetadata(filter filter.F
 	OR search_tag_vector @@ plainto_tsquery('simple', $2)
 	OR CAST(accession.number as TEXT) LIKE '%' || $2 || '%'
 	`
-	
 	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
-	
 	return meta, err
+}
+func (repo * RecordMetadataRepository) GetAuthorNumberMetadata(rowsLimit int) (Metadata, error) {
+		now := time.Now()
+		if repo.recordMetadataCache.AuthorNumber.IsValid && repo.recordMetadataCache.AuthorNumber.ValidUntil.After(now){
+			return repo.recordMetadataCache.AuthorNumber.Metadata, nil
+		}
+		meta := Metadata{}
+		query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.cutter_sanborn`
+		err := repo.db.Get(&meta, query, rowsLimit)
+		if err == nil  {
+			repo.recordMetadataCache.AuthorNumber.Metadata = meta
+			repo.recordMetadataCache.AuthorNumber.IsValid = true
+			repo.recordMetadataCache.AuthorNumber.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
+		}
+		return meta, err
 }
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
 	recordMetaDataCache.Author.IsValid = false
@@ -222,6 +235,7 @@ type RecordMetadataCache struct{
 	DDC MetadataCache
 	Book MetadataCache
 	Accession MetadataCache
+	AuthorNumber MetadataCache
 }
 
 var once sync.Once
@@ -273,6 +287,13 @@ func newRecordMetadataCache (config  RecordMetadataConfig) *RecordMetadataCache 
 				Pages: 0,
 			},
 			ValidUntil:  time.Now().Add(config.CacheExpiration),
+		  },
+		  AuthorNumber: MetadataCache{
+			IsValid: false,
+			Metadata: Metadata{
+
+			},
+			ValidUntil: time.Now().Add(config.CacheExpiration),
 		  },
 
 		}
