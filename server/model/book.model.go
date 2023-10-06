@@ -22,7 +22,7 @@ type Book struct {
 	Publisher  PublisherJSON  `json:"publisher" db:"publisher"`
 	SourceOfFund string `json:"source_of_fund" db:"source_of_fund"`
 
-	CostPrice     float32         `json:"costPrice" db:"cost_price"`
+	CostPrice     float32         `json:"costPrice,omitempty" db:"cost_price"`
 	Edition       int             `json:"edition" db:"edition"`
 	YearPublished int             `json:"yearPublished" db:"year_published"`
 	ReceivedAt    db.NullableDate `json:"receivedAt" db:"received_at"`
@@ -30,9 +30,9 @@ type Book struct {
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
 
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
-	Accessions AccessionsJSON  `json:"accessions" db:"accessions"`
+	Accessions AccessionsJSON  `json:"accessions,omitempty" db:"accessions"`
 	Covers     pq.StringArray  `json:"covers" db:"covers"`
-	SearchTags pq.StringArray  `json:"searchTags" db:"search_tags"`
+	SearchTags pq.StringArray  `json:"searchTags,omitempty" db:"search_tags"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
