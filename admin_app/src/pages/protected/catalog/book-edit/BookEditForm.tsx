@@ -5,7 +5,7 @@ import {
   SecondaryButton,
 } from "@components/ui/button/Button";
 import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useEffect } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 
 import { Section, Publisher, Book } from "@definitions/types";
 
@@ -36,6 +36,7 @@ import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format, isValid } from "date-fns";
 import CreatableSelect from "react-select/creatable";
+import useDebounce from "@hooks/useDebounce";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
@@ -78,7 +79,11 @@ const BookEditForm = () => {
   const { Get, Put, Delete } = useRequest();
   const fetchPublishers = async () => {
     try {
-      const { data: response } = await Get("/publishers/");
+      const { data: response } = await Get("/publishers/", {
+        params: {
+          keyword: keyword,
+        },
+      });
       return response.data?.publishers ?? [];
     } catch (error) {
       console.log(error);
@@ -95,9 +100,11 @@ const BookEditForm = () => {
       return [];
     }
   };
+  const [keyword, setKeyword] = useState("");
+  const debounce = useDebounce();
   const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
-    queryKey: ["publishers"],
+    queryKey: ["publishers", keyword],
   });
 
   const { data: sections } = useQuery<Section[]>({
@@ -317,6 +324,16 @@ const BookEditForm = () => {
               <CustomSelect
                 name="publisher"
                 wrapperclass="flex-1"
+                onInputChange={(text: string) => {
+                  if (text.length === 0) return;
+                  debounce(
+                    () => {
+                      setKeyword(text);
+                    },
+                    "",
+                    500
+                  );
+                }}
                 onChange={handlePublisherSelect}
                 value={form.publisher}
                 getOptionLabel={(option) => option.name}
