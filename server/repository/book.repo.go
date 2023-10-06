@@ -162,7 +162,7 @@ func (repo *BookRepository) GetClientBookView(filter filter.Filter) []model.Book
 	ORDER BY created_at DESC LIMIT $1  OFFSET $2`
 	selectErr := repo.db.Select(&books, query, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetClientBookView"), slimlog.Error("SelectErr"))
 	}
 	return books
 }
@@ -187,6 +187,30 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	selectErr := repo.db.Get(&book, query, id)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOne"), slimlog.Error("SelectErr"))
+	}
+	return book
+}
+func (repo *BookRepository) GetOneOnClientView(id string) model.Book {
+	var book model.Book = model.Book{}
+	query := `SELECT id, 
+	title, 
+	isbn,
+	subject,
+	search_tags, 
+	description, 
+	copies, pages,
+	cost_price,
+	edition,
+	year_published, 
+	received_at, 
+	ddc, 
+	author_number, 
+	created_at, 
+	section, publisher, authors, accessions, covers FROM client_book_view
+	where id = $1 ORDER BY created_at DESC`
+	selectErr := repo.db.Get(&book, query, id)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOneOnClientView"), slimlog.Error("SelectErr"))
 	}
 	return book
 }
@@ -724,4 +748,5 @@ type BookRepositoryInterface interface {
 	ImportBooks(books []model.BookImport, sectionId int) error
 	GetClientBookView(filter filter.Filter) []model.Book
 	SearchClientView(filter filter.Filter) []model.Book
+	GetOneOnClientView(id string) model.Book
 }

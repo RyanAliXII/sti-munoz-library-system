@@ -17,7 +17,7 @@ func BookRoutes(router *gin.RouterGroup) {
 	
 	router.GET("/:id",
 	middlewares.ValidatePermissions([]string{"Book.Read"}),
-	controller.GetBookById)
+	controller.HandleGetById)
 	 
 	router.PATCH("/:id/copies",middlewares.ValidateBody[AddBookCopyBody],controller.AddBookCopies)
 	router.POST("/",
