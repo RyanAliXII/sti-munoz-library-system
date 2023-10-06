@@ -194,6 +194,14 @@ func (repo * RecordMetadataRepository) GetAuthorNumberMetadata(rowsLimit int) (M
 		}
 		return meta, err
 }
+func (repo * RecordMetadataRepository) GetAuthorNumberSearchMetadata(filter filter.Filter) (Metadata, error) {
+	
+	meta := Metadata{}
+	query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.cutter_sanborn where surname ILIKE '%' || $2 || '%' OR number ILIKE '%' || $2 || '%'`
+	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
+	
+	return meta, err
+}
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
 	recordMetaDataCache.Author.IsValid = false
 }

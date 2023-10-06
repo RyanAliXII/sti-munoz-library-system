@@ -19,12 +19,22 @@ type AuthorNumberController struct {
 func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
 
 	filter := filter.ExtractFilter(ctx)
+	if len(filter.Keyword) > 0 {
+		cutters := ctrler.authorNumberRepository.Search(filter)
+		metadata, err := ctrler.recordMetadata.GetAuthorNumberSearchMetadata(filter)
+		if err != nil {
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+		ctx.JSON(httpresp.Success200(gin.H{"cutters": cutters, "metadata": metadata}, "Author numbers fetched."))	
+		return 
+	}
+	cutters := ctrler.authorNumberRepository.Get(filter)
 	metadata, err := ctrler.recordMetadata.GetAuthorNumberMetadata(filter.Limit)
 	if err != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	cutters := ctrler.authorNumberRepository.Get(filter)
 	ctx.JSON(httpresp.Success200(gin.H{"cutters": cutters, "metadata": metadata}, "Author numbers fetched."))
 }
 func (ctrler *AuthorNumberController) GetAuthorNumbersByInitial(ctx *gin.Context) {}
