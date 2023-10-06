@@ -39,6 +39,7 @@ import AddAuthorModal from "./AddAuthorModal";
 import { format } from "date-fns";
 import CreatableSelect from "react-select/creatable";
 import AsyncSelect from "react-select/async";
+import useDebounce from "@hooks/useDebounce";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -93,9 +94,15 @@ const BookAddForm = () => {
   const { Get, Post } = useRequest();
   const fetchPublishers = async () => {
     try {
-      const { data: response } = await Get("/publishers/", {}, [
-        apiScope("Publisher.Read"),
-      ]);
+      const { data: response } = await Get(
+        "/publishers/",
+        {
+          params: {
+            keyword: keyword,
+          },
+        },
+        [apiScope("Publisher.Read")]
+      );
       return response.data?.publishers ?? [];
     } catch (error) {
       console.log(error);
@@ -114,9 +121,12 @@ const BookAddForm = () => {
       return [];
     }
   };
+
+  const [keyword, setKeyword] = useState("");
+  const debounce = useDebounce();
   const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
-    queryKey: ["publishers"],
+    queryKey: ["publishers", keyword],
   });
 
   const { data: sections } = useQuery<Section[]>({
@@ -290,15 +300,19 @@ const BookAddForm = () => {
             isRequired
           >
             <div className="flex">
-              {/* <AsyncSelect
-                loadOptions={async (inputValue) => {
-                  console.log(inputValue);
-                  return [{ value: "test", label: "test" }];
-                }}
-              /> */}
               <CustomSelect
                 name="publisher"
                 wrapperclass="flex-1"
+                onInputChange={(text: string) => {
+                  if (text.length === 0) return;
+                  debounce(
+                    () => {
+                      setKeyword(text);
+                    },
+                    "",
+                    500
+                  );
+                }}
                 onChange={handlePublisherSelect}
                 value={form.publisher}
                 getOptionLabel={(option) => option.name}
