@@ -143,6 +143,29 @@ func (repo *BookRepository) Get(filter filter.Filter) []model.Book {
 	}
 	return books
 }
+func (repo *BookRepository) GetClientBookView(filter filter.Filter) []model.Book {
+	var books []model.Book = make([]model.Book, 0)
+	query := `SELECT id, 
+	title, 
+	isbn, 
+	description, 
+	copies,
+	subject, 
+	pages,
+	edition,
+	year_published, 
+	received_at, 
+	ddc, 
+	author_number, 
+	created_at, 
+	section, publisher, authors, accessions, covers FROM client_book_view
+	ORDER BY created_at DESC LIMIT $1  OFFSET $2`
+	selectErr := repo.db.Select(&books, query, filter.Limit, filter.Offset)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
+	}
+	return books
+}
 func (repo *BookRepository) GetOne(id string) model.Book {
 	var book model.Book = model.Book{}
 	query := `SELECT id, 
@@ -260,6 +283,37 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	author_number, 
 	created_at, 
 	section, publisher, authors, accessions, covers FROM book_view
+	WHERE search_vector @@ websearch_to_tsquery('english', $1) 
+	OR search_vector @@ plainto_tsquery('simple', $1) 
+	OR search_tag_vector @@ websearch_to_tsquery('english', $1) 
+	OR search_tag_vector @@ plainto_tsquery('simple', $1)
+	ORDER BY created_at DESC
+	LIMIT $2 OFFSET $3
+	`
+
+	selectErr := repo.db.Select(&books, query, filter.Keyword, filter.Limit, filter.Offset)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("BookRepository.Search"), slimlog.Error("selectErr"))
+	}
+	return books
+}
+func (repo *BookRepository) SearchClientView(filter filter.Filter) []model.Book {
+	var books []model.Book = make([]model.Book, 0)
+	query := `
+	SELECT id, 
+	title, 
+	isbn, 
+	description, 
+	pages,
+	copies,
+	cost_price,
+	edition,
+	year_published, 
+	received_at, 
+	ddc, 
+	author_number, 
+	created_at, 
+	section, publisher, authors, accessions, covers FROM client_book_view
 	WHERE search_vector @@ websearch_to_tsquery('english', $1) 
 	OR search_vector @@ plainto_tsquery('simple', $1) 
 	OR search_tag_vector @@ websearch_to_tsquery('english', $1) 
@@ -668,5 +722,6 @@ type BookRepositoryInterface interface {
 	AddBookCopies(id string, copies int) error
 	DeleteBookCoversByBookId(bookId string) error 
 	ImportBooks(books []model.BookImport, sectionId int) error
-
+	GetClientBookView(filter filter.Filter) []model.Book
+	SearchClientView(filter filter.Filter) []model.Book
 }

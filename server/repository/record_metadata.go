@@ -16,7 +16,7 @@ type RecordMetadataRepository struct  {
 	db * sqlx.DB
 	recordMetadataCache * RecordMetadataCache
 	config RecordMetadataConfig
-
+    
 }
 
 func (repo *RecordMetadataRepository) GetAuthorMetadata(rowsLimit int) (Metadata, error) {
@@ -134,9 +134,15 @@ func(repo * RecordMetadataRepository)GetBookMetadata(rowsLimit int) (Metadata, e
 	if repo.recordMetadataCache.Book.IsValid && repo.recordMetadataCache.Account.ValidUntil.After(now){
 		return repo.recordMetadataCache.Book.Metadata, nil
 	}
+	
 	meta := Metadata{}
-    query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.book`
+    query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM book_view`
 	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
+	if getMetaErr == nil  {
+		repo.recordMetadataCache.Book.Metadata = meta
+		repo.recordMetadataCache.Book.IsValid = true
+		repo.recordMetadataCache.Book.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
+	}
 	return meta, getMetaErr
 }
 func (repo * RecordMetadataRepository)GetBookSearchMetadata(filter filter.Filter)(Metadata, error){
@@ -195,11 +201,38 @@ func (repo * RecordMetadataRepository) GetAuthorNumberMetadata(rowsLimit int) (M
 		return meta, err
 }
 func (repo * RecordMetadataRepository) GetAuthorNumberSearchMetadata(filter filter.Filter) (Metadata, error) {
-	
 	meta := Metadata{}
 	query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM catalog.cutter_sanborn where surname ILIKE '%' || $2 || '%' OR number ILIKE '%' || $2 || '%'`
 	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
-	
+	return meta, err
+}
+
+func(repo * RecordMetadataRepository)GetClientBookMetadata(rowsLimit int) (Metadata, error) {
+	now := time.Now()
+
+	if repo.recordMetadataCache.ClientBook.IsValid && repo.recordMetadataCache.ClientBook.ValidUntil.After(now){
+		return repo.recordMetadataCache.ClientBook.Metadata, nil
+	}
+	meta := Metadata{}
+    query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM client_book_view`
+	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
+	if getMetaErr == nil  {
+		repo.recordMetadataCache.ClientBook.Metadata = meta
+		repo.recordMetadataCache.ClientBook.IsValid = true
+		repo.recordMetadataCache.ClientBook.ValidUntil = time.Now().Add(repo.config.CacheExpiration)
+	}
+	return meta, getMetaErr
+}
+func (repo * RecordMetadataRepository)GetClientBookSearchMetadata(filter filter.Filter)(Metadata, error){
+	meta := Metadata{}
+    query := `
+	SELECT  CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records 
+	FROM client_book_view WHERE search_vector @@ websearch_to_tsquery('english', $2) 
+	OR search_vector @@ plainto_tsquery('simple', $2)
+	OR search_tag_vector @@ websearch_to_tsquery('english', $2) 
+	OR search_tag_vector @@ plainto_tsquery('simple', $2)
+  	`
+ 	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	return meta, err
 }
 func (repo *RecordMetadataRepository) InvalidateAuthor() {
@@ -244,6 +277,7 @@ type RecordMetadataCache struct{
 	Book MetadataCache
 	Accession MetadataCache
 	AuthorNumber MetadataCache
+	ClientBook MetadataCache
 }
 
 var once sync.Once
@@ -281,6 +315,14 @@ func newRecordMetadataCache (config  RecordMetadataConfig) *RecordMetadataCache 
 				ValidUntil: time.Now().Add(config.CacheExpiration),
 		   },
 		  Book: MetadataCache{
+			IsValid: false,
+			Metadata: Metadata{
+				Records: 0,
+				Pages: 0,
+			},
+			ValidUntil: time.Now().Add(config.CacheExpiration),
+		  },
+		  ClientBook: MetadataCache{
 			IsValid: false,
 			Metadata: Metadata{
 				Records: 0,

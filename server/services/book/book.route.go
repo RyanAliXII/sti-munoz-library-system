@@ -13,7 +13,7 @@ func BookRoutes(router *gin.RouterGroup) {
 
 	router.GET("/", 
 	middlewares.ValidatePermissions([]string{"Book.Read"}),
-	controller.GetBooks)
+	controller.HandleGetBooks)
 	
 	router.GET("/:id",
 	middlewares.ValidatePermissions([]string{"Book.Read"}),
