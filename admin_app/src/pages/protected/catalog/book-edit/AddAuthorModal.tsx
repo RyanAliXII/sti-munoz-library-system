@@ -92,10 +92,7 @@ const PersonForm = ({ closeModal }: { closeModal: () => void }) => {
       if (data?.author?.id) {
         setBookEditForm((prev) => ({
           ...prev,
-          authors: {
-            ...prev.authors,
-            people: [...prev.authors.people, data.author],
-          },
+          authors: [...prev.authors],
         }));
       }
     },
@@ -181,10 +178,7 @@ const OrganizationForm = ({ closeModal }: { closeModal: () => void }) => {
       if (data?.organization?.id) {
         setBookEditForm((prev) => ({
           ...prev,
-          authors: {
-            ...prev.authors,
-            organizations: [...prev.authors.organizations, data.organization],
-          },
+          authors: [...prev.authors],
         }));
       }
     },
