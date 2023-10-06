@@ -159,6 +159,7 @@ func (repo * RecordMetadataRepository)GetAccessionSearchMetadata(filter filter.F
 	OR search_vector @@ plainto_tsquery('simple', $2)
 	OR search_tag_vector @@ websearch_to_tsquery('english', $2) 
 	OR search_tag_vector @@ plainto_tsquery('simple', $2)
+	OR CAST(accession.number as TEXT) LIKE '%' || $2 || '%'
 	`
 	
 	err := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)

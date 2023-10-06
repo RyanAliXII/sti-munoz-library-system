@@ -7,7 +7,6 @@ import BookAddPage from "./protected/catalog/book-add/BookAddPage";
 import Dashboard from "./protected/Dashboard";
 import SectionPage from "./protected/catalog/SectionPage";
 import PublisherPage from "./protected/catalog/PublisherPage";
-import FundSourcePage from "./protected/catalog/FundSourcePage";
 import BookPage from "./protected/catalog/book-page/BookPage";
 import BookEditPage from "./protected/catalog/book-edit/BookEditPage";
 import AccessionPage from "./protected/catalog/AccessionPage";
@@ -85,14 +84,6 @@ const pages = createRoutesFromChildren(
         element={
           <PermissionGate requiredPermissions={["Publisher.Access"]}>
             <PublisherPage />
-          </PermissionGate>
-        }
-      />
-      <Route
-        path="/books/source-of-funds"
-        element={
-          <PermissionGate requiredPermissions={["FundSource.Access"]}>
-            <FundSourcePage />
           </PermissionGate>
         }
       />
