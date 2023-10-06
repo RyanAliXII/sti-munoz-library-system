@@ -27,7 +27,7 @@ import useDebounce from "@hooks/useDebounce";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
-  const [params, setUrlSearchParams] = useSearchParams();
+  const [params, _] = useSearchParams();
   const initCurrentPage = () => {
     const page = params.get("page");
     if (!page) {
@@ -49,10 +49,6 @@ const AccessionPage = () => {
       numberOfPages: 1,
     });
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  useEffect(() => {
-    setUrlSearchParams({ page: currentPage.toString() });
-  }, [currentPage]);
-
   const searchDebounce = useDebounce();
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
