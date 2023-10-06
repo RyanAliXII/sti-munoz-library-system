@@ -48,6 +48,8 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
       styles={{
         modal: {
           maxWidth: "none",
+          minHeight: "90vh",
+          maxHeight: "90vh",
         },
       }}
       classNames={{
@@ -93,7 +95,7 @@ const TabContent = ({ activeTab, modalRef }: TabContentProps) => {
     case Tab.Generate:
       return <GenerateTab />;
     case Tab.Browse:
-      return <BrowseTab modalRef={modalRef} />;
+      return <BrowseTab />;
     default:
       return <></>;
   }
