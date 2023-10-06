@@ -73,7 +73,6 @@ const PublisherPage = () => {
     currentPage,
     totalPages,
     setTotalPages,
-    nextPage,
     previousPage,
     setCurrentPage,
   } = usePaginate({
@@ -94,9 +93,6 @@ const PublisherPage = () => {
     numberOfPages: 1,
   });
 
-  useEffect(() => {
-    setUrlSearchParams({ page: currentPage.toString() });
-  }, [currentPage]);
   const searchDebounce = useDebounce();
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(

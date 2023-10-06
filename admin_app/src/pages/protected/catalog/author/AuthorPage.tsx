@@ -66,13 +66,12 @@ const AuthorPage = () => {
     EDIT_AUTHOR_INITIAL_FORM
   );
   const { Get, Delete } = useRequest();
-  const [params, setUrlSearchParams] = useSearchParams();
+  const [params, _] = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const {
     currentPage,
     totalPages,
     setTotalPages,
-    nextPage,
     previousPage,
     setCurrentPage,
   } = usePaginate({
@@ -93,9 +92,6 @@ const AuthorPage = () => {
     numberOfPages: 1,
   });
 
-  useEffect(() => {
-    setUrlSearchParams({ page: currentPage.toString() });
-  }, [currentPage]);
   const searchDebounce = useDebounce();
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(

@@ -19,12 +19,11 @@ import {
 import { Book, ModalProps } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
-import Modal from "react-responsive-modal";
 
 import { Link, useSearchParams } from "react-router-dom";
-import TimeAgo from "timeago-react";
+
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -34,7 +33,7 @@ import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
-import axios from "axios";
+
 import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
 import ReactPaginate from "react-paginate";
@@ -49,7 +48,7 @@ const BookPage = () => {
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
-  const [params, setUrlSearchParams] = useSearchParams();
+  const [params, _] = useSearchParams();
   const initCurrentPage = () => {
     const page = params.get("page");
     if (!page) {
@@ -71,9 +70,6 @@ const BookPage = () => {
       numberOfPages: 1,
     });
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  useEffect(() => {
-    setUrlSearchParams({ page: currentPage.toString() });
-  }, [currentPage]);
 
   const { Get } = useRequest();
   const fetchBooks = async () => {
