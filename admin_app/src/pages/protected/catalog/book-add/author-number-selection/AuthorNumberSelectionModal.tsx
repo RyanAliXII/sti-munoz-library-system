@@ -94,7 +94,7 @@ const TabContent = ({ activeTab, modalRef }: TabContentProps) => {
     case Tab.Generate:
       return <GenerateTab />;
     case Tab.Browse:
-      return <BrowseTab modalRef={modalRef} />;
+      return <BrowseTab />;
     default:
       return <></>;
   }

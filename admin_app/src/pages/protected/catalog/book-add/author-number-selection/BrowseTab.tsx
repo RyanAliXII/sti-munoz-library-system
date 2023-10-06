@@ -20,17 +20,14 @@ import {
 } from "@components/ui/table/Table";
 
 import useDebounce from "@hooks/useDebounce";
-import useScrollWatcher from "@hooks/useScrollWatcher";
+
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
 import usePaginate from "@hooks/usePaginate";
 import ReactPaginate from "react-paginate";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 
-type BrowseTabProps = {
-  modalRef: React.RefObject<HTMLDivElement>;
-};
-
-const BrowseTab = ({ modalRef }: BrowseTabProps) => {
+const BrowseTab = () => {
   const { form, setFieldValue, removeFieldError } = useBookAddFormContext();
   const [searchKeyword, setKeyword] = useState("");
 
@@ -57,8 +54,11 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
       return [];
     }
   };
-
-  const { data: authorNumbers, refetch } = useQuery<AuthorNumber[]>({
+  const {
+    data: authorNumbers,
+    isFetching,
+    isError,
+  } = useQuery<AuthorNumber[]>({
     queryFn: fetchCuttersTable,
     queryKey: ["authorNumbers", currentPage, searchKeyword],
   });
@@ -91,7 +91,6 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
         <Input
           wrapperclass="flex items-end h-14 mt-1"
           onChange={(event) => {
-            // setKeyword(event.target.value);
             debounceSearch(
               () => {
                 setKeyword(event.target.value);
@@ -106,26 +105,26 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
         ></Input>
       </div>
 
-      <Table>
-        <Thead>
-          <HeadingRow>
-            {/* <Th></Th> */}
-            <Th>Surname</Th>
-            <Th>Number</Th>
-          </HeadingRow>
-        </Thead>
+      <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
+        <Table>
+          <Thead>
+            <HeadingRow>
+              <Th>Surname</Th>
+              <Th>Number</Th>
+            </HeadingRow>
+          </Thead>
 
-        <Tbody>
-          {authorNumbers?.map((authorNumber, index) => {
-            return (
-              <BodyRow
-                key={authorNumber.surname}
-                onClick={() => {
-                  selectAuthorNumber(authorNumber);
-                }}
-                className="cursor-pointer"
-              >
-                {/* <Td>
+          <Tbody>
+            {authorNumbers?.map((authorNumber, index) => {
+              return (
+                <BodyRow
+                  key={authorNumber.surname}
+                  onClick={() => {
+                    selectAuthorNumber(authorNumber);
+                  }}
+                  className="cursor-pointer"
+                >
+                  {/* <Td>
                     <Input
                       wrapperclass="flex items-center"
                       type="checkbox"
@@ -133,31 +132,32 @@ const BrowseTab = ({ modalRef }: BrowseTabProps) => {
                       readOnly
                     ></Input>
                   </Td> */}
-                <Td>{authorNumber.surname}</Td>
-                <Td>{authorNumber.number}</Td>
-              </BodyRow>
-            );
-          })}
-        </Tbody>
-      </Table>
+                  <Td>{authorNumber.surname}</Td>
+                  <Td>{authorNumber.number}</Td>
+                </BodyRow>
+              );
+            })}
+          </Tbody>
+        </Table>
 
-      <ReactPaginate
-        nextLabel="Next"
-        pageLinkClassName="border px-3 py-0.5  text-center rounded"
-        pageRangeDisplayed={5}
-        pageCount={totalPages}
-        disabledClassName="opacity-60 pointer-events-none"
-        onPageChange={({ selected }) => {
-          setCurrentPage(selected + 1);
-        }}
-        forcePage={currentPage - 1}
-        className={paginationClass}
-        previousLabel="Previous"
-        previousClassName="px-2 border text-gray-500 py-1 rounded"
-        nextClassName="px-2 border text-blue-500 py-1 rounded"
-        renderOnZeroPageCount={null}
-        activeClassName="border-none bg-blue-500 text-white rounded"
-      />
+        <ReactPaginate
+          nextLabel="Next"
+          pageLinkClassName="border px-3 py-0.5  text-center rounded"
+          pageRangeDisplayed={5}
+          pageCount={totalPages}
+          disabledClassName="opacity-60 pointer-events-none"
+          onPageChange={({ selected }) => {
+            setCurrentPage(selected + 1);
+          }}
+          forcePage={currentPage - 1}
+          className={paginationClass}
+          previousLabel="Previous"
+          previousClassName="px-2 border text-gray-500 py-1 rounded"
+          nextClassName="px-2 border text-blue-500 py-1 rounded"
+          renderOnZeroPageCount={null}
+          activeClassName="border-none bg-blue-500 text-white rounded"
+        />
+      </LoadingBoundaryV2>
     </div>
   );
 };
