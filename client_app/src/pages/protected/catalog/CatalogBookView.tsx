@@ -42,16 +42,7 @@ const CatalogBookView = () => {
     open: openCopySelection,
   } = useSwitch();
 
-  const peopleAuthors = book?.authors.people?.map(
-    (author) => `${author.givenName} ${author.surname}`
-  );
-  const orgAuthors = book?.authors.organizations?.map((org) => org.name);
-  const publisherAuthors = book?.authors.publishers.map((p) => p.name);
-  const authors = [
-    ...(peopleAuthors ?? []),
-    ...(orgAuthors ?? []),
-    ...(publisherAuthors ?? []),
-  ];
+  const authors = book?.authors.map((author) => author.name);
 
   const queryClient = useQueryClient();
   const addItemToBag = useMutation({
@@ -143,7 +134,9 @@ const CatalogBookView = () => {
           </div>
           <div className="mt-5">
             <h1 className="font-bold text-3xl">{book?.title}</h1>
-            <span>By {authors.join(",")} </span>
+            {(authors?.length ?? 0) > 0 && (
+              <span>By {authors?.join(",")} </span>
+            )}
           </div>
           <div className="w-full mt-2">
             <button
@@ -188,18 +181,24 @@ const CatalogBookView = () => {
           <div className="mt-5">
             <h2 className="text-lg font-bold">Book Details</h2>
             <div className="p-2 flex flex-col gap-3">
-              <div className="grid grid-cols-2">
-                <div>ISBN</div>
-                <div>{book?.isbn}</div>
-              </div>
-              <div className="grid grid-cols-2">
-                <div>DDC</div>
-                <div>{book?.ddc}</div>
-              </div>
-              <div className="grid grid-cols-2">
-                <div>Author Number</div>
-                <div>{book?.authorNumber}</div>
-              </div>
+              {book?.isbn.length > 0 && (
+                <div className="grid grid-cols-2">
+                  <div>ISBN</div>
+                  <div>{book?.isbn}</div>
+                </div>
+              )}
+              {book?.isbn.length > 0 && (
+                <div className="grid grid-cols-2">
+                  <div>DDC</div>
+                  <div>{book?.ddc}</div>
+                </div>
+              )}
+              {book?.authorNumber.length > 0 && (
+                <div className="grid grid-cols-2">
+                  <div>Author Number</div>
+                  <div>{book?.authorNumber}</div>
+                </div>
+              )}
               <div className="grid grid-cols-2">
                 <div>Section</div>
                 <div>{book?.section.name}</div>
