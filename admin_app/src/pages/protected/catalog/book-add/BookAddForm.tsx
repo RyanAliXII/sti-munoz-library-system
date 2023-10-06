@@ -290,13 +290,13 @@ const BookAddForm = () => {
             isRequired
           >
             <div className="flex">
-              <AsyncSelect
+              {/* <AsyncSelect
                 loadOptions={async (inputValue) => {
                   console.log(inputValue);
                   return [{ value: "test", label: "test" }];
                 }}
-              />
-              {/* <CustomSelect
+              /> */}
+              <CustomSelect
                 name="publisher"
                 wrapperclass="flex-1"
                 onChange={handlePublisherSelect}
@@ -305,7 +305,7 @@ const BookAddForm = () => {
                 getOptionValue={(option) => option?.id?.toString() ?? ""}
                 error={errors?.publisher?.id}
                 options={publishers}
-              /> */}
+              />
               <PrimaryOutlineButton
                 className="text-sm ml-2"
                 type="button"
