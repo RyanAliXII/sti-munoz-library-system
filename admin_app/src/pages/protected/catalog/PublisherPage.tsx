@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { BaseSyntheticEvent, useEffect, useState } from "react";
+import React, {
+  BaseSyntheticEvent,
+  ChangeEvent,
+  useEffect,
+  useState,
+} from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
@@ -37,6 +42,8 @@ import HasAccess from "@components/auth/HasAccess";
 import Tippy from "@tippyjs/react";
 import usePaginate from "@hooks/usePaginate";
 import ReactPaginate from "react-paginate";
+import useDebounce from "@hooks/useDebounce";
+import { useSearchParams } from "react-router-dom";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {
@@ -60,16 +67,47 @@ const PublisherPage = () => {
     PUBLISHER_FORM_DEFAULT_VALUES
   );
   const { Get, Delete } = useRequest();
+  const [params, setUrlSearchParams] = useSearchParams();
+  const [keyword, setKeyword] = useState("");
   const {
     currentPage,
-    setCurrentPage,
-    setTotalPages,
     totalPages,
+    setTotalPages,
+    nextPage,
     previousPage,
+    setCurrentPage,
   } = usePaginate({
-    initialPage: 1,
-    numberOfPages: 0,
+    initialPage: () => {
+      const page = params.get("page");
+      if (!page) {
+        return 1;
+      }
+      const parsedPage = parseInt(page);
+      if (isNaN(parsedPage)) {
+        return 1;
+      }
+      if (parsedPage <= 0) {
+        return 1;
+      }
+      return parsedPage;
+    },
+    numberOfPages: 1,
   });
+
+  useEffect(() => {
+    setUrlSearchParams({ page: currentPage.toString() });
+  }, [currentPage]);
+  const searchDebounce = useDebounce();
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    searchDebounce(
+      () => {
+        setKeyword(event.target.value);
+        setCurrentPage(1);
+      },
+      "",
+      500
+    );
+  };
   const fetchPublisher = async () => {
     try {
       const { data: response } = await Get(
@@ -77,6 +115,7 @@ const PublisherPage = () => {
         {
           params: {
             page: currentPage,
+            keyword: keyword,
           },
         },
         [apiScope("Publisher.Read")]
@@ -121,7 +160,7 @@ const PublisherPage = () => {
     isError,
   } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
-    queryKey: ["publishers", currentPage],
+    queryKey: ["publishers", currentPage, keyword],
   });
   const paginationClass =
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
@@ -134,6 +173,13 @@ const PublisherPage = () => {
             <PrimaryButton onClick={openAddModal}>New Publisher</PrimaryButton>
           </HasAccess>
         </div>
+      </ContainerNoBackground>
+      <ContainerNoBackground>
+        <Input
+          type="text"
+          placeholder="Search Author"
+          onChange={handleSearch}
+        />
       </ContainerNoBackground>
       <LoadingBoundaryV2
         isLoading={isFetching}

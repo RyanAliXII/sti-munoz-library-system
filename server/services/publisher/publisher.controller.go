@@ -5,6 +5,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 
@@ -32,6 +33,22 @@ func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 }
 func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 	filter := filter.ExtractFilter(ctx)
+	if(len(filter.Keyword) > 0){
+		publishers := ctrler.publisherRepository.Search(&filter)
+		metaData, metaErr := ctrler.recordMetadataRepository.GetAccountSearchMetadata(&filter)
+		if metaErr != nil {
+			logger.Error(metaErr.Error(), slimlog.Error("account search metadata"))
+			ctx.JSON(httpresp.Fail500(gin.H{
+				"message": "Unknown error occured",
+			}, "Invalid page number."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"publishers": publishers,
+			"metaData": metaData,
+		}, "Publishers successfully fetched."))
+		return
+	}
 	var publishers []model.Publisher = ctrler.publisherRepository.Get(&filter)
 	metaData, metaErr := ctrler.recordMetadataRepository.GetPublisherMetadata(filter.Limit)
 	if metaErr != nil {
