@@ -44,7 +44,7 @@ func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
 	INNER JOIN book_view as book on accession.book_id = book.id
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where bag.account_id = $1
 	`
 	selectErr := repo.db.Select(&items, query, accountId,)
@@ -118,7 +118,7 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 	SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked FROM circulation.bag
 	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
 	LEFT JOIN borrowing.borrowed_book 
-	as bb on bb.accession_id = bag.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
+	as bb on bb.accession_id = bag.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where (CASE WHEN bb.accession_id is not null then false else true END) = true AND bag.account_id = $1 AND bag.is_checked = true
 	`
 	selectErr := transaction.Select(&items, query, accountId)
