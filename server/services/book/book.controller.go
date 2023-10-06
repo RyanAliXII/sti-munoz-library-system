@@ -4,10 +4,12 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -112,12 +114,26 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	ctrler.recordMetadataRepo.InvalidateAccession()	
 	
 }
-func (ctrler *BookController) GetBooks(ctx *gin.Context) {
+
+func (ctrler * BookController) HandleGetBooks(ctx * gin.Context) {
+	requestorApp := ctx.GetString("requestorApp")
+	switch(requestorApp){
+		case azuread.AdminAppClientId:
+			ctrler.getBooksAdmin(ctx)
+			return
+		case azuread.ClientAppClientId:
+			ctrler.getBooksClient(ctx)
+			return
+		default:
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+    }
+}	
+func (ctrler *BookController) getBooksAdmin(ctx *gin.Context) {
 	var books []model.Book = make([]model.Book, 0)
 	filter := filter.ExtractFilter(ctx)
-	books = ctrler.bookRepository.Get(filter)
 	if len(filter.Keyword) > 0 {
-		books := ctrler.bookRepository.Search(filter)
+		books = ctrler.bookRepository.Search(filter)
 		metadata, metaErr := ctrler.recordMetadataRepo.GetBookSearchMetadata(filter) 
 		if metaErr != nil {
 			logger.Error(metaErr.Error(), slimlog.Error("GetBookSearchMetadataErr"))
@@ -130,7 +146,8 @@ func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 		}, "Books fetched."))
 		return 
 	}
-	metadata, metaErr := ctrler.recordMetadataRepo.GetBookMetadata(30) // group rows by 30
+	books = ctrler.bookRepository.Get(filter)
+	metadata, metaErr := ctrler.recordMetadataRepo.GetBookMetadata(filter.Limit)
 	if metaErr != nil {
 		logger.Error(metaErr.Error(), slimlog.Error("GetBookMetadataErr"))
 		 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -141,7 +158,36 @@ func (ctrler *BookController) GetBooks(ctx *gin.Context) {
 		"metadata": metadata, 
 	}, "Books fetched."))
 }
-
+func (ctrler *BookController) getBooksClient(ctx *gin.Context) {
+	var books []model.Book = make([]model.Book, 0)
+	filter := filter.ExtractFilter(ctx)
+	
+	if len(filter.Keyword) > 0 {
+		books = ctrler.bookRepository.SearchClientView(filter)
+		metadata, metaErr := ctrler.recordMetadataRepo.GetClientBookSearchMetadata(filter)
+		if metaErr != nil {
+			logger.Error(metaErr.Error(), slimlog.Error("GetBookSearchMetadataErr"))
+			 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			 return
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"books": books,
+			"metadata": metadata, 
+		}, "Books fetched."))
+		return 
+	}
+	books = ctrler.bookRepository.GetClientBookView(filter)
+	metadata, metaErr := ctrler.recordMetadataRepo.GetClientBookMetadata(filter.Limit)
+	if metaErr != nil {
+		logger.Error(metaErr.Error(), slimlog.Error("GetBookMetadataErr"))
+		 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		 return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"books": books,
+		"metadata": metadata, 
+	}, "Books fetched."))
+}
 func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
@@ -358,7 +404,6 @@ func NewBookController() BookControllerInterface {
 }
 
 type BookControllerInterface interface {
-	GetBooks(ctx *gin.Context)
 	NewBook(ctx *gin.Context)
 	GetAccession(ctx *gin.Context)
 	GetBookById(ctx *gin.Context)
@@ -370,4 +415,5 @@ type BookControllerInterface interface {
 	UpdateAccessionStatus(ctx * gin.Context) 
 	AddBookCopies(ctx * gin.Context)
 	ImportBooks(ctx * gin.Context)
+	HandleGetBooks(ctx * gin.Context) 
 }
