@@ -38,6 +38,7 @@ import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format } from "date-fns";
 import CreatableSelect from "react-select/creatable";
+import AsyncSelect from "react-select/async";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -289,7 +290,13 @@ const BookAddForm = () => {
             isRequired
           >
             <div className="flex">
-              <CustomSelect
+              <AsyncSelect
+                loadOptions={async (inputValue) => {
+                  console.log(inputValue);
+                  return [{ value: "test", label: "test" }];
+                }}
+              />
+              {/* <CustomSelect
                 name="publisher"
                 wrapperclass="flex-1"
                 onChange={handlePublisherSelect}
@@ -298,7 +305,7 @@ const BookAddForm = () => {
                 getOptionValue={(option) => option?.id?.toString() ?? ""}
                 error={errors?.publisher?.id}
                 options={publishers}
-              />
+              /> */}
               <PrimaryOutlineButton
                 className="text-sm ml-2"
                 type="button"
