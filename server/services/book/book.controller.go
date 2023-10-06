@@ -188,7 +188,22 @@ func (ctrler *BookController) getBooksClient(ctx *gin.Context) {
 		"metadata": metadata, 
 	}, "Books fetched."))
 }
-func (ctrler *BookController) GetBookById(ctx *gin.Context) {
+
+func (ctrler * BookController) HandleGetById(ctx * gin.Context) {
+	requestorApp := ctx.GetString("requestorApp")
+	switch(requestorApp){
+		case azuread.AdminAppClientId:
+			ctrler.getBookById(ctx)
+			return
+		case azuread.ClientAppClientId:
+			ctrler.getBookByIdOnClientView(ctx)
+			return
+		default:
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+    }
+}
+func (ctrler *BookController) getBookById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	_, parseErr := uuid.Parse(id)
@@ -197,6 +212,23 @@ func (ctrler *BookController) GetBookById(ctx *gin.Context) {
 		return
 	}
 	var book model.Book = ctrler.bookRepository.GetOne(id)
+	if len(book.Id) == 0 {
+		ctx.JSON(httpresp.Fail404(nil, "Book not found."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"book": book,
+	}, "Book fetched."))
+}
+func (ctrler *BookController) getBookByIdOnClientView(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
+		return
+	}
+	var book model.Book = ctrler.bookRepository.GetOneOnClientView(id)
 	if len(book.Id) == 0 {
 		ctx.JSON(httpresp.Fail404(nil, "Book not found."))
 		return
@@ -260,9 +292,10 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
 		return
 	}
+	appId := ctx.GetString("requestorApp")
 	var	accessions []model.Accession; 
 	ignoreWeeded := ctx.Query("ignoreWeeded")
-    if ignoreWeeded == "false"{
+    if ignoreWeeded == "false" && appId == azuread.AdminAppClientId{
           accessions = ctrler.accessionRepo.GetAccessionsByBookIdDontIgnoreWeeded(id)
 	}else{
 		accessions = ctrler.accessionRepo.GetAccessionsByBookId(id)
@@ -406,7 +439,6 @@ func NewBookController() BookControllerInterface {
 type BookControllerInterface interface {
 	NewBook(ctx *gin.Context)
 	GetAccession(ctx *gin.Context)
-	GetBookById(ctx *gin.Context)
 	UpdateBook(ctx *gin.Context)
 	GetAccessionByBookId(ctx *gin.Context)
 	UploadBookCover(ctx *gin.Context)
@@ -416,4 +448,5 @@ type BookControllerInterface interface {
 	AddBookCopies(ctx * gin.Context)
 	ImportBooks(ctx * gin.Context)
 	HandleGetBooks(ctx * gin.Context) 
+	HandleGetById(ctx * gin.Context)
 }
