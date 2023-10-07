@@ -72,8 +72,6 @@ func main() {
 	}else{
 		r.Run(":5200")
 	}
-	
-
 }
 
 func CustomLogger() gin.HandlerFunc {
