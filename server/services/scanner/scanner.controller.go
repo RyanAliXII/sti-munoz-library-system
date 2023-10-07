@@ -51,6 +51,8 @@ func(c * Scanner) Login (ctx * gin.Context){
 	session.Options(sessions.Options{
 		MaxAge: 3600 * 16, //16 hrs
 		Domain: domain,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
 	})
 	accountBytes, err := account.ToBytes()
 	if err != nil {
