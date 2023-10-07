@@ -37,7 +37,8 @@ services:
       TENANT_ID: ${API_APP_TENANT_ID}
       CRYPTO_SECRET: ${CRYPTO_SECRET}
       SESSION_SECRET: ${SESSION_SECRET}
-      GIN_MODE: release
+      GIN_MODE: debug #release
+      SERVER_DOMAIN: ${SERVER_DOMAIN}
     depends_on:
       - postgres
       - rabbitmq
