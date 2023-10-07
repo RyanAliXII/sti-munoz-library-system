@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -21,7 +19,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/postgres"
-	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -68,9 +65,10 @@ func main() {
 	logger.Info("Server starting")
 	ginMode := os.Getenv("GIN_MODE")
 	if ginMode == "release" {
-		domain := os.Getenv("SERVER_DOMAIN")
-		logger.Info(fmt.Sprintf("DOMAIN: %s", domain))
-		log.Fatal(autotls.Run(r, domain))
+		r.Run(":5200")
+		// domain := os.Getenv("SERVER_DOMAIN")
+		// logger.Info(fmt.Sprintf("DOMAIN: %s", domain))
+		// log.Fatal(autotls.Run(r, domain))
 	}else{
 		r.Run(":5200")
 	}
