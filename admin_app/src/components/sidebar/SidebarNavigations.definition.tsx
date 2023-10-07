@@ -60,12 +60,6 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/books/publishers",
         items: [],
       },
-      {
-        text: "Source of Fund",
-        requiredPermissions: ["SOF.Read"],
-        to: "/books/source-of-funds",
-        items: [],
-      },
     ],
   },
 
@@ -142,6 +136,18 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         requiredPermissions: ["ACL.Access"],
         to: "/system/access-control/assignments",
         text: "Role Assignments",
+        items: [],
+      },
+      {
+        requiredPermissions: ["ACL.Access"],
+        to: "/system/scanner-accounts",
+        text: "Scanner Accounts",
+        items: [],
+      },
+      {
+        requiredPermissions: ["ACL.Access"],
+        to: "/system/client-logs",
+        text: "Client Logs",
         items: [],
       },
       {

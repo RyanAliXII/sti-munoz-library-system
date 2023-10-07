@@ -169,8 +169,8 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
-      <Route path="/scanner-accounts" element={<ScannerAccountPage />} />
-      <Route path="/client-logs" element={<ClientLogPage />} />
+      <Route path="/system/scanner-accounts" element={<ScannerAccountPage />} />
+      <Route path="/system/client-logs" element={<ClientLogPage />} />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>
