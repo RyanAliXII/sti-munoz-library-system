@@ -63,15 +63,7 @@ func main() {
 	api.RegisterAPIV1(r)
 	routes.Register(r)
 	logger.Info("Server starting")
-	ginMode := os.Getenv("GIN_MODE")
-	if ginMode == "release" {
-		r.Run(":5200")
-		// domain := os.Getenv("SERVER_DOMAIN")
-		// logger.Info(fmt.Sprintf("DOMAIN: %s", domain))
-		// log.Fatal(autotls.Run(r, domain))
-	}else{
-		r.Run(":5200")
-	}
+    r.Run(":5200")
 }
 
 func CustomLogger() gin.HandlerFunc {
