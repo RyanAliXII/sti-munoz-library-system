@@ -20,11 +20,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
       - name: Build Production Server Docker Image
-        run: docker build ./server --file ./server/Dockerfile --tag ryanali12/sti-munoz-library-server-prod:latest
+        run: docker build ./server --file ./server/Dockerfile.prod --tag ryanali12/sti-munoz-library-server-prod:latest
       - name: Build Production Admin Application Docker Image
-        run: docker build ./admin_app --file ./admin_app/Dockerfile --tag ryanali12/sti-munoz-library-admin-app-prod:latest
+        run: docker build ./admin_app --file ./admin_app/Dockerfile.prod --tag ryanali12/sti-munoz-library-admin-app-prod:latest
       - name: Build Production Client Application Docker Image
-        run: docker build ./client_app --file ./client_app/Dockerfile --tag ryanali12/sti-munoz-library-client-app-prod:latest
+        run: docker build ./client_app --file ./client_app/Dockerfile.prod --tag ryanali12/sti-munoz-library-client-app-prod:latest
 
       - name: Push Production Server Image
         run: docker push ryanali12/sti-munoz-library-server-prod:latest
