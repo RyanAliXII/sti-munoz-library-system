@@ -1,4 +1,4 @@
-aeversion: "3.8"
+version: "3.8"
 services:
   server:
     container_name: server
@@ -39,6 +39,7 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
       GIN_MODE: debug #release
       SERVER_DOMAIN: ${SERVER_DOMAIN}
+      SCANNER_APP_DOMAIN: ${SCANNER_APP_DOMAIN}
     depends_on:
       - postgres
       - rabbitmq

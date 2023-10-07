@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -45,7 +46,12 @@ func(c * Scanner) Login (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
 		return
 	}
+	domain := os.Getenv("SCANNER_APP_DOMAIN")
 	session := sessions.Default(ctx)
+	session.Options(sessions.Options{
+		MaxAge: 3600 * 16, //16 hrs
+		Domain: domain,
+	})
 	accountBytes, err := account.ToBytes()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ToBytesErr"))
