@@ -76,9 +76,9 @@ const Homepage = () => {
                   </button>
                 }
               >
-                <a className="btn btn-primary" href="/catalog">
+                <Link className="btn btn-primary" to="/catalog">
                   Browse Catalog
-                </a>
+                </Link>
               </IsAuth>
             </div>
           </div>
