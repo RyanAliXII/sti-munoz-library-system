@@ -12,7 +12,6 @@ const usePaginate = ({
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
   const [totalPages, setTotalPages] = useState<number>(numberOfPages);
-  const [params, setUrlSearchParams] = useSearchParams();
   const nextPage = () => {
     if (currentPage === totalPages) return;
     setCurrentPage((prevPage) => prevPage + 1);
@@ -21,23 +20,6 @@ const usePaginate = ({
     if (currentPage === 1) return;
     setCurrentPage((prevPage) => prevPage - 1);
   };
-
-  if (useURLParamsAsState) {
-    useEffect(() => {
-      setUrlSearchParams((prev) => {
-        prev.set("page", currentPage.toString());
-        return prev;
-      });
-    }, [currentPage]);
-
-    useEffect(() => {
-      const page = params.get("page");
-      if (page) {
-        setCurrentPage(parseInt(page));
-      }
-    }, [params]);
-  }
-
   return {
     currentPage,
     totalPages,
