@@ -22,7 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChangeEvent, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import Container, {
   ContainerNoBackground,
@@ -37,11 +37,11 @@ import Tippy from "@tippyjs/react";
 import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
 import ReactPaginate from "react-paginate";
-import usePaginate from "@hooks/usePaginate";
+
 import { isValid } from "date-fns";
 import useDebounce from "@hooks/useDebounce";
 import { BookPrintablesModal } from "./BookPrintablesModal";
-import useSearch from "@hooks/useSearch";
+
 import { useSearchParamsState } from "react-use-search-params-state";
 
 const BookPage = () => {

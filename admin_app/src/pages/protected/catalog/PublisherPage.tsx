@@ -154,8 +154,9 @@ const PublisherPage = () => {
       <ContainerNoBackground>
         <Input
           type="text"
-          placeholder="Search Author"
+          placeholder="Search Publishers"
           onChange={handleSearch}
+          defaultValue={filterParams?.keyword}
         />
       </ContainerNoBackground>
       <LoadingBoundaryV2
