@@ -1,5 +1,6 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { LighButton } from "@components/ui/button/Button";
+import { HOST } from "@definitions/configs/api.config";
 import { Book, ModalProps } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -18,12 +19,9 @@ export const BookPrintablesModal: React.FC<PrintablesModalProps> = ({
   const printableDiv = useRef<HTMLDivElement | null>(null);
 
   const fetchPDF = async () => {
-    const response = await axios.get(
-      `http://localhost:5200/printables/books/${book.id}`,
-      {
-        responseType: "blob",
-      }
-    );
+    const response = await axios.get(`${HOST}/printables/books/${book.id}`, {
+      responseType: "blob",
+    });
     const url = URL.createObjectURL(response.data);
     return url;
   };
