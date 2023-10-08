@@ -13,7 +13,10 @@ const useKeyword = ({
   const [params, setUrlSearchParams] = useSearchParams();
   if (useURLParamsAsState) {
     useEffect(() => {
-      setUrlSearchParams({ keyword: keyword });
+      setUrlSearchParams((prev) => {
+        prev.set("keyword", keyword);
+        return prev;
+      });
     }, [keyword]);
     useEffect(() => {
       const paramKeyword = params.get("keyword");

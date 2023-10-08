@@ -24,8 +24,12 @@ const usePaginate = ({
 
   if (useURLParamsAsState) {
     useEffect(() => {
-      setUrlSearchParams({ page: currentPage.toString() });
+      setUrlSearchParams((prev) => {
+        prev.set("page", currentPage.toString());
+        return prev;
+      });
     }, [currentPage]);
+
     useEffect(() => {
       const page = params.get("page");
       if (page) {

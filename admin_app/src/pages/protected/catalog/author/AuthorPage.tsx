@@ -36,6 +36,7 @@ import { ErrorMsg } from "@definitions/var";
 import { Input } from "@components/ui/form/Input";
 import { useSearchParams } from "react-router-dom";
 import useDebounce from "@hooks/useDebounce";
+import useKeyword from "@hooks/useKeyword";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
@@ -67,7 +68,7 @@ const AuthorPage = () => {
   );
   const { Get, Delete } = useRequest();
   const [params, _] = useSearchParams();
-  const [keyword, setKeyword] = useState("");
+  const { keyword, setKeyword } = useKeyword({ initialKeyword: "" });
   const {
     currentPage,
     totalPages,
@@ -178,6 +179,7 @@ const AuthorPage = () => {
           type="text"
           placeholder="Search Author"
           onChange={handleSearch}
+          defaultValue={keyword}
         />
       </ContainerNoBackground>
       <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
