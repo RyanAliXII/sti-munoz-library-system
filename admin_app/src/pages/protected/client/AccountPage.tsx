@@ -51,7 +51,6 @@ const uppy = new Uppy({
   endpoint: `${BASE_URL_V1}/accounts/bulk`,
 });
 const AccountPage = () => {
-  // const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [totalPages, setTotalPages] = useState(1);
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
@@ -110,6 +109,7 @@ const AccountPage = () => {
             className="mt-5"
             placeholder="Search account by email or name"
             onChange={handleSearch}
+            defaultValue={filterParams?.keyword}
           ></Input>
         </div>
         <div>
