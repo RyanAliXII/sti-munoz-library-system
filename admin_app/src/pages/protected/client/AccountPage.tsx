@@ -36,8 +36,9 @@ import { useMsal } from "@azure/msal-react";
 import HasAccess from "@components/auth/HasAccess";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import usePaginate from "@hooks/usePaginate";
+
 import ReactPaginate from "react-paginate";
+import { useSearchParamsState } from "react-use-search-params-state";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -50,27 +51,26 @@ const uppy = new Uppy({
   endpoint: `${BASE_URL_V1}/accounts/bulk`,
 });
 const AccountPage = () => {
-  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   const {
     close: closeImportModal,
     isOpen: isImportModalOpen,
     open: openImportModal,
   } = useSwitch(false);
   const { Get } = useRequest();
-  const INITIAL_PAGE = 1;
-  const { currentPage, totalPages, setCurrentPage, setTotalPages } =
-    usePaginate({
-      initialPage: INITIAL_PAGE,
-      numberOfPages: 5,
-    });
+
   const fetchAccounts = async () => {
     try {
       const { data: response } = await Get(
         "/accounts/",
         {
           params: {
-            page: currentPage,
-            keyword: searchKeyword,
+            page: filterParams?.page,
+            keyword: filterParams?.keyword,
           },
         },
         [apiScope("Account.Read")]
@@ -88,12 +88,11 @@ const AccountPage = () => {
     isError,
   } = useQuery<Account[]>({
     queryFn: fetchAccounts,
-    queryKey: ["accounts", currentPage, searchKeyword],
+    queryKey: ["accounts", filterParams],
   });
   const debounceSearch = useDebounce();
   const search = (q: any) => {
-    setSearchKeyword(q);
-    setCurrentPage(INITIAL_PAGE);
+    setFilterParams({ page: 1, keyword: q });
   };
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
@@ -110,6 +109,7 @@ const AccountPage = () => {
             className="mt-5"
             placeholder="Search account by email or name"
             onChange={handleSearch}
+            defaultValue={filterParams?.keyword}
           ></Input>
         </div>
         <div>
@@ -168,11 +168,11 @@ const AccountPage = () => {
             pageCount={totalPages}
             disabledClassName="opacity-60 pointer-events-none"
             onPageChange={({ selected }) => {
-              setCurrentPage(selected + 1);
+              setFilterParams({ page: selected + 1 });
             }}
             className={paginationClass}
             previousLabel="Previous"
-            forcePage={currentPage - 1}
+            forcePage={filterParams?.page - 1}
             previousClassName="px-2 border text-gray-500 py-1 rounded"
             nextClassName="px-2 border text-blue-500 py-1 rounded"
             renderOnZeroPageCount={null}

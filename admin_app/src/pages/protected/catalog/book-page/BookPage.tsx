@@ -22,7 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChangeEvent, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import Container, {
   ContainerNoBackground,
@@ -37,10 +37,12 @@ import Tippy from "@tippyjs/react";
 import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
 import ReactPaginate from "react-paginate";
-import usePaginate from "@hooks/usePaginate";
+
 import { isValid } from "date-fns";
 import useDebounce from "@hooks/useDebounce";
 import { BookPrintablesModal } from "./BookPrintablesModal";
+
+import { useSearchParamsState } from "react-use-search-params-state";
 
 const BookPage = () => {
   const {
@@ -48,29 +50,12 @@ const BookPage = () => {
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
-  const [params, _] = useSearchParams();
-  const initCurrentPage = () => {
-    const page = params.get("page");
-    if (!page) {
-      return 1;
-    }
-    const parsedPage = parseInt(page);
-    if (isNaN(parsedPage)) {
-      return 1;
-    }
-    if (parsedPage <= 0) {
-      return 1;
-    }
-    return parsedPage;
-  };
 
-  const { currentPage, totalPages, setTotalPages, setCurrentPage } =
-    usePaginate({
-      initialPage: initCurrentPage,
-      numberOfPages: 1,
-    });
-  const [searchKeyword, setSearchKeyword] = useState<string>("");
-
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
@@ -78,8 +63,8 @@ const BookPage = () => {
         "/books/",
         {
           params: {
-            page: currentPage,
-            keyword: searchKeyword,
+            page: filterParams?.page,
+            keyword: filterParams?.keyword,
           },
         },
         [apiScope("Book.Read")]
@@ -99,8 +84,7 @@ const BookPage = () => {
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
       () => {
-        setSearchKeyword(event.target.value);
-        setCurrentPage(1);
+        setFilterParams({ page: 1, keyword: event.target.value });
       },
       null,
       500
@@ -121,7 +105,7 @@ const BookPage = () => {
     isFetching,
   } = useQuery<Book[]>({
     queryFn: fetchBooks,
-    queryKey: ["books", currentPage, searchKeyword],
+    queryKey: ["books", filterParams],
   });
 
   const {
@@ -164,6 +148,7 @@ const BookPage = () => {
             type="text"
             placeholder="Search..."
             onChange={handleSearch}
+            defaultValue={filterParams?.keyword}
           ></Input>
           <div className="w-full lg:w-5/12  mb-4 ">
             <CustomSelect placeholder="Section" />
@@ -241,10 +226,10 @@ const BookPage = () => {
             pageLinkClassName="border px-3 py-0.5  text-center rounded"
             pageRangeDisplayed={5}
             pageCount={totalPages}
-            forcePage={currentPage - 1}
+            forcePage={filterParams?.page - 1}
             disabledClassName="opacity-60 pointer-events-none"
             onPageChange={({ selected }) => {
-              setCurrentPage(selected + 1);
+              setFilterParams({ page: selected + 1 });
             }}
             className={paginationClass}
             previousLabel="Previous"

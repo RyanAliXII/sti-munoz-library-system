@@ -17,27 +17,17 @@ import {
 import { RiFilter3Fill } from "react-icons/ri";
 import ReactPaginate from "react-paginate";
 import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParamsState } from "react-use-search-params-state";
 
 const Catalog = () => {
   const { Get } = useRequest();
   const [windowSize, setWindowSize] = useState(window.innerWidth);
-  const [params, _] = useSearchParams();
   const [tempkeywordStore, setTempKeywordStore] = useState("");
-  const [keyword, setKeyword] = useState("");
-  const initCurrentPage = () => {
-    const page = params.get("page");
-    if (!page) {
-      return 1;
-    }
-    const parsedPage = parseInt(page);
-    if (isNaN(parsedPage)) {
-      return 1;
-    }
-    if (parsedPage <= 0) {
-      return 1;
-    }
-    return parsedPage;
-  };
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   useLayoutEffect(() => {
     const handleWindowResize = (event: UIEvent) => {
       const window = event.target as Window;
@@ -49,19 +39,14 @@ const Catalog = () => {
     };
   }, []);
 
-  const { currentPage, totalPages, setTotalPages, setCurrentPage } =
-    usePaginate({
-      initialPage: initCurrentPage,
-      numberOfPages: 1,
-    });
   const fetchBooks = async () => {
     try {
       const { data: response } = await Get(
         "/books/",
         {
           params: {
-            page: currentPage,
-            keyword: keyword,
+            page: filterParams?.page,
+            keyword: filterParams?.keyword,
           },
         },
         [apiScope("Book.Read")]
@@ -80,7 +65,7 @@ const Catalog = () => {
     isFetching,
   } = useQuery<Book[]>({
     queryFn: fetchBooks,
-    queryKey: ["books", currentPage, keyword],
+    queryKey: ["books", filterParams],
   });
   const alertDev = () => {
     window.alert("Feature still in development.");
@@ -89,8 +74,8 @@ const Catalog = () => {
     setTempKeywordStore(event.target.value);
   };
   const search = () => {
-    if (keyword === tempkeywordStore) return;
-    setKeyword(tempkeywordStore);
+    if (filterParams?.keyword === tempkeywordStore) return;
+    setFilterParams({ keyword: tempkeywordStore });
   };
   const handleKeydown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -117,6 +102,7 @@ const Catalog = () => {
               className="input input-bordered width flex-1"
               onChange={handleSearch}
               onKeyDown={handleKeydown}
+              defaultValue={filterParams?.keyword}
             ></input>
             <button
               type="button"
@@ -166,12 +152,6 @@ const Catalog = () => {
             }
 
             const authors = book.authors.map((author) => author.name);
-            // const peopleAuthors = book?.authors.people?.map(
-            //   (author) => `${author.givenName} ${author.surname}`
-            // );
-            // const orgAuthors = book?.authors.organizations?.map((org) => org.name);
-            // const publisherAuthors = book?.authors.publishers.map((p) => p.name);
-            // const authors = [...peopleAuthors, ...orgAuthors, ...publisherAuthors];
             const isBookAvailable = book.accessions.some(
               (a) => a.isAvailable === true
             );
@@ -245,10 +225,10 @@ const Catalog = () => {
             pageLinkClassName="text-sm lg:text-base border px-3 py-0.5  text-center rounded"
             pageCount={totalPages}
             marginPagesDisplayed={marginPageDisplayed}
-            forcePage={currentPage - 1}
+            forcePage={filterParams?.page - 1}
             disabledClassName="opacity-60 pointer-events-none"
             onPageChange={({ selected }) => {
-              setCurrentPage(selected + 1);
+              setFilterParams({ page: selected + 1 });
             }}
             className={paginationClass}
             previousLabel="Previous"

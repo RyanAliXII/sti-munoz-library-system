@@ -40,10 +40,9 @@ import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
 import Tippy from "@tippyjs/react";
-import usePaginate from "@hooks/usePaginate";
 import ReactPaginate from "react-paginate";
 import useDebounce from "@hooks/useDebounce";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParamsState } from "react-use-search-params-state";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const PublisherPage = () => {
   const {
@@ -67,38 +66,20 @@ const PublisherPage = () => {
     PUBLISHER_FORM_DEFAULT_VALUES
   );
   const { Get, Delete } = useRequest();
-  const [params, setUrlSearchParams] = useSearchParams();
-  const [keyword, setKeyword] = useState("");
-  const {
-    currentPage,
-    totalPages,
-    setTotalPages,
-    previousPage,
-    setCurrentPage,
-  } = usePaginate({
-    initialPage: () => {
-      const page = params.get("page");
-      if (!page) {
-        return 1;
-      }
-      const parsedPage = parseInt(page);
-      if (isNaN(parsedPage)) {
-        return 1;
-      }
-      if (parsedPage <= 0) {
-        return 1;
-      }
-      return parsedPage;
-    },
-    numberOfPages: 1,
-  });
 
   const searchDebounce = useDebounce();
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
       () => {
-        setKeyword(event.target.value);
-        setCurrentPage(1);
+        setFilterParams({
+          page: 1,
+          keyword: event.target.value,
+        });
       },
       "",
       500
@@ -110,8 +91,8 @@ const PublisherPage = () => {
         "/publishers/",
         {
           params: {
-            page: currentPage,
-            keyword: keyword,
+            page: filterParams?.page,
+            keyword: filterParams?.keyword,
           },
         },
         [apiScope("Publisher.Read")]
@@ -131,7 +112,7 @@ const PublisherPage = () => {
       ]),
     onSuccess: () => {
       if (publishers?.length === 1 && totalPages > 1) {
-        previousPage();
+        setFilterParams({ page: filterParams?.page - 1 });
       } else {
         queryClient.invalidateQueries(["publishers"]);
       }
@@ -156,7 +137,7 @@ const PublisherPage = () => {
     isError,
   } = useQuery<Publisher[]>({
     queryFn: fetchPublisher,
-    queryKey: ["publishers", currentPage, keyword],
+    queryKey: ["publishers", filterParams],
   });
   const paginationClass =
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
@@ -173,8 +154,9 @@ const PublisherPage = () => {
       <ContainerNoBackground>
         <Input
           type="text"
-          placeholder="Search Author"
+          placeholder="Search Publishers"
           onChange={handleSearch}
+          defaultValue={filterParams?.keyword}
         />
       </ContainerNoBackground>
       <LoadingBoundaryV2
@@ -242,8 +224,9 @@ const PublisherPage = () => {
             pageRangeDisplayed={5}
             pageCount={totalPages}
             disabledClassName="opacity-60 pointer-events-none"
+            forcePage={filterParams?.page - 1}
             onPageChange={({ selected }) => {
-              setCurrentPage(selected + 1);
+              setFilterParams({ page: selected + 1 });
             }}
             className={paginationClass}
             previousLabel="Previous"
@@ -284,6 +267,11 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     });
   const { Post } = useRequest();
   const queryClient = useQueryClient();
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   const mutation = useMutation({
     mutationFn: () => Post("/publishers/", form, {}),
     onSuccess: () => {
