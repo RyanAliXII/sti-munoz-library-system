@@ -31,12 +31,17 @@ import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import Tippy from "@tippyjs/react";
 import ReactPaginate from "react-paginate";
-import usePaginate from "@hooks/usePaginate";
+
 import { ErrorMsg } from "@definitions/var";
 import { Input } from "@components/ui/form/Input";
-import { useSearchParams } from "react-router-dom";
+
 import useDebounce from "@hooks/useDebounce";
 
+import {
+  useSearchParamsState,
+  SearchParamsStateType,
+} from "react-use-search-params-state";
+import { filter } from "lodash";
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
 };
@@ -66,38 +71,17 @@ const AuthorPage = () => {
     EDIT_AUTHOR_INITIAL_FORM
   );
   const { Get, Delete } = useRequest();
-  const [params, _] = useSearchParams();
-  const [keyword, setKeyword] = useState("");
-  const {
-    currentPage,
-    totalPages,
-    setTotalPages,
-    previousPage,
-    setCurrentPage,
-  } = usePaginate({
-    initialPage: () => {
-      const page = params.get("page");
-      if (!page) {
-        return 1;
-      }
-      const parsedPage = parseInt(page);
-      if (isNaN(parsedPage)) {
-        return 1;
-      }
-      if (parsedPage <= 0) {
-        return 1;
-      }
-      return parsedPage;
-    },
-    numberOfPages: 1,
-  });
 
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   const searchDebounce = useDebounce();
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
       () => {
-        setKeyword(event.target.value);
-        setCurrentPage(1);
+        setFilterParams({ keyword: event.target.value, page: 1 });
       },
       "",
       500
@@ -109,8 +93,8 @@ const AuthorPage = () => {
         "/authors/",
         {
           params: {
-            page: currentPage,
-            keyword: keyword,
+            page: filterParams?.page,
+            keyword: filterParams?.keyword,
           },
         },
         [apiScope("Author.Read")]
@@ -135,7 +119,7 @@ const AuthorPage = () => {
       */
 
       if (authors?.length === 1 && totalPages > 1) {
-        previousPage();
+        setFilterParams({ page: filterParams?.page - 1 });
       } else {
         queryClient.invalidateQueries(["authors"]);
       }
@@ -159,7 +143,7 @@ const AuthorPage = () => {
     isFetching,
   } = useQuery<Author[]>({
     queryFn: fetchAuthors,
-    queryKey: ["authors", currentPage, keyword],
+    queryKey: ["authors", filterParams],
   });
   const paginationClass =
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
@@ -178,6 +162,7 @@ const AuthorPage = () => {
           type="text"
           placeholder="Search Author"
           onChange={handleSearch}
+          defaultValue={filterParams?.keyword}
         />
       </ContainerNoBackground>
       <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
@@ -239,9 +224,9 @@ const AuthorPage = () => {
           pageCount={totalPages}
           disabledClassName="opacity-60 pointer-events-none"
           onPageChange={({ selected }) => {
-            setCurrentPage(selected + 1);
+            setFilterParams({ page: selected + 1 });
           }}
-          forcePage={currentPage - 1}
+          forcePage={filterParams?.page - 1}
           className={paginationClass}
           previousLabel="Previous"
           previousClassName="px-2 border text-gray-500 py-1 rounded"

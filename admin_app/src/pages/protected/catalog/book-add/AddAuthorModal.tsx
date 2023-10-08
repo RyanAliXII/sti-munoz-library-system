@@ -1,11 +1,6 @@
-import {
-  Author,
-  ModalProps,
-  Organization,
-  PersonAuthor,
-} from "@definitions/types";
-import React, { BaseSyntheticEvent, useState } from "react";
-import { CreateAuthorSchema, OrganizationValidation } from "../schema";
+import { Author, ModalProps, PersonAuthor } from "@definitions/types";
+import React, { BaseSyntheticEvent } from "react";
+import { CreateAuthorSchema } from "../schema";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";

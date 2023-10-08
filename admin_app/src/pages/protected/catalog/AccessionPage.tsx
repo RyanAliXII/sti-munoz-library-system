@@ -20,41 +20,24 @@ import { useRequest } from "@hooks/useRequest";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import ReactPaginate from "react-paginate";
-import { useSearchParams } from "react-router-dom";
-import usePaginate from "@hooks/usePaginate";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import useDebounce from "@hooks/useDebounce";
+import { useSearchParamsState } from "react-use-search-params-state";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
-  const [params, _] = useSearchParams();
-  const initCurrentPage = () => {
-    const page = params.get("page");
-    if (!page) {
-      return 1;
-    }
-    const parsedPage = parseInt(page);
-    if (isNaN(parsedPage)) {
-      return 1;
-    }
-    if (parsedPage <= 0) {
-      return 1;
-    }
-    return parsedPage;
-  };
 
-  const { currentPage, totalPages, setTotalPages, setCurrentPage } =
-    usePaginate({
-      initialPage: initCurrentPage,
-      numberOfPages: 1,
-    });
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const searchDebounce = useDebounce();
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { type: "number", default: 1 },
+    keyword: { type: "string", default: "" },
+  });
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
       () => {
-        setSearchKeyword(event.target.value);
-        setCurrentPage(1);
+        setFilterParams({ page: 1, keyword: event.target.value });
       },
       null,
       500
@@ -66,8 +49,8 @@ const AccessionPage = () => {
         "/books/accessions",
         {
           params: {
-            page: currentPage,
-            keyword: searchKeyword,
+            page: filterParams?.page,
+            keyword: filterParams?.keyword,
           },
         },
         [apiScope("Accession.Read")]
@@ -87,7 +70,7 @@ const AccessionPage = () => {
     isError,
   } = useQuery<DetailedAccession[]>({
     queryFn: fetchAccessions,
-    queryKey: ["accessions", currentPage, searchKeyword],
+    queryKey: ["accessions", filterParams],
   });
   const paginationClass =
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
@@ -102,6 +85,7 @@ const AccessionPage = () => {
             type="text"
             placeholder="Search..."
             onChange={handleSearch}
+            defaultValue={filterParams?.keyword}
           ></Input>
           <div className="w-full lg:w-5/12  mb-4 ">
             <CustomSelect placeholder="Section" />
@@ -139,10 +123,10 @@ const AccessionPage = () => {
             pageLinkClassName="border px-3 py-0.5  text-center rounded"
             pageRangeDisplayed={5}
             pageCount={totalPages}
-            forcePage={currentPage - 1}
+            forcePage={filterParams?.page - 1}
             disabledClassName="opacity-60 pointer-events-none"
             onPageChange={({ selected }) => {
-              setCurrentPage(selected + 1);
+              setFilterParams({ page: selected + 1 });
             }}
             className={paginationClass}
             previousLabel="Previous"
