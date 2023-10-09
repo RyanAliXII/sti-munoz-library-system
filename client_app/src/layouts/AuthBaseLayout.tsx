@@ -41,14 +41,8 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
       </header>
 
       <main className="h-full"> {children}</main>
-
-      <div
-        className="sticky  w-full h-16 bg-white border border-t border-gray-50  drop-shadow text-gray-600 md:hidden"
-        style={{
-          position: "-webkit-sticky",
-          bottom: 0,
-        }}
-      >
+      <div className="h-20 w-full"></div>
+      <div className="fixed w-full h-16 bg-white border border-t border-gray-50  drop-shadow text-gray-600 md:hidden bottom-0">
         <nav className="h-full w-full">
           <ul className="flex h-full w-full items-center justify-around">
             <li>
