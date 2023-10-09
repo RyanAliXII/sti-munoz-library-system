@@ -92,7 +92,7 @@ const Catalog = () => {
       <div>
         <div className="w-full  flex flex-col items-center mt-5 gap-3">
           <div
-            className="hidden md:flex w-11/12 md:w-7/12 lg:w-6/12 gap-2"
+            className=" flex w-11/12 md:w-7/12 lg:w-6/12 gap-2"
             style={{
               maxWidth: "800px",
             }}
