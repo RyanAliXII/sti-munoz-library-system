@@ -4,12 +4,12 @@ import { NavLink } from "react-router-dom";
 import { ImBooks } from "react-icons/im";
 import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
 import { GiLightBackpack } from "react-icons/gi";
-import { MdEvent } from "react-icons/md";
+
 import { AiOutlineSearch } from "react-icons/ai";
 import ProfileDropdown from "@components/ProfileDropdown";
 const AuthBaseLayout = ({ children }: BaseProps) => {
   return (
-    <div className="font-INTER">
+    <div className="font-INTER min-h-screen">
       <header className="w-full h-16 border-b border hidden md:flex justify-end">
         <nav className="h-full mr-10">
           <ul className="h-full flex items-center gap-7 mr-5">
@@ -40,9 +40,15 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
         </div>
       </header>
 
-      <div className=" min-h-screen"> {children}</div>
+      <main className="h-full"> {children}</main>
 
-      <div className="sticky w-full h-16 bg-white border border-t border-gray-50 bottom-0 drop-shadow text-gray-600 md:hidden">
+      <div
+        className="sticky  w-full h-16 bg-white border border-t border-gray-50  drop-shadow text-gray-600 md:hidden"
+        style={{
+          position: "-webkit-sticky",
+          bottom: 0,
+        }}
+      >
         <nav className="h-full w-full">
           <ul className="flex h-full w-full items-center justify-around">
             <li>
