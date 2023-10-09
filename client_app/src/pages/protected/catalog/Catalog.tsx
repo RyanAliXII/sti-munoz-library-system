@@ -2,21 +2,13 @@ import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { buildS3Url } from "@definitions/s3";
 import { Book } from "@definitions/types";
-import usePaginate from "@hooks/usePaginate";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ChangeEvent,
-  KeyboardEvent,
-  KeyboardEventHandler,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import { ChangeEvent, KeyboardEvent, useLayoutEffect, useState } from "react";
 
 import { RiFilter3Fill } from "react-icons/ri";
 import ReactPaginate from "react-paginate";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSearchParamsState } from "react-use-search-params-state";
 
 const Catalog = () => {
@@ -92,22 +84,23 @@ const Catalog = () => {
       <div>
         <div className="w-full  flex flex-col items-center mt-5 gap-3">
           <div
-            className=" flex w-11/12 md:w-7/12 lg:w-6/12 gap-2"
+            className=" flex flex-col w-11/12 sm:flex-row md:w-7/12 lg:w-6/12 gap-2"
             style={{
               maxWidth: "800px",
             }}
           >
             <input
               type="text"
-              className="input input-bordered width flex-1"
+              className="input input-bordered width flex-1 py-2"
               onChange={handleSearch}
               onKeyDown={handleKeydown}
+              placeholder="Search books"
               defaultValue={filterParams?.keyword}
             ></input>
             <button
               type="button"
               onClick={search}
-              className="bg-primary text-sm py-1 px-3 lg:px-5 rounded text-base-100"
+              className="bg-primary text-sm px-3 lg:px-5 rounded text-base-100 py-2 sm:py-1 "
             >
               Search
             </button>
