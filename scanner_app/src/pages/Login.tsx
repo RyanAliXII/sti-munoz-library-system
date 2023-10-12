@@ -16,7 +16,9 @@ const Login = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
           "Content-Type": "application/json",
         },
       }),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const { data } = response.data;
+      localStorage.setItem("token", data?.accessToken ?? "");
       revalidateAuth();
     },
     onError: () => {

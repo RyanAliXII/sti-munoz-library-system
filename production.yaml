@@ -36,7 +36,7 @@ services:
       APP_ID: ${API_APP_ID}
       TENANT_ID: ${API_APP_TENANT_ID}
       CRYPTO_SECRET: ${CRYPTO_SECRET}
-      SESSION_SECRET: ${SESSION_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
       GIN_MODE: release
     depends_on:
       - postgres
