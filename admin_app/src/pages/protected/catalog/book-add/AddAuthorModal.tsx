@@ -9,7 +9,7 @@ import { useForm } from "@hooks/useForm";
 import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { useBookAddFormContext } from "./BookAddFormContext";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
@@ -61,7 +61,7 @@ const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
   };
   const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/authors/", form, {}, [apiScope("Author.Add")]),
+    mutationFn: () => Post("/authors/", form, {}),
     onSuccess: (response) => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);

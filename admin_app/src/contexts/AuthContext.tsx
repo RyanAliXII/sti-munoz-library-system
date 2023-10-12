@@ -7,7 +7,6 @@ import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
-import { string } from "yup";
 
 const userInitialData: Account = {
   displayName: "",
@@ -88,7 +87,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   };
   const verifyAccount = async (account: Omit<Account, "metaData">) => {
     const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("Account.Read")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
     const response = await axiosClient.post(
       "/system/accounts/verification",
@@ -105,7 +104,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const getPermissions = async () => {
     const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("AccessControl.Role.Read")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
 
     const { data: response } = await axiosClient.post(

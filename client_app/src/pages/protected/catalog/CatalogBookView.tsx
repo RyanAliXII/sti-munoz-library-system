@@ -14,16 +14,13 @@ import BookCopySelectionModal from "./BookCopySelectionModal";
 import { useSwitch } from "@hooks/useToggle";
 import { toast } from "react-toastify";
 import { useMemo } from "react";
-import { apiScope } from "@definitions/configs/msal/scopes";
 
 const CatalogBookView = () => {
   const { id } = useParams();
   const { Get, Post } = useRequest();
 
   const fetchBookById = async () => {
-    const { data: response } = await Get(`/books/${id}`, {}, [
-      apiScope("Book.Read"),
-    ]);
+    const { data: response } = await Get(`/books/${id}`, {});
     return response?.data?.book ?? BookInitialValue;
   };
   const navigate = useNavigate();
@@ -46,8 +43,7 @@ const CatalogBookView = () => {
 
   const queryClient = useQueryClient();
   const addItemToBag = useMutation({
-    mutationFn: (item: { accessionId: string }) =>
-      Post("/bag/", item, {}, [apiScope("Bag.Add")]),
+    mutationFn: (item: { accessionId: string }) => Post("/bag/", item, {}),
     onSuccess: () => {
       toast.success("Item has been added to bag.");
       queryClient.invalidateQueries(["bagItems"]);
@@ -62,7 +58,7 @@ const CatalogBookView = () => {
 
   const fetchBagItems = async () => {
     try {
-      const response = await Get("/bag/", {}, [apiScope("Bag.Read")]);
+      const response = await Get("/bag/", {});
       const { data } = response.data;
       return data?.bag ?? [];
     } catch (error) {

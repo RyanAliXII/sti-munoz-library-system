@@ -65,16 +65,12 @@ const AccountPage = () => {
 
   const fetchAccounts = async () => {
     try {
-      const { data: response } = await Get(
-        "/accounts/",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/accounts/", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Account.Read")]
-      );
+      });
       setTotalPages(response?.data?.metadata?.pages ?? 0);
       return response?.data?.accounts ?? [];
     } catch {
@@ -233,7 +229,7 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
   }, []);
   const importAccounts = async () => {
     const tokens = await msalInstance.acquireTokenSilent({
-      scopes: [apiScope("Account.Add")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
     uppy.getPlugin("XHRUpload")?.setOptions({
       headers: {

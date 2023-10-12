@@ -28,7 +28,7 @@ import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import Tippy from "@tippyjs/react";
 import ReactPaginate from "react-paginate";
 
@@ -89,16 +89,12 @@ const AuthorPage = () => {
   };
   const fetchAuthors = async () => {
     try {
-      const { data: response } = await Get(
-        "/authors/",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/authors/", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Author.Read")]
-      );
+      });
       setTotalPages(response?.data?.metaData?.pages ?? 0);
       return response.data.authors ?? [];
     } catch (error) {
@@ -109,8 +105,7 @@ const AuthorPage = () => {
   };
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () =>
-      Delete(`/authors/${selectedRow?.id}/`, {}, [apiScope("Author.Delete")]),
+    mutationFn: () => Delete(`/authors/${selectedRow?.id}/`, {}),
     onSuccess: () => {
       /*
         validate first if deleted row is the last item from the page

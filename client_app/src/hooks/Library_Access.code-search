@@ -1,0 +1,68 @@
+# Query: Library.Access
+# Flags: CaseSensitive WordMatch
+# ContextLines: 1
+
+9 results - 7 files
+
+admin_app/src/contexts/AuthContext.tsx:
+   88      const tokens = await msalClient.acquireTokenSilent({
+   89      const tokens = await msalClient.acquireTokenSilent({
+   90:       scopes: [apiScope("Library.Access")],
+
+   90      });
+   91      });
+
+  105      const tokens = await msalClient.acquireTokenSilent({
+  106      const tokens = await msalClient.acquireTokenSilent({
+  107:       scopes: [apiScope("Library.Access")],
+  107      });
+  108      });
+
+admin_app/src/hooks/useRequest.ts:
+  4  import { StatusCodes } from "http-status-codes";
+  5  import { StatusCodes } from "http-status-codes";
+  6: const DefaultScope = [apiScope("Library.Access")];
+  6  export const useRequest = () => {
+  7  export const useRequest = () => {
+
+admin_app/src/pages/protected/catalog/book-add/BookAddForm.tsx:
+  165        const tokens = await msalInstance.acquireTokenSilent({
+  166        const tokens = await msalInstance.acquireTokenSilent({
+  167:         scopes: [apiScope("Library.Access")],
+  167        });
+  168        });
+
+admin_app/src/pages/protected/catalog/book-edit/BookEditForm.tsx:
+  152        const tokens = await msalInstance.acquireTokenSilent({
+  153        const tokens = await msalInstance.acquireTokenSilent({
+  154:         scopes: [apiScope("Library.Access")],
+  154        });
+  155        });
+
+admin_app/src/pages/protected/client/AccountPage.tsx:
+  230      const tokens = await msalInstance.acquireTokenSilent({
+  231      const tokens = await msalInstance.acquireTokenSilent({
+  232:       scopes: [apiScope("Library.Access")],
+  232      });
+  233      });
+
+client_app/src/contexts/AuthContext.tsx:
+   85      const tokens = await msalClient.acquireTokenSilent({
+   86      const tokens = await msalClient.acquireTokenSilent({
+   87:       scopes: [apiScope("Library.Access")],
+
+   87      });
+   88      });
+
+  102      const tokens = await msalClient.acquireTokenSilent({
+  103      const tokens = await msalClient.acquireTokenSilent({
+  104:       scopes: [apiScope("Library.Access")],
+  104      });
+  105      });
+
+client_app/src/hooks/useRequest.ts:
+  5  
+  6  
+  7: const DefaultScope = [apiScope("Library.Access")];
+  7  export const useRequest = () => {
+  8  export const useRequest = () => {

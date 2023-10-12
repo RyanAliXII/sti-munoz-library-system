@@ -12,7 +12,6 @@ import Tippy from "@tippyjs/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
-import { apiScope } from "@definitions/configs/msal/scopes";
 
 const AddPenaltyModal = (props: ModalProps) => {
   const { Post } = useRequest();
@@ -44,7 +43,7 @@ const AddPenaltyModal = (props: ModalProps) => {
       accountId: string;
       description: string;
       amount: number;
-    }) => Post("/penalties/", body, {}, [apiScope("Penalty.Add")]),
+    }) => Post("/penalties/", body, {}),
     onSuccess: () => {
       toast.success("Penalty has been added.");
       queryClient.invalidateQueries(["penalties"]);

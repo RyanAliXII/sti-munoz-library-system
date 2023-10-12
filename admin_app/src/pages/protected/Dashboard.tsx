@@ -1,11 +1,10 @@
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import { LibraryStats } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
-import { Stats } from "fs";
+
 import { FaHandHolding, FaUserFriends } from "react-icons/fa";
 import { ImBooks } from "react-icons/im";
 import { BiMoney } from "react-icons/bi";
@@ -19,7 +18,7 @@ const Dashboard = () => {
   const { Get } = useRequest();
   const fetchStats = async () => {
     try {
-      const response = await Get("/stats/", {}, [apiScope("Stats.Read")]);
+      const response = await Get("/stats/", {});
       const { data } = response.data;
       return (
         data?.stats ?? {

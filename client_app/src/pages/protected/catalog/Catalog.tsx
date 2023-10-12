@@ -1,5 +1,5 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { buildS3Url } from "@definitions/s3";
 import { Book } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
@@ -33,16 +33,12 @@ const Catalog = () => {
 
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get(
-        "/books/",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/books/", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Book.Read")]
-      );
+      });
       if (response?.data?.metadata) {
         setTotalPages(response?.data?.metadata?.pages ?? 1);
       }

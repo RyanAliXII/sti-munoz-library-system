@@ -3,13 +3,13 @@ import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, useState } from "react";
+import { BaseSyntheticEvent } from "react";
 import { toast } from "react-toastify";
 import { PublisherSchema } from "../schema";
 import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { useBookAddFormContext } from "./BookAddFormContext";
 
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
@@ -24,8 +24,7 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { Post } = useRequest();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () =>
-      Post("/publishers/", form, {}, [apiScope("Publisher.Add")]),
+    mutationFn: () => Post("/publishers/", form, {}),
     onSuccess: (response) => {
       toast.success("New publisher has been added.");
       queryClient.invalidateQueries(["publishers"]);

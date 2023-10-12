@@ -30,7 +30,7 @@ import Container, {
 
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
 
@@ -59,16 +59,12 @@ const BookPage = () => {
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get(
-        "/books/",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/books/", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Book.Read")]
-      );
+      });
       if (response?.data?.metadata) {
         const page = response?.data?.metadata?.pages;
         setTotalPages(page ?? 0);
