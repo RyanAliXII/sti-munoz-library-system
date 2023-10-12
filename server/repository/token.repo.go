@@ -6,10 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 type Token struct {
-
 	db * sqlx.DB
-
-
 }
 type TokenRepository interface {
 	NewToken(token model.Token) error

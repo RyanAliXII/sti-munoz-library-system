@@ -1,8 +1,10 @@
 package scanner
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -29,6 +31,7 @@ type Scanner struct {
 	ScannerAccountRepo repository.ScannerAccountRepository
 	ClientLogRepo repository.ClientLogRepository
 	accountRepo repository.AccountRepositoryInterface
+	tokenRepo repository.TokenRepository
 
 }
 func(c * Scanner) Login (ctx * gin.Context){
@@ -58,8 +61,10 @@ func(c * Scanner) Login (ctx * gin.Context){
 	}
 	secret := os.Getenv("JWT_SECRET")
 	iss := os.Getenv("SERVER_URL")
+	aud := os.Getenv("SCANNER_APP_URL")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss": iss,
+		"aud": aud,
 		"sub": account.Id,
 		"exp": time.Now().Add(time.Hour * 16).Unix(),
 		"iat": time.Now().Unix(),
@@ -71,27 +76,66 @@ func(c * Scanner) Login (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
+	err = c.tokenRepo.NewToken(model.Token{
+		Id: jti,
+		Value: tokenStr,
+	})
+	if err != nil {
+		logger.Error(err.Error(), zap.String("error", "tokenSavin" ))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessToken": tokenStr,
 	}, "Ok") )
 }
 func(c * Scanner) IsAuth (ctx * gin.Context){
-	session := sessions.Default(ctx)
-	sessionVal := session.Get("account")
-	if(sessionVal == nil){
+	headerValue, hasAuthorizationHeader := ctx.Request.Header["Authorization"]
+	if !hasAuthorizationHeader {
+		logger.Error("No authorization header present.", slimlog.Function("IsAuth"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	account := model.ScannerAccount{}
-	err := account.Bind(sessionVal)
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindAccountErr"))
+	authorizationHeader := strings.Split(headerValue[0], " ")
+	if len(authorizationHeader) < 2 {
+		logger.Error("The length of authorization header must be atleast 2 like Bearer ${accessToken} format.", slimlog.Function("IsAuth"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return 
+		return
 	}
-	ctx.JSON(httpresp.Success200(gin.H{
-		"account": account,
-	}, "Ok") )
+	secret := os.Getenv("JWT_SECRET")
+	accessToken := authorizationHeader[1]
+
+	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("invalid signing method")
+		}
+		return []byte(secret), nil
+	})
+	if(err != nil){
+		logger.Error(err.Error(), slimlog.Function("middlewares.ValidateToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if (!ok || !token.Valid) {
+		logger.Error("Invalid claims", slimlog.Function("middlewares.ValidateToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} 
+	iss := os.Getenv("SERVER_URL")
+	aud := os.Getenv("SCANNER_APP_URL")
+	isAudOk := claims.VerifyAudience(aud, true)
+	fmt.Println(isAudOk)
+	isIssuerOk := claims.VerifyIssuer(iss, true)
+	fmt.Println(isIssuerOk)
+
+	if !isAudOk || !isIssuerOk{
+		logger.Error("claims do not match", slimlog.Function("middlewares.ValidateToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} 
+	ctx.JSON(httpresp.Success200(nil, "Ok") )
 }
 func(c * Scanner) LogClient (ctx * gin.Context){
 	clientId := ctx.Param("clientId")
@@ -127,5 +171,6 @@ func NewScannerController () ScannerController{
 		ScannerAccountRepo: repository.NewScannerAccountRepository(),
 		ClientLogRepo: repository.NewClientLog(),
 		accountRepo: repository.NewAccountRepository(),
+		tokenRepo: repository.NewTokenRepository(),
 	}
 }

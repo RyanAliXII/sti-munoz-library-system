@@ -9,7 +9,6 @@ import (
 
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
@@ -17,8 +16,6 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/postgres"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -49,7 +46,7 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-	initSesssionStore(r)
+
 	objstore.GetorCreateInstance()
 	r.GET("/", func(ctx *gin.Context) {
 
@@ -85,22 +82,4 @@ func CustomLogger() gin.HandlerFunc {
 			logger.Info("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
 		}
 	}
-}
-
-
-func initSesssionStore(router * gin.Engine){
-	db := db.Connect()
-	sessionSecret := os.Getenv("SESSION_SECRET")
-	store, err := postgres.NewStore(db.DB,[]byte(sessionSecret))
-	SCANNER_APP := os.Getenv("SCANNER_APP_URL")
-	store.Options(sessions.Options{
-		MaxAge: 60 * 60 * 16, // expired in 16 hrs
-		Domain: SCANNER_APP,
-		HttpOnly: true,
-	})
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewStoreErr"), slimlog.Function("initSession"))
-		return 
-	}
-	router.Use(sessions.Sessions("scanner_session", store))
 }
