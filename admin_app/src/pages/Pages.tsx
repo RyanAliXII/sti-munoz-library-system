@@ -144,7 +144,14 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
-      <Route path="/system/settings" element={<SettingsPage />} />
+      <Route
+        path="/system/settings"
+        element={
+          <PermissionGate requiredPermissions={["Settings.Access"]}>
+            <SettingsPage />
+          </PermissionGate>
+        }
+      />
       <Route
         path="/borrowing/requests/:id"
         element={
@@ -169,8 +176,22 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
-      <Route path="/system/scanner-accounts" element={<ScannerAccountPage />} />
-      <Route path="/system/client-logs" element={<ClientLogPage />} />
+      <Route
+        path="/system/scanner-accounts"
+        element={
+          <PermissionGate requiredPermissions={["ScannerAccount.Access"]}>
+            <ScannerAccountPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/system/client-logs"
+        element={
+          <PermissionGate requiredPermissions={["ClientLog.Access"]}>
+            <ClientLogPage />
+          </PermissionGate>
+        }
+      />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>

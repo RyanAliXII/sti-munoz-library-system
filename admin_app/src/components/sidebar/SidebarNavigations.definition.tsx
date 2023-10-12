@@ -139,13 +139,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        requiredPermissions: ["ACL.Access"],
+        requiredPermissions: ["ScannerAccount.Access"],
         to: "/system/scanner-accounts",
         text: "Scanner Accounts",
         items: [],
       },
       {
-        requiredPermissions: ["ACL.Access"],
+        requiredPermissions: ["ClientLog.Access"],
         to: "/system/client-logs",
         text: "Client Logs",
         items: [],
