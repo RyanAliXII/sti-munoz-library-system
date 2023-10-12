@@ -14,8 +14,6 @@ type StatsController struct {
 
 
 }
-
-
 func (ctrler *StatsController) GetLibraryStats(ctx *gin.Context) {
 	stats := ctrler.statsRepo.GetLibraryStats()
 	ctx.JSON(httpresp.Success200(gin.H{

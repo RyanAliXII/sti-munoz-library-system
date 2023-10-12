@@ -8,6 +8,8 @@ import (
 
 func SectionRoutes(router *gin.RouterGroup) {
 	var controller SectionControllerInterface = NewSectionController()
+	router.Use(middlewares.ValidatePermissions("Section.Access"))
+	router.Use(middlewares.BlockRequestFromClientApp)
 	router.GET("/", 
 	
 	controller.GetCategories)

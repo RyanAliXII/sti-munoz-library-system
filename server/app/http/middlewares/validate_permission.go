@@ -24,6 +24,7 @@ func ValidatePermissions(requiredPermission string)gin.HandlerFunc{
 					ctx.Next()
 					return
 				}
+				logger.Error("Unauthorize permission not found.")
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return 
 			}
@@ -38,6 +39,7 @@ func ValidatePermissions(requiredPermission string)gin.HandlerFunc{
 				ctx.Next()
 				return 
 			}
+			logger.Error("Unauthorize permission not found.")
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return 
 		}

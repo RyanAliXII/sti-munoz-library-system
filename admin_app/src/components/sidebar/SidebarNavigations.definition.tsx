@@ -34,7 +34,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Book",
         to: "/books/",
         items: [],
-        requiredPermissions: ["Book.Access"],
+        requiredPermissions: ["Book.Access", "Section.Access"],
       },
       {
         text: "Accession",

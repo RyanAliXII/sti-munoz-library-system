@@ -7,6 +7,7 @@ import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
+import { count } from "console";
 
 const userInitialData: Account = {
   displayName: "",
@@ -126,12 +127,16 @@ export const AuthProvider = ({ children }: BaseProps) => {
     if (requiredPermissions.length === 0) {
       return true;
     }
+    let requiredCount = 0;
     for (const p of requiredPermissions) {
       if (permissions.includes(p)) {
-        return true;
+        requiredCount++;
       }
     }
-    return false;
+    // console.log(requiredCount);
+    console.log(requiredPermissions.length);
+    //this means that all permissions has been met
+    return requiredCount === requiredPermissions.length;
   };
 
   const logout = async () => {
