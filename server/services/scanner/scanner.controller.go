@@ -11,7 +11,6 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -112,29 +111,34 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 		return []byte(secret), nil
 	})
 	if(err != nil){
-		logger.Error(err.Error(), slimlog.Function("middlewares.ValidateToken"))
+		logger.Error(err.Error(), slimlog.Function("IsAuth"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if (!ok || !token.Valid) {
-		logger.Error("Invalid claims", slimlog.Function("middlewares.ValidateToken"))
+		logger.Error("Invalid claims", slimlog.Function("IsAuth"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	} 
 	iss := os.Getenv("SERVER_URL")
 	aud := os.Getenv("SCANNER_APP_URL")
 	isAudOk := claims.VerifyAudience(aud, true)
-	fmt.Println(isAudOk)
 	isIssuerOk := claims.VerifyIssuer(iss, true)
-	fmt.Println(isIssuerOk)
-
+	jti := claims["jti"].(string)
+	
 	if !isAudOk || !isIssuerOk{
-		logger.Error("claims do not match", slimlog.Function("middlewares.ValidateToken"))
+		logger.Error("claims do not match", slimlog.Function("IsAuth"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	} 
+	t, err := c.tokenRepo.GetTokenByJTI(jti)
+	if t.IsRevoked || err != nil {
+		logger.Error("Token is revoked.", slimlog.Function("IsAuth"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "Ok") )
 }
 func(c * Scanner) LogClient (ctx * gin.Context){
@@ -153,14 +157,7 @@ func(c * Scanner) LogClient (ctx * gin.Context){
 }
 
 func(c * Scanner) Logout (ctx * gin.Context){
-	session := sessions.Default(ctx)
-	session.Options(sessions.Options{MaxAge: -1})
-	session.Clear()
-	err := session.Save()
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("saveSessionErr"))
-	}
-	ctx.JSON(httpresp.Success200(nil, "Ok"))
+	
 }
 
 
