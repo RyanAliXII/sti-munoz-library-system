@@ -3,10 +3,12 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
@@ -135,5 +137,66 @@ func processAdminApplicationToken(token string, ctx * gin.Context)error{
 	ctx.Set("requestorApp", azuread.AdminAppClientId)
 	ctx.Set("requestorId", id)
 	return nil
+
+}
+
+var tokenRepo = repository.NewTokenRepository()
+func ValidateScannerToken(ctx * gin.Context){
+
+	headerValue, hasAuthorizationHeader := ctx.Request.Header["Authorization"]
+	if !hasAuthorizationHeader {
+		logger.Error("No authorization header present.", slimlog.Function("ValidateScannerToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	authorizationHeader := strings.Split(headerValue[0], " ")
+	if len(authorizationHeader) < 2 {
+		logger.Error("The length of authorization header must be atleast 2 like Bearer ${accessToken} format.", slimlog.Function("ValidateScannerToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	secret := os.Getenv("JWT_SECRET")
+	accessToken := authorizationHeader[1]
+
+	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("invalid signing method")
+		}
+		return []byte(secret), nil
+	})
+	if(err != nil){
+		logger.Error(err.Error(), slimlog.Function("ValidateScannerToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if (!ok || !token.Valid) {
+		logger.Error("Invalid claims", slimlog.Function("ValidateScannerToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} 
+	iss := os.Getenv("SERVER_URL")
+	aud := os.Getenv("SCANNER_APP_URL")
+	isAudOk := claims.VerifyAudience(aud, true)
+	isIssuerOk := claims.VerifyIssuer(iss, true)
+	jti := claims["jti"].(string)
+	
+	if !isAudOk || !isIssuerOk{
+		logger.Error("claims do not match", slimlog.Function("ValidateScannerToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} 
+	t, err := tokenRepo.GetTokenByJTI(jti)
+	if t.IsRevoked || err != nil {
+		logger.Error("Token is revoked.", slimlog.Function("ValidateScannerToken"))
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	ctx.Set("accessToken", token.Raw)
+	ctx.Set("jti", jti)
+	ctx.Set("sub", claims["sub"])
+	ctx.Next()
 
 }

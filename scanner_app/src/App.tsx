@@ -6,10 +6,16 @@ import Ellipsis from "./assets/images/Ellipsis.svg";
 import Scanner from "./pages/Scanner";
 const App = () => {
   const checkAuth = async () => {
+    const token = localStorage.getItem("token");
     const { data: response } = await axiosClient.post(
       "/auth",
       {},
-      { withCredentials: true }
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token} `,
+        },
+      }
     );
     return response?.data?.account ?? { username: "", description: "" };
   };
