@@ -17,6 +17,6 @@ func ScannerRoutes(router * gin.RouterGroup){
 	ctrler := NewScannerController()
 	router.POST("/login", ctrler.Login)
 	router.POST("/auth", ctrler.IsAuth)
-	router.POST("/logs/clients/:clientId", ctrler.LogClient)
-	router.DELETE("/logout", ctrler.Logout)
+	router.POST("/logs/clients/:clientId",middlewares.ValidateScannerToken,ctrler.LogClient)
+	router.DELETE("/logout",middlewares.ValidateScannerToken,ctrler.Logout)
 }

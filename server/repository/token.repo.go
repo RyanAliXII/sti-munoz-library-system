@@ -11,6 +11,7 @@ type Token struct {
 type TokenRepository interface {
 	NewToken(token model.Token) error
 	GetTokenByJTI(jti string) (model.Token, error) 
+	RevokeToken(jti string) (error)
 }
 func NewTokenRepository() TokenRepository {
 	return &Token{

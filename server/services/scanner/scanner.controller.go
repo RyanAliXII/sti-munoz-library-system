@@ -143,7 +143,7 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 }
 func(c * Scanner) LogClient (ctx * gin.Context){
 	clientId := ctx.Param("clientId")
-	scannerId := ctx.GetString("accountId")
+	scannerId := ctx.GetString("sub")
 	err := c.ClientLogRepo.NewLog(clientId, scannerId)
 	if err != nil {
 		logger.Error(err.Error())
@@ -157,7 +157,14 @@ func(c * Scanner) LogClient (ctx * gin.Context){
 }
 
 func(c * Scanner) Logout (ctx * gin.Context){
-	
+	jti := ctx.GetString("jti")
+	err := c.tokenRepo.RevokeToken(jti) 
+	if err != nil {
+		logger.Error(err.Error(), zap.String("error", "RevokeErr"))
+		ctx.JSON(httpresp.Fail(http.StatusInternalServerError, nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Ok") )
 }
 
 

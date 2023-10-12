@@ -40,7 +40,12 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
       axiosClient.post(
         `/logs/clients/${clientId}`,
         {},
-        { withCredentials: true }
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       ),
 
     onSettled: (response) => {
@@ -49,7 +54,9 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
         console.log(data);
         setClient(data?.client);
       }
-
+      if (response?.status === 401) {
+        revalidateAuth();
+      }
       setTimeout(() => {
         scannerRef.current?.resume();
         log.reset();
@@ -99,9 +106,12 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
     log.mutate(value);
   };
   const onErrorScan = () => {};
-
   const endSession = useMutation({
-    mutationFn: () => axiosClient.delete("/logout", { withCredentials: true }),
+    mutationFn: () =>
+      axiosClient.delete("/logout", {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      }),
     onError: () => {
       alert("Unknown error occured.");
     },
