@@ -13,13 +13,13 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import noData from "@assets/images/no-data.svg";
 const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
     try {
-      const response = await Get("/bag/", {}, [apiScope("Bag.Read")]);
+      const response = await Get("/bag/", {});
       const { data } = response.data;
       return data?.bag ?? [];
     } catch (error) {
@@ -49,8 +49,7 @@ const BagPage = () => {
 
   const queryClient = useQueryClient();
   const deleteItemFromBag = useMutation({
-    mutationFn: () =>
-      Delete(`/bag/${selectedItem?.id}`, {}, [apiScope("Bag.Delete")]),
+    mutationFn: () => Delete(`/bag/${selectedItem?.id}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -68,8 +67,7 @@ const BagPage = () => {
     checkout.mutate();
   };
   const checkItem = useMutation({
-    mutationFn: (id: string) =>
-      Patch(`/bag/${id}/checklist`, {}, {}, [apiScope("Bag.Edit")]),
+    mutationFn: (id: string) => Patch(`/bag/${id}/checklist`, {}, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -79,7 +77,7 @@ const BagPage = () => {
   });
   const updateChecklist = useMutation({
     mutationFn: (action: "check" | "uncheck") =>
-      Patch(`/bag/checklist?action=${action}`, {}, {}, [apiScope("Bag.Edit")]),
+      Patch(`/bag/checklist?action=${action}`, {}, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -88,7 +86,7 @@ const BagPage = () => {
     },
   });
   const deleteCheckedItems = useMutation({
-    mutationFn: () => Delete("/bag/checklist", {}, [apiScope("Bag.Delete")]),
+    mutationFn: () => Delete("/bag/checklist", {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
     },
@@ -111,8 +109,7 @@ const BagPage = () => {
   const disabledClass = !hasAvailableItems ? "opacity-50 " : "";
   const navigate = useNavigate();
   const checkout = useMutation({
-    mutationFn: () =>
-      Post("/bag/checklist/checkout", {}, {}, [apiScope("Book.Checkout")]),
+    mutationFn: () => Post("/bag/checklist/checkout", {}, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["bagItems"]);
       toast.success("Book has been checked out.");

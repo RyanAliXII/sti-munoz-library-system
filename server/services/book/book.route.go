@@ -9,50 +9,54 @@ import (
 func BookRoutes(router *gin.RouterGroup) {
 
 	var controller BookControllerInterface = NewBookController()
-	
+	router.Use(middlewares.ValidatePermissions("Book.Access"))
 
-	router.GET("/", 
-	middlewares.ValidatePermissions([]string{"Book.Read"}),
+	router.GET("/",
 	controller.HandleGetBooks)
-	
 	router.GET("/:id",
-	middlewares.ValidatePermissions([]string{"Book.Read"}),
 	controller.HandleGetById)
 	 
-	router.PATCH("/:id/copies",middlewares.ValidateBody[AddBookCopyBody],controller.AddBookCopies)
+	router.PATCH("/:id/copies",
+	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidateBody[AddBookCopyBody],
+	controller.AddBookCopies)
+
 	router.POST("/",
-	middlewares.ValidatePermissions([]string{"Book.Add"}),
+	middlewares.BlockRequestFromClientApp,
 	middlewares.ValidateBody[BookBody], 
 	controller.NewBook)
 
 	router.POST("/bulk",
-	middlewares.ValidatePermissions([]string{"Book.Add"}),
+	middlewares.BlockRequestFromClientApp,
 	controller.ImportBooks)
 	
 	router.POST("/covers", 
-	middlewares.ValidatePermissions([]string{"Book.Cover.Add"}),
+	middlewares.BlockRequestFromClientApp,
 	controller.UploadBookCover)
 	
 	router.PUT("/covers", 
-	middlewares.ValidatePermissions([]string{"Book.Cover.Edit"}),
+	middlewares.BlockRequestFromClientApp,
 	controller.UpdateBookCover)
 
-	router.DELETE("/:bookId/covers", controller.DeleteBookCovers)
+	router.DELETE("/:bookId/covers",
+	middlewares.BlockRequestFromClientApp, 
+	controller.DeleteBookCovers)
 	
 	router.GET("/accessions", 
-	middlewares.ValidatePermissions([]string{"Accession.Read"}),
+	middlewares.BlockRequestFromClientApp,
 	controller.GetAccession)
    
 	router.GET("/:id/accessions",
-	middlewares.ValidatePermissions([]string{"Accession.Read", "Book.Read"}),
 	controller.GetAccessionByBookId)
 
 	router.PUT("/:id", 
-	middlewares.ValidatePermissions([]string{"Book.Edit"}),
+	middlewares.BlockRequestFromClientApp,
 	middlewares.ValidateBody[BookBody], 
 	controller.UpdateBook)
 	
 
-	router.PATCH("/accessions/:id/status", controller.UpdateAccessionStatus)
+	router.PATCH("/accessions/:id/status",
+	middlewares.BlockRequestFromClientApp,
+	controller.UpdateAccessionStatus)
 
 }

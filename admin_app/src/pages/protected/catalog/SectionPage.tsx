@@ -34,9 +34,9 @@ import Container, {
 } from "@components/ui/container/Container";
 import { Input, InputClasses } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import Tippy from "@tippyjs/react";
-import { BsInfoCircle } from "react-icons/bs";
+
 const SectionPage = () => {
   const {
     isOpen: isAddModalOpen,
@@ -52,9 +52,7 @@ const SectionPage = () => {
   const { Get } = useRequest();
   const fetchSections = async () => {
     try {
-      const { data: response } = await Get("/sections/", {}, [
-        apiScope("Section.Read"),
-      ]);
+      const { data: response } = await Get("/sections/", {});
       return response.data?.sections ?? [];
     } catch (error) {
       console.error(error);
@@ -155,7 +153,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const queryClient = useQueryClient();
   const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/sections/", form, {}, [apiScope("Section.Add")]),
+    mutationFn: () => Post("/sections/", form, {}),
     onSuccess: () => {
       toast.success("New section added");
       queryClient.invalidateQueries(["sections"]);

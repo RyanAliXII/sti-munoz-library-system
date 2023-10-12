@@ -34,7 +34,9 @@ const pages = createRoutesFromChildren(
       <Route
         path="/books"
         element={
-          <PermissionGate requiredPermissions={["Book.Access"]}>
+          <PermissionGate
+            requiredPermissions={["Book.Access", "Section.Access"]}
+          >
             <BookPage />
           </PermissionGate>
         }
@@ -50,7 +52,14 @@ const pages = createRoutesFromChildren(
       <Route
         path="/books/new"
         element={
-          <PermissionGate requiredPermissions={["Book.Access"]}>
+          <PermissionGate
+            requiredPermissions={[
+              "Book.Access",
+              "Publisher.Access",
+              "Section.Access",
+              "Author.Access",
+            ]}
+          >
             <BookAddPage />
           </PermissionGate>
         }
@@ -58,7 +67,14 @@ const pages = createRoutesFromChildren(
       <Route
         path="/books/edit/:id"
         element={
-          <PermissionGate requiredPermissions={["Book.Access"]}>
+          <PermissionGate
+            requiredPermissions={[
+              "Book.Access",
+              "Publisher.Access",
+              "Section.Access",
+              "Author.Access",
+            ]}
+          >
             <BookEditPage />
           </PermissionGate>
         }
@@ -131,7 +147,9 @@ const pages = createRoutesFromChildren(
       <Route
         path="/system/access-control/assign"
         element={
-          <PermissionGate requiredPermissions={["ACL.Access"]}>
+          <PermissionGate
+            requiredPermissions={["ACL.Access", "Account.Access"]}
+          >
             <AssignRolePage />
           </PermissionGate>
         }
@@ -144,7 +162,14 @@ const pages = createRoutesFromChildren(
           </PermissionGate>
         }
       />
-      <Route path="/system/settings" element={<SettingsPage />} />
+      <Route
+        path="/system/settings"
+        element={
+          <PermissionGate requiredPermissions={["Settings.Access"]}>
+            <SettingsPage />
+          </PermissionGate>
+        }
+      />
       <Route
         path="/borrowing/requests/:id"
         element={
@@ -156,7 +181,13 @@ const pages = createRoutesFromChildren(
       <Route
         path="/borrowing/checkout"
         element={
-          <PermissionGate requiredPermissions={["Borrowing.Access"]}>
+          <PermissionGate
+            requiredPermissions={[
+              "Borrowing.Access",
+              "Book.Access",
+              "Account.Access",
+            ]}
+          >
             <CheckoutPage />
           </PermissionGate>
         }
@@ -164,13 +195,29 @@ const pages = createRoutesFromChildren(
       <Route
         path="/borrowing/penalties"
         element={
-          <PermissionGate requiredPermissions={["Penalty.Access"]}>
+          <PermissionGate
+            requiredPermissions={["Penalty.Access", "Account.Access"]}
+          >
             <PenaltyPage />
           </PermissionGate>
         }
       />
-      <Route path="/system/scanner-accounts" element={<ScannerAccountPage />} />
-      <Route path="/system/client-logs" element={<ClientLogPage />} />
+      <Route
+        path="/system/scanner-accounts"
+        element={
+          <PermissionGate requiredPermissions={["ScannerAccount.Access"]}>
+            <ScannerAccountPage />
+          </PermissionGate>
+        }
+      />
+      <Route
+        path="/system/client-logs"
+        element={
+          <PermissionGate requiredPermissions={["ClientLog.Access"]}>
+            <ClientLogPage />
+          </PermissionGate>
+        }
+      />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>

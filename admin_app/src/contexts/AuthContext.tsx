@@ -7,7 +7,7 @@ import { Account, Role } from "@definitions/types";
 import { EventType, EventMessage } from "@azure/msal-browser";
 import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
-import { string } from "yup";
+import { count } from "console";
 
 const userInitialData: Account = {
   displayName: "",
@@ -30,7 +30,7 @@ const userInitialData: Account = {
 export const AuthContext = createContext<AuthContextState>({
   user: userInitialData,
   hasPermissions: () => false,
-  permissions: "",
+  permissions: [],
   loading: true,
 });
 export const useAuthContext = () => {
@@ -39,7 +39,7 @@ export const useAuthContext = () => {
 export type AuthContextState = {
   loading?: boolean;
   user: Account;
-  permissions: string;
+  permissions: string[];
   hasPermissions: (requiredPermissions: string[]) => boolean;
 };
 
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const [user, setUser] = useState<Account>(userInitialData);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState<string>("");
+  const [permissions, setPermissions] = useState<string[]>([]);
 
   const useAccount = async () => {
     try {
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   };
   const verifyAccount = async (account: Omit<Account, "metaData">) => {
     const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("Account.Read")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
     const response = await axiosClient.post(
       "/system/accounts/verification",
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const getPermissions = async () => {
     const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("AccessControl.Role.Read")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
 
     const { data: response } = await axiosClient.post(
@@ -127,12 +127,16 @@ export const AuthProvider = ({ children }: BaseProps) => {
     if (requiredPermissions.length === 0) {
       return true;
     }
+    let requiredCount = 0;
     for (const p of requiredPermissions) {
       if (permissions.includes(p)) {
-        return true;
+        requiredCount++;
       }
     }
-    return false;
+    // console.log(requiredCount);
+    console.log(requiredPermissions.length);
+    //this means that all permissions has been met
+    return requiredCount === requiredPermissions.length;
   };
 
   const logout = async () => {

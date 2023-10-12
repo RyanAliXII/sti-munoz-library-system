@@ -34,7 +34,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Book",
         to: "/books/",
         items: [],
-        requiredPermissions: ["Book.Access"],
+        requiredPermissions: ["Book.Access", "Section.Access"],
       },
       {
         text: "Accession",
@@ -104,13 +104,17 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Borrow Book",
         to: "/borrowing/checkout",
-        requiredPermissions: ["Borrowing.Access"],
+        requiredPermissions: [
+          "Borrowing.Access",
+          "Book.Access",
+          "Account.Access",
+        ],
         items: [],
       },
       {
         text: "Penalties",
         to: "/borrowing/penalties",
-        requiredPermissions: ["Penalty.Access"],
+        requiredPermissions: ["Penalty.Access", "Account.Access"],
         items: [],
       },
     ],
@@ -127,7 +131,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        requiredPermissions: ["ACL.Access"],
+        requiredPermissions: ["ACL.Access", "Account.Access"],
         to: "/system/access-control/assign",
         text: "Assign Role",
         items: [],
@@ -139,13 +143,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        requiredPermissions: ["ACL.Access"],
+        requiredPermissions: ["ScannerAccount.Access"],
         to: "/system/scanner-accounts",
         text: "Scanner Accounts",
         items: [],
       },
       {
-        requiredPermissions: ["ACL.Access"],
+        requiredPermissions: ["ClientLog.Access"],
         to: "/system/client-logs",
         text: "Client Logs",
         items: [],

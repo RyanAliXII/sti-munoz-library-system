@@ -2,7 +2,6 @@ import { PrimaryButton } from "@components/ui/button/Button";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { InputClasses } from "@components/ui/form/Input";
 
-import { apiScope } from "@definitions/configs/msal/scopes";
 import { ModalProps, Section } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
@@ -20,7 +19,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
-import { number, object, string } from "yup";
+import { number, object } from "yup";
 
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
@@ -47,9 +46,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
   const [error, setError] = useState<undefined | ParseErr>(undefined);
   const fetchSections = async () => {
     try {
-      const { data: response } = await Get("/sections/", {}, [
-        apiScope("Section.Read"),
-      ]);
+      const { data: response } = await Get("/sections/", {});
       return response.data?.sections ?? [];
     } catch (error) {
       console.log(error);

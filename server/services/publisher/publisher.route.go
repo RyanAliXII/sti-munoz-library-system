@@ -8,23 +8,23 @@ import (
 
 func PublisherRoutes(router *gin.RouterGroup) {
 	var controller PublisherControllerInterface = NewPublisherController()
-	
+	router.Use(middlewares.ValidatePermissions("Publisher.Access"))
 	router.GET("/",
-	middlewares.ValidatePermissions([]string{"Publisher.Read"}),
+	middlewares.BlockRequestFromClientApp,
 	controller.GetPublishers)
 
 	router.POST("/", 
-	middlewares.ValidatePermissions([]string{"Publisher.Add"}),
+	middlewares.BlockRequestFromClientApp,
 	middlewares.ValidateBody[PublisherBody], 
 	controller.NewPublisher)
 	
 	router.PUT("/:id/", 
-	middlewares.ValidatePermissions([]string{"Publisher.Edit"}),
+	middlewares.BlockRequestFromClientApp,
 	middlewares.ValidateBody[PublisherBody], 
 	controller.UpdatePublisher)
 
 	router.DELETE("/:id/",
-	middlewares.ValidatePermissions([]string{"Publisher.Delete"}),
-	 controller.DeletePublisher)
+	middlewares.BlockRequestFromClientApp,
+	controller.DeletePublisher)
 
 }

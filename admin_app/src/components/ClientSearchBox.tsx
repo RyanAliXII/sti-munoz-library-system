@@ -7,7 +7,7 @@ import Downshift from "downshift";
 import { BaseSyntheticEvent, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { useRequest } from "@hooks/useRequest";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
   className?: string;
@@ -31,7 +31,7 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
             keyword: searchKeyword,
           },
         },
-        [apiScope("Account.Read")]
+
       );
       return response?.data?.accounts ?? [];
     } catch {

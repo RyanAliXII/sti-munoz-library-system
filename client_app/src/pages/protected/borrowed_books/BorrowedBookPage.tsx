@@ -1,5 +1,4 @@
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import { buildS3Url } from "@definitions/s3";
 import { BorrowedBook } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
@@ -34,13 +33,9 @@ const BorrowedBooksPage = () => {
           statusId: activeTab,
         };
       }
-      const response = await Get(
-        "/borrowing/borrowed-books",
-        {
-          params,
-        },
-        [apiScope("Checkout.Read")]
-      );
+      const response = await Get("/borrowing/borrowed-books", {
+        params,
+      });
       const { data } = response.data;
       return data?.borrowedBooks ?? [];
     } catch (error) {

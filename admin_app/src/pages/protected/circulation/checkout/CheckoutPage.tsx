@@ -33,7 +33,7 @@ import Divider from "@components/ui/divider/Divider";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { BookInitialValue } from "@definitions/defaults";
 import { useRequest } from "@hooks/useRequest";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import Tippy from "@tippyjs/react";
 import { MdOutlineRemoveCircle } from "react-icons/md";
 import { ConfirmDialog } from "@components/ui/dialog/Dialog";
@@ -137,8 +137,7 @@ const CheckoutPage = () => {
           clientId: formData.client.id,
           accessions: formData.accessions,
         },
-        {},
-        [apiScope("Checkout.Add")]
+        {}
       ),
     onSuccess: () => {
       toast.success("Books has been checkout successfully.");

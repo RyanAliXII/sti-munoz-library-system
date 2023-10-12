@@ -30,7 +30,7 @@ import Container, {
 
 import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
 
@@ -59,16 +59,12 @@ const BookPage = () => {
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get(
-        "/books/",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/books/", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Book.Read")]
-      );
+      });
       if (response?.data?.metadata) {
         const page = response?.data?.metadata?.pages;
         setTotalPages(page ?? 0);
@@ -122,7 +118,14 @@ const BookPage = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold text-gray-700">Books</h1>
           <div className="mt-1 gap-2 flex items-center">
-            <HasAccess requiredPermissions={["Book.Access"]}>
+            <HasAccess
+              requiredPermissions={[
+                "Book.Access",
+                "Publisher.Access",
+                "Section.Access",
+                "Author.Access",
+              ]}
+            >
               <Link
                 to="/books/new"
                 className={`${ButtonClasses.PrimaryButtonDefaultClasslist} px-3 py-2.5 gap-0.5 flex items-center`}
@@ -130,6 +133,8 @@ const BookPage = () => {
                 <AiOutlinePlus className="text-lg" />
                 New Book
               </Link>
+            </HasAccess>
+            <HasAccess requiredPermissions={["Book.Access", "Section.Access"]}>
               <PrimaryOutlineButton
                 className="flex items-center gap-0.5"
                 onClick={openImportModal}
@@ -201,18 +206,25 @@ const BookPage = () => {
                           <AiOutlinePrinter className="text-blue-500 text-lg cursor-pointer " />
                         </button>
                       </Tippy>
-                      <Tippy content="Edit Book">
-                        <Link
-                          to={`/books/edit/${book.id}`}
-                          className={
-                            ButtonClasses.SecondaryOutlineButtonClasslist
-                          }
-                        >
-                          <HasAccess requiredPermissions={["Book.Access"]}>
+                      <HasAccess
+                        requiredPermissions={[
+                          "Book.Access",
+                          "Publisher.Access",
+                          "Section.Access",
+                          "Author.Access",
+                        ]}
+                      >
+                        <Tippy content="Edit Book">
+                          <Link
+                            to={`/books/edit/${book.id}`}
+                            className={
+                              ButtonClasses.SecondaryOutlineButtonClasslist
+                            }
+                          >
                             <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
-                          </HasAccess>
-                        </Link>
-                      </Tippy>
+                          </Link>
+                        </Tippy>
+                      </HasAccess>
                     </Td>
                   </BodyRow>
                 );
