@@ -104,13 +104,17 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Borrow Book",
         to: "/borrowing/checkout",
-        requiredPermissions: ["Borrowing.Access"],
+        requiredPermissions: [
+          "Borrowing.Access",
+          "Book.Access",
+          "Account.Access",
+        ],
         items: [],
       },
       {
         text: "Penalties",
         to: "/borrowing/penalties",
-        requiredPermissions: ["Penalty.Access"],
+        requiredPermissions: ["Penalty.Access", "Account.Access"],
         items: [],
       },
     ],
@@ -127,7 +131,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        requiredPermissions: ["ACL.Access"],
+        requiredPermissions: ["ACL.Access", "Account.Access"],
         to: "/system/access-control/assign",
         text: "Assign Role",
         items: [],

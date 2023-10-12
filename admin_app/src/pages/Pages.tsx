@@ -147,7 +147,9 @@ const pages = createRoutesFromChildren(
       <Route
         path="/system/access-control/assign"
         element={
-          <PermissionGate requiredPermissions={["ACL.Access"]}>
+          <PermissionGate
+            requiredPermissions={["ACL.Access", "Account.Access"]}
+          >
             <AssignRolePage />
           </PermissionGate>
         }
@@ -179,7 +181,13 @@ const pages = createRoutesFromChildren(
       <Route
         path="/borrowing/checkout"
         element={
-          <PermissionGate requiredPermissions={["Borrowing.Access"]}>
+          <PermissionGate
+            requiredPermissions={[
+              "Borrowing.Access",
+              "Book.Access",
+              "Account.Access",
+            ]}
+          >
             <CheckoutPage />
           </PermissionGate>
         }
@@ -187,7 +195,9 @@ const pages = createRoutesFromChildren(
       <Route
         path="/borrowing/penalties"
         element={
-          <PermissionGate requiredPermissions={["Penalty.Access"]}>
+          <PermissionGate
+            requiredPermissions={["Penalty.Access", "Account.Access"]}
+          >
             <PenaltyPage />
           </PermissionGate>
         }

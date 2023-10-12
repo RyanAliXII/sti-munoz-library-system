@@ -133,6 +133,8 @@ const BookPage = () => {
                 <AiOutlinePlus className="text-lg" />
                 New Book
               </Link>
+            </HasAccess>
+            <HasAccess requiredPermissions={["Book.Access", "Section.Access"]}>
               <PrimaryOutlineButton
                 className="flex items-center gap-0.5"
                 onClick={openImportModal}
