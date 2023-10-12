@@ -37,7 +37,6 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import HasAccess from "@components/auth/HasAccess";
 import Tippy from "@tippyjs/react";
 import ReactPaginate from "react-paginate";
@@ -87,16 +86,12 @@ const PublisherPage = () => {
   };
   const fetchPublisher = async () => {
     try {
-      const { data: response } = await Get(
-        "/publishers/",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/publishers/", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Publisher.Read")]
-      );
+      });
       setTotalPages(response?.data?.metaData?.pages);
       return response?.data?.publishers || [];
     } catch (error) {
@@ -106,10 +101,7 @@ const PublisherPage = () => {
   };
   const queryClient = useQueryClient();
   const deletePublisher = useMutation({
-    mutationFn: () =>
-      Delete(`/publishers/${selectedRow.id}/`, {}, [
-        apiScope("Publisher.Delete"),
-      ]),
+    mutationFn: () => Delete(`/publishers/${selectedRow.id}/`, {}, []),
     onSuccess: () => {
       if (publishers?.length === 1 && totalPages > 1) {
         setFilterParams({ page: filterParams?.page - 1 });

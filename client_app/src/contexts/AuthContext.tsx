@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
   };
   const verifyAccount = async (account: Omit<Account, "metaData">) => {
     const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("Account.Read")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
     const response = await axiosClient.post(
       "/system/accounts/verification",
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const getRolePermissions = async () => {
     const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("AccessControl.Role.Read")],
+      scopes: [apiScope("LibraryServer.Access")],
     });
 
     const { data: response } = await axiosClient.post(

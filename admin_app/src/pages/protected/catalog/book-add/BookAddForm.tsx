@@ -33,13 +33,13 @@ import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { useRequest } from "@hooks/useRequest";
 
 import { useMsal } from "@azure/msal-react";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import AddPublisherModal from "./AddPublisherModal";
 import AddAuthorModal from "./AddAuthorModal";
 import { format } from "date-fns";
 import CreatableSelect from "react-select/creatable";
-import AsyncSelect from "react-select/async";
 import useDebounce from "@hooks/useDebounce";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -94,15 +94,11 @@ const BookAddForm = () => {
   const { Get, Post } = useRequest();
   const fetchPublishers = async () => {
     try {
-      const { data: response } = await Get(
-        "/publishers/",
-        {
-          params: {
-            keyword: keyword,
-          },
+      const { data: response } = await Get("/publishers/", {
+        params: {
+          keyword: keyword,
         },
-        [apiScope("Publisher.Read")]
-      );
+      });
       return response.data?.publishers ?? [];
     } catch (error) {
       console.log(error);
@@ -112,9 +108,7 @@ const BookAddForm = () => {
 
   const fetchSections = async () => {
     try {
-      const { data: response } = await Get("/sections/", {}, [
-        apiScope("Section.Read"),
-      ]);
+      const { data: response } = await Get("/sections/");
       return response.data?.sections ?? [];
     } catch (error) {
       console.log(error);
@@ -160,8 +154,7 @@ const BookAddForm = () => {
           ...parsedForm,
           authorNumber: parsedForm.authorNumber,
         },
-        {},
-        [apiScope("Book.Add")]
+        {}
       ),
     onSuccess: async ({ data: response }) => {
       toast.success("Book has been added");
@@ -171,7 +164,7 @@ const BookAddForm = () => {
         return;
       }
       const tokens = await msalInstance.acquireTokenSilent({
-        scopes: [apiScope("Book.Cover.Add")],
+        scopes: [apiScope("LibraryServer.Access")],
       });
       uppy.getPlugin("XHRUpload")?.setOptions({
         headers: {

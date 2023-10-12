@@ -1,18 +1,18 @@
 import ClientSearchBox from "@components/ClientSearchBox";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
-import React, { BaseSyntheticEvent, useEffect, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { MdRemoveCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
-import { AddPenaltyValidation, EditPenaltyValidation } from "./schema";
+import { EditPenaltyValidation } from "./schema";
 import { useForm } from "@hooks/useForm";
 import { Account, ModalProps, Penalty } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import Modal from "react-responsive-modal";
-import { AccountIdentifiers } from "@azure/msal-react";
+
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
 }
@@ -63,7 +63,7 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
       accountId: string;
       description: string;
       amount: number;
-    }) => Put(`/penalties/${body.id}`, body, {}, [apiScope("Penalty.Edit")]),
+    }) => Put(`/penalties/${body.id}`, body, {}),
     onSuccess: () => {
       toast.success("Penalty has been updated.");
       queryClient.invalidateQueries(["penalties"]);

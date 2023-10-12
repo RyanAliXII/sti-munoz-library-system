@@ -17,7 +17,6 @@ import Container, {
 import { DetailedAccession } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import ReactPaginate from "react-paginate";
 import { ChangeEvent, useState } from "react";
@@ -45,16 +44,12 @@ const AccessionPage = () => {
   };
   const fetchAccessions = async () => {
     try {
-      const { data: response } = await Get(
-        "/books/accessions",
-        {
-          params: {
-            page: filterParams?.page,
-            keyword: filterParams?.keyword,
-          },
+      const { data: response } = await Get("/books/accessions", {
+        params: {
+          page: filterParams?.page,
+          keyword: filterParams?.keyword,
         },
-        [apiScope("Accession.Read")]
-      );
+      });
 
       if (response?.data?.metadata) {
         setTotalPages(response?.data?.metadata?.pages ?? 1);

@@ -1,5 +1,4 @@
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import { Book, DetailedAccession, ModalProps } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
@@ -24,9 +23,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
   const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
-      const { data: response } = await Get(`/books/${book.id}/accessions`, {}, [
-        apiScope("Accession.Read"),
-      ]);
+      const { data: response } = await Get(`/books/${book.id}/accessions`, {});
       return response?.data?.accessions ?? [];
     } catch {
       return [];

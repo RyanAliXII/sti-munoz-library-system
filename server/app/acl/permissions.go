@@ -7,6 +7,8 @@ type Permission struct {
 	Value string `json:"value"`
 	Description string `json:"description"`
 }
+
+var ClientPermissions = []string{"Catalog.Read", "Bag.Read","Book.Borrow","Profile.Read"}
 var Permissions = []Permission{
 	{
 		Id: 1,
@@ -32,12 +34,12 @@ var Permissions = []Permission{
 		Value: "Section.Access", 
 		Description: "Allows user to access book section module." ,
 	},
-	{
-		Id: 5,
-		Name: "Source of Fund Module",
-		Value:"FundSource.Access",
-		Description: "Allows user to access source of fund module.",
-	},
+	// {
+	// 	Id: 5,
+	// 	Name: "Source of Fund Module",
+	// 	Value:"FundSource.Access",
+	// 	Description: "Allows user to access source of fund module.",
+	// },
 	{
 		Id: 6,
 		Name: "Account Module",
@@ -48,7 +50,7 @@ var Permissions = []Permission{
 		Id: 7,
 		Name: "Inventory Module",
 		Value: "Audit.Access",
-		Description: "Allows user to access audit module.",
+		Description: "Allows user to access inventory audit module.",
 	},
 	{
 		Id: 8,
@@ -74,6 +76,21 @@ var Permissions = []Permission{
 		Value: "Penalty.Access",
 		Description: "Allows user to access penalty module.",
 	},
+	{
+		Id: 12,
+		Name: "Scanner Account Module",
+		Value: "ScannerAccount.Access",
+		Description: "Allows user to access scanner account module.",
+	},
+	{
+		Id: 13,
+		Name: "Client Log Module",
+		Value: "ClientLog.Access",
+		Description: "Allows user to access client's log module.",
+	},
+
 }
+
+
 
 

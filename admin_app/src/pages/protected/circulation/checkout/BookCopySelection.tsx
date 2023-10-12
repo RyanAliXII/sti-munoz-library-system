@@ -23,9 +23,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BorrowStatuses } from "@internal/borrow-status";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
-import { date } from "yup";
-import { access } from "fs";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -46,9 +43,7 @@ const BookCopySelectionModal = ({
   const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
-      const { data: response } = await Get(`/books/${book.id}/accessions`, {}, [
-        apiScope("Accession.Read"),
-      ]);
+      const { data: response } = await Get(`/books/${book.id}/accessions`, {});
       return response?.data?.accessions ?? [];
     } catch {
       return [];

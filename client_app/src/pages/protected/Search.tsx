@@ -5,7 +5,6 @@ import { useRequest } from "@hooks/useRequest";
 import useDebounce from "@hooks/useDebounce";
 import { Book } from "@definitions/types";
 import { useQuery } from "@tanstack/react-query";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import Downshift from "downshift";
 import { ClipLoader } from "react-spinners";
 
@@ -20,16 +19,12 @@ const Search = () => {
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get(
-        "/books/",
-        {
-          params: {
-            offset: 0,
-            keyword: searchKeyword,
-          },
+      const { data: response } = await Get("/books/", {
+        params: {
+          offset: 0,
+          keyword: searchKeyword,
         },
-        [apiScope("Book.Read")]
-      );
+      });
       return response?.data?.books ?? [];
     } catch {
       return [];

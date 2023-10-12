@@ -22,7 +22,7 @@ import { BaseSyntheticEvent, useEffect, useRef } from "react";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { PrimaryButton } from "@components/ui/button/Button";
 import { toast } from "react-toastify";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import BookSearchBox from "@components/BookSearchBox";
 import ordinal from "ordinal";
 import Tippy from "@tippyjs/react";
@@ -49,9 +49,7 @@ const AuditScan = () => {
   const { id } = useParams();
   const { Get, Post, Delete } = useRequest();
   const fetchAudit = async () => {
-    const { data: response } = await Get(`/inventory/audits/${id}`, {}, [
-      apiScope("Audit.Read"),
-    ]);
+    const { data: response } = await Get(`/inventory/audits/${id}`, {});
     return response?.data?.audit ?? {};
   };
   const navigate = useNavigate();
@@ -72,9 +70,7 @@ const AuditScan = () => {
 
   const fetchAuditedBooks = async () => {
     try {
-      const { data: response } = await Get(`inventory/audits/${id}/books`, {}, [
-        apiScope("Audit.Read"),
-      ]);
+      const { data: response } = await Get(`inventory/audits/${id}/books`, {});
       return response?.data?.audits ?? [];
     } catch {
       return [];
@@ -92,9 +88,7 @@ const AuditScan = () => {
 
   const sendBookCopy = useMutation({
     mutationFn: (accessionId: string) =>
-      Post(`/inventory/audits/${id}/`, { accessionId: accessionId }, {}, [
-        apiScope("Audit.Add"),
-      ]),
+      Post(`/inventory/audits/${id}/`, { accessionId: accessionId }, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["auditedBooks"]);
     },
@@ -105,9 +99,7 @@ const AuditScan = () => {
 
   const sendBook = useMutation({
     mutationFn: (bookId: string) =>
-      Post(`/inventory/audits/${id}/books/${bookId}`, {}, {}, [
-        apiScope("Audit.Add"),
-      ]),
+      Post(`/inventory/audits/${id}/books/${bookId}`, {}, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["auditedBooks"]);
     },
@@ -117,9 +109,7 @@ const AuditScan = () => {
   });
   const deleteBookCopy = useMutation({
     mutationFn: (accessionId: string) =>
-      Delete(`/inventory/audits/${id}/accessions/${accessionId}`, {}, [
-        apiScope("Audit.Delete"),
-      ]),
+      Delete(`/inventory/audits/${id}/accessions/${accessionId}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries(["auditedBooks"]);
     },

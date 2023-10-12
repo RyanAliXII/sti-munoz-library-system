@@ -20,7 +20,6 @@ import React, {
 import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
 import { RoleSchemaValidation } from "../schema";
-import { apiScope } from "@definitions/configs/msal/scopes";
 
 export interface EditModalProps<T> extends ModalProps {
   formData: T;
@@ -66,9 +65,7 @@ const EditRoleModal = ({
   const queryClient = useQueryClient();
   const fetchPermissions = async () => {
     try {
-      const { data: response } = await Get("/system/modules", {}, [
-        apiScope("AccessControl.Role.Read"),
-      ]);
+      const { data: response } = await Get("/system/modules", {});
       return response?.data?.permissions ?? [];
     } catch (error) {
       console.log(error);
@@ -76,10 +73,7 @@ const EditRoleModal = ({
     }
   };
   const updateRole = useMutation({
-    mutationFn: (role: Role) =>
-      Put(`/system/roles/${role?.id}`, role, {}, [
-        apiScope("AccessControl.Role.Add"),
-      ]),
+    mutationFn: (role: Role) => Put(`/system/roles/${role?.id}`, role, {}),
     onSuccess: () => {
       toast.success("Role has been created Successfully");
       queryClient.invalidateQueries(["roles"]);

@@ -1,14 +1,16 @@
 import { useMsal } from "@azure/msal-react";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { apiScope } from "@definitions/configs/msal/scopes";
 import axios, { AxiosRequestConfig } from "axios";
 import { StatusCodes } from "http-status-codes";
-
+const DefaultScope = [apiScope("LibraryServer.Access")];
 export const useRequest = () => {
   const { instance } = useMsal();
   const request = axios.create({
     baseURL: BASE_URL_V1,
     withCredentials: true,
   });
+
   request.interceptors.response.use(
     (response) => {
       return response;
@@ -35,7 +37,7 @@ export const useRequest = () => {
   ) => {
     try {
       const tokens = await instance.acquireTokenSilent({
-        scopes: scopes,
+        scopes: [...DefaultScope, ...scopes],
       });
       const response = request.post(url, data, {
         ...config,
@@ -56,7 +58,7 @@ export const useRequest = () => {
   ) => {
     try {
       const tokens = await instance.acquireTokenSilent({
-        scopes: scopes,
+        scopes: [...DefaultScope, ...scopes],
       });
       const response = request.get(url, {
         ...config,
@@ -76,7 +78,7 @@ export const useRequest = () => {
   ) => {
     try {
       const tokens = await instance.acquireTokenSilent({
-        scopes: scopes,
+        scopes: [...DefaultScope, ...scopes],
       });
       const response = request.delete(url, {
         ...config,
@@ -97,7 +99,7 @@ export const useRequest = () => {
   ) => {
     try {
       const tokens = await instance.acquireTokenSilent({
-        scopes: scopes,
+        scopes: [...DefaultScope, ...scopes],
       });
       const response = request.put(url, data, {
         ...config,
@@ -118,7 +120,7 @@ export const useRequest = () => {
   ) => {
     try {
       const tokens = await instance.acquireTokenSilent({
-        scopes: scopes,
+        scopes: [...DefaultScope, ...scopes],
       });
 
       const response = request.patch(url, data, {

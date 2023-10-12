@@ -1,6 +1,4 @@
 import { InputClasses } from "@components/ui/form/Input";
-import { apiScope } from "@definitions/configs/msal/scopes";
-
 import { Book } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
@@ -23,16 +21,12 @@ const BookSearchBox = ({ selectBook }: BookSearchBoxProps) => {
   const { Get } = useRequest();
   const fetchBooks = async () => {
     try {
-      const { data: response } = await Get(
-        "/books/",
-        {
-          params: {
-            offset: 0,
-            keyword: searchKeyword,
-          },
+      const { data: response } = await Get("/books/", {
+        params: {
+          offset: 0,
+          keyword: searchKeyword,
         },
-        [apiScope("Book.Read")]
-      );
+      });
       return response?.data?.books ?? [];
     } catch {
       return [];

@@ -10,7 +10,6 @@ import Modal from "react-responsive-modal";
 import { Input } from "@components/ui/form/Input";
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import { useBookEditFormContext } from "./BookEditFormContext";
-import { apiScope } from "@definitions/configs/msal/scopes";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
@@ -19,10 +18,6 @@ export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   if (!isOpen) return null;
 
-  const [activeTab, setActiveTab] = useState<"Person" | "Org">("Person");
-  const activeTabClass =
-    "basis-1/2 border-blue-500 flex justify-center rounded text-blue-500 rounded p-2";
-  const nonActiveClass = "flex justify-center basis-1/2 p-2 text-gray-400";
   return (
     <Modal
       open={isOpen}
@@ -62,7 +57,7 @@ const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
   };
   const { Post } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Post("/authors/", form, {}, [apiScope("Author.Add")]),
+    mutationFn: () => Post("/authors/", form, {}),
     onSuccess: (response) => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);

@@ -7,6 +7,8 @@ import (
 
 func ScannerAccountRoutes (router * gin.RouterGroup){
 	ctrler := NewScannerAccountController()
+	router.Use(middlewares.ValidatePermissions("ScannerAccount.Access"))
+	router.Use(middlewares.BlockRequestFromClientApp)
 	router.POST("/",middlewares.ValidateBody[NewAccountBody] ,ctrler.NewAccount)
 	router.GET("/", ctrler.GeAccounts)
 	router.PUT("/:id",middlewares.ValidateBody[UpdateAccountBody] ,ctrler.UpdateAccount)

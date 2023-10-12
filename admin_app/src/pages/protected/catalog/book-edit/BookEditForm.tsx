@@ -151,7 +151,7 @@ const BookEditForm = () => {
       toast.success("Book has been updated.");
 
       const tokens = await msalInstance.acquireTokenSilent({
-        scopes: [apiScope("Book.Cover.Edit")],
+        scopes: [apiScope("LibraryServer.Access")],
       });
       uppy.getPlugin("XHRUpload")?.setOptions({
         headers: {
@@ -177,9 +177,7 @@ const BookEditForm = () => {
 
   const deleteBookCovers = async () => {
     try {
-      await Delete(`/books/${form.id}/covers`, {}, [
-        apiScope("Book.Cover.Edit"),
-      ]);
+      await Delete(`/books/${form.id}/covers`, {});
     } catch (error) {
       console.log(error);
     }

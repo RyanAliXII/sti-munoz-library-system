@@ -12,14 +12,14 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { AccountRole } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { isError } from "lodash";
-import React, { useState } from "react";
+
+import { useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { toast } from "react-toastify";
 
@@ -29,9 +29,7 @@ const AssignedRolePage = () => {
   const [selectedRow, setSelectedRow] = useState<AccountRole>();
   const fetchAccountWithAssignedRoles = async () => {
     try {
-      const { data: response } = await Get("/system/roles/accounts", {}, [
-        apiScope("AccessControl.Role.Read"),
-      ]);
+      const { data: response } = await Get("/system/roles/accounts", {});
       return response?.data?.accounts ?? [];
     } catch {
       return [];
@@ -58,8 +56,7 @@ const AssignedRolePage = () => {
     mutationFn: (assignment: AccountRole) =>
       Delete(
         `/system/roles/${assignment.role.id}/accounts/${assignment.account.id}`,
-        {},
-        [apiScope("AccessControl.Role.Delete")]
+        {}
       ),
     onSuccess(data, variables, context) {
       toast.success("Role assignment has been removed.");

@@ -26,7 +26,7 @@ import Container, {
 import { Input } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import Tippy from "@tippyjs/react";
 
 const AuditPage = () => {
@@ -49,9 +49,7 @@ const AuditPage = () => {
   const { Get } = useRequest();
   const fetchAudits = async () => {
     try {
-      const { data: response } = await Get("/inventory/audits", {}, [
-        apiScope("Audit.Read"),
-      ]);
+      const { data: response } = await Get("/inventory/audits", {});
       return response?.data?.audits ?? [];
     } catch {
       return [];
@@ -150,7 +148,7 @@ const NewAuditModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { Post } = useRequest();
   const newAudit = useMutation({
     mutationFn: (parsedForm: NewAuditForm) =>
-      Post("/inventory/audits", parsedForm, {}, [apiScope("Audit.Add")]),
+      Post("/inventory/audits", parsedForm, {}),
     onSuccess: () => {
       toast.success("New audit has been added.");
       queryClient.invalidateQueries(["audits"]);

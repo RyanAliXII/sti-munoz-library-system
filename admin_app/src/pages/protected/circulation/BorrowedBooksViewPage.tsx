@@ -29,7 +29,7 @@ import { useState } from "react";
 import { useRequest } from "@hooks/useRequest";
 import { BorrowStatus } from "@internal/borrow-status";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import Tippy from "@tippyjs/react";
 import {
   BsArrowReturnLeft,
@@ -73,9 +73,7 @@ const BorrowedBooksViewPage = () => {
     open: openInputDueDateModal,
   } = useSwitch();
   const fetchTransaction = async () => {
-    const { data: response } = await Get(`/borrowing/requests/${id}`, {}, [
-      apiScope("Checkout.Read"),
-    ]);
+    const { data: response } = await Get(`/borrowing/requests/${id}`, {});
     return response?.data?.borrowedBooks ?? [];
   };
   const {
@@ -149,8 +147,7 @@ const BorrowedBooksViewPage = () => {
           params: {
             statusId: body.status,
           },
-        },
-        [apiScope("Checkout.Edit")]
+        }
       ),
     onSuccess: () => {
       toast.success("Borrowed book has been updated.");

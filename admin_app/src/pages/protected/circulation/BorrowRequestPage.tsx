@@ -16,7 +16,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import TimeAgo from "timeago-react";
 import { BiErrorAlt } from "react-icons/bi";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
@@ -25,9 +25,7 @@ const BorrowRequestPage = () => {
   const { Get } = useRequest();
   const fetchTransactions = async () => {
     try {
-      const { data: response } = await Get("/borrowing/requests", {}, [
-        apiScope("Checkout.Read"),
-      ]);
+      const { data: response } = await Get("/borrowing/requests", {});
 
       return response?.data?.borrowRequests ?? [];
     } catch {

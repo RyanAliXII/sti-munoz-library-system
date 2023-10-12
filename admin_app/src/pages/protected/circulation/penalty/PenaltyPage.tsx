@@ -11,7 +11,7 @@ import {
   Th,
   Thead,
 } from "@components/ui/table/Table";
-import { apiScope } from "@definitions/configs/msal/scopes";
+
 import { Penalty } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -54,7 +54,7 @@ const PenaltyPage = () => {
   } = useSwitch();
   const fetchPenalties = async () => {
     try {
-      const response = await Get("/penalties/", {}, [apiScope("Penalty.Read")]);
+      const response = await Get("/penalties/", {});
       const { data } = response.data;
       return data?.penalties ?? [];
     } catch (error) {
@@ -85,8 +85,7 @@ const PenaltyPage = () => {
           params: {
             settle: body.isSettled,
           },
-        },
-        [apiScope("Penalty.Edit")]
+        }
       ),
 
     onSuccess: () => {
