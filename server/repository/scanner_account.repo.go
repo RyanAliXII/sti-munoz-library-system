@@ -24,7 +24,7 @@ func(repo * ScannerAccount) NewAccount(account model.ScannerAccount) error {
 }
 func(repo * ScannerAccount)GetAccountByUsername(username string)(model.ScannerAccount, error){
 	account := model.ScannerAccount{}
-	err := repo.db.Get(&account, "SELECT id,username,password,description FROM system.scanner_account WHERE UPPER(username) = UPPER($1) and deleted_at is null", username)
+	err := repo.db.Get(&account, "SELECT id,username,password,description FROM system.scanner_account WHERE username = $1 and deleted_at is null", username)
 	return account, err
 }
 func (repo *ScannerAccount)GetAccounts() ([]model.ScannerAccount, error){

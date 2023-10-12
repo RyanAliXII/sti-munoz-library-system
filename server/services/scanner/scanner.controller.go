@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -51,20 +52,22 @@ func(c * Scanner) Login (ctx * gin.Context){
 	}
 	jti := uuid.NewString()
 	if err != nil {
+		logger.Error(err.Error(), zap.String("err", "jtiId" ))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	secret := os.Getenv("JWT_SECRET")
 	iss := os.Getenv("SERVER_URL")
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss": iss,
 		"sub": account.Id,
-		"exp": time.Now().Add(time.Hour * 16),
-		"iat": time.Now(),
+		"exp": time.Now().Add(time.Hour * 16).Unix(),
+		"iat": time.Now().Unix(),
 		"jti": jti,
 	})
-	tokenStr, err := token.SignedString(secret)
+	tokenStr, err := token.SignedString([]byte(secret))	
 	if err != nil {
+		logger.Error(err.Error(), zap.String("error", "tokenSigning" ))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
