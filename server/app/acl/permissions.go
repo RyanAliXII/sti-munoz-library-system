@@ -7,6 +7,8 @@ type Permission struct {
 	Value string `json:"value"`
 	Description string `json:"description"`
 }
+
+var ClientPermissions = []string{"Catalog.Read", "Bag.Read","Book.Borrow","Profile.Read"}
 var Permissions = []Permission{
 	{
 		Id: 1,
@@ -88,5 +90,7 @@ var Permissions = []Permission{
 	},
 
 }
+
+
 
 
