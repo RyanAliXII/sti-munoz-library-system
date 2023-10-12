@@ -14,11 +14,8 @@ func SystemRoutes(router *gin.RouterGroup) {
 	router.POST("/roles/accounts", middlewares.ValidateBody[AssignBody], ctrler.AssignRole)
 
 	router.GET("/roles/accounts",
-	middlewares.ValidatePermissions([]string{"AccessControl.Role.Read"}),
 	ctrler.GetAccountRoles)
-
 	router.DELETE("/roles/:id/accounts/:accountId",
-	middlewares.ValidatePermissions([]string{"AccessControl.Role.Delete"}),
 	ctrler.RemoveRoleAssignment,
 	)
 	router.GET("/roles", ctrler.GetRoles)

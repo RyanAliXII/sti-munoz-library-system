@@ -10,7 +10,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
 	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
-	fundsrc "github.com/RyanAliXII/sti-munoz-library-system/server/services/fund_source"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/publisher"
@@ -27,7 +27,6 @@ func RegisterAPIV1(router *gin.Engine) {
 	grp.Use(middlewares.ValidateToken)
 	author.AuthorRoutes(grp.Group("/authors"))
 	publisher.PublisherRoutes(grp.Group("/publishers"))
-	fundsrc.FundSourceRoutes(grp.Group("/source-of-funds"))
 	section.SectionRoutes(grp.Group("/sections"))
 	authornum.AuthorNumberRoutes(grp.Group("/author-numbers"))
 	ddc.DDCRoutes(grp.Group("/ddc"))

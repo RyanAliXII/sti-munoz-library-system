@@ -12,14 +12,8 @@ import (
 
 var accountRepo = repository.NewAccountRepository()
 func ValidatePermissions(requiredPermission string)gin.HandlerFunc{
-	
 	return func (ctx * gin.Context)  {
-
 		requestorId := ctx.GetString("requestorId")
-
-
-
-
 		requestorApp := ctx.GetString("requestorApp")
 		requestorRole := ctx.GetString("requestorRole")
 
@@ -28,6 +22,7 @@ func ValidatePermissions(requiredPermission string)gin.HandlerFunc{
 				permissions := acl.GetRootUserPermissions()
 				if (permissions.HasPermission(requiredPermission)){
 					ctx.Next()
+					return
 				}
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return 
@@ -48,9 +43,10 @@ func ValidatePermissions(requiredPermission string)gin.HandlerFunc{
 		}
 		if requestorApp == azuread.ClientAppClientId{
 			ctx.Next()
+			return
 		}
 
-		logger.Error("Unknown application")
+		logger.Error("Unknown Application Client Id")
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
