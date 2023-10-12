@@ -1,23 +1,25 @@
 package acl
 
-import (
-	"fmt"
-	"strings"
-)
 
 
 
 
 
-func BuildRootPermissions ()(string){
-	var permissionStr strings.Builder
-	for idx, module := range Permissions{
-		if(idx + 1 == len(Permissions)){
-			permissionStr.WriteString(module.Value)
-		}else{
-			permissionStr.WriteString(fmt.Sprintf("%s ", module.Value))
+type PermissionsList []string
+
+func (l  * PermissionsList) HasPermission(permission string) bool{
+	for _, p := range *l{
+		if(permission == p){
+			return true
 		}
-		
 	}
-	return permissionStr.String()
+	return false
+}
+
+func GetRootUserPermissions ()PermissionsList{
+	list := PermissionsList{}
+	for _, p := range Permissions{
+		list = append(list, p.Value)
+	}
+	return list
 }

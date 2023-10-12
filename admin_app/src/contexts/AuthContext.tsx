@@ -29,7 +29,7 @@ const userInitialData: Account = {
 export const AuthContext = createContext<AuthContextState>({
   user: userInitialData,
   hasPermissions: () => false,
-  permissions: "",
+  permissions: [],
   loading: true,
 });
 export const useAuthContext = () => {
@@ -38,7 +38,7 @@ export const useAuthContext = () => {
 export type AuthContextState = {
   loading?: boolean;
   user: Account;
-  permissions: string;
+  permissions: string[];
   hasPermissions: (requiredPermissions: string[]) => boolean;
 };
 
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
   const [user, setUser] = useState<Account>(userInitialData);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState<string>("");
+  const [permissions, setPermissions] = useState<string[]>([]);
 
   const useAccount = async () => {
     try {

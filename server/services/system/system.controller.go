@@ -1,7 +1,6 @@
 package system
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/crypt"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -141,27 +139,19 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 			}
 			// The role 'Root' is assigned from azure ad.
 			if role == "Root" {
-				permissions := acl.BuildRootPermissions()
-				encryptedPermissions, ecryptionErr := crypt.Encrypt(fmt.Sprintf("%s %s", permissions, requestorId)) 
-				if ecryptionErr != nil {
-					logger.Error("Permissions failed to encrypt", slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
-					ctx.AbortWithStatus(http.StatusUnauthorized)
-					return
-				}
-				const OneDay = 3600 * 24
-				ctx.SetCookie("role", encryptedPermissions,OneDay, "/", "", false, true)
+				permissions := acl.GetRootUserPermissions()
 				ctx.JSON(httpresp.Success200(gin.H{
 					"permissions": permissions,
 				}, "Permissions successfully fetched"))
 				return
 		  }}
-		  permissions, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
+		  dbRole, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
 		  if getPermissionErr != nil {
 			logger.Error(getPermissionErr.Error(), slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		  }
 		  ctx.JSON(httpresp.Success200(gin.H{
-			"permissions": permissions.Permissions.ExtractValues(),
+			"permissions": dbRole.Permissions.ExtractValues(),
 		}, "Permissions successfully fetched"))
 		return
 	}

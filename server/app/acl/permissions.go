@@ -74,6 +74,7 @@ var Permissions = []Permission{
 		Value: "Penalty.Access",
 		Description: "Allows user to access penalty module.",
 	},
+	
 }
 
 
