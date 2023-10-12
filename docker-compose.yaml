@@ -36,10 +36,10 @@ services:
       APP_ID: ${API_APP_ID}
       TENANT_ID: ${API_APP_TENANT_ID}
       CRYPTO_SECRET: ${CRYPTO_SECRET}
-      SESSION_SECRET: ${SESSION_SECRET}
       GIN_MODE: debug #release
       SERVER_DOMAIN: ${SERVER_DOMAIN}
       SCANNER_APP_DOMAIN: ${SCANNER_APP_DOMAIN}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - postgres
       - rabbitmq

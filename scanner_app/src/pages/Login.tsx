@@ -16,8 +16,11 @@ const Login = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
           "Content-Type": "application/json",
         },
       }),
-    onSuccess: () => {
-      revalidateAuth();
+    onSuccess: (response) => {
+      const { data } = response.data;
+      console.log(data);
+      localStorage.setItem("token", data?.accessToken ?? "");
+      // revalidateAuth();
     },
     onError: () => {
       setErrorMessage("Invalid username or password");
