@@ -3,6 +3,7 @@ package scanner
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -10,6 +11,8 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -46,28 +49,28 @@ func(c * Scanner) Login (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
 		return
 	}
-	domain := os.Getenv("SCANNER_APP_DOMAIN")
-	session := sessions.Default(ctx)
-	session.Options(sessions.Options{
-		MaxAge: 3600 * 16, //16 hrs
-		Domain: domain,
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
+	jti := uuid.NewString()
+	if err != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	secret := os.Getenv("JWT_SECRET")
+	iss := os.Getenv("SERVER_URL")
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+		"iss": iss,
+		"sub": account.Id,
+		"exp": time.Now().Add(time.Hour * 16),
+		"iat": time.Now(),
+		"jti": jti,
 	})
-	accountBytes, err := account.ToBytes()
+	tokenStr, err := token.SignedString(secret)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ToBytesErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	session.Set("account", accountBytes )
-	err = session.Save()
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("save session err"))
-		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
-		return
-	}
-	ctx.JSON(httpresp.Success200(nil, "Ok") )
+	ctx.JSON(httpresp.Success200(gin.H{
+		"accessToken": tokenStr,
+	}, "Ok") )
 }
 func(c * Scanner) IsAuth (ctx * gin.Context){
 	session := sessions.Default(ctx)
