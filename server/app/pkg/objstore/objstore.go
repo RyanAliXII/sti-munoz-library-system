@@ -47,8 +47,41 @@ func createConnection() *minio.Client {
 	} else {
 		logger.Info("Bucket successfully created.", zap.String("bucketName", BUCKET))
 	}
-
+	err = createBucketPolicy(client)
+	if err != nil {
+		logger.Error(err.Error(), zap.String("error", "createPolicyErrs"))
+	}
 	return client
+}
+
+
+func createBucketPolicy(client * minio.Client) error{
+	// Define the bucket policy JSON
+	// Define the bucket policy JSON
+	ctx := context.Background()
+	policyJSON := `{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+				"Effect": "Allow",
+				"Principal": {
+					"AWS": "*"
+				},
+				"Action": [
+					"s3:GetObject"
+				],
+				"Resource": [
+					"arn:aws:s3:::` + BUCKET + `/covers/*"
+				]
+			}
+		]
+	}`
+	err := client.SetBucketPolicy(ctx, BUCKET, policyJSON)
+	if err != nil {
+		return err
+	}
+	logger.Info("Bucket policy applied.", zap.String("bucketName", BUCKET))
+	return nil
 }
 
 func GetorCreateInstance() *minio.Client {
