@@ -195,7 +195,6 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	if nanoIdErr != nil {
 		return nanoIdErr
 	}
-
 	objectName := fmt.Sprintf("profile-pictures/%s", canonicID())
 	fileBuffer, err := image.Open()
 	if err != nil {
@@ -208,15 +207,35 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	}
 	fileSize := image.Size
 	ctx := context.Background()
+	
 	info, err := repo.objstore.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 			ContentType: contentType,})
 	if err != nil {
 		return err
 	}
-	_, err = repo.db.Exec("UPDATE system.account set profile_picture = $1 where id = $2", info.Key, id)
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	dbAccount := model.Account{}
+	err = transaction.Get(&dbAccount, "SELECT profile_picture from account_view where id = $1 limit 1", id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if len(dbAccount.ProfilePicture) > 0 {
+		err = repo.objstore.RemoveObject(ctx, objstore.BUCKET, dbAccount.ProfilePicture, minio.RemoveObjectOptions{})
+		if err != nil {
+			 transaction.Rollback()
+			 return err
+		}
+	}
+	_, err = transaction.Exec("UPDATE system.account set profile_picture = $1 where id = $2", info.Key, id)
 	if err != nil {
 		return err
 	}
+	transaction.Commit()
 	return nil
 }
 func NewAccountRepository() AccountRepositoryInterface {
