@@ -51,7 +51,7 @@ func (repo *AccountRepository) GetAccountById(id string) model.Account {
 func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
 	query := `
 			SELECT id, email, 
-			display_name, 
+			display_name,
 			given_name, surname,meta_data
 			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
 			ORDER BY (  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
