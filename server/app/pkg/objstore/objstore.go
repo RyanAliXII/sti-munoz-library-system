@@ -92,3 +92,5 @@ func GetorCreateInstance() *minio.Client {
 	})
 	return client
 }
+
+

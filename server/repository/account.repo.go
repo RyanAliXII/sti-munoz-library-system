@@ -203,11 +203,11 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	defer fileBuffer.Close()
 	contentType := image.Header["Content-Type"][0]
 	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp"{
-		return fmt.Errorf("not supported content type: %s ", contentType)
+		return fmt.Errorf("content type not supported : %s ", contentType)
 	}
 	fileSize := image.Size
 	ctx := context.Background()
-	
+
 	info, err := repo.objstore.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 			ContentType: contentType,})
 	if err != nil {
