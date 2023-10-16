@@ -57,7 +57,6 @@ func createConnection() *minio.Client {
 
 func createBucketPolicy(client * minio.Client) error{
 	// Define the bucket policy JSON
-	// Define the bucket policy JSON
 	ctx := context.Background()
 	policyJSON := `{
 		"Version": "2012-10-17",

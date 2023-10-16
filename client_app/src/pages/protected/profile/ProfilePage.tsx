@@ -197,7 +197,13 @@ const ProfilePage = () => {
 };
 const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
   return (
-    <Modal onClose={closeModal} open={isOpen}>
+    <Modal
+      onClose={closeModal}
+      open={isOpen}
+      showCloseIcon={false}
+      classNames={{ modal: "w-11/12 md:w-8/12 lg:w-5/12 rounded" }}
+      center
+    >
       <div>
         <DashboardComponent hideUploadButton={true} uppy={uppy} />
       </div>
