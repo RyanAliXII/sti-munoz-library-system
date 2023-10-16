@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BaseProps } from "../definitions/interfaces/Props";
 import LogoutButton from "./LogoutButton";
 import { useAuthContext } from "../contexts/AuthContext";
+import { buildS3Url } from "@definitions/s3";
 
 const Header = ({ children }: BaseProps) => {
   const { user } = useAuthContext();
@@ -9,6 +10,12 @@ const Header = ({ children }: BaseProps) => {
   const toggleDropdown = () => {
     setVisibility((visible) => !visible);
   };
+
+  const avatarUrl = `https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`;
+  const profilePicUrl =
+    user.profilePicture.length > 0
+      ? buildS3Url(user.profilePicture)
+      : avatarUrl;
   return (
     <header className="bg-white">
       <div className="container mx-auto px-4 py-8 flex items-center">
@@ -16,7 +23,11 @@ const Header = ({ children }: BaseProps) => {
           <div className="flex items-center">
             <img
               className="rounded-full w-10 h-10"
-              src={`https://avatars.dicebear.com/api/initials/${user.displayName}${user.surname}.svg?background=%230000ff`}
+              src={profilePicUrl}
+              onError={({ currentTarget }) => {
+                currentTarget.onerror = null;
+                currentTarget.src = avatarUrl;
+              }}
               alt="profile-image"
             ></img>
           </div>
