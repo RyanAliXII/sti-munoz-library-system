@@ -19,6 +19,7 @@ type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
 	recordMetadataRepository  repository.RecordMetadataRepository
 	validator   * validator.Validate
+	
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
@@ -119,7 +120,14 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 }
 
 func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
-	
+		profilePicture := ProfilePictureBody{}
+		err := ctx.Bind(&profilePicture)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("bindErr"))
+			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+			return 
+		}
+		
 }
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
@@ -128,6 +136,7 @@ func NewAccountController() AccountControllerInterface {
 			CacheExpiration: time.Minute * 5,
 	   }),
 		validator: validator.New(),
+		
 	}
 
 }

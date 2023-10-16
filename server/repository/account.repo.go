@@ -2,12 +2,15 @@ package repository
 
 import (
 	"database/sql"
+	"mime/multipart"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/minio/minio-go/v7"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -18,6 +21,7 @@ import (
 
 type AccountRepository struct {
 	db *sqlx.DB
+	objstore * minio.Client
 }
 
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
@@ -181,9 +185,13 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 	}
 	return accountRoles
 }
+func (repo * AccountRepository) UpdateProfilePictureById(id string, image * multipart.FileHeader) error {
+	return nil
+}
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
+		objstore: objstore.GetorCreateInstance(),
 	}
 }
 

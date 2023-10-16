@@ -1,6 +1,10 @@
 package account
 
-import "github.com/RyanAliXII/sti-munoz-library-system/server/model"
+import (
+	"mime/multipart"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+)
 
 type AccountBody struct {
 	Id          string `json:"id" binding:"required,uuid"`
@@ -9,7 +13,9 @@ type AccountBody struct {
 	Surname     string `json:"surname" binding:"required"`
 	Email       string `json:"email" binding:"required,email"`
 }
-
+type ProfilePictureBody struct{
+	Image *multipart.FileHeader `form:"image" binding:"required"`
+}
 
 
 type AccountSlice struct {

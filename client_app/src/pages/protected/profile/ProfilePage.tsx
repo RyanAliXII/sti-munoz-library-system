@@ -36,6 +36,8 @@ const uppy = new Uppy({
     headers: {
       Authorization: `Bearer`,
     },
+    method: "PUT",
+    fieldName: "image",
     endpoint: `${BASE_URL_V1}/accounts/bulk`,
   });
 
@@ -211,7 +213,7 @@ const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
   if (!isOpen) return null;
 
   const { instance: msalInstance } = useMsal();
-
+  const { user } = useAuthContext();
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -222,6 +224,7 @@ const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
       headers: {
         Authorization: `Bearer ${response.accessToken}`,
       },
+      endpoint: `${BASE_URL_V1}/accounts/${user.id}/profile-pictures`,
     });
     await uppy.upload();
   };
