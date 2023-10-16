@@ -17,6 +17,7 @@ const INITIAL_FORM_DATA: Book = {
   authors: [],
   copies: 1,
   subject: "",
+  ebook: "",
   sourceOfFund: "",
   section: {
     name: "Select section.",

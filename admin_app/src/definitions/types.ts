@@ -56,6 +56,7 @@ export interface Book {
   description: string;
   authors: Author[];
   covers: string[];
+  ebook: string;
   authorNumber: string;
   accessions: Accession[];
   searchTags: string[];
