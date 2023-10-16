@@ -417,11 +417,11 @@ const BookAddForm = () => {
             <Dashboard
               uppy={eBookUppy}
               width={"100%"}
-              height={"150px"}
+              height={"250px"}
               hideUploadButton={true}
               locale={{
                 strings: {
-                  browseFiles: " browse",
+                  browseFiles: "browse",
                   dropPasteFiles: "Drop the PDF here, click to %{browse}",
                 },
               }}

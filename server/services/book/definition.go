@@ -48,7 +48,9 @@ type AddBookCopyBody struct {
 	Copies int `json:"copies" binding:"required,min=1"`
 
 }
-
+type EbookBody struct {
+	Ebook *multipart.FileHeader `form:"ebook" binding:"required"`
+}
 
 type WeedingBody struct {
 	Remarks string `json:"remarks" binding:"required"`
