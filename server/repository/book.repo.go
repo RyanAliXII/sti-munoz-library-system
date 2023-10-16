@@ -12,6 +12,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore/utils"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -725,6 +726,37 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 	}
 
    	transaction.Commit()
+	return nil
+}
+
+func (repo * BookRepository)AddEbook(id string, eBook * multipart.FileHeader) error {
+	file, err := eBook.Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	contentType := eBook.Header["Content-Type"][0]
+	if contentType != "application/pdf" {
+		return fmt.Errorf("content type not suppored: %s", contentType)
+	}
+	nanoid , err := nanoid.Standard(21)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	ext := utils.GetFileExtBasedOnContentType(contentType)
+	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), ext)
+	fileSize := eBook.Size
+	result, err := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, file, fileSize, minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", result.Key, id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func NewBookRepository() BookRepositoryInterface {
