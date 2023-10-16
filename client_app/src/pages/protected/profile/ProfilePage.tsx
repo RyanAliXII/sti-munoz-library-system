@@ -11,20 +11,30 @@ import QRCode from "react-qr-code";
 import { Link } from "react-router-dom";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
-import { Account } from "@definitions/types";
+import { Account, ModalProps } from "@definitions/types";
 import Loader from "@components/Loader";
+import "@uppy/core/dist/style.min.css";
+import "@uppy/dashboard/dist/style.min.css";
+import Uppy from "@uppy/core";
+
+const uppy = new Uppy({
+  restrictions: {
+    allowedFileTypes: [".png", ".webp", ".jpg"],
+    maxNumberOfFiles: 1,
+  },
+});
 
 const ProfilePage = () => {
   const { user } = useAuthContext();
 
   const { Get } = useRequest();
-  const fetchAccount = async () => {
+  const fetchAccount = async (): Promise<Account> => {
     try {
       const response = await Get(`/accounts/${user.id}`);
       const { data } = response.data;
-      return data.account ?? account;
+      return data.account as Account;
     } catch (error) {
-      return account;
+      return account as Account;
     }
   };
 
@@ -60,6 +70,9 @@ const ProfilePage = () => {
               {account.givenName} {account.surname}
             </h1>
             <h2 className="lg:text-lg text-gray-500">{account.email}</h2>
+            <a className="text-sm underline text-blue-400" role="button">
+              Update Profile Picture
+            </a>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 w-full mt-10 gap-3">
@@ -167,5 +180,6 @@ const ProfilePage = () => {
     </div>
   );
 };
+const UploadProfileModal = ({}: ModalProps) => {};
 
 export default ProfilePage;
