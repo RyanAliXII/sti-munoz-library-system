@@ -1,7 +1,7 @@
 import { useAuthContext } from "@contexts/AuthContext";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useRef } from "react";
+import { FormEvent, useRef } from "react";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { CiCircleRemove } from "react-icons/ci";
 import { BsArrowReturnLeft } from "react-icons/bs";
@@ -20,12 +20,24 @@ import Modal from "react-responsive-modal";
 import Dashboard from "@uppy/dashboard";
 import { Dashboard as DashboardComponent } from "@uppy/react";
 import { useSwitch } from "@hooks/useToggle";
+import { PrimaryButton } from "@components/ui/button/Button";
+import { useMsal } from "@azure/msal-react";
+import XHRUpload from "@uppy/xhr-upload";
+import { BASE_URL_V1 } from "@definitions/api.config";
+import { apiScope } from "@definitions/configs/msal/scopes";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".webp", ".jpg"],
     maxNumberOfFiles: 1,
   },
-}).use(Dashboard);
+})
+  .use(Dashboard)
+  .use(XHRUpload, {
+    headers: {
+      Authorization: `Bearer`,
+    },
+    endpoint: `${BASE_URL_V1}/accounts/bulk`,
+  });
 
 const ProfilePage = () => {
   const { user } = useAuthContext();
@@ -196,6 +208,23 @@ const ProfilePage = () => {
   );
 };
 const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
+  if (!isOpen) return null;
+
+  const { instance: msalInstance } = useMsal();
+
+  const onSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+
+    const response = await msalInstance.acquireTokenSilent({
+      scopes: [apiScope("LibraryServer.Access")],
+    });
+    uppy.getPlugin("XHRUpload")?.setOptions({
+      headers: {
+        Authorization: `Bearer ${response.accessToken}`,
+      },
+    });
+    await uppy.upload();
+  };
   return (
     <Modal
       onClose={closeModal}
@@ -205,7 +234,17 @@ const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
       center
     >
       <div>
-        <DashboardComponent hideUploadButton={true} uppy={uppy} />
+        <h2 className="text-2xl mb-1">Attach Image</h2>
+        <hr></hr>
+        <form onSubmit={onSubmit}>
+          <DashboardComponent
+            className="mt-5"
+            hideUploadButton={true}
+            uppy={uppy}
+            height={"200px"}
+          />
+          <PrimaryButton className="mt-2"> Save</PrimaryButton>
+        </form>
       </div>
     </Modal>
   );
