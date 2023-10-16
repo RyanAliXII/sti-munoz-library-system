@@ -28,7 +28,7 @@ type Book struct {
 	ReceivedAt    db.NullableDate `json:"receivedAt" db:"received_at"`
 	DDC           string          `json:"ddc" db:"ddc"`
 	AuthorNumber  string          `json:"authorNumber" db:"author_number"`
-
+	Ebook		  string 		  `json:"ebook" db:"ebook"`
 	Authors    AuthorsJSON     `json:"authors" db:"authors"`
 	Accessions AccessionsJSON  `json:"accessions,omitempty" db:"accessions"`
 	Covers     pq.StringArray  `json:"covers" db:"covers"`
