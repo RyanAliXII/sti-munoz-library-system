@@ -79,6 +79,7 @@ export type Account = {
   surname: string;
   givenName: string;
   email: string;
+  profilePicture: "";
   metaData: {
     totalPenalty: number;
     walkInCheckedOutBooks: number;

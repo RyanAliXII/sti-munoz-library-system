@@ -1,13 +1,20 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
+	"mime/multipart"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore/utils"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/jaevor/go-nanoid"
+	"github.com/minio/minio-go/v7"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -18,10 +25,11 @@ import (
 
 type AccountRepository struct {
 	db *sqlx.DB
+	objstore * minio.Client
 }
 
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
+	query := `SELECT id, email, display_name, given_name, profile_picture, surname, meta_data FROM account_view  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -31,7 +39,7 @@ func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Accou
 	return accounts
 }
 func (repo *AccountRepository) GetAccountById(id string) model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view where id = $1 LIMIT 1`
+	query := `SELECT id, email, display_name, given_name, surname, profile_picture, meta_data FROM account_view where id = $1 LIMIT 1`
 	account := model.Account{}
 
 	getErr := repo.db.Get(&account, query, id)
@@ -44,8 +52,8 @@ func (repo *AccountRepository) GetAccountById(id string) model.Account {
 func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
 	query := `
 			SELECT id, email, 
-			display_name, 
-			given_name, surname,meta_data
+			display_name,
+			given_name, surname,meta_data, profile_picture
 			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
 			ORDER BY (  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
 			) DESC
@@ -164,7 +172,9 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 	'givenName', account.given_name,
 	 'surname', account.surname, 
 	'displayName',account.display_name,
-	 'email', account.email) as account,
+	 'email', account.email,
+	 'profilePicture', account.profile_picture
+	 ) as account,
 	 json_build_object(
 	   'id', role.id,
 	   'name', role.name,
@@ -181,9 +191,60 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 	}
 	return accountRoles
 }
+func (repo * AccountRepository) UpdateProfilePictureById(id string, image * multipart.FileHeader) error {
+	
+	fileBuffer, err := image.Open()
+	if err != nil {
+		return err
+	}
+	defer fileBuffer.Close()
+	contentType := image.Header["Content-Type"][0]
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp"{
+		return fmt.Errorf("content type not supported : %s ", contentType)
+	}
+	canonicID, nanoIdErr := nanoid.Standard(21)
+	if nanoIdErr != nil {
+		return nanoIdErr
+	}
+	ext := utils.GetFileExtBasedOnContentType(contentType)
+	objectName := fmt.Sprintf("profile-pictures/%s%s", canonicID(), ext)
+	fileSize := image.Size
+	ctx := context.Background()
+
+	info, err := repo.objstore.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+			ContentType: contentType,})
+	if err != nil {
+		return err
+	}
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	dbAccount := model.Account{}
+	err = transaction.Get(&dbAccount, "SELECT profile_picture from account_view where id = $1 limit 1", id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if len(dbAccount.ProfilePicture) > 0 {
+		err = repo.objstore.RemoveObject(ctx, objstore.BUCKET, dbAccount.ProfilePicture, minio.RemoveObjectOptions{})
+		if err != nil {
+			 transaction.Rollback()
+			 return err
+		}
+	}
+	_, err = transaction.Exec("UPDATE system.account set profile_picture = $1 where id = $2", info.Key, id)
+	if err != nil {
+		return err
+	}
+	transaction.Commit()
+	return nil
+}
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
+		objstore: objstore.GetorCreateInstance(),
 	}
 }
 
@@ -195,5 +256,6 @@ type AccountRepositoryInterface interface {
 	GetRoleByAccountId(accountId string) (model.Role, error)
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	GetAccountById(id string) model.Account
+	UpdateProfilePictureById(id string, image * multipart.FileHeader) error
 	
 }

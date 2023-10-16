@@ -57,7 +57,6 @@ func createConnection() *minio.Client {
 
 func createBucketPolicy(client * minio.Client) error{
 	// Define the bucket policy JSON
-	// Define the bucket policy JSON
 	ctx := context.Background()
 	policyJSON := `{
 		"Version": "2012-10-17",
@@ -65,13 +64,16 @@ func createBucketPolicy(client * minio.Client) error{
 			{
 				"Effect": "Allow",
 				"Principal": {
-					"AWS": "*"
+					"AWS": [
+						"*"
+					]
 				},
 				"Action": [
 					"s3:GetObject"
 				],
 				"Resource": [
-					"arn:aws:s3:::` + BUCKET + `/covers/*"
+					"arn:aws:s3:::sti.munoz.edsa.library/covers/*",
+					"arn:aws:s3:::sti.munoz.edsa.library/profile-pictures/*"
 				]
 			}
 		]
@@ -90,3 +92,5 @@ func GetorCreateInstance() *minio.Client {
 	})
 	return client
 }
+
+
