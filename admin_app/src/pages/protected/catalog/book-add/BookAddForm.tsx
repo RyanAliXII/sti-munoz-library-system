@@ -53,6 +53,16 @@ const uppy = new Uppy({
   headers: {},
   endpoint: `${BASE_URL_V1}/books/covers`,
 });
+
+const eBookUppy = new Uppy({
+  restrictions: {
+    allowedFileTypes: [".pdf"],
+    maxNumberOfFiles: 1,
+  },
+}).use(XHRUpload, {
+  fieldName: "",
+  endpoint: "",
+});
 const BookAddForm = () => {
   const { instance: msalInstance } = useMsal();
   const {
@@ -395,6 +405,24 @@ const BookAddForm = () => {
                 strings: {
                   browseFiles: " browse",
                   dropPasteFiles: "Drop a book image cover, click to %{browse}",
+                },
+              }}
+            ></Dashboard>
+          </FieldRow>
+
+          <FieldRow
+            label="eBook"
+            fieldDetails="Upload eBook version of the book if available"
+          >
+            <Dashboard
+              uppy={eBookUppy}
+              width={"100%"}
+              height={"150px"}
+              hideUploadButton={true}
+              locale={{
+                strings: {
+                  browseFiles: " browse",
+                  dropPasteFiles: "Drop the PDF here, click to %{browse}",
                 },
               }}
             ></Dashboard>
