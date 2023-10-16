@@ -41,6 +41,7 @@ export const BorrowedCopyInitialValue: BorrowedCopy = {
 
 export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
+    profilePicture: "",
     metaData: {
       totalPenalty: 0,
       onlineApprovedBooks: 0,
