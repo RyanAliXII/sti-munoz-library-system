@@ -434,7 +434,13 @@ func(ctrler * BookController) UploadEBook(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	
+	err = ctrler.bookRepository.AddEbook(id, body.Ebook)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("AddEbookErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Ebook successfully added."))
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{

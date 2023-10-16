@@ -781,4 +781,5 @@ type BookRepositoryInterface interface {
 	GetClientBookView(filter filter.Filter) []model.Book
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
+	AddEbook(id string, eBook * multipart.FileHeader) error
 }
