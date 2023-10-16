@@ -1,7 +1,7 @@
 import { useAuthContext } from "@contexts/AuthContext";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useRef } from "react";
+import { FormEvent, useRef } from "react";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { CiCircleRemove } from "react-icons/ci";
 import { BsArrowReturnLeft } from "react-icons/bs";
@@ -10,21 +10,50 @@ import { MdOutlinePending } from "react-icons/md";
 import QRCode from "react-qr-code";
 import { Link } from "react-router-dom";
 import { useRequest } from "@hooks/useRequest";
-import { useQuery } from "@tanstack/react-query";
-import { Account } from "@definitions/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Account, ModalProps } from "@definitions/types";
 import Loader from "@components/Loader";
+import "@uppy/core/dist/style.min.css";
+import "@uppy/dashboard/dist/style.min.css";
+import Uppy from "@uppy/core";
+import Modal from "react-responsive-modal";
+import Dashboard from "@uppy/dashboard";
+import { Dashboard as DashboardComponent } from "@uppy/react";
+import { useSwitch } from "@hooks/useToggle";
+import { PrimaryButton } from "@components/ui/button/Button";
+import { useMsal } from "@azure/msal-react";
+import XHRUpload from "@uppy/xhr-upload";
+import { BASE_URL_V1 } from "@definitions/api.config";
+import { apiScope } from "@definitions/configs/msal/scopes";
+import { buildS3Url } from "@definitions/s3";
+import { toast } from "react-toastify";
+const uppy = new Uppy({
+  restrictions: {
+    allowedFileTypes: [".png", ".webp", ".jpg"],
+    maxNumberOfFiles: 1,
+  },
+})
+  .use(Dashboard)
+  .use(XHRUpload, {
+    headers: {
+      Authorization: `Bearer`,
+    },
+    method: "PUT",
+    fieldName: "image",
+    endpoint: `${BASE_URL_V1}/accounts/bulk`,
+  });
 
 const ProfilePage = () => {
   const { user } = useAuthContext();
 
   const { Get } = useRequest();
-  const fetchAccount = async () => {
+  const fetchAccount = async (): Promise<Account> => {
     try {
       const response = await Get(`/accounts/${user.id}`);
       const { data } = response.data;
-      return data.account ?? account;
+      return data.account as Account;
     } catch (error) {
-      return account;
+      return account as Account;
     }
   };
 
@@ -42,15 +71,28 @@ const ProfilePage = () => {
     link.href = img;
     link.click();
   };
-
+  const {
+    isOpen: isUploadProfileOpen,
+    close: closeUploadProfileModal,
+    open: openUploadProfile,
+  } = useSwitch();
   if (!account) return <Loader />;
+  const avatarUrl = `https://ui-avatars.com/api/?name=${account.givenName}${account.surname}&background=2563EB&color=fff`;
+  const profilePicUrl =
+    account.profilePicture.length > 0
+      ? buildS3Url(account.profilePicture)
+      : avatarUrl;
   return (
     <div className="lg:w-8/12 mx-auto">
       <div className="w-full h-56 bg-gray-300 relative">
         <img
-          src={`https://ui-avatars.com/api/?name=${account.givenName}${account.surname}&background=2563EB&color=fff`}
+          src={profilePicUrl}
           className="h-36 w-36 absolute  border rounded-full bg-black left-5"
           style={{ bottom: "-55px" }}
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null;
+            currentTarget.src = avatarUrl;
+          }}
         ></img>
       </div>
       <div className="flex justify-between flex-col w-full px-9 mt-16">
@@ -60,6 +102,13 @@ const ProfilePage = () => {
               {account.givenName} {account.surname}
             </h1>
             <h2 className="lg:text-lg text-gray-500">{account.email}</h2>
+            <a
+              className="text-sm underline text-blue-400"
+              role="button"
+              onClick={openUploadProfile}
+            >
+              Update Profile Picture
+            </a>
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 w-full mt-10 gap-3">
@@ -164,7 +213,59 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+      <UploadProfileModal
+        isOpen={isUploadProfileOpen}
+        closeModal={closeUploadProfileModal}
+      />
     </div>
+  );
+};
+const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
+  const queryClient = useQueryClient();
+  const { instance: msalInstance } = useMsal();
+  const { user } = useAuthContext();
+  if (!isOpen) return null;
+
+  const onSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+
+    const response = await msalInstance.acquireTokenSilent({
+      scopes: [apiScope("LibraryServer.Access")],
+    });
+    uppy.getPlugin("XHRUpload")?.setOptions({
+      headers: {
+        Authorization: `Bearer ${response.accessToken}`,
+      },
+      endpoint: `${BASE_URL_V1}/accounts/${user.id}/profile-pictures`,
+    });
+    await uppy.upload();
+    uppy.cancelAll();
+    closeModal();
+    toast.success("Profile picture updated.");
+    queryClient.invalidateQueries(["profileAccount"]);
+  };
+  return (
+    <Modal
+      onClose={closeModal}
+      open={isOpen}
+      showCloseIcon={false}
+      classNames={{ modal: "w-11/12 md:w-8/12 lg:w-5/12 rounded" }}
+      center
+    >
+      <div>
+        <h2 className="text-2xl mb-1">Attach Image</h2>
+        <hr></hr>
+        <form onSubmit={onSubmit}>
+          <DashboardComponent
+            className="mt-5"
+            hideUploadButton={true}
+            uppy={uppy}
+            height={"200px"}
+          />
+          <PrimaryButton className="mt-2"> Save</PrimaryButton>
+        </form>
+      </div>
+    </Modal>
   );
 };
 

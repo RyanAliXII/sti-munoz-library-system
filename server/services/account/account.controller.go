@@ -19,6 +19,7 @@ type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
 	recordMetadataRepository  repository.RecordMetadataRepository
 	validator   * validator.Validate
+	
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
@@ -117,6 +118,24 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 		"account": account,
 	}, "Account has been fetched."))
 }
+
+func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
+		profilePicture := ProfilePictureBody{}
+		err := ctx.Bind(&profilePicture)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("bindErr"))
+			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+			return 
+		}
+		id := ctx.GetString("requestorId")
+		err = ctrler.accountRepository.UpdateProfilePictureById(id, profilePicture.Image)
+		if err != nil{
+			logger.Error(err.Error(), slimlog.Error("UpdateProfilePictureError"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -124,6 +143,7 @@ func NewAccountController() AccountControllerInterface {
 			CacheExpiration: time.Minute * 5,
 	   }),
 		validator: validator.New(),
+		
 	}
 
 }
@@ -133,4 +153,5 @@ type AccountControllerInterface interface {
 	ImportAccount(ctx *gin.Context)
 	GetAccountRoles(ctx * gin.Context)
 	GetAccountById(ctx * gin.Context)
+	UpdateProfilePicture(ctx * gin.Context)
 }
