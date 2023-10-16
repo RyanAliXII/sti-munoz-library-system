@@ -442,6 +442,31 @@ func(ctrler * BookController) UploadEBook(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Ebook successfully added."))
 }
+func(ctrler * BookController) GetEbookById(ctx * gin.Context){
+	id := ctx.Param("id") // book id
+	object ,err := ctrler.bookRepository.GetEbookById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GeEbookByIdErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.Header("Content-Type", "application/octet-stream")
+    ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf") // Modify the filename accordingly
+
+    // Copy the object data to the response writer
+    if _, err := io.Copy(ctx.Writer, object); err != nil {
+        logger.Error(err.Error(), slimlog.Error("CopyEbookDataErr"))
+        ctx.JSON(httpresp.Fail500(nil, "Failed to copy ebook data to response."))
+        return
+    }
+
+    // Close the object after copying data
+    if err := object.Close(); err != nil {
+        logger.Error(err.Error(), slimlog.Error("CloseEbookObjectErr"))
+        // Handle error if needed
+    }
+	ctx.Status(http.StatusOK)
+}
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
@@ -466,4 +491,5 @@ type BookControllerInterface interface {
 	HandleGetBooks(ctx * gin.Context) 
 	HandleGetById(ctx * gin.Context)
 	UploadEBook(ctx * gin.Context)
+	GetEbookById(ctx * gin.Context)
 }

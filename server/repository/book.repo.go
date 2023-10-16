@@ -762,6 +762,20 @@ func (repo * BookRepository)AddEbook(id string, eBook * multipart.FileHeader) er
 	}
 	return nil
 }
+func (repo * BookRepository)GetEbookById(id string, ) (*minio.Object, error) {
+	ebookKey := ""
+	err := repo.db.Get(&ebookKey, "SELECT ebook from book_view where id = $1", id)
+	if err != nil {
+	   return nil, err
+	}
+	ctx := context.Background()
+	object, err := repo.minio.GetObject(ctx, objstore.BUCKET, ebookKey, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+	
+	return object, nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -785,4 +799,5 @@ type BookRepositoryInterface interface {
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
 	AddEbook(id string, eBook * multipart.FileHeader) error
+	GetEbookById(id string, ) (*minio.Object, error)
 }

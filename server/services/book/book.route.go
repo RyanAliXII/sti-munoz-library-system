@@ -63,4 +63,8 @@ func BookRoutes(router *gin.RouterGroup) {
 	middlewares.BlockRequestFromClientApp, 
 	controller.UploadEBook)
 
+	router.GET("/:id/ebooks", 
+	middlewares.BlockRequestFromClientApp, 
+	controller.UploadEBook)
+
 }
