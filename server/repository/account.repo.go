@@ -28,7 +28,7 @@ type AccountRepository struct {
 }
 
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
+	query := `SELECT id, email, display_name, given_name, profile_picture, surname, meta_data FROM account_view  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -38,7 +38,7 @@ func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Accou
 	return accounts
 }
 func (repo *AccountRepository) GetAccountById(id string) model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, meta_data FROM account_view where id = $1 LIMIT 1`
+	query := `SELECT id, email, display_name, given_name, surname, profile_picture, meta_data FROM account_view where id = $1 LIMIT 1`
 	account := model.Account{}
 
 	getErr := repo.db.Get(&account, query, id)
@@ -52,7 +52,7 @@ func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Ac
 	query := `
 			SELECT id, email, 
 			display_name,
-			given_name, surname,meta_data
+			given_name, surname,meta_data, profile_picture
 			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
 			ORDER BY (  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
 			) DESC
@@ -171,7 +171,9 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 	'givenName', account.given_name,
 	 'surname', account.surname, 
 	'displayName',account.display_name,
-	 'email', account.email) as account,
+	 'email', account.email,
+	 'profilePicture', account.profile_picture
+	 ) as account,
 	 json_build_object(
 	   'id', role.id,
 	   'name', role.name,

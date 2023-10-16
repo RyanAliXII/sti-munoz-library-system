@@ -10,7 +10,7 @@ import { MdOutlinePending } from "react-icons/md";
 import QRCode from "react-qr-code";
 import { Link } from "react-router-dom";
 import { useRequest } from "@hooks/useRequest";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Account, ModalProps } from "@definitions/types";
 import Loader from "@components/Loader";
 import "@uppy/core/dist/style.min.css";
@@ -25,6 +25,8 @@ import { useMsal } from "@azure/msal-react";
 import XHRUpload from "@uppy/xhr-upload";
 import { BASE_URL_V1 } from "@definitions/api.config";
 import { apiScope } from "@definitions/configs/msal/scopes";
+import { buildS3Url } from "@definitions/s3";
+import { toast } from "react-toastify";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".webp", ".jpg"],
@@ -75,11 +77,16 @@ const ProfilePage = () => {
     open: openUploadProfile,
   } = useSwitch();
   if (!account) return <Loader />;
+  const avatarUrl = `https://ui-avatars.com/api/?name=${account.givenName}${account.surname}&background=2563EB&color=fff`;
+  const profilePicUrl =
+    account.profilePicture.length > 0
+      ? buildS3Url(account.profilePicture)
+      : avatarUrl;
   return (
     <div className="lg:w-8/12 mx-auto">
       <div className="w-full h-56 bg-gray-300 relative">
         <img
-          src={`https://ui-avatars.com/api/?name=${account.givenName}${account.surname}&background=2563EB&color=fff`}
+          src={profilePicUrl}
           className="h-36 w-36 absolute  border rounded-full bg-black left-5"
           style={{ bottom: "-55px" }}
         ></img>
@@ -210,10 +217,11 @@ const ProfilePage = () => {
   );
 };
 const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
-  if (!isOpen) return null;
-
+  const queryClient = useQueryClient();
   const { instance: msalInstance } = useMsal();
   const { user } = useAuthContext();
+  if (!isOpen) return null;
+
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -227,6 +235,10 @@ const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
       endpoint: `${BASE_URL_V1}/accounts/${user.id}/profile-pictures`,
     });
     await uppy.upload();
+    uppy.cancelAll();
+    closeModal();
+    toast.success("Profile picture updated.");
+    queryClient.invalidateQueries(["profileAccount"]);
   };
   return (
     <Modal

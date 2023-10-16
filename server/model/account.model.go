@@ -13,7 +13,7 @@ type Account struct {
 	GivenName   string          `json:"givenName" db:"given_name" csv:"givenName"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
 	Email       string          `json:"email" db:"email" csv:"mail" validate:"required"`
-	ProfilePicture string 		 `json:"profilePicture" db:"profile_picture"`
+	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
 	AccountMetadata AccountMetadata `json:"metaData" db:"meta_data"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
