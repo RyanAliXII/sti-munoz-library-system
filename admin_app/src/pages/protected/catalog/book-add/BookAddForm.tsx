@@ -60,7 +60,7 @@ const eBookUppy = new Uppy({
     maxNumberOfFiles: 1,
   },
 }).use(XHRUpload, {
-  fieldName: "",
+  fieldName: "ebook",
   endpoint: "",
 });
 const BookAddForm = () => {
@@ -173,19 +173,30 @@ const BookAddForm = () => {
         uppy.cancelAll();
         return;
       }
-      const tokens = await msalInstance.acquireTokenSilent({
+      const tokenResponse = await msalInstance.acquireTokenSilent({
         scopes: [apiScope("LibraryServer.Access")],
       });
       uppy.getPlugin("XHRUpload")?.setOptions({
         headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
         },
       });
+      const bookId = response.data.book.id;
       uppy.setMeta({
-        bookId: response.data.book.id,
+        bookId,
       });
       uppy.upload().finally(() => {
         uppy.cancelAll();
+      });
+      eBookUppy.getPlugin("XHRUpload")?.setOptions({
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+        },
+
+        endpoint: `${BASE_URL_V1}/books/${bookId}/ebooks`,
+      });
+      eBookUppy.upload().finally(() => {
+        eBookUppy.cancelAll();
       });
     },
     onError: (error) => {

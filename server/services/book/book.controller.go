@@ -428,13 +428,13 @@ func(ctrler * BookController)AddBookCopies(ctx * gin.Context){
 func(ctrler * BookController) UploadEBook(ctx * gin.Context){
 	id := ctx.Param("id") // book id
 	body := EbookBody{}
-	err := ctx.Bind(body)
+	err := ctx.Bind(&body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	fmt.Println(id)
+	
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{
