@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"mime/multipart"
 	"time"
 
@@ -10,6 +12,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/jaevor/go-nanoid"
 	"github.com/minio/minio-go/v7"
 
 	"github.com/doug-martin/goqu/v9"
@@ -186,6 +189,32 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 	return accountRoles
 }
 func (repo * AccountRepository) UpdateProfilePictureById(id string, image * multipart.FileHeader) error {
+	canonicID, nanoIdErr := nanoid.Standard(21)
+	if nanoIdErr != nil {
+		return nanoIdErr
+	}
+
+	objectName := fmt.Sprintf("profile-pictures/%s", canonicID())
+	fileBuffer, err := image.Open()
+	if err != nil {
+		return err
+	}
+	defer fileBuffer.Close()
+	contentType := image.Header["Content-Type"][0]
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp"{
+		return fmt.Errorf("not supported content type: %s ", contentType)
+	}
+	fileSize := image.Size
+	ctx := context.Background()
+	info, err := repo.objstore.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+			ContentType: contentType,})
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec("UPDATE system.account set profile_picture = $1 where id = $2", info.Key, id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func NewAccountRepository() AccountRepositoryInterface {
@@ -203,5 +232,6 @@ type AccountRepositoryInterface interface {
 	GetRoleByAccountId(accountId string) (model.Role, error)
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	GetAccountById(id string) model.Account
+	UpdateProfilePictureById(id string, image * multipart.FileHeader) error
 	
 }

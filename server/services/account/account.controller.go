@@ -127,7 +127,16 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 			return 
 		}
+		id := ctx.GetString("requestorId")
+		err = ctrler.accountRepository.UpdateProfilePictureById(id, profilePicture.Image)
+		if err != nil{
+			logger.Error(err.Error(), slimlog.Error("UpdateProfilePictureError"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
 		
+
+		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
