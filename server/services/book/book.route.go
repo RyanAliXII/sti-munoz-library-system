@@ -8,7 +8,7 @@ import (
 
 func BookRoutes(router *gin.RouterGroup) {
 
-	var controller BookControllerInterface = NewBookController()
+var controller BookControllerInterface = NewBookController()
 	router.Use(middlewares.ValidatePermissions("Book.Access"))
 
 	router.GET("/",
@@ -65,6 +65,6 @@ func BookRoutes(router *gin.RouterGroup) {
 
 	router.GET("/:id/ebooks", 
 	middlewares.BlockRequestFromClientApp, 
-	controller.UploadEBook)
+	controller.GetEbookById)
 
 }
