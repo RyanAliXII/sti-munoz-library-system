@@ -16,13 +16,16 @@ import Loader from "@components/Loader";
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 import Uppy from "@uppy/core";
-
+import Modal from "react-responsive-modal";
+import Dashboard from "@uppy/dashboard";
+import { Dashboard as DashboardComponent } from "@uppy/react";
+import { useSwitch } from "@hooks/useToggle";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".webp", ".jpg"],
     maxNumberOfFiles: 1,
   },
-});
+}).use(Dashboard);
 
 const ProfilePage = () => {
   const { user } = useAuthContext();
@@ -52,7 +55,11 @@ const ProfilePage = () => {
     link.href = img;
     link.click();
   };
-
+  const {
+    isOpen: isUploadProfileOpen,
+    close: closeUploadProfileModal,
+    open: openUploadProfile,
+  } = useSwitch();
   if (!account) return <Loader />;
   return (
     <div className="lg:w-8/12 mx-auto">
@@ -70,7 +77,11 @@ const ProfilePage = () => {
               {account.givenName} {account.surname}
             </h1>
             <h2 className="lg:text-lg text-gray-500">{account.email}</h2>
-            <a className="text-sm underline text-blue-400" role="button">
+            <a
+              className="text-sm underline text-blue-400"
+              role="button"
+              onClick={openUploadProfile}
+            >
               Update Profile Picture
             </a>
           </div>
@@ -177,9 +188,21 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+      <UploadProfileModal
+        isOpen={isUploadProfileOpen}
+        closeModal={closeUploadProfileModal}
+      />
     </div>
   );
 };
-const UploadProfileModal = ({}: ModalProps) => {};
+const UploadProfileModal = ({ closeModal, isOpen }: ModalProps) => {
+  return (
+    <Modal onClose={closeModal} open={isOpen}>
+      <div>
+        <DashboardComponent hideUploadButton={true} uppy={uppy} />
+      </div>
+    </Modal>
+  );
+};
 
 export default ProfilePage;
