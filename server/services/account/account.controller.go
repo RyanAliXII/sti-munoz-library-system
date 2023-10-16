@@ -117,6 +117,10 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 		"account": account,
 	}, "Account has been fetched."))
 }
+
+func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
+	
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -133,4 +137,5 @@ type AccountControllerInterface interface {
 	ImportAccount(ctx *gin.Context)
 	GetAccountRoles(ctx * gin.Context)
 	GetAccountById(ctx * gin.Context)
+	UpdateProfilePicture(ctx * gin.Context)
 }
