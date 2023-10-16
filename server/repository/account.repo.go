@@ -9,6 +9,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore/utils"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -191,11 +192,7 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 	return accountRoles
 }
 func (repo * AccountRepository) UpdateProfilePictureById(id string, image * multipart.FileHeader) error {
-	canonicID, nanoIdErr := nanoid.Standard(21)
-	if nanoIdErr != nil {
-		return nanoIdErr
-	}
-	objectName := fmt.Sprintf("profile-pictures/%s", canonicID())
+	
 	fileBuffer, err := image.Open()
 	if err != nil {
 		return err
@@ -205,6 +202,12 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp"{
 		return fmt.Errorf("content type not supported : %s ", contentType)
 	}
+	canonicID, nanoIdErr := nanoid.Standard(21)
+	if nanoIdErr != nil {
+		return nanoIdErr
+	}
+	ext := utils.GetFileExtBasedOnContentType(contentType)
+	objectName := fmt.Sprintf("profile-pictures/%s%s", canonicID(), ext)
 	fileSize := image.Size
 	ctx := context.Background()
 
