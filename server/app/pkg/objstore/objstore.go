@@ -64,13 +64,16 @@ func createBucketPolicy(client * minio.Client) error{
 			{
 				"Effect": "Allow",
 				"Principal": {
-					"AWS": "*"
+					"AWS": [
+						"*"
+					]
 				},
 				"Action": [
 					"s3:GetObject"
 				],
 				"Resource": [
-					"arn:aws:s3:::` + BUCKET + `/covers/*"
+					"arn:aws:s3:::sti.munoz.edsa.library/covers/*",
+					"arn:aws:s3:::sti.munoz.edsa.library/profile-pictures/*"
 				]
 			}
 		]

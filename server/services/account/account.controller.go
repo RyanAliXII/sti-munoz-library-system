@@ -134,8 +134,6 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
-		
-
 		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
 func NewAccountController() AccountControllerInterface {
