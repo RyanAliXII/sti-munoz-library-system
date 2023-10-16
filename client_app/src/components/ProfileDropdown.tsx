@@ -3,16 +3,27 @@ import LogoutButton from "./LogoutButton";
 import useToggle from "@hooks/useToggle";
 import { useAuthContext } from "@contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { buildS3Url } from "@definitions/s3";
 
 const ProfileDropdown = () => {
   const { toggle, value: visible } = useToggle();
   const { user } = useAuthContext();
+
+  const avatarUrl = `https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`;
+  const profilePicUrl =
+    user.profilePicture.length > 0
+      ? buildS3Url(user.profilePicture)
+      : avatarUrl;
   return (
     <div className="flex items-center relative text-left">
       <div className="flex items-center">
         <img
           className="rounded-full w-10"
-          src={`https://avatars.dicebear.com/api/initials/${user.givenName}${user.surname}.svg?background=%230000ff`}
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null;
+            currentTarget.src = avatarUrl;
+          }}
+          src={profilePicUrl}
           alt="profile-image"
         ></img>
       </div>
