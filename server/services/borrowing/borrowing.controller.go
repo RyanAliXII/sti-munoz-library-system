@@ -227,12 +227,12 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid date."))
 		return
 	}
-	// err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
-	// if err != nil {
-	// 	logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
-	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	// 	return 
-	// }
+	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate, body.IsEbook)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
 }
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{
