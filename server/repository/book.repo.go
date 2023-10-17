@@ -776,6 +776,24 @@ func (repo * BookRepository)GetEbookById(id string, ) (*minio.Object, error) {
 	
 	return object, nil
 }
+func (repo * BookRepository)RemoveEbookById(id string, ) error{
+	ebookKey := ""
+	err := repo.db.Get(&ebookKey, "SELECT ebook from book_view where id = $1", id)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+
+	err = repo.minio.RemoveObject(ctx, objstore.BUCKET, ebookKey, minio.RemoveObjectOptions{}	)
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec("Update catalog.book set ebook = '' where id $1", id)
+   if err != nil {
+		return err
+   }
+   return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -800,4 +818,5 @@ type BookRepositoryInterface interface {
 	GetOneOnClientView(id string) model.Book
 	AddEbook(id string, eBook * multipart.FileHeader) error
 	GetEbookById(id string, ) (*minio.Object, error)
+	RemoveEbookById(id string, ) error
 }
