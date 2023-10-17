@@ -15,7 +15,7 @@ type BorrowingRepository interface {
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
 	MarkAsApproved(id string, remarks string) error 
-	MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate, isEbook bool) error
+	MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate) error
  	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 	GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error)
 	GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error)
@@ -150,10 +150,10 @@ func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
 		_, err := repo.db.Exec(query, status.BorrowStatusApproved, remarks ,id, status.BorrowStatusPending)
 		return err
 }
-func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate, isEbook bool) error{
+func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate) error{
 	//Mark the book as checked out if the book status is approved. The status id for approved is 2.
-	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3, is_ebook = $4 where id = $5 and status_id = $6"
-	_, err := repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, isEbook, id, status.BorrowStatusApproved)
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and status_id = $5"
+	_, err := repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved)
 	return err 
 }
 func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{

@@ -31,7 +31,7 @@ func (repo *Accession) GetAccessions(filter filter.Filter) []model.Accession {
 	FROM catalog.accession
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3)
 	where weeded_at is null
 	ORDER BY book.created_at DESC
 	LIMIT $1 OFFSET $2

@@ -163,12 +163,8 @@ const CheckoutPage = () => {
         >
           Select Client
         </Divider>
-        <div className="w-full flex items-center gap-2">
+        <div>
           <ClientSearchBox setClient={setClient} />
-
-          <SecondaryButton className="h-9 mt-6 flex justify-center">
-            <AiOutlineScan className="text-white inline text-lg " />
-          </SecondaryButton>
         </div>
         <small className="text-red-500 ml-0.5">{errors?.client?.id}</small>
         {checkout.client.id?.length ?? 0 > 0 ? (
@@ -209,11 +205,8 @@ const CheckoutPage = () => {
         >
           Select Books
         </Divider>
-        <div className="w-full flex items-center gap-2">
+        <div>
           <BookSearchBox selectBook={selectBook} />
-          <SecondaryButton className="h-9 mt-6 flex justify-center">
-            <AiOutlineScan className="text-white inline text-lg " />
-          </SecondaryButton>
         </div>
         <small className="text-red-500 ml-0.5">{errors?.accessions}</small>
         {checkout.accessions.length > 0 ? (

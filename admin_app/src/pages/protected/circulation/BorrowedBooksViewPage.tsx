@@ -102,19 +102,12 @@ const BorrowedBooksViewPage = () => {
     });
   };
 
-  const onConfirmDueDate = ({
-    date,
-    isEbook,
-  }: {
-    date: string;
-    isEbook: boolean;
-  }) => {
+  const onConfirmDueDate = ({ date }: { date: string }) => {
     closeInputDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
       remarks: "",
       dueDate: date,
-      isEbook: isEbook,
     });
   };
 
@@ -145,14 +138,12 @@ const BorrowedBooksViewPage = () => {
       status: BorrowStatus;
       remarks: string;
       dueDate?: string;
-      isEbook?: boolean;
     }) =>
       Patch(
         `/borrowing/borrowed-books/${borrowedBookId}/status`,
         {
           remarks: body.remarks,
           dueDate: body?.dueDate ?? "",
-          isEbook: body?.isEbook ?? false,
         },
         {
           params: {
