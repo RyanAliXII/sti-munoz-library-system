@@ -788,7 +788,7 @@ func (repo * BookRepository)RemoveEbookById(id string, ) error{
 	if err != nil {
 		return err
 	}
-	_, err = repo.db.Exec("Update catalog.book set ebook = '' where id $1", id)
+	_, err = repo.db.Exec("Update catalog.book set ebook = '' where id  = $1", id)
    if err != nil {
 		return err
    }

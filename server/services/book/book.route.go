@@ -38,9 +38,7 @@ var controller BookControllerInterface = NewBookController()
 	middlewares.BlockRequestFromClientApp,
 	controller.UpdateBookCover)
 
-	router.DELETE("/:bookId/covers",
-	middlewares.BlockRequestFromClientApp, 
-	controller.DeleteBookCovers)
+	
 	
 	router.GET("/accessions", 
 	middlewares.BlockRequestFromClientApp,
@@ -66,7 +64,12 @@ var controller BookControllerInterface = NewBookController()
 	router.GET("/:id/ebooks", 
 	middlewares.BlockRequestFromClientApp, 
 	controller.GetEbookById)
-	router.DELETE("/:id/ebooks", 
+
+	deleteGrp := router.Group("/:id")
+	deleteGrp.DELETE("/covers",
+	middlewares.BlockRequestFromClientApp, 
+	controller.DeleteBookCovers)
+	deleteGrp.DELETE("/ebooks", 
 	middlewares.BlockRequestFromClientApp, 
 	controller.RemoveEbookById)
 

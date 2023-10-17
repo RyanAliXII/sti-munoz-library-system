@@ -7,7 +7,7 @@ import BookEditForm from "./BookEditForm";
 import { useState } from "react";
 import EditAccessionPanel from "./EditAccessionPanel";
 import { useSearchParams } from "react-router-dom";
-import EbookPanel from "./EbookPanel";
+import EbookPanel from "./ebook-panel/EbookPanel";
 
 enum BookEditTab {
   BookInfo = 1,

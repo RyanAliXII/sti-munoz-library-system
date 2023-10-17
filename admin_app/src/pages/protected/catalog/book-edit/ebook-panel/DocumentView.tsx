@@ -1,75 +1,14 @@
-import { useRequest } from "@hooks/useRequest";
-import { useBookEditFormContext } from "./BookEditFormContext";
-import { useQuery } from "@tanstack/react-query";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useEffect, useState } from "react";
-import "react-pdf/dist/esm/Page/TextLayer.css";
-import {
-  DangerButton,
-  LightOutlineButton,
-  PrimaryButton,
-} from "@components/ui/button/Button";
-import { Input, InputClasses } from "@components/ui/form/Input";
-import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
-import { useSwitch } from "@hooks/useToggle";
+import { LightOutlineButton } from "@components/ui/button/Button";
+import { Input } from "@components/ui/form/Input";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
-const EbookPanel = () => {
-  const { form: book } = useBookEditFormContext();
-  const { Get } = useRequest();
-  const fetchEbook = async () => {
-    try {
-      const response = await Get(`/books/${book.id}/ebooks`, {
-        responseType: "arraybuffer",
-      });
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      return url;
-    } catch (error) {
-      console.error(error);
-      return "";
-    }
-  };
-
-  const { data: eBookUrl } = useQuery({
-    queryFn: fetchEbook,
-    queryKey: ["eBook"],
-    enabled: book.ebook.length > 1,
-  });
-  const {
-    close: closeRemoveDialog,
-    isOpen: isOpenRemoveDialog,
-    open: openRemoveDialog,
-  } = useSwitch();
-  return (
-    <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10 ">
-      <div className="w-full flex justify-between mb-5">
-        <h1 className="text-2xl">eBook</h1>
-      </div>
-      <div className="flex gap-2">
-        <DangerButton
-          disabled={book.ebook.length === 0}
-          onClick={openRemoveDialog}
-        >
-          Remove eBook
-        </DangerButton>
-        <PrimaryButton>Update eBook</PrimaryButton>
-      </div>
-      <hr className="mb-3 mt-3"></hr>
-      <DocumentView eBookUrl={eBookUrl} />
-      <DangerConfirmDialog
-        title="Remove ebook!"
-        text="Are you sure you want to remove the ebook? This will delete the eBook permamanently."
-        close={closeRemoveDialog}
-        isOpen={isOpenRemoveDialog}
-      />
-    </div>
-  );
-};
 const DocumentView = ({ eBookUrl = "" }) => {
   const [numPages, setNumPages] = useState<number>(1);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [tempPageNumber, setTempPageNumber] = useState<number>(1);
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    setPageNumber(1);
     setNumPages(numPages);
   }
   useEffect(() => {
@@ -101,7 +40,6 @@ const DocumentView = ({ eBookUrl = "" }) => {
             type="number"
             min={1}
             max={numPages}
-            placeholder="page number"
             value={tempPageNumber}
             onChange={(event) => {
               let value: string | number = event.target.value;
@@ -140,6 +78,7 @@ const DocumentView = ({ eBookUrl = "" }) => {
       </div>
       <Document
         file={eBookUrl}
+        noData={"Book is not available as eBook"}
         className="w-10/12 flex justify-center flex-col items-center p-4"
         onLoadSuccess={onDocumentLoadSuccess}
       >
@@ -151,4 +90,5 @@ const DocumentView = ({ eBookUrl = "" }) => {
     </>
   );
 };
-export default EbookPanel;
+
+export default DocumentView;

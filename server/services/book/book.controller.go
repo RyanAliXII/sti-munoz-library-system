@@ -350,7 +350,7 @@ func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Book covers updated."))
 }
 func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
-	bookId := ctx.Param("bookId")
+	bookId := ctx.Param("id")
 	_, parseIdErr := uuid.Parse(bookId)
 	if parseIdErr != nil {
 		logger.Error(parseIdErr.Error(), slimlog.Error("parseIdErr"))
