@@ -17,7 +17,7 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 
-import { BorrowedBook } from "@definitions/types";
+import { Book, BorrowedBook } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -90,8 +90,10 @@ const BorrowedBooksViewPage = () => {
     },
   });
 
-  const [selectedBorrowedBookId, setSelectedBorrowedBookId] =
-    useState<string>("");
+  const [selectedBorrowedBook, setSelectedBorrowedBook] = useState<
+    Book | undefined
+  >();
+  const [borrowedBookId, setBorrowedBookId] = useState("");
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
     updateStatus.mutate({
@@ -100,12 +102,19 @@ const BorrowedBooksViewPage = () => {
     });
   };
 
-  const onConfirmDueDate = (date: string) => {
+  const onConfirmDueDate = ({
+    date,
+    isEbook,
+  }: {
+    date: string;
+    isEbook: boolean;
+  }) => {
     closeInputDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
       remarks: "",
       dueDate: date,
+      isEbook: true,
     });
   };
 
@@ -136,9 +145,10 @@ const BorrowedBooksViewPage = () => {
       status: BorrowStatus;
       remarks: string;
       dueDate?: string;
+      isEbook?: boolean;
     }) =>
       Patch(
-        `/borrowing/borrowed-books/${selectedBorrowedBookId}/status`,
+        `/borrowing/borrowed-books/${borrowedBookId}/status`,
         {
           remarks: body.remarks,
           dueDate: body?.dueDate ?? "",
@@ -269,7 +279,8 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.PrimaryOutlineButtonClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openReturnRemarkPrompt();
                                 }}
                               >
@@ -284,7 +295,9 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.PrimaryOutlineButtonClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  console.log;
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openApprovalConfirmationDialog();
                                 }}
                               >
@@ -299,7 +312,9 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.PrimaryOutlineButtonClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  console.log(borrowedBook);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openInputDueDateModal();
                                 }}
                               >
@@ -315,7 +330,8 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.WarningButtonOutlineClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openUnreturnedRemarkPrompt();
                                 }}
                               >
@@ -333,7 +349,8 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.DangerButtonOutlineClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openCancellationRemarkPrompt();
                                 }}
                               >
@@ -373,6 +390,7 @@ const BorrowedBooksViewPage = () => {
         onProceed={onConfirmCancel}
       />
       <DueDateInputModal
+        book={selectedBorrowedBook}
         closeModal={closeInputDueDateModal}
         isOpen={isDueDateInputModalOpen}
         onConfirmDate={onConfirmDueDate}

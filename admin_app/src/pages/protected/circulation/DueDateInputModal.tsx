@@ -1,22 +1,21 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import { Input } from "@components/ui/form/Input";
-import { ModalProps } from "@definitions/types";
+import { Input, InputClasses } from "@components/ui/form/Input";
+import { Book, ModalProps } from "@definitions/types";
+import { format } from "date-fns";
 import React, { useState } from "react";
 import Modal from "react-responsive-modal";
 
 interface DueDateInputModelProps extends ModalProps {
-  onConfirmDate: (date: string) => void;
+  onConfirmDate: ({}: { date: string; isEbook: boolean }) => void;
+  book?: Book;
 }
 export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
   isOpen,
   closeModal,
   onConfirmDate,
+  book,
 }) => {
-  const dateNow = new Date();
-  const [dueDate, setDueDate] = useState<string>(
-    `${dateNow.getFullYear()}-${dateNow.getMonth() + 1}-${dateNow.getDate()}`
-  );
   if (!isOpen) return null;
 
   return (
@@ -24,6 +23,7 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
       focusTrapped={false}
       open={isOpen}
       onClose={closeModal}
+      center
       showCloseIcon={false}
       classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
       containerId="dueDateInputOverlay"
@@ -31,34 +31,33 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
     >
       <form>
         <div className="w-full  mt-2">
-          <div className="px-2 mb-3">
-            <h1 className="text-xl font-medium">Set Due Date</h1>
+          <div className="px-2 mb-4">
+            <h1 className="text-xl font-medium">Approve Request</h1>
           </div>
-          <div className="px-2">
+          <div className=" mb-3">
             <div>
-              <CustomDatePicker
-                name="dueDate"
-                placeholderText="Select due date"
-                value={new Date(dueDate).toDateString()}
-                portalId="dueDateInputOverlay"
-                selected={new Date(dueDate)}
-                minDate={dateNow}
-                className="w-full block"
-                onChange={(date) => {
-                  if (!date) return;
-                  const dateValue = `${date.getFullYear()}-${
-                    date.getMonth() + 1
-                  }-${date.getDate()}`;
-                  setDueDate(dateValue);
-                }}
+              <Input
+                type="date"
+                label="Due date"
+                min={format(new Date(), "Y-M-dd")}
               />
+            </div>
+            <div>
+              <label className={InputClasses.LabelClasslist}>Book type</label>
+              <select
+                className={InputClasses.InputDefaultClasslist}
+                disabled={(book?.ebook ?? "").length === 0}
+              >
+                <option value="false">Hardcopy</option>
+                <option value="true">Ebook</option>
+              </select>
             </div>
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton
               type="button"
               onClick={() => {
-                onConfirmDate(dueDate);
+                // onConfirmDate(dueDate);
               }}
             >
               Save
