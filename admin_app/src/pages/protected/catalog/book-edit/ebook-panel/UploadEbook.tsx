@@ -12,6 +12,7 @@ import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { toast } from "react-toastify";
 
 const eBookUppy = new Uppy({
   restrictions: {
@@ -39,10 +40,18 @@ const UploadEbook = () => {
       },
       endpoint: `${BASE_URL_V1}/books/${book.id}/ebooks`,
     });
-    eBookUppy.upload().finally(() => {
-      eBookUppy.cancelAll();
-      queryClient.invalidateQueries(["book"]);
-    });
+    eBookUppy
+      .upload()
+      .then(() => {
+        toast.success("eBook uploaded.");
+      })
+      .catch(() => {
+        toast.error("Unknown error occured.");
+      })
+      .finally(() => {
+        eBookUppy.cancelAll();
+        queryClient.invalidateQueries(["book"]);
+      });
   };
   const { form: book } = useBookEditFormContext();
   const { Delete } = useRequest();
@@ -50,7 +59,11 @@ const UploadEbook = () => {
   const removeEbook = useMutation({
     mutationFn: () => Delete(`/books/${book.id}/ebooks`),
     onSuccess: () => {
+      toast.success("eBook removed.");
       queryClient.invalidateQueries(["book"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
     },
     onSettled: () => {
       closeRemoveDialog();
@@ -73,7 +86,7 @@ const UploadEbook = () => {
           width={"100%"}
           hideUploadButton={true}
           uppy={eBookUppy}
-          height={"200px"}
+          height={"400px"}
         />
         <div className="mt-1">
           <PrimaryButton className="mt-2">Save</PrimaryButton>

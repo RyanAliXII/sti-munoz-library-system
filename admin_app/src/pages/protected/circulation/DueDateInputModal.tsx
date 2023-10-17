@@ -59,7 +59,7 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
     try {
       const result = await validate();
       if (!result) return;
-      onConfirmDate({ date: form.date, isEbook: false });
+      onConfirmDate(result);
     } catch {}
   };
   if (!isOpen) return null;

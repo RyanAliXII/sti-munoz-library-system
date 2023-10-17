@@ -18,7 +18,6 @@ const EbookPanel = () => {
       const bufferLength = response.data?.byteLength ?? 0;
       if (bufferLength === 0) return "";
       const blob = new Blob([response.data], { type: "application/pdf" });
-
       const url = URL.createObjectURL(blob);
       return url;
     } catch (error) {
@@ -30,7 +29,6 @@ const EbookPanel = () => {
   const { data: eBookUrl } = useQuery({
     queryFn: fetchEbook,
     queryKey: ["eBook", book],
-
     refetchOnWindowFocus: false,
   });
 

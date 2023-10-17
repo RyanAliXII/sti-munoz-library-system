@@ -227,6 +227,7 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid date."))
 		return
 	}
+	fmt.Println(body)
 	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate, body.IsEbook)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
