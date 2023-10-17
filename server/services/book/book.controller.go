@@ -470,7 +470,12 @@ func(ctrler * BookController) GetEbookById(ctx * gin.Context){
 
 func(ctrler * BookController) RemoveEbookById(ctx * gin.Context){
 	id := ctx.Param("id") // book id
-	fmt.Println(id)
+	err := ctrler.bookRepository.RemoveEbookById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("RemoveBookByIdErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
     ctx.JSON(httpresp.Success200(nil, "Ebook removed."))
 }
 func NewBookController() BookControllerInterface {
