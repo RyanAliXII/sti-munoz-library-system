@@ -9,6 +9,9 @@ import { FormEvent } from "react";
 import { useBookEditFormContext } from "../BookEditFormContext";
 import { useSwitch } from "@hooks/useToggle";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useMsal } from "@azure/msal-react";
+import { apiScope } from "@definitions/configs/msal/scopes";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
 
 const eBookUppy = new Uppy({
   restrictions: {
@@ -17,11 +20,29 @@ const eBookUppy = new Uppy({
   },
 }).use(XHRUpload, {
   fieldName: "ebook",
+  method: "PUT",
   endpoint: "",
 });
 const UploadEbook = () => {
-  const onSubmit = (event: FormEvent) => {
+  const { instance } = useMsal();
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    const hasFiles = eBookUppy.getFiles().length > 0;
+    if (!hasFiles) return;
+    const response = await instance.acquireTokenSilent({
+      scopes: [apiScope("LibraryServer.Access")],
+    });
+
+    eBookUppy.getPlugin("XHRUpload")?.setOptions({
+      headers: {
+        Authorization: `Bearer ${response.accessToken}`,
+      },
+      endpoint: `${BASE_URL_V1}/books/${book.id}/ebooks`,
+    });
+    eBookUppy.upload().finally(() => {
+      eBookUppy.cancelAll();
+      queryClient.invalidateQueries(["book"]);
+    });
   };
   const { form: book } = useBookEditFormContext();
   const { Delete } = useRequest();
@@ -30,6 +51,9 @@ const UploadEbook = () => {
     mutationFn: () => Delete(`/books/${book.id}/ebooks`),
     onSuccess: () => {
       queryClient.invalidateQueries(["book"]);
+    },
+    onSettled: () => {
+      closeRemoveDialog();
     },
   });
 

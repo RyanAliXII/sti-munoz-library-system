@@ -772,6 +772,10 @@ func (repo * BookRepository)GetEbookById(id string, ) (*minio.Object, error) {
 	if err != nil {
 	   return nil, err
 	}
+
+	if(len(ebookKey) == 0){
+		return nil, nil
+	}
 	ctx := context.Background()
 	object, err := repo.minio.GetObject(ctx, objstore.BUCKET, ebookKey, minio.GetObjectOptions{})
 	if err != nil {
@@ -813,12 +817,13 @@ func (repo * BookRepository)UpdateEbookByBookId(id string,  eBook * multipart.Fi
 		return err
 	}
 	ctx := context.Background()	
+	if len(dbEbookKey) > 0 {
 	err = repo.minio.RemoveObject(ctx, objstore.BUCKET,dbEbookKey, minio.RemoveObjectOptions{})
 	if err != nil {
 		if !(minio.ToErrorResponse(err).Code == "NoSuchKey") {
 				return err
 		}
-	}
+	}}
 	contentType := eBook.Header["Content-Type"][0]
 	if contentType != "application/pdf" {
 		return fmt.Errorf("content type not suppored: %s", contentType)
@@ -872,4 +877,5 @@ type BookRepositoryInterface interface {
 	AddEbook(id string, eBook * multipart.FileHeader) error
 	GetEbookById(id string, ) (*minio.Object, error)
 	RemoveEbookById(id string, ) error
+	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
 }

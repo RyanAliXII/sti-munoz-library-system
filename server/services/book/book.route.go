@@ -52,6 +52,9 @@ var controller BookControllerInterface = NewBookController()
 	middlewares.ValidateBody[BookBody], 
 	controller.UpdateBook)
 	
+	router.PUT("/:id/ebooks", 
+	middlewares.BlockRequestFromClientApp,
+	controller.UpdateEbookById)
 
 	router.PATCH("/accessions/:id/status",
 	middlewares.BlockRequestFromClientApp,
@@ -72,5 +75,6 @@ var controller BookControllerInterface = NewBookController()
 	deleteGrp.DELETE("/ebooks", 
 	middlewares.BlockRequestFromClientApp, 
 	controller.RemoveEbookById)
+	
 
 }

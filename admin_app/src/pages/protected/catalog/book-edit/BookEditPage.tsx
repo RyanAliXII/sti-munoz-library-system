@@ -35,6 +35,9 @@ const BookEditPage = () => {
       if (parsedTabId == BookEditTab.Accessions) {
         return BookEditTab.Accessions;
       }
+      if (parsedTabId == BookEditTab.Ebook) {
+        return BookEditTab.Ebook;
+      }
     }
     return BookEditTab.BookInfo;
   });

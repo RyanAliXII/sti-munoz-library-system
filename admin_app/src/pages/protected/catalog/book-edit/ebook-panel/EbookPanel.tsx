@@ -9,11 +9,16 @@ const EbookPanel = () => {
   const { form: book } = useBookEditFormContext();
   const { Get } = useRequest();
   const fetchEbook = async () => {
+    if (!book.id) return "";
     try {
       const response = await Get(`/books/${book.id}/ebooks`, {
         responseType: "arraybuffer",
       });
+
+      const bufferLength = response.data?.byteLength ?? 0;
+      if (bufferLength === 0) return "";
       const blob = new Blob([response.data], { type: "application/pdf" });
+
       const url = URL.createObjectURL(blob);
       return url;
     } catch (error) {
@@ -24,8 +29,9 @@ const EbookPanel = () => {
 
   const { data: eBookUrl } = useQuery({
     queryFn: fetchEbook,
-    queryKey: ["eBook"],
-    enabled: book.ebook.length > 1,
+    queryKey: ["eBook", book],
+
+    refetchOnWindowFocus: false,
   });
 
   return (

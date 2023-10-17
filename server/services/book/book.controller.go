@@ -451,6 +451,12 @@ func(ctrler * BookController) GetEbookById(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
+
+	if (object == nil){
+		ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf")
+		ctx.Data(http.StatusOK, "application/pdf", []byte{})
+		return
+	}
 	defer func() {
 		if object != nil {
 			object.Close()
@@ -473,6 +479,24 @@ func(ctrler * BookController) RemoveEbookById(ctx * gin.Context){
 	err := ctrler.bookRepository.RemoveEbookById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("RemoveBookByIdErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+    ctx.JSON(httpresp.Success200(nil, "Ebook removed."))
+}
+
+func(ctrler * BookController) UpdateEbookById(ctx * gin.Context){
+	id := ctx.Param("id") // book id
+	body := EbookBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.bookRepository.UpdateEbookByBookId(id, body.Ebook)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateEbookByBookId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -504,4 +528,5 @@ type BookControllerInterface interface {
 	UploadEBook(ctx * gin.Context)
 	GetEbookById(ctx * gin.Context)
 	RemoveEbookById(ctx * gin.Context)
+	UpdateEbookById(ctx * gin.Context)
 }
