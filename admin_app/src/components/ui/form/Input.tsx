@@ -77,7 +77,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
             }}
           />
-          <div className="h-2 flex items-center mt-2">
+          <div className="h-2 flex items-center py-2 mt-1">
             <small className="text-red-500 ml-1">{props.error}</small>
           </div>
         </div>

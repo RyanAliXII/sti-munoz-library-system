@@ -296,7 +296,7 @@ const BorrowedBooksViewPage = () => {
                                 }
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
-                                  console.log;
+
                                   setBorrowedBookId(borrowedBook.id ?? "");
                                   openApprovalConfirmationDialog();
                                 }}
@@ -312,7 +312,6 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.PrimaryOutlineButtonClasslist
                                 }
                                 onClick={() => {
-                                  console.log(borrowedBook);
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBookId(borrowedBook.id ?? "");
                                   openInputDueDateModal();

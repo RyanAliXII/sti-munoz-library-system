@@ -1,10 +1,14 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+
 import { Input, InputClasses } from "@components/ui/form/Input";
 import { Book, ModalProps } from "@definitions/types";
-import { format } from "date-fns";
-import React, { useState } from "react";
+import { useForm } from "@hooks/useForm";
+
+import { format, isMatch, isBefore, isEqual } from "date-fns";
+
+import React, { FormEvent } from "react";
 import Modal from "react-responsive-modal";
+import { boolean, object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
   onConfirmDate: ({}: { date: string; isEbook: boolean }) => void;
@@ -16,6 +20,48 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
   onConfirmDate,
   book,
 }) => {
+  const { handleFormInput, form, validate, errors } = useForm<{
+    date: string;
+    isEbook: boolean;
+  }>({
+    initialFormData: {
+      date: "",
+      isEbook: false,
+    },
+    schema: object({
+      date: string()
+        .required("Due date is required.")
+        .test(
+          "test-is-after-date",
+          "Date must not be less than the date today.",
+          (value) => {
+            if (!value) return false;
+            try {
+              const now = new Date();
+              now.setHours(0, 0, 0, 0);
+              const selectedDate = new Date(value);
+              selectedDate.setHours(0, 0, 0, 0);
+              return !isBefore(selectedDate, now) || isEqual(now, selectedDate);
+            } catch {
+              return false;
+            }
+          }
+        )
+        .test("match-format", "Date is required.", (value) => {
+          if (!value) return false;
+          return isMatch(value, "yyyy-MM-dd");
+        }),
+      isEbook: boolean().typeError("This is required field"),
+    }),
+  });
+  const onSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    try {
+      const result = await validate();
+      if (!result) return;
+      onConfirmDate(result);
+    } catch {}
+  };
   if (!isOpen) return null;
 
   return (
@@ -25,26 +71,31 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
       onClose={closeModal}
       center
       showCloseIcon={false}
-      classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
+      classNames={{ modal: "w-11/12 md:w-5/12 lg:w-5/12 xl:w-3/12 rounded" }}
       containerId="dueDateInputOverlay"
       modalId="dueDateInputModal"
     >
-      <form>
+      <form onSubmit={onSubmit}>
         <div className="w-full  mt-2">
           <div className="px-2 mb-4">
             <h1 className="text-xl font-medium">Approve Request</h1>
           </div>
-          <div className=" mb-3">
+          <div className="mb-3">
             <div>
               <Input
                 type="date"
+                name="date"
+                onChange={handleFormInput}
                 label="Due date"
-                min={format(new Date(), "Y-M-dd")}
+                error={errors?.date}
+                min={format(new Date(), "yyyy-MM-dd")}
               />
             </div>
             <div>
               <label className={InputClasses.LabelClasslist}>Book type</label>
               <select
+                name="isEbook"
+                onChange={handleFormInput}
                 className={InputClasses.InputDefaultClasslist}
                 disabled={(book?.ebook ?? "").length === 0}
               >
@@ -55,7 +106,6 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
           </div>
           <div className="flex gap-1 mt-2 p-2">
             <PrimaryButton
-              type="button"
               onClick={() => {
                 // onConfirmDate(dueDate);
               }}
