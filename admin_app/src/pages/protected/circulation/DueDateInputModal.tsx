@@ -88,7 +88,7 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
                 onChange={handleFormInput}
                 label="Due date"
                 error={errors?.date}
-                // min={format(new Date(), "yyyy-MM-dd")}
+                min={format(new Date(), "yyyy-MM-dd")}
               />
             </div>
             <div>

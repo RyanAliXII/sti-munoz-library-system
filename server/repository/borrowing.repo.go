@@ -20,7 +20,6 @@ type BorrowingRepository interface {
 	GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error)
 	GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error)
 	MarkAsCancelled(id string, remarks string) error
-	
 
 }
 type Borrowing struct{
@@ -153,7 +152,7 @@ func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
 }
 func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate, isEbook bool) error{
 	//Mark the book as checked out if the book status is approved. The status id for approved is 2.
-	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3, is_ebook = $4 where id = $5 nd status_id = $6"
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3, is_ebook = $4 where id = $5 and status_id = $6"
 	_, err := repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, isEbook, id, status.BorrowStatusApproved)
 	return err 
 }
