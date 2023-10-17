@@ -66,5 +66,8 @@ var controller BookControllerInterface = NewBookController()
 	router.GET("/:id/ebooks", 
 	middlewares.BlockRequestFromClientApp, 
 	controller.GetEbookById)
+	router.DELETE("/:id/ebooks", 
+	middlewares.BlockRequestFromClientApp, 
+	controller.RemoveEbookById)
 
 }

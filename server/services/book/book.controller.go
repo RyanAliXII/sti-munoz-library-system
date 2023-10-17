@@ -467,6 +467,12 @@ func(ctrler * BookController) GetEbookById(ctx * gin.Context){
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
+
+func(ctrler * BookController) RemoveEbookById(ctx * gin.Context){
+	id := ctx.Param("id") // book id
+	fmt.Println(id)
+    ctx.JSON(httpresp.Success200(nil, "Ebook removed."))
+}
 func NewBookController() BookControllerInterface {
 	return &BookController{
 		bookRepository: repository.NewBookRepository(),
@@ -492,4 +498,5 @@ type BookControllerInterface interface {
 	HandleGetById(ctx * gin.Context)
 	UploadEBook(ctx * gin.Context)
 	GetEbookById(ctx * gin.Context)
+	RemoveEbookById(ctx * gin.Context)
 }
