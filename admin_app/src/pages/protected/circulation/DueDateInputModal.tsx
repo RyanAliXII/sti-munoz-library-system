@@ -57,8 +57,8 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     try {
-      // const result = await validate();
-      // if (!result) return;
+      const result = await validate();
+      if (!result) return;
       onConfirmDate({ date: form.date, isEbook: false });
     } catch {}
   };
