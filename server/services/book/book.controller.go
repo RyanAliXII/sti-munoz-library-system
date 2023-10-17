@@ -1,6 +1,7 @@
 package book
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -450,22 +451,21 @@ func(ctrler * BookController) GetEbookById(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	ctx.Header("Content-Type", "application/octet-stream")
-    ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf") // Modify the filename accordingly
-
-    // Copy the object data to the response writer
-    if _, err := io.Copy(ctx.Writer, object); err != nil {
-        logger.Error(err.Error(), slimlog.Error("CopyEbookDataErr"))
-        ctx.JSON(httpresp.Fail500(nil, "Failed to copy ebook data to response."))
-        return
-    }
-
-    // Close the object after copying data
-    if err := object.Close(); err != nil {
-        logger.Error(err.Error(), slimlog.Error("CloseEbookObjectErr"))
-        // Handle error if needed
-    }
-	ctx.Status(http.StatusOK)
+	defer func() {
+		if object != nil {
+			object.Close()
+		}
+	}()
+	
+    ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf") // Modify the filename accordingl
+	var buffer bytes.Buffer
+	_, err = buffer.ReadFrom(object)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("buffer.ReadFrom"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
 func NewBookController() BookControllerInterface {
 	return &BookController{
