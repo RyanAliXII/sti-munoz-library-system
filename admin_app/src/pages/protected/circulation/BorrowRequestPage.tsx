@@ -10,7 +10,7 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 
-import { BorrowRequest, BorrowingTransaction } from "@definitions/types";
+import { BorrowRequest } from "@definitions/types";
 import { useNavigate } from "react-router-dom";
 import Container, {
   ContainerNoBackground,

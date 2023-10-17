@@ -21,7 +21,7 @@ import { Book, BorrowedBook } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ButtonClasses } from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
@@ -114,7 +114,7 @@ const BorrowedBooksViewPage = () => {
       status: BorrowStatus.CheckedOut,
       remarks: "",
       dueDate: date,
-      isEbook: true,
+      isEbook: isEbook,
     });
   };
 
@@ -152,6 +152,7 @@ const BorrowedBooksViewPage = () => {
         {
           remarks: body.remarks,
           dueDate: body?.dueDate ?? "",
+          isEbook: body?.isEbook ?? false,
         },
         {
           params: {

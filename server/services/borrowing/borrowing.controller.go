@@ -3,6 +3,7 @@ package borrowing
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
@@ -200,19 +201,38 @@ func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gi
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
-	body := UpdateBorrowStatusBodyWithDueDate{}
+	body := UpdateBorrowStatusCheckout{}
 	err :=  ctx.Bind(&body)
 	if err != nil {
 	   logger.Error(err.Error(), slimlog.Error("BindErr"))
 	   ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	   return
    	}
-	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
+	loc, _ := time.LoadLocation("Asia/Manila")
+	nowTime := time.Now().In(loc)
+	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
+	layout := "2006-01-02"
+	parsedTime, err := time.Parse(layout, string(body.DueDate))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return 
+		logger.Error(err.Error(), slimlog.Error("parse time error."))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid date."))
+		return
 	}
+	
+	parsedTime = parsedTime.In(loc)
+	dueDate := time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, parsedTime.Location())
+
+	if (dueDate.Before(nowDate) && !dueDate.Equal(nowDate)){
+		logger.Error("Date must not be greater than or equal server date.")
+		ctx.JSON(httpresp.Fail400(nil, "Invalid date."))
+		return
+	}
+	// err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
+	// if err != nil {
+	// 	logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	// 	return 
+	// }
 }
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{
