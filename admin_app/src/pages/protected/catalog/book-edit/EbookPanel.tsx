@@ -4,7 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useEffect, useState } from "react";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { PrimaryButton } from "@components/ui/button/Button";
+import {
+  DangerButton,
+  LightOutlineButton,
+  PrimaryButton,
+} from "@components/ui/button/Button";
 import { Input, InputClasses } from "@components/ui/form/Input";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 const EbookPanel = () => {
@@ -31,10 +35,17 @@ const EbookPanel = () => {
   });
 
   return (
-    <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
+    <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10 ">
       <div className="w-full flex justify-between mb-5">
         <h1 className="text-2xl">eBook</h1>
       </div>
+      <div className="flex gap-2">
+        <DangerButton disabled={book.ebook.length === 0}>
+          Remove eBook
+        </DangerButton>
+        <PrimaryButton>Update eBook</PrimaryButton>
+      </div>
+      <hr className="mb-3 mt-3"></hr>
       <DocumentView eBookUrl={eBookUrl} />
     </div>
   );
@@ -85,7 +96,7 @@ const DocumentView = ({ eBookUrl = "" }) => {
           />
         </div>
 
-        <PrimaryButton
+        <LightOutlineButton
           onClick={() => {
             setPageNumber((prev) => {
               if (prev === 1) {
@@ -96,9 +107,9 @@ const DocumentView = ({ eBookUrl = "" }) => {
           }}
         >
           {" "}
-          Prev
-        </PrimaryButton>
-        <PrimaryButton
+          Previous
+        </LightOutlineButton>
+        <LightOutlineButton
           onClick={() => {
             setPageNumber((prev) => {
               if (prev === numPages) {
@@ -110,7 +121,7 @@ const DocumentView = ({ eBookUrl = "" }) => {
         >
           {" "}
           Next{" "}
-        </PrimaryButton>
+        </LightOutlineButton>
       </div>
       <Document
         file={eBookUrl}
