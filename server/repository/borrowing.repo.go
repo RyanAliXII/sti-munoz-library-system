@@ -78,13 +78,13 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id != 6`
+	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id != 6 order by created_at desc`
 	err := repo.db.Select(&borrowedBooks, query, accountId)
 	return borrowedBooks, err
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id = $2`
+	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id = $2 order by created_at desc`
 	err := repo.db.Select(&borrowedBooks, query, accountId, statusId)
 	return borrowedBooks, err
 }
@@ -93,7 +93,6 @@ func (repo * Borrowing)handlePenaltyCreation(id string, transaction * sqlx.Tx) e
 	borrowedBook := model.BorrowedBook{}
 	err := transaction.Get(&borrowedBook,"SELECT id, account_id, penalty, book, accession_id, due_date, created_at FROM borrowed_book_view where id = $1", id)
 	if err != nil {
-		fmt.Println("IN SELECT")
 		return err
 	}
 	if borrowedBook.Penalty > 0 {
@@ -103,7 +102,6 @@ You have borrowed a book in the library on %s. The book "%s"  was due on %s. Unf
 Please settle the fee in the cashier. Thank you.`,borrowedDate, borrowedBook.Book.Title, borrowedBook.DueDate, borrowedBook.Penalty)
 		_, err = transaction.Exec("INSERT INTO borrowing.penalty(description, account_id, amount) VALUES($1, $2 ,$3 )", description, borrowedBook.AccountId, borrowedBook.Penalty )
 		if err != nil {
-			fmt.Println("IN SELECT")
 			return err
 		}
 	}
