@@ -36,7 +36,7 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 		return 
 	}	
-	borrowedBooks, err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut)
+	borrowedBooks,groupId ,err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("toBorrowedBookModel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
@@ -48,19 +48,25 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Book has been borrowed"))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"groupId":  groupId,
+	}, "Book has been borrowed"))
 	
 }
-func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]model.BorrowedBook, error){
+func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]model.BorrowedBook,string ,error){
 	grpId := uuid.New().String()
 	settings := ctrler.settingsRepo.Get()
 
 	borrowedBooks := make([]model.BorrowedBook, 0)	
 	if settings.DuePenalty.Value == 0 {
-		return borrowedBooks, fmt.Errorf("due penalty must not be 0")
+		return borrowedBooks, grpId ,fmt.Errorf("due penalty must not be 0")
 	}
 
 	for _, accession := range body.Accessions {
+		err := ctrler.isValidDueDate(string(accession.DueDate))
+		if err != nil {
+			return borrowedBooks, grpId , err
+		}
 		borrowedBooks = append(borrowedBooks, model.BorrowedBook{
 			GroupId: grpId,
 			AccessionId: accession.Id,
@@ -71,7 +77,24 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 			
 		})
 	}
-	return borrowedBooks, nil
+	return borrowedBooks, grpId, nil
+}
+
+func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
+	loc, _ := time.LoadLocation("Asia/Manila")
+	nowTime := time.Now().In(loc)
+	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
+	layout := "2006-01-02"
+	parsedTime, err := time.Parse(layout, dateStr)
+	if err != nil {
+		return err
+	}
+	parsedTime = parsedTime.In(loc)
+	dueDate := time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, parsedTime.Location())
+	if (dueDate.Before(nowDate) && !dueDate.Equal(nowDate)){
+		return fmt.Errorf("date must greater than or equal server date")
+	}
+	return nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
 	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
@@ -208,23 +231,10 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 	   ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	   return
    	}
-	loc, _ := time.LoadLocation("Asia/Manila")
-	nowTime := time.Now().In(loc)
-	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
-	layout := "2006-01-02"
-	parsedTime, err := time.Parse(layout, string(body.DueDate))
+	err = ctrler.isValidDueDate(string(body.DueDate))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("parse time error."))
-		ctx.JSON(httpresp.Fail400(nil, "Invalid date."))
-		return
-	}
-	
-	parsedTime = parsedTime.In(loc)
-	dueDate := time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, parsedTime.Location())
-
-	if (dueDate.Before(nowDate) && !dueDate.Equal(nowDate)){
-		logger.Error("Date must not be greater than or equal server date.")
-		ctx.JSON(httpresp.Fail400(nil, "Invalid date."))
+		logger.Error(err.Error(), slimlog.Error("isValideDueDate"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
