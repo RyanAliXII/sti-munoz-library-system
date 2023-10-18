@@ -46,12 +46,10 @@ func (repo * Bag) AddItemToBag(item model.BagItem) error{
 }
 func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	items := make([]model.BagItem, 0)
-	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked, book.json_format as book,	
-	(CASE WHEN bb.accession_id is not null then false else true END) as is_available FROM circulation.bag
-	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
-	INNER JOIN book_view as book on accession.book_id = book.id
+	query:= `SELECT bag.id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number, bag.is_checked, bag.book,	
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available FROM bag_view as bag
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
+	as bb on bag.accession_id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where bag.account_id = $1
 	`
 	selectErr := repo.db.Select(&items, query, accountId,)

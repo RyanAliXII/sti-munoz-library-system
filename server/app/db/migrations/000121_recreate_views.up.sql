@@ -194,24 +194,14 @@ SELECT book.id,title, isbn,
 
 
 CREATE OR REPLACE VIEW bag_view as
-( 
-(
-	SELECT bag.id, bag.account_id, bag.accession_id, accession.number,  accession.book_id as book_id, is_checked, false as is_ebook, JSONB_BUILD_OBJECT(
-		'id', book.id,
-		'title', book.title
-	) as book  from circulation.bag
+SELECT bag.id , bag.book_id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number,  bv.json_format as book, bag.is_checked,  bag.is_ebook  from ((
+	SELECT bag.id, bag.account_id, bag.accession_id, accession.number as accession_number, accession.copy_number,  accession.book_id as book_id, is_checked, false as is_ebook from circulation.bag
 	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
-	INNER JOIN catalog.book as book on accession.book_id = book.id
 )
 UNION ALL
-(	SELECT ebook_bag.id, account_id,  '00000000-0000-0000-0000-000000000000', 0, book_id, is_checked, true as is_ebook, JSONB_BUILD_OBJECT(
-		'id', book.id,
-		'title', book.title
-	) as book  from circulation.ebook_bag
-	INNER JOIN catalog.book as book on book_id = book.id	
-)
-);
-
+(	SELECT ebook_bag.id, account_id,  '00000000-0000-0000-0000-000000000000', 0, 0, book_id, is_checked, true as is_ebook 	  from circulation.ebook_bag	
+)) as bag
+INNER JOIN book_view as bv on bag.book_id = bv.id;
 
 
 
