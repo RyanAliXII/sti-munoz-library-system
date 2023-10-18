@@ -79,7 +79,6 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, grou
 		if err != nil {
 			return borrowedBooks, err
 		}
-		fmt.Println(groupId)
 		borrowedBooks = append(borrowedBooks, model.BorrowedBook{
 			GroupId: groupId,
 			AccessionId: accession.Id,

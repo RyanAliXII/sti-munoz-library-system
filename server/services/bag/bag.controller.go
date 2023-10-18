@@ -93,6 +93,7 @@ func (ctrler * Bag)CheckItemFromBag(ctx * gin.Context){
 	})
 
 	if checkErr != nil {
+		logger.Error(checkErr.Error(), slimlog.Error("CheckItemFromBagErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
@@ -150,6 +151,7 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 	}
 	checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
 	if checkoutErr != nil{
+		logger.Error(checkoutErr.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
