@@ -2,6 +2,7 @@ package bag
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,7 @@ func (ctrler * Bag) AddBagItem (ctx * gin.Context){
 	item.AccountId = parsedAccountId
      addItemErr := ctrler.bagRepo.AddItemToBag(item)
 	 if(addItemErr != nil){
+		logger.Error(addItemErr.Error(), slimlog.Error("addItemErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	 }

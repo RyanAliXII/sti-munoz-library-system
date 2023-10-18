@@ -33,13 +33,16 @@ func (repo * Bag) AddItemToBag(item model.BagItem) error{
 		query := `INSERT INTO circulation.bag(accession_id, account_id) VALUES($1, $2)`
 		_, insertErr := repo.db.Exec(query, item.AccessionId, item.AccountId)
 		if insertErr != nil {
-			logger.Error(insertErr.Error(), slimlog.Function("Bag.AddItemToBag"), slimlog.Error("insertErr"))
+			return insertErr
 		}
 		return nil
 	}
-	
+	query := `INSERT INTO circulation.ebook_bag(book_id, account_id) VALUES($1, $2)`
+	_, insertErr := repo.db.Exec(query, item.BookId, item.AccountId)
+	if insertErr != nil {
+			return insertErr
+	}	
 	return nil
-
 }
 func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	items := make([]model.BagItem, 0)
