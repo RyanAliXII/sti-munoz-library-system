@@ -29,12 +29,16 @@ type Bag struct {
 }
 
 func (repo * Bag) AddItemToBag(item model.BagItem) error{
-	query := `INSERT INTO circulation.bag(accession_id, account_id) VALUES($1, $2)`
-	_, insertErr := repo.db.Exec(query, item.AccessionId, item.AccountId)
-    if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("Bag.AddItemToBag"), slimlog.Error("insertErr"))
+	if(len(item.AccessionId) > 0){
+		query := `INSERT INTO circulation.bag(accession_id, account_id) VALUES($1, $2)`
+		_, insertErr := repo.db.Exec(query, item.AccessionId, item.AccountId)
+		if insertErr != nil {
+			logger.Error(insertErr.Error(), slimlog.Function("Bag.AddItemToBag"), slimlog.Error("insertErr"))
+		}
+		return nil
 	}
-	return insertErr
+	
+	return nil
 
 }
 func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{

@@ -33,6 +33,11 @@ func (ctrler * Bag) AddBagItem (ctx * gin.Context){
 	}
 	item := model.BagItem{}
 	ctx.ShouldBindBodyWith(&item, binding.JSON)
+
+	if len(item.AccessionId) == 0 && len(item.BookId) == 0{
+		ctx.JSON(httpresp.Fail500(nil, "Validation error."))
+		return
+	}
 	item.AccountId = parsedAccountId
      addItemErr := ctrler.bagRepo.AddItemToBag(item)
 	 if(addItemErr != nil){

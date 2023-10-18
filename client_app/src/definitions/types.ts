@@ -48,6 +48,7 @@ export interface Book {
   covers: string[];
   authorNumber: string;
   accessions: Accession[];
+  ebook: string;
 }
 
 export type AuthorNumber = {

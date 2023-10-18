@@ -3,6 +3,8 @@ package model
 
 type BagItem struct {
 	Id string `json:"id" db:"id"`
+	BookId string `json:"bookId" db:"book_id"`
+	IsEbook bool `json:"isEbook" db:"is_ebook"`
 	AccessionId  string `json:"accessionId" db:"accession_id"`
 	AccountId string `json:"accountId" db:"account_id"`
 	AccessionNumber int `json:"accessionNumber" db:"number"`
