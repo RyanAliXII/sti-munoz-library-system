@@ -202,7 +202,9 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 	as bb on bag.accession_id = bb.accession_id   AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where (CASE WHEN bb.accession_id is not null then false else true END) = true and bag.account_id = $1 and bag.is_checked = true
 	`
+	
 	items := make([]model.BagItem, 0)
+	
 	err := transaction.Select(&items, query, accountId)
 	if err != nil {
 	
@@ -213,6 +215,7 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 	physicalBooks := make([]model.BorrowedBook, 0)	
 	ebooks:= make([]model.BorrowedEBook, 0)
 	for _, item := range items{
+		
 		if item.IsEbook {
 		   ebooks = append(ebooks, model.BorrowedEBook{
 				  GroupId: groupId,
@@ -230,8 +233,8 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 			PenaltyOnPastDue: settings.DuePenalty.Value,
 		})
 	}
+
 	if  len(physicalBooks) > 0  {
-		
 		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :penalty_on_past_due)", physicalBooks)
 		if err != nil {
 			transaction.Rollback()
@@ -239,6 +242,7 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 		}
 	}
 	if len(ebooks) > 0 {
+		fmt.Println("EXECUTED")
 		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_ebook(book_id, group_id, account_id, status_id ) VALUES(:book_id, :group_id, :account_id, :status_id)", ebooks)
 		if err != nil {
 			transaction.Rollback()

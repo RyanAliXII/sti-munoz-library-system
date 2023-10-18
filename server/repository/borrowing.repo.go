@@ -78,13 +78,13 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_view where account_id = $1 and status_id != 6`
+	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id != 6`
 	err := repo.db.Select(&borrowedBooks, query, accountId)
 	return borrowedBooks, err
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_view where account_id = $1 and status_id = $2`
+	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id = $2`
 	err := repo.db.Select(&borrowedBooks, query, accountId, statusId)
 	return borrowedBooks, err
 }

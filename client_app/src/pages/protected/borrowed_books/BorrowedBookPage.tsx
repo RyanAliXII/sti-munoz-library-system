@@ -213,8 +213,4 @@ const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
     ? "tab  tab-bordered tab-active inline"
     : "tab tab-bordered inline";
 };
-
-const getStatusText = () => {
-  return "";
-};
 export default BorrowedBooksPage;

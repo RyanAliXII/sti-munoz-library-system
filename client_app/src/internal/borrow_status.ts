@@ -15,12 +15,20 @@ export type OnlineBorrowStatus =
 
 export const StatusText = {
   Pending:
-    "The book that you have requested is subjected for approval. Please wait patiently.",
+    "The requested book is pending approval. Thank you for your patience",
   Approved:
-    "The book that you have requested has been approved. You can now get the book on the library.",
+    "The requested book has received approval. You may now obtain it from the library.",
   CheckedOut: "The book has been handed to you by the librarian.",
   Returned: "The book has been returned.",
-  Cancelled: "Book borrow request has been declined or cancelled.",
+  Cancelled: "Book borrow request has been cancelled.",
+};
+
+export const EbookStatusText = {
+  Pending:
+    "The book that you have requested is subjected for approval. Please wait patiently.",
+  Approved:
+    "The requested book has been approved. Please await the eBook link.",
+  CheckedOut: "You may now access the eBook.",
 };
 export enum BorrowStatus {
   Pending = 1,
