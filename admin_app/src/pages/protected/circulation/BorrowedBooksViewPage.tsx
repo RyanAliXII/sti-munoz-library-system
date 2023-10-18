@@ -213,6 +213,7 @@ const BorrowedBooksViewPage = () => {
                   <Th>Due Date</Th>
                   <Th>Copy number</Th>
                   <Th>Accession number</Th>
+                  <Th>Book Type</Th>
                   <Th>Status</Th>
                   <Th>Penalty</Th>
                   <Th></Th>
@@ -249,37 +250,53 @@ const BorrowedBooksViewPage = () => {
                           ? "No due date"
                           : new Date(borrowedBook.dueDate).toDateString()}
                       </Td>
-                      <Td>{ordinal(borrowedBook.copyNumber)}</Td>
-                      <Td>{borrowedBook.accessionNumber}</Td>
-
+                      <Td>
+                        {borrowedBook.copyNumber === 0
+                          ? "N/A"
+                          : ordinal(borrowedBook.copyNumber)}
+                      </Td>
+                      <Td>
+                        {borrowedBook.accessionNumber === 0
+                          ? "N/A"
+                          : borrowedBook.accessionNumber}
+                      </Td>
+                      <Td>
+                        {borrowedBook.isEbook ? "eBook" : "Physical Book"}
+                      </Td>
                       <Td>{borrowedBook.status}</Td>
-                      <Td className="text-red-500">
-                        PHP{" "}
-                        {borrowedBook.penalty.toLocaleString(undefined, {
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,
-                        })}
+                      <Td>
+                        {borrowedBook.isEbook ? (
+                          "N/A"
+                        ) : (
+                          <span className="text-red-400">
+                            PHP {""}
+                            {borrowedBook.penalty.toLocaleString(undefined, {
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
+                        )}
                       </Td>
 
                       <Td>
                         <div className="flex gap-2">
-                          {borrowedBook.statusId ===
-                            BorrowStatus.CheckedOut && (
-                            <Tippy content="Mark borrowed book as returned.">
-                              <button
-                                className={
-                                  ButtonClasses.PrimaryOutlineButtonClasslist
-                                }
-                                onClick={() => {
-                                  setSelectedBorrowedBook(borrowedBook.book);
-                                  setBorrowedBookId(borrowedBook.id ?? "");
-                                  openReturnRemarkPrompt();
-                                }}
-                              >
-                                <BsArrowReturnLeft />
-                              </button>
-                            </Tippy>
-                          )}
+                          {borrowedBook.statusId === BorrowStatus.CheckedOut &&
+                            !borrowedBook.isEbook && (
+                              <Tippy content="Mark borrowed book as returned.">
+                                <button
+                                  className={
+                                    ButtonClasses.PrimaryOutlineButtonClasslist
+                                  }
+                                  onClick={() => {
+                                    setSelectedBorrowedBook(borrowedBook.book);
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    openReturnRemarkPrompt();
+                                  }}
+                                >
+                                  <BsArrowReturnLeft />
+                                </button>
+                              </Tippy>
+                            )}
                           {borrowedBook.statusId === BorrowStatus.Pending && (
                             <Tippy content="Approve borrowing request.">
                               <button
@@ -313,23 +330,23 @@ const BorrowedBooksViewPage = () => {
                               </button>
                             </Tippy>
                           )}
-                          {borrowedBook.statusId ===
-                            BorrowStatus.CheckedOut && (
-                            <Tippy content="Mark borrowed book as unreturned.">
-                              <button
-                                className={
-                                  ButtonClasses.WarningButtonOutlineClasslist
-                                }
-                                onClick={() => {
-                                  setSelectedBorrowedBook(borrowedBook.book);
-                                  setBorrowedBookId(borrowedBook.id ?? "");
-                                  openUnreturnedRemarkPrompt();
-                                }}
-                              >
-                                <BsQuestionDiamond />
-                              </button>
-                            </Tippy>
-                          )}
+                          {borrowedBook.statusId === BorrowStatus.CheckedOut &&
+                            !borrowedBook.isEbook && (
+                              <Tippy content="Mark borrowed book as unreturned.">
+                                <button
+                                  className={
+                                    ButtonClasses.WarningButtonOutlineClasslist
+                                  }
+                                  onClick={() => {
+                                    setSelectedBorrowedBook(borrowedBook.book);
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    openUnreturnedRemarkPrompt();
+                                  }}
+                                >
+                                  <BsQuestionDiamond />
+                                </button>
+                              </Tippy>
+                            )}
                           {(borrowedBook.statusId === BorrowStatus.Pending ||
                             borrowedBook.statusId === BorrowStatus.Approved ||
                             borrowedBook.statusId ===

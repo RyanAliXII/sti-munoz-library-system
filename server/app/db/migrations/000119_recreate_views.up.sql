@@ -1,3 +1,4 @@
+DROP VIEW IF EXISTS borrowed_book_all_view;
 DROP VIEW IF EXISTS borrowed_book_view;
 DROP VIEW IF EXISTS borrowed_ebook_view;
 DROP VIEW IF EXISTS book_view;
@@ -111,4 +112,11 @@ book.json_format as book
 FROM borrowing.borrowed_ebook as be
 INNER JOIN system.account on be.account_id = system.account.id
 INNER JOIN book_view as book on be.book_id = book.id 
-INNER JOIN borrowing.borrow_status as bs on be.status_id = bs.id
+INNER JOIN borrowing.borrow_status as bs on be.status_id = bs.id;
+
+
+CREATE OR REPLACE VIEW borrowed_book_all_view as 
+((SELECT id, group_id,client,account_id,book, status, status_id, accession_id, number,  penalty, due_date, remarks, false as is_ebook,created_at  from borrowed_book_view ) 
+	UNION ALL 
+(SELECT id, group_id,client,account_id, book, status, status_id, '00000000-0000-0000-0000-000000000000', 0, 0.00, due_date, '', true as is_ebook, created_at
+FROM borrowed_ebook_view));

@@ -131,6 +131,7 @@ export type BorrowedBook = {
   copyNumber: number;
   dueDate: string;
   penalty: number;
+  isEbook: boolean;
   createdAt: string;
 };
 export type BorrowingTransaction = {

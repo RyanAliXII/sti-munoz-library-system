@@ -32,10 +32,13 @@ func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEb
 		transaction.Rollback()
 		return err
 	}
-	_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date, :penalty_on_past_due)", borrowedBooks)
-	if err != nil {
-		transaction.Rollback()
-		return err
+
+	if(len(borrowedBooks) > 0){
+		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date, :penalty_on_past_due)", borrowedBooks)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
 	}
 	if(len(borrowedEbooks) == 0) {
 		transaction.Commit()
@@ -61,7 +64,7 @@ func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
 	COUNT(1) filter(where status_id = 5) as total_cancelled,
 	COUNT(1) filter (where status_id = 6) as total_unreturned,
 	MAX(bbv.created_at)  as created_at
-	FROM borrowed_book_view as bbv GROUP BY group_id, account_id, client ORDER BY created_at desc
+	FROM borrowed_book_all_view as bbv GROUP BY group_id, account_id, client ORDER BY created_at desc
 	`
 	err := repo.db.Select(&requests, query)
 	return requests, err
@@ -69,9 +72,8 @@ func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
 
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_view where group_id = $1`
+	query := `SELECT * FROM borrowed_book_all_view where group_id = $1`
 	err := repo.db.Select(&borrowedBooks, query, groupId)
-	// borrowedEbooks := make([]model.BorrowedEBook, 0)
 	return borrowedBooks, err
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
