@@ -21,6 +21,18 @@ type BorrowedBook struct {
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
+type BorrowedEBook struct {
+	Id string `json:"id" db:"id"`
+	Book BookJSON `json:"book" db:"book"`
+	GroupId string `json:"groupId" db:"group_id"`
+	Status string `json:"status" db:"status"`
+	StatusId int `json:"statusId" db:"status_id"`
+	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
+	Client         AccountJSON     `json:"client" db:"client"`
+	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
+}
+
+
 
 
 type BorrowingRequest struct {
