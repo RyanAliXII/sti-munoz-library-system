@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS borrowing.borrowed_ebook(
    due_date date not null,
    status_id int,
    account_id UUID NOT NULL,
+   group_id UUID,
    created_at timestamptz default now(),
    FOREIGN KEY (book_id) REFERENCES catalog.book(id),
    FOREIGN KEY (status_id) REFERENCES borrowing.borrow_status(id),

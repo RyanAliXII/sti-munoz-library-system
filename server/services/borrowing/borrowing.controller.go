@@ -79,6 +79,7 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, grou
 		if err != nil {
 			return borrowedBooks, err
 		}
+		fmt.Println(groupId)
 		borrowedBooks = append(borrowedBooks, model.BorrowedBook{
 			GroupId: groupId,
 			AccessionId: accession.Id,
@@ -104,6 +105,7 @@ func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, gro
 			BookId: ebook.BookId,
 			StatusId: status,
 			DueDate: ebook.DueDate,
+			AccountId: body.ClientId,
 		})
 	}
 	return ebooks, nil	

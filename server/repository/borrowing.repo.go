@@ -71,6 +71,7 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 	borrowedBooks := make([]model.BorrowedBook, 0) 
 	query := `SELECT * FROM borrowed_book_view where group_id = $1`
 	err := repo.db.Select(&borrowedBooks, query, groupId)
+	// borrowedEbooks := make([]model.BorrowedEBook, 0)
 	return borrowedBooks, err
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
