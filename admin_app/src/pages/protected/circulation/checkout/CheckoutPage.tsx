@@ -41,9 +41,16 @@ import { ConfirmDialog } from "@components/ui/dialog/Dialog";
 export interface CheckoutAccession extends DetailedAccession {
   dueDate: string;
 }
+
+export type BorrowedEbook = {
+  bookTitle: string;
+  bookId: string;
+  dueDate: string;
+};
 export type CheckoutForm = {
   client: Account;
   accessions: CheckoutAccession[];
+  eBooks: BorrowedEbook[];
 };
 
 const CLIENT_INITIAL_DATA: Account = {
@@ -69,6 +76,7 @@ const CheckoutPage = () => {
     close: closeCheckoutConfirmation,
     isOpen: isCheckoutConfirmationOpen,
   } = useSwitch();
+
   const {
     setForm,
     form: checkout,
@@ -80,6 +88,7 @@ const CheckoutPage = () => {
   } = useForm<CheckoutForm>({
     initialFormData: {
       accessions: [],
+      eBooks: [],
       client: CLIENT_INITIAL_DATA,
     },
     scrollToError: false,
@@ -97,6 +106,12 @@ const CheckoutPage = () => {
     setForm((prevForm) => ({
       ...prevForm,
       accessions: [...accessions],
+    }));
+  };
+  const updateEbooksToBorrow = (ebooks: BorrowedEbook[]) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      eBooks: ebooks,
     }));
   };
   const [selectedBook, setSelectedBook] = useState<Book>(BookInitialValue);
@@ -149,7 +164,12 @@ const CheckoutPage = () => {
       resetForm();
     },
   });
-
+  const removeEbook = (bookId: string) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      eBooks: prevForm.eBooks.filter((ebook) => ebook.bookId != bookId),
+    }));
+  };
   return (
     <>
       <ContainerNoBackground>
@@ -197,6 +217,7 @@ const CheckoutPage = () => {
           </div>
         )}
       </ContainerNoBackground>
+
       <ContainerNoBackground className="p-4">
         <Divider
           heading="h2"
@@ -209,7 +230,7 @@ const CheckoutPage = () => {
           <BookSearchBox selectBook={selectBook} />
         </div>
         <small className="text-red-500 ml-0.5">{errors?.accessions}</small>
-        {checkout.accessions.length > 0 ? (
+        {checkout.accessions.length > 0 || checkout.eBooks.length > 0 ? (
           <Container className="mx-0 mt-5 lg:w-full">
             <Table>
               <Thead>
@@ -265,6 +286,51 @@ const CheckoutPage = () => {
                     </BodyRow>
                   );
                 })}
+                {checkout.eBooks.map((eBook) => {
+                  return (
+                    <BodyRow key={eBook.bookId}>
+                      <Td>{eBook.bookTitle}</Td>
+                      <Td>N/A</Td>
+                      <Td>N/A</Td>
+                      <Td>
+                        <CustomDatePicker
+                          name="dueDate"
+                          error={errors?.dueDate}
+                          value={new Date(eBook.dueDate).toDateString()}
+                          selected={new Date(eBook.dueDate)}
+                          onChange={(date) => {
+                            // if (!date) return;
+                            // const dateValue = `${date.getFullYear()}-${
+                            //   date.getMonth() + 1
+                            // }-${date.getDate()}`;
+                            // setForm((prev) => ({
+                            //   ...prev,
+                            //   accessions: prev.accessions.map((a) => {
+                            //     if ((a.id = accession.id)) {
+                            //       return { ...a, dueDate: dateValue };
+                            //     }
+                            //     return a;
+                            //   }),
+                            // }));
+                          }}
+                        />
+                      </Td>
+
+                      <Td>
+                        <Tippy content="Remove Book">
+                          <button>
+                            <MdOutlineRemoveCircle
+                              className="text-red-400 cursor-pointer text-2xl"
+                              onClick={() => {
+                                removeEbook(eBook.bookId);
+                              }}
+                            />
+                          </button>
+                        </Tippy>
+                      </Td>
+                    </BodyRow>
+                  );
+                })}
               </Tbody>
             </Table>
           </Container>
@@ -298,6 +364,7 @@ const CheckoutPage = () => {
         book={selectedBook}
         closeModal={closeCopySelection}
         isOpen={isCopySelectionOpen}
+        updateEbooksToBorrow={updateEbooksToBorrow}
         updateAccessionsToBorrow={updateAccessionsToBorrow}
         form={checkout}
       />
