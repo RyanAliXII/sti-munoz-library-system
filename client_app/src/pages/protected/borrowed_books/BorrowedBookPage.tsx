@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
+import { AiOutlineArrowRight } from "react-icons/ai";
 import { Link, useSearchParams } from "react-router-dom";
 
 const BorrowedBooksPage = () => {
@@ -118,6 +119,7 @@ const BorrowedBooksPage = () => {
               bookCover = buildS3Url(book.covers[0]);
             }
             const isEbook = book.ebook.length > 0;
+
             return (
               <div className="h-54 shadow" key={borrowedCopy.id}>
                 <div className="p-2 border border-b text-green-700">
@@ -145,6 +147,7 @@ const BorrowedBooksPage = () => {
                     )}
                     {borrowedCopy.statusId === BorrowStatus.Returned &&
                       StatusText.Returned}
+
                     {borrowedCopy.statusId === BorrowStatus.Cancelled &&
                       StatusText.Cancelled}
                   </small>
@@ -186,6 +189,17 @@ const BorrowedBooksPage = () => {
                           : `${ordinal(borrowedCopy.copyNumber)} - Copy`}
                       </p>
 
+                      {borrowedCopy.isEbook &&
+                        borrowedCopy.statusId === BorrowStatus.CheckedOut && (
+                          <div>
+                            <Link
+                              to={`/ebooks/${borrowedCopy.id}`}
+                              className="flex items-center gap-1 text-sm mt-1 mb-2  font-semibold underline text-blue-400"
+                            >
+                              Read book &#x2192;
+                            </Link>
+                          </div>
+                        )}
                       {borrowedCopy.penalty > 0 &&
                         borrowedCopy.statusId === BorrowStatus.CheckedOut && (
                           <small className="text-xs md:text-sm text-error">

@@ -12,6 +12,11 @@ const DocumentView = ({ eBookUrl = "" }) => {
     setNumPages(numPages);
   }
   useEffect(() => {
+    setTempPageNumber(1);
+    setNumPages(1);
+    setPageNumber(1);
+  }, [eBookUrl]);
+  useEffect(() => {
     if (isNaN(tempPageNumber)) {
       console.log("nan");
       setPageNumber(1);
@@ -79,13 +84,21 @@ const DocumentView = ({ eBookUrl = "" }) => {
       <Document
         file={eBookUrl}
         noData={"Book has no eBook"}
-        className="w-full flex justify-center flex-col items-center p-4"
+        className="w-full flex justify-center flex-col items-center p-4 gap-2"
         onLoadSuccess={onDocumentLoadSuccess}
       >
         <p className="mb-3">
           Page {pageNumber} of {numPages}
         </p>
-        <Page pageNumber={pageNumber} className="shadow border" scale={1.5} />
+        {Array.from(Array(numPages)).map((_, index) => {
+          return (
+            <Page
+              pageNumber={index + 1}
+              className="shadow border"
+              scale={1.5}
+            />
+          );
+        })}
       </Document>
     </>
   );
