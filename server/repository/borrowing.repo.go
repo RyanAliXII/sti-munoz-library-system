@@ -169,20 +169,63 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 }
 func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
 		//Mark the book as approved if the book status is pending. The status id for pending is 1.
+		isEbook := false 
+		err := repo.db.Get(&isEbook, "SELECT is_ebook as isEbook from  borrowed_book_all_view where id = $1  LIMIT 1", id)
+		if err != nil {
+			return err
+		}
+		if isEbook {
+			query := "UPDATE borrowing.borrowed_ebook SET status_id = $1 where id = $2 and status_id = $3"
+			_, err = repo.db.Exec(query, status.BorrowStatusApproved, id, status.BorrowStatusPending)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
 		query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
-		_, err := repo.db.Exec(query, status.BorrowStatusApproved, remarks ,id, status.BorrowStatusPending)
-		return err
+		_, err = repo.db.Exec(query, status.BorrowStatusApproved, remarks ,id, status.BorrowStatusPending)
+		if err != nil {
+			return err
+		}
+		return nil
 }
 func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate) error{
 	//Mark the book as checked out if the book status is approved. The status id for approved is 2.
+
+	isEbook := false 
+	err := repo.db.Get(&isEbook, "SELECT is_ebook as isEbook from borrowed_book_all_view where id = $1  LIMIT 1", id)
+	if err != nil {
+		return err
+	}
+	if isEbook {
+		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1, due_date = $2 where id = $3 and status_id = $4"
+		_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, dueDate, id, status.BorrowStatusApproved)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and status_id = $5"
-	_, err := repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved)
+	_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved)
 	return err 
 }
 func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 	//Mark the book as checked out if the book status is approved,pending or checkedout. The status id for approved is 2, pending is 1 and checked out is 3.
+	isEbook := false 
+	err := repo.db.Get(&isEbook, "SELECT is_ebook as isEbook from borrowed_book_all_view where id = $1  LIMIT 1", id)
+	if err != nil {
+		return err
+	}
+	if isEbook {
+		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1 where id = $2 and (status_id = $3 or status_id = $4 or status_id = $5 )"
+		_, err = repo.db.Exec(query, status.BorrowStatusCancelled, id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and (status_id = $4 or status_id = $5 or status_id = $6 ) "
-	_, err := repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
+	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
 	return err 
 }
 func NewBorrowingRepository ()  BorrowingRepository {

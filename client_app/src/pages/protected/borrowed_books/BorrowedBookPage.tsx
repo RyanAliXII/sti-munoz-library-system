@@ -2,12 +2,7 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { buildS3Url } from "@definitions/s3";
 import { BorrowedBook } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import {
-  BorrowStatus,
-  OnlineBorrowStatus,
-  OnlineBorrowStatuses,
-  StatusText,
-} from "@internal/borrow_status";
+import { BorrowStatus, StatusText } from "@internal/borrow_status";
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
@@ -118,6 +113,7 @@ const BorrowedBooksPage = () => {
             if (book.covers.length > 0) {
               bookCover = buildS3Url(book.covers[0]);
             }
+            const isEbook = book.ebook.length > 0;
             return (
               <div className="h-54 shadow" key={borrowedCopy.id}>
                 <div className="p-2 border border-b text-green-700">
@@ -159,13 +155,22 @@ const BorrowedBooksPage = () => {
                         to={`/catalog/${book.id}`}
                         className="text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500"
                       >
-                        {book.title}
+                        {book.title}{" "}
+                        {isEbook
+                          ? "- eBook"
+                          : `- ${borrowedCopy.accessionNumber}`}
                       </Link>
                       <p className="text-xs md:text-sm lg:text-base text-gray-500">
-                        {book.section.name} - {book.ddc} - {book.authorNumber}
+                        {book.section.name}
+                        {book.ddc.length > 0 ? ` - ${book.ddc}` : ""}
+                        {book.authorNumber.length > 0
+                          ? ` - ${book.authorNumber}`
+                          : ""}
                       </p>
                       <p className="text-xs md:text-sm lg:text-base text-gray-500">
-                        {ordinal(borrowedCopy.copyNumber)} - Copy
+                        {isEbook
+                          ? ""
+                          : `${ordinal(borrowedCopy.copyNumber)} - Copy`}
                       </p>
 
                       {borrowedCopy.penalty > 0 &&
@@ -207,5 +212,9 @@ const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
   return activeTab === tab
     ? "tab  tab-bordered tab-active inline"
     : "tab tab-bordered inline";
+};
+
+const getStatusText = () => {
+  return "";
 };
 export default BorrowedBooksPage;

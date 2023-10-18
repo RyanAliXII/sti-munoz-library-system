@@ -198,7 +198,7 @@ SELECT bag.id , bag.book_id, bag.account_id, bag.accession_id, bag.accession_num
 	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
 )
 UNION ALL
-(	SELECT ebook_bag.id, account_id,  '00000000-0000-0000-0000-000000000000', 0, 0, book_id, is_checked, true as is_ebook 	  from circulation.ebook_bag	
+(	SELECT ebook_bag.id, account_id,  '00000000-0000-0000-0000-000000000000', 0, 0, book_id, is_checked, true as is_ebook from circulation.ebook_bag	
 )) as bag
 INNER JOIN book_view as bv on bag.book_id = bv.id;
 
