@@ -192,7 +192,6 @@ SELECT book.id,title, isbn,
 	search_tag.list,
     covers.list;
 
-
 CREATE OR REPLACE VIEW bag_view as
 SELECT bag.id , bag.book_id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number,  bv.json_format as book, bag.is_checked,  bag.is_ebook  from ((
 	SELECT bag.id, bag.account_id, bag.accession_id, accession.number as accession_number, accession.copy_number,  accession.book_id as book_id, is_checked, false as is_ebook from circulation.bag
