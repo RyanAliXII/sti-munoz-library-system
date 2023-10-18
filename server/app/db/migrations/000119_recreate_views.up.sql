@@ -1,4 +1,5 @@
 DROP VIEW IF EXISTS borrowed_book_view;
+DROP VIEW IF EXISTS borrowed_ebook_view;
 DROP VIEW IF EXISTS book_view;
 DROP VIEW IF EXISTS account_view;
 CREATE OR REPLACE VIEW book_view as 
@@ -102,13 +103,12 @@ penalty_tbl.account_id,
 penalty_tbl.total;
 
 
-
-
 CREATE OR REPLACE VIEW borrowed_ebook_view as 
-SELECT  be.id, be.book_id, be.due_date, be.status_id, 
+SELECT  be.id, be.book_id, be.due_date, be.status_id, bs.description as status,
 be.account_id, be.group_id, be.created_at , jsonb_build_object('id', account.id, 'displayName', 
 display_name, 'email', email, 'givenName', account.given_name, 'surname', account.surname) as client,
 book.json_format as book
 FROM borrowing.borrowed_ebook as be
 INNER JOIN system.account on be.account_id = system.account.id
 INNER JOIN book_view as book on be.book_id = book.id 
+INNER JOIN borrowing.borrow_status as bs on be.status_id = bs.id
