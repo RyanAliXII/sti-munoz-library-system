@@ -149,6 +149,7 @@ export type BorrowedBook = {
   copyNumber: number;
   book: Book;
   statusId: number;
+  isEbook: boolean;
   penalty: number;
   status: string;
   dueDate: string | null; //timestamp

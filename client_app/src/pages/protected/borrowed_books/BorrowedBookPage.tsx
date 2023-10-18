@@ -2,7 +2,11 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { buildS3Url } from "@definitions/s3";
 import { BorrowedBook } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { BorrowStatus, StatusText } from "@internal/borrow_status";
+import {
+  BorrowStatus,
+  EbookStatusText,
+  StatusText,
+} from "@internal/borrow_status";
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
@@ -119,13 +123,22 @@ const BorrowedBooksPage = () => {
                 <div className="p-2 border border-b text-green-700">
                   <small className="text-xs lg:text-sm">
                     {borrowedCopy.statusId === BorrowStatus.Pending &&
-                      StatusText.Pending}
+                      (borrowedCopy.isEbook
+                        ? EbookStatusText.Pending
+                        : StatusText.Pending)}
                     {borrowedCopy.statusId === BorrowStatus.Approved &&
-                      StatusText.Approved}
+                      (borrowedCopy.isEbook
+                        ? EbookStatusText.Approved
+                        : StatusText.Approved)}
                     {borrowedCopy.statusId === BorrowStatus.CheckedOut && (
                       <>
-                        {`${StatusText.CheckedOut} Please return on `}
+                        {`${
+                          borrowedCopy.isEbook
+                            ? EbookStatusText.CheckedOut
+                            : StatusText.CheckedOut
+                        }`}
                         <span className="underline underline-offset-2">
+                          {" "}
                           {new Date(borrowedCopy.dueDate ?? "").toDateString()}
                         </span>
                       </>
@@ -213,4 +226,5 @@ const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
     ? "tab  tab-bordered tab-active inline"
     : "tab tab-bordered inline";
 };
+
 export default BorrowedBooksPage;
