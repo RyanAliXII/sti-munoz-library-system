@@ -23,6 +23,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BorrowStatuses } from "@internal/borrow-status";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { format } from "date-fns";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -74,7 +75,7 @@ const BookCopySelectionModal = ({
   useEffect(() => {
     if (isOpen) {
       setSelectedAccessions([...form.accessions]);
-      setSelectedEbooks([...form.eBooks]);
+      setSelectedEbooks([...form.ebooks]);
       refetch();
     } else {
       setSelectedAccessions([]);
@@ -102,7 +103,7 @@ const BookCopySelectionModal = ({
         ...prevSelected,
         {
           bookId: book.id ?? "",
-          dueDate: new Date().toISOString(),
+          dueDate: format(new Date(), "yyyy-MM-dd"),
           bookTitle: book.title,
         },
       ]);
@@ -114,7 +115,6 @@ const BookCopySelectionModal = ({
   const proceedToAdd = () => {
     updateAccessionsToBorrow(selectedAccessions);
     updateEbooksToBorrow(selectedEbooks);
-
     closeModal();
   };
   const selectedAccessionCopiesCache = useMemo(

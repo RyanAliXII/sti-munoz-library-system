@@ -37,6 +37,7 @@ import { useRequest } from "@hooks/useRequest";
 import Tippy from "@tippyjs/react";
 import { MdOutlineRemoveCircle } from "react-icons/md";
 import { ConfirmDialog } from "@components/ui/dialog/Dialog";
+import { format } from "date-fns";
 
 export interface CheckoutAccession extends DetailedAccession {
   dueDate: string;
@@ -50,7 +51,7 @@ export type BorrowedEbook = {
 export type CheckoutForm = {
   client: Account;
   accessions: CheckoutAccession[];
-  eBooks: BorrowedEbook[];
+  ebooks: BorrowedEbook[];
 };
 
 const CLIENT_INITIAL_DATA: Account = {
@@ -83,12 +84,13 @@ const CheckoutPage = () => {
     validate,
     resetForm,
     errors,
+    setErrors,
     removeFieldError,
     setFieldValue,
   } = useForm<CheckoutForm>({
     initialFormData: {
       accessions: [],
-      eBooks: [],
+      ebooks: [],
       client: CLIENT_INITIAL_DATA,
     },
     scrollToError: false,
@@ -111,7 +113,7 @@ const CheckoutPage = () => {
   const updateEbooksToBorrow = (ebooks: BorrowedEbook[]) => {
     setForm((prevForm) => ({
       ...prevForm,
-      eBooks: ebooks,
+      ebooks: ebooks,
     }));
   };
   const [selectedBook, setSelectedBook] = useState<Book>(BookInitialValue);
@@ -151,6 +153,7 @@ const CheckoutPage = () => {
         {
           clientId: formData.client.id,
           accessions: formData.accessions,
+          ebooks: formData.ebooks,
         },
         {}
       ),
@@ -167,8 +170,21 @@ const CheckoutPage = () => {
   const removeEbook = (bookId: string) => {
     setForm((prevForm) => ({
       ...prevForm,
-      eBooks: prevForm.eBooks.filter((ebook) => ebook.bookId != bookId),
+      ebooks: prevForm.ebooks.filter((ebook) => ebook.bookId != bookId),
     }));
+  };
+  const validateAndOpenConfirm = async () => {
+    try {
+      const data = await validate();
+      if (!data) return;
+
+      if (data.accessions.length === 0 && data.ebooks.length === 0) {
+        throw "Book is required.";
+      }
+      openCheckoutConfirmation();
+    } catch (err) {
+      toast.error("Client and book is required.");
+    }
   };
   return (
     <>
@@ -229,8 +245,8 @@ const CheckoutPage = () => {
         <div>
           <BookSearchBox selectBook={selectBook} />
         </div>
-        <small className="text-red-500 ml-0.5">{errors?.accessions}</small>
-        {checkout.accessions.length > 0 || checkout.eBooks.length > 0 ? (
+        <small className="text-red-500 ml-0.5">{errors?.books}</small>
+        {checkout.accessions.length > 0 || checkout.ebooks.length > 0 ? (
           <Container className="mx-0 mt-5 lg:w-full">
             <Table>
               <Thead>
@@ -251,14 +267,11 @@ const CheckoutPage = () => {
                       <Td>
                         <CustomDatePicker
                           name="dueDate"
-                          error={errors?.dueDate}
                           value={new Date(accession.dueDate).toDateString()}
                           selected={new Date(accession.dueDate)}
                           onChange={(date) => {
                             if (!date) return;
-                            const dateValue = `${date.getFullYear()}-${
-                              date.getMonth() + 1
-                            }-${date.getDate()}`;
+                            const dateValue = format(date, "yyyy-MM-dd");
                             setForm((prev) => ({
                               ...prev,
                               accessions: prev.accessions.map((a) => {
@@ -286,7 +299,7 @@ const CheckoutPage = () => {
                     </BodyRow>
                   );
                 })}
-                {checkout.eBooks.map((eBook) => {
+                {checkout.ebooks.map((eBook) => {
                   return (
                     <BodyRow key={eBook.bookId}>
                       <Td>{eBook.bookTitle}</Td>
@@ -299,19 +312,17 @@ const CheckoutPage = () => {
                           value={new Date(eBook.dueDate).toDateString()}
                           selected={new Date(eBook.dueDate)}
                           onChange={(date) => {
-                            // if (!date) return;
-                            // const dateValue = `${date.getFullYear()}-${
-                            //   date.getMonth() + 1
-                            // }-${date.getDate()}`;
-                            // setForm((prev) => ({
-                            //   ...prev,
-                            //   accessions: prev.accessions.map((a) => {
-                            //     if ((a.id = accession.id)) {
-                            //       return { ...a, dueDate: dateValue };
-                            //     }
-                            //     return a;
-                            //   }),
-                            // }));
+                            if (!date) return;
+                            const dateValue = format(date, "yyyy-MM-dd");
+                            setForm((prev) => ({
+                              ...prev,
+                              ebooks: prev.ebooks.map((b) => {
+                                if (b.bookId == eBook.bookId) {
+                                  return { ...b, dueDate: dateValue };
+                                }
+                                return b;
+                              }),
+                            }));
                           }}
                         />
                       </Td>
@@ -341,14 +352,7 @@ const CheckoutPage = () => {
         )}
       </ContainerNoBackground>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <PrimaryButton
-          onClick={async () => {
-            try {
-              await validate();
-              openCheckoutConfirmation();
-            } catch (err) {}
-          }}
-        >
+        <PrimaryButton onClick={validateAndOpenConfirm}>
           Proceed to checkout
         </PrimaryButton>
       </div>

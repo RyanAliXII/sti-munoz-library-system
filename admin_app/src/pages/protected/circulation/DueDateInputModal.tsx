@@ -1,6 +1,6 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 
-import { Input, InputClasses } from "@components/ui/form/Input";
+import { Input } from "@components/ui/form/Input";
 import { Book, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
@@ -8,7 +8,7 @@ import { format, isMatch, isBefore, isEqual } from "date-fns";
 
 import React, { FormEvent } from "react";
 import Modal from "react-responsive-modal";
-import { boolean, object, string } from "yup";
+import { object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
   onConfirmDate: ({}: { date: string }) => void;

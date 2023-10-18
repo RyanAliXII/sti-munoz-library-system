@@ -37,6 +37,10 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		return 
 	}
 	grpId := uuid.New().String()	
+	if len(body.Accessions) == 0 && len(body.Ebooks) == 0 {
+		ctx.JSON(httpresp.Fail400(nil, "Validation error"))
+		return 
+	}
 	borrowedBooks,err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut, grpId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("toBorrowedBookModel"))

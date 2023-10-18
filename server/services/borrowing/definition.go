@@ -4,7 +4,7 @@ import "github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 
 type CheckoutBody struct {
 	ClientId   string               `json:"clientId" binding:"required,uuid"`
-	Accessions []CheckoutAccessions `json:"accessions" binding:"required,min=1,dive"`
+	Accessions []CheckoutAccessions `json:"accessions" binding:"dive"`
 	Ebooks []Ebook `json:"ebooks" binding:"dive"`
 }
 type  Ebook struct {

@@ -28,6 +28,7 @@ type BorrowedEBook struct {
 	GroupId string `json:"groupId" db:"group_id"`
 	Status string `json:"status" db:"status"`
 	StatusId int `json:"statusId" db:"status_id"`
+	AccountId string `json:"accountId" db:"account_id"`
 	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
 	Client         AccountJSON     `json:"client" db:"client"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
