@@ -35,10 +35,18 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 		return 
-	}	
-	borrowedBooks,groupId ,err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut)
+	}
+	grpId := uuid.New().String()	
+	borrowedBooks,err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut, grpId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("toBorrowedBookModel"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
+		return
+	}
+
+	_, err = ctrler.toBorrowedEbookModel(body, status.BorrowStatusCheckedOut, grpId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("toBorrowedEBookModel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
@@ -49,26 +57,26 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		return
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
-		"groupId":  groupId,
+		"groupId":  grpId,
 	}, "Book has been borrowed"))
 	
 }
-func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]model.BorrowedBook,string ,error){
-	grpId := uuid.New().String()
+func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
+
 	settings := ctrler.settingsRepo.Get()
 
 	borrowedBooks := make([]model.BorrowedBook, 0)	
 	if settings.DuePenalty.Value == 0 {
-		return borrowedBooks, grpId ,fmt.Errorf("due penalty must not be 0")
+		return borrowedBooks, fmt.Errorf("due penalty must not be 0")
 	}
 
 	for _, accession := range body.Accessions {
 		err := ctrler.isValidDueDate(string(accession.DueDate))
 		if err != nil {
-			return borrowedBooks, grpId , err
+			return borrowedBooks, err
 		}
 		borrowedBooks = append(borrowedBooks, model.BorrowedBook{
-			GroupId: grpId,
+			GroupId: groupId,
 			AccessionId: accession.Id,
 			DueDate: accession.DueDate,
 			AccountId: body.ClientId,
@@ -77,7 +85,24 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 			
 		})
 	}
-	return borrowedBooks, grpId, nil
+	return borrowedBooks, nil
+}
+
+func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, groupId string)([]model.BorrowedEBook, error){
+	ebooks := make([]model.BorrowedEBook, 0)
+	for _, ebook := range body.Ebooks{
+		err := ctrler.isValidDueDate(string(ebook.DueDate))
+		if err != nil {
+			return ebooks, err
+		}
+		ebooks = append(ebooks, model.BorrowedEBook{
+			GroupId: groupId,
+			BookId: ebook.BookId,
+			StatusId: status,
+			DueDate: ebook.DueDate,
+		})
+	}
+	return ebooks, nil	
 }
 
 func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
