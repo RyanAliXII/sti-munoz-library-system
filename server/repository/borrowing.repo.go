@@ -10,7 +10,7 @@ import (
 )
 type BorrowingRepository interface {
 
-	BorrowBook([]model.BorrowedBook) error
+	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
 	GetBorrowingRequests()([]model.BorrowingRequest, error)
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
@@ -26,10 +26,30 @@ type Borrowing struct{
 	db * sqlx.DB
 
 }
-func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook) error{
-	_, err := repo.db.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date, :penalty_on_past_due)", borrowedBooks)
+func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error{
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, due_date, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :due_date, :penalty_on_past_due)", borrowedBooks)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if(len(borrowedEbooks) == 0) {
+		transaction.Commit()
+		return nil
+	} 
+	_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_ebook(book_id, group_id, account_id, status_id, due_date ) VALUES(:book_id, :group_id, :account_id, :status_id, :due_date)", borrowedEbooks)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
 	return err
 }
+
 
 func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
 	requests := make([]model.BorrowingRequest, 0) 

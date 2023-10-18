@@ -44,13 +44,13 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		return
 	}
 
-	_, err = ctrler.toBorrowedEbookModel(body, status.BorrowStatusCheckedOut, grpId)
+	borrowedEbooks, err := ctrler.toBorrowedEbookModel(body, status.BorrowStatusCheckedOut, grpId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("toBorrowedEBookModel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
-	err  = ctrler.borrowingRepo.BorrowBook(borrowedBooks)
+	err  = ctrler.borrowingRepo.BorrowBook(borrowedBooks, borrowedEbooks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))

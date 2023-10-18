@@ -26,7 +26,7 @@ type BorrowedEBook struct {
 	Book BookJSON `json:"book" db:"book"`
 	BookId string `json:"bookId" db:"book_id"`
 	GroupId string `json:"groupId" db:"group_id"`
-	Status int `json:"status" db:"status"`
+	Status string `json:"status" db:"status"`
 	StatusId int `json:"statusId" db:"status_id"`
 	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
 	Client         AccountJSON     `json:"client" db:"client"`
