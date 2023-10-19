@@ -240,7 +240,7 @@ func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 
 func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
 	query := "UPDATE borrowing.borrowed_book SET  remarks = $1 where id = $2"
-	_, err := repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id)
+	_, err := repo.db.Exec(query, remarks , id)
 	return err 	
 }
 

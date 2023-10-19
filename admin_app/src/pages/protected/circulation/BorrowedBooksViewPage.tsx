@@ -176,6 +176,20 @@ const BorrowedBooksViewPage = () => {
     },
   });
 
+  const updateRemarks = useMutation({
+    mutationFn: (body: { remarks: string }) =>
+      Patch(`/borrowing/borrowed-books/${borrowedBookId}/remarks`, body),
+    onSuccess: () => {
+      toast.success("Borrowed book has been updated.");
+      refetch();
+    },
+    onError: () => {
+      toast.error(ErrorMsg.Update);
+    },
+    onSettled: () => {
+      closeEditRemarksModal();
+    },
+  });
   const client = borrowedBooks?.[0]?.client ?? {
     displayName: "",
     email: "",
@@ -472,7 +486,9 @@ const BorrowedBooksViewPage = () => {
         isOpen={isEditRemarksModalOpen}
         closeModal={closeEditRemarksModal}
         borrowedBook={borrowedBook}
-        onConfirm={() => {}}
+        onConfirm={(data) => {
+          updateRemarks.mutate(data);
+        }}
         key={"forEditRemarks"}
       />
       <ConfirmDialog
