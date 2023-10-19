@@ -6,21 +6,22 @@ import { useForm } from "@hooks/useForm";
 
 import { format, isMatch, isBefore, isEqual } from "date-fns";
 
-import React, { FormEvent } from "react";
+import React, { FormEvent, useEffect } from "react";
 import Modal from "react-responsive-modal";
-import { object, string } from "yup";
+import { date, object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
   onConfirmDate: ({}: { date: string }) => void;
   book?: Book;
+  dueDate: string;
 }
 export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
   isOpen,
   closeModal,
   onConfirmDate,
-  book,
+  dueDate,
 }) => {
-  const { handleFormInput, validate, errors } = useForm<{
+  const { handleFormInput, validate, errors, form, setForm } = useForm<{
     date: string;
   }>({
     initialFormData: {
@@ -59,6 +60,9 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
       onConfirmDate(result);
     } catch {}
   };
+  useEffect(() => {
+    setForm({ date: dueDate });
+  }, [dueDate]);
   if (!isOpen) return null;
 
   return (
@@ -84,6 +88,7 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
                 name="date"
                 onChange={handleFormInput}
                 label="Due date"
+                value={form.date}
                 error={errors?.date}
                 min={format(new Date(), "yyyy-MM-dd")}
               />

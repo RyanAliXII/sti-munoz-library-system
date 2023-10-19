@@ -99,6 +99,7 @@ const BorrowedBooksViewPage = () => {
   const [selectedBorrowedBook, setSelectedBorrowedBook] = useState<
     Book | undefined
   >();
+  const [dueDate, setDuedate] = useState("");
   const [borrowedBookId, setBorrowedBookId] = useState("");
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
@@ -347,6 +348,7 @@ const BorrowedBooksViewPage = () => {
                                 }
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
+                                  setDuedate(borrowedBook.dueDate);
                                   setBorrowedBookId(borrowedBook.id ?? "");
                                   openEditDueDateModal();
                                 }}
@@ -430,6 +432,7 @@ const BorrowedBooksViewPage = () => {
         onConfirmDate={onConfirmDueDate}
       />
       <EditDueDateModal
+        dueDate={dueDate}
         onConfirmDate={onConfirmDueDate}
         key={"editDueDate"}
         isOpen={isEditDueDatetModalOpen}
