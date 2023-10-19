@@ -166,7 +166,7 @@ SELECT book.id,title, isbn,
 		SELECT book_id, string_agg(name, ', ') as concatenated, array_agg(name) as list   from catalog.search_tag GROUP BY book_id
 	) as search_tag on book.id = search_tag.book_id
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 	--  1 means Pending, 2 means Approved, 3 means checked-out 
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 	--  1 means Pending, 2 means Approved, 3 means checked-out 
 	GROUP BY 
 	book.id,
 	section.id,
