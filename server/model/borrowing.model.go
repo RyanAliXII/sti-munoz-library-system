@@ -17,9 +17,25 @@ type BorrowedBook struct {
 	Penalty float64 `json:"penalty" db:"penalty"`
 	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
 	Remarks string `json:"remarks" db:"remarks"`
+	IsEbook bool `json:"isEbook" db:"is_ebook"`
 	Client         AccountJSON     `json:"client" db:"client"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
+
+type BorrowedEBook struct {
+	Id string `json:"id" db:"id"`
+	Book BookJSON `json:"book" db:"book"`
+	BookId string `json:"bookId" db:"book_id"`
+	GroupId string `json:"groupId" db:"group_id"`
+	Status string `json:"status" db:"status"`
+	StatusId int `json:"statusId" db:"status_id"`
+	AccountId string `json:"accountId" db:"account_id"`
+	IsEbook bool `json:"isEbook" db:"is_ebook"`
+	DueDate db.NullableDate  `json:"dueDate" db:"due_date"`
+	Client         AccountJSON     `json:"client" db:"client"`
+	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
+}
+
 
 
 

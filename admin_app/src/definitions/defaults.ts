@@ -4,6 +4,7 @@ export const BookInitialValue: Book = {
   title: "",
   isbn: "",
   authors: [],
+  ebook: "",
   section: {
     name: "",
     id: 0,

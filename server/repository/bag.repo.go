@@ -7,7 +7,6 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/doug-martin/goqu/v9"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -29,22 +28,27 @@ type Bag struct {
 }
 
 func (repo * Bag) AddItemToBag(item model.BagItem) error{
-	query := `INSERT INTO circulation.bag(accession_id, account_id) VALUES($1, $2)`
-	_, insertErr := repo.db.Exec(query, item.AccessionId, item.AccountId)
-    if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("Bag.AddItemToBag"), slimlog.Error("insertErr"))
+	if(len(item.AccessionId) > 0){
+		query := `INSERT INTO circulation.bag(accession_id, account_id) VALUES($1, $2)`
+		_, insertErr := repo.db.Exec(query, item.AccessionId, item.AccountId)
+		if insertErr != nil {
+			return insertErr
+		}
+		return nil
 	}
-	return insertErr
-
+	query := `INSERT INTO circulation.ebook_bag(book_id, account_id) VALUES($1, $2)`
+	_, insertErr := repo.db.Exec(query, item.BookId, item.AccountId)
+	if insertErr != nil {
+			return insertErr
+	}	
+	return nil
 }
 func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	items := make([]model.BagItem, 0)
-	query:= `SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked, book.json_format as book,	
-	(CASE WHEN bb.accession_id is not null then false else true END) as is_available FROM circulation.bag
-	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
-	INNER JOIN book_view as book on accession.book_id = book.id
+	query:= `SELECT bag.id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number, bag.is_checked,bag.is_ebook, bag.book,	
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available FROM bag_view as bag
 	LEFT JOIN borrowing.borrowed_book
-	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
+	as bb on bag.accession_id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
 	where bag.account_id = $1
 	`
 	selectErr := repo.db.Select(&items, query, accountId,)
@@ -55,48 +59,126 @@ func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 }
 
 func (repo * Bag) DeleteItemFromBag(item model.BagItem) error {
-	query:= `DELETE FROM circulation.bag where id = $1 and  account_id = $2`
-	_, deleteErr:= repo.db.Exec(query,  item.Id, item.AccountId )
-	if deleteErr!= nil {
-		logger.Error(deleteErr.Error(), slimlog.Function("Bag.DeleteItemFromBag"), slimlog.Error("deleteErr"))
+	transaction ,err := repo.db.Beginx()
+	if err != nil {
+		 return err
 	}
-	return deleteErr
+	isEbook := false
+	err = transaction.Get(&isEbook, "Select is_ebook as isEbook from bag_view where id = $1 and account_id = $2 LIMIT 1", item.Id, item.AccountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if isEbook {
+		_, err = transaction.Exec("DELETE FROM circulation.ebook_bag where id = $1 and account_id =  $2", item.Id , item.AccountId)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+		transaction.Commit()
+		return nil
+	}
+	query := `DELETE FROM circulation.bag where id = $1 and account_id =  $2`
+	_, err  = transaction.Exec(query, item.Id, item.AccountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return err
 }
 func(repo * Bag)CheckItemFromBag(item model.BagItem) error {
-
-	query := `UPDATE circulation.bag set is_checked = not is_checked where id = $1 and account_id =  $2`
-
-	_, updateErr := repo.db.Exec(query, item.Id, item.AccountId)
-	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function("Bag.CheckItemFromBag"), slimlog.Error("updateErr"))
+	transaction ,err := repo.db.Beginx()
+	if err != nil {
+		 return err
 	}
-	return updateErr
+	isEbook := false
+	err = transaction.Get(&isEbook, "Select is_ebook as isEbook from bag_view where id = $1 and account_id = $2 LIMIT 1", item.Id, item.AccountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if isEbook {
+		_, err = transaction.Exec("UPDATE circulation.ebook_bag set is_checked = not is_checked where id = $1 and account_id =  $2", item.Id , item.AccountId)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+		transaction.Commit()
+		return nil
+	}
+	query := `UPDATE circulation.bag set is_checked = not is_checked where id = $1 and account_id =  $2`
+	_, err  = transaction.Exec(query, item.Id, item.AccountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return err
 }
 func (repo * Bag)CheckAllItemsFromBag(accountId string) error {
-	
-	query := `UPDATE circulation.bag set is_checked = true where account_id =  $1`
-	_, updateErr := repo.db.Exec(query, accountId)
-	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function("Bag.CheckAllItemsFromBag"), slimlog.Error("updateErr"))
+	transaction, err  := repo.db.Beginx()
+	if err != nil {
+		return err
 	}
-	return updateErr
+	query := `UPDATE circulation.bag set is_checked = true where account_id =  $1`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	
+	query = `UPDATE circulation.ebook_bag set is_checked = true where account_id =  $1`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return err
 }
 func (repo * Bag)UncheckAllItemsFromBag(accountId string) error {
 	
-	query := `UPDATE circulation.bag set is_checked = false where account_id =  $1`
-	_, updateErr := repo.db.Exec(query, accountId)
-	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function("Bag.CheckAllItemsFromBag"), slimlog.Error("updateErr"))
+	transaction, err  := repo.db.Beginx()
+	if err != nil {
+		return err
 	}
-	return updateErr
+	query := `UPDATE circulation.bag set is_checked = false where account_id =  $1`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	
+	query = `UPDATE circulation.ebook_bag set is_checked = false where account_id =  $1`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return err
 }
 func (repo * Bag) DeleteAllCheckedItems(accountId string) error {
-	query:= `DELETE FROM circulation.bag where is_checked = true and  account_id = $1`
-	_, deleteErr:= repo.db.Exec(query,  accountId)
-	if deleteErr!= nil {
-		logger.Error(deleteErr.Error(), slimlog.Function("Bag.DeleteAllCheckedItems"), slimlog.Error("deleteErr"))
+	transaction, err  := repo.db.Beginx()
+	if err != nil {
+		return err
 	}
-	return deleteErr
+	query := `DELETE FROM circulation.bag  where account_id =  $1 and is_checked = true`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	
+	query = `DELETE FROM circulation.ebook_bag  where account_id =  $1 and is_checked=true`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return err
 }
 
 func (repo * Bag) CheckoutCheckedItems(accountId string) error {
@@ -107,7 +189,7 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 		logger.Error(settingsErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("DuePenaltySettings"))
 		return settingsErr
 	}
-	items := make([]model.BagItem, 0)
+
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		transaction.Rollback()
@@ -115,61 +197,73 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 		return transactErr
 	}
 	query:= `
-	SELECT bag.id, bag.account_id, bag.accession_id, accession.number, accession.copy_number, is_checked FROM circulation.bag
-	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
-	LEFT JOIN borrowing.borrowed_book 
-	as bb on bb.accession_id = bag.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
-	where (CASE WHEN bb.accession_id is not null then false else true END) = true AND bag.account_id = $1 AND bag.is_checked = true
+	SELECT bag.id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number, bag.book_id, is_checked, bag.is_ebook, (CASE WHEN bb.accession_id is not null then false else true END) as is_available  FROM bag_view as bag
+	LEFT JOIN borrowing.borrowed_book  
+	as bb on bag.accession_id = bb.accession_id   AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
+	where (CASE WHEN bb.accession_id is not null then false else true END) = true and bag.account_id = $1 and bag.is_checked = true
 	`
-	selectErr := transaction.Select(&items, query, accountId)
-	if selectErr != nil {
+	
+	items := make([]model.BagItem, 0)
+	
+	err := transaction.Select(&items, query, accountId)
+	if err != nil {
+	
 		transaction.Rollback()
-		logger.Error(selectErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("selectErr"))
-		return selectErr
+		return err
 	}
-	if len(items) == 0{
-		transaction.Rollback()
-		return nil
-	}
-	dialect := goqu.Dialect("postgres")
-	deleteDS := dialect.From(goqu.T("bag").Schema("circulation")).Delete()
-	var itemsToCheckout []goqu.Record = make([]goqu.Record, 0)
-	var itemIdsToDelete []string =  make([]string, 0)
 	groupId := uuid.New().String()
+	physicalBooks := make([]model.BorrowedBook, 0)	
+	ebooks:= make([]model.BorrowedEBook, 0)
 	for _, item := range items{
 		
-		itemIdsToDelete =  append(itemIdsToDelete, item.Id)
-		itemsToCheckout = append(itemsToCheckout, goqu.Record{
-			"accession_id": item.AccessionId,
-			"account_id": item.AccountId,
-			"group_id": groupId,
-			"status_id":  status.BorrowStatusPending,
-			"penalty_on_past_due": settings.DuePenalty.Value,
+		if item.IsEbook {
+		   ebooks = append(ebooks, model.BorrowedEBook{
+				  GroupId: groupId,
+				  StatusId: status.BorrowStatusPending,
+				  AccountId: accountId,
+				  BookId: item.BookId,
+			})
+			continue
+		}
+		physicalBooks = append(physicalBooks, model.BorrowedBook{
+			GroupId: groupId,
+			AccessionId: item.AccessionId,
+			AccountId: accountId,
+			StatusId: status.BorrowStatusPending,
+			PenaltyOnPastDue: settings.DuePenalty.Value,
 		})
 	}
-	deleteDS = deleteDS.Where(goqu.C("id").In(itemIdsToDelete))
-	checkoutDS  := dialect.From(goqu.T("borrowed_book").Schema("borrowing")).Prepared(true).Insert().Rows(itemsToCheckout)
-	checkoutQuery, checkoutArgs, _ := checkoutDS.ToSQL()
-	_, insertCheckoutErr := transaction.Exec(checkoutQuery, checkoutArgs...)
 
-	if insertCheckoutErr != nil {
-		transaction.Rollback()
-		logger.Error(insertCheckoutErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("insertCheckoutErr"))
-		return insertCheckoutErr
+	if  len(physicalBooks) > 0  {
+		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :penalty_on_past_due)", physicalBooks)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+	}
+	if len(ebooks) > 0 {
+		fmt.Println("EXECUTED")
+		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_ebook(book_id, group_id, account_id, status_id ) VALUES(:book_id, :group_id, :account_id, :status_id)", ebooks)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
 	}
 
-	deleteQuery, _, deleteQueryBuildErr := deleteDS.ToSQL()
-	if deleteQueryBuildErr != nil {
+	query = `DELETE FROM circulation.bag  where account_id =  $1 and is_checked = true`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
 		transaction.Rollback()
-		logger.Error(deleteQueryBuildErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("deleteQueryBuildErr"))
-		return insertCheckoutErr
+		return err
 	}
-	_, deleteCheckedItemsFromBagErr := transaction.Exec(deleteQuery)
-	if deleteCheckedItemsFromBagErr != nil {
+	
+	query = `DELETE FROM circulation.ebook_bag  where account_id =  $1 and is_checked=true`
+	_, err = transaction.Exec(query, accountId)
+	if err != nil {
 		transaction.Rollback()
-		logger.Error(deleteCheckedItemsFromBagErr.Error(),  slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("deleteCheckedItemsFromBagErr"))
-		return deleteCheckedItemsFromBagErr
+		return err
 	}
+
 	transaction.Commit()
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore/utils"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -126,6 +127,7 @@ func (repo *BookRepository) Get(filter filter.Filter) []model.Book {
 	description, 
 	copies,
 	subject, 
+	ebook,
 	pages,
 	cost_price,
 	edition,
@@ -154,7 +156,8 @@ func (repo *BookRepository) GetClientBookView(filter filter.Filter) []model.Book
 	pages,
 	edition,
 	year_published, 
-	received_at, 
+	received_at,
+	ebook, 
 	ddc, 
 	author_number, 
 	created_at, 
@@ -172,7 +175,8 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	title, 
 	isbn,
 	subject,
-	search_tags, 
+	search_tags,
+	ebook, 
 	description, 
 	copies, pages,
 	cost_price,
@@ -201,6 +205,7 @@ func (repo *BookRepository) GetOneOnClientView(id string) model.Book {
 	copies, pages,
 	cost_price,
 	edition,
+	ebook, 
 	year_published, 
 	received_at, 
 	ddc, 
@@ -298,6 +303,7 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	isbn, 
 	description, 
 	pages,
+	ebook,
 	copies,
 	cost_price,
 	edition,
@@ -332,7 +338,8 @@ func (repo *BookRepository) SearchClientView(filter filter.Filter) []model.Book 
 	copies,
 	cost_price,
 	edition,
-	year_published, 
+	year_published,
+	ebook, 
 	received_at, 
 	ddc, 
 	author_number, 
@@ -727,6 +734,129 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
    	transaction.Commit()
 	return nil
 }
+
+func (repo * BookRepository)AddEbook(id string, eBook * multipart.FileHeader) error {
+	file, err := eBook.Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if err != nil {
+		return err
+	}
+	contentType := eBook.Header["Content-Type"][0]
+	if contentType != "application/pdf" {
+		return fmt.Errorf("content type not suppored: %s", contentType)
+	}
+	nanoid , err := nanoid.Standard(21)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	ext := utils.GetFileExtBasedOnContentType(contentType)
+	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), ext)
+	fileSize := eBook.Size
+	result, err := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, file, fileSize, minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", result.Key, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (repo * BookRepository)GetEbookById(id string) (*minio.Object, error) {
+	ebookKey := ""
+	err := repo.db.Get(&ebookKey, "SELECT ebook from book_view where id = $1", id)
+	if err != nil {
+	   return nil, err
+	}
+
+	if(len(ebookKey) == 0){
+		return nil, &IsNotEbook{
+			BookId: id,
+		}
+	}
+	ctx := context.Background()
+	object, err := repo.minio.GetObject(ctx, objstore.BUCKET, ebookKey, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+	
+	return object, nil
+}
+func (repo * BookRepository)RemoveEbookById(id string) error{
+	ebookKey := ""
+	err := repo.db.Get(&ebookKey, "SELECT ebook from book_view where id = $1", id)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	err = repo.minio.RemoveObject(ctx, objstore.BUCKET, ebookKey, minio.RemoveObjectOptions{})
+	if err != nil {
+		if !(minio.ToErrorResponse(err).Code == "NoSuchKey") {
+				return err
+		}
+	}
+	_, err = repo.db.Exec("Update catalog.book set ebook = '' where id  = $1", id)
+	if err != nil {
+		 return err
+	}
+
+   return nil
+}
+
+func (repo * BookRepository)UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error{
+	file, err := eBook.Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	dbEbookKey := ""
+	err = repo.db.Get(&dbEbookKey, "SELECT ebook from book_view where id = $1", id)
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()	
+	if len(dbEbookKey) > 0 {
+	err = repo.minio.RemoveObject(ctx, objstore.BUCKET,dbEbookKey, minio.RemoveObjectOptions{})
+	if err != nil {
+		if !(minio.ToErrorResponse(err).Code == "NoSuchKey") {
+				return err
+		}
+	}}
+	contentType := eBook.Header["Content-Type"][0]
+	if contentType != "application/pdf" {
+		return fmt.Errorf("content type not suppored: %s", contentType)
+	}
+	nanoid , err := nanoid.Standard(21)
+	if err != nil {
+		return err
+	}
+	
+	ext := utils.GetFileExtBasedOnContentType(contentType)
+	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), ext)
+	fileSize := eBook.Size
+	result, err := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, file, fileSize, minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	if err != nil {
+		return err
+	}	
+	if err != nil {
+		return err
+	}
+
+	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", result.Key, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 func NewBookRepository() BookRepositoryInterface {
 	return &BookRepository{
 		db:                postgresdb.GetOrCreateInstance(),
@@ -749,4 +879,8 @@ type BookRepositoryInterface interface {
 	GetClientBookView(filter filter.Filter) []model.Book
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
+	AddEbook(id string, eBook * multipart.FileHeader) error
+	GetEbookById(id string, ) (*minio.Object, error)
+	RemoveEbookById(id string, ) error
+	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
 }

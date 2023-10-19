@@ -195,10 +195,10 @@ const Catalog = () => {
                     {book.section.name} {book.ddc.length > 0 && `- ${book.ddc}`}{" "}
                     {book.authorNumber.length > 0 && `- ${book.authorNumber}`}
                   </p>
-                  {isBookAvailable && (
+                  {(isBookAvailable || book.ebook.length > 0) && (
                     <p className="text-xs md:text-sm text-success">Available</p>
                   )}
-                  {!isBookAvailable && (
+                  {!isBookAvailable && book.ebook.length == 0 && (
                     <p className="text-xs md:text-sm text-warning">
                       Unavailable
                     </p>

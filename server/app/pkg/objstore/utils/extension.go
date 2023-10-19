@@ -4,6 +4,7 @@ var contentTypeExts = map[string]string{
 	"image/jpeg": ".jpg",
 	"image/jpg": ".jpg",
 	"image/webp": ".webp",
+	"application/pdf": ".pdf",
 }
 func GetFileExtBasedOnContentType(contentType string)string{
 	return contentTypeExts[contentType]

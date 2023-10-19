@@ -4,15 +4,14 @@ import { BorrowedBook } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   BorrowStatus,
-  OnlineBorrowStatus,
-  OnlineBorrowStatuses,
+  EbookStatusText,
   StatusText,
 } from "@internal/borrow_status";
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-
+import { isBefore } from "date-fns";
 const BorrowedBooksPage = () => {
   const [searchParams, setSearchParam] = useSearchParams();
   const { Get } = useRequest();
@@ -42,7 +41,17 @@ const BorrowedBooksPage = () => {
       return [];
     }
   };
-
+  const isPastDue = (dateStr: string) => {
+    try {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const dueDate = new Date(dateStr ?? "");
+      dueDate.setHours(0, 0, 0, 0);
+      return isBefore(dueDate, now);
+    } catch (err) {
+      return false;
+    }
+  };
   const {
     data: onlineBorrowedBooks,
     isFetching,
@@ -118,24 +127,36 @@ const BorrowedBooksPage = () => {
             if (book.covers.length > 0) {
               bookCover = buildS3Url(book.covers[0]);
             }
+            const isEbook = book.ebook.length > 0;
+            const isDue = isPastDue(borrowedCopy.dueDate ?? "");
             return (
               <div className="h-54 shadow" key={borrowedCopy.id}>
                 <div className="p-2 border border-b text-green-700">
                   <small className="text-xs lg:text-sm">
                     {borrowedCopy.statusId === BorrowStatus.Pending &&
-                      StatusText.Pending}
+                      (borrowedCopy.isEbook
+                        ? EbookStatusText.Pending
+                        : StatusText.Pending)}
                     {borrowedCopy.statusId === BorrowStatus.Approved &&
-                      StatusText.Approved}
+                      (borrowedCopy.isEbook
+                        ? EbookStatusText.Approved
+                        : StatusText.Approved)}
                     {borrowedCopy.statusId === BorrowStatus.CheckedOut && (
                       <>
-                        {`${StatusText.CheckedOut} Please return on `}
+                        {`${
+                          borrowedCopy.isEbook
+                            ? EbookStatusText.CheckedOut
+                            : StatusText.CheckedOut
+                        }`}
                         <span className="underline underline-offset-2">
+                          {" "}
                           {new Date(borrowedCopy.dueDate ?? "").toDateString()}
                         </span>
                       </>
                     )}
                     {borrowedCopy.statusId === BorrowStatus.Returned &&
                       StatusText.Returned}
+
                     {borrowedCopy.statusId === BorrowStatus.Cancelled &&
                       StatusText.Cancelled}
                   </small>
@@ -159,15 +180,46 @@ const BorrowedBooksPage = () => {
                         to={`/catalog/${book.id}`}
                         className="text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500"
                       >
-                        {book.title}
+                        {book.title}{" "}
+                        {isEbook
+                          ? "- eBook"
+                          : `- ${borrowedCopy.accessionNumber}`}
                       </Link>
                       <p className="text-xs md:text-sm lg:text-base text-gray-500">
-                        {book.section.name} - {book.ddc} - {book.authorNumber}
+                        {book.section.name}
+                        {book.ddc.length > 0 ? ` - ${book.ddc}` : ""}
+                        {book.authorNumber.length > 0
+                          ? ` - ${book.authorNumber}`
+                          : ""}
                       </p>
                       <p className="text-xs md:text-sm lg:text-base text-gray-500">
-                        {ordinal(borrowedCopy.copyNumber)} - Copy
+                        {isEbook
+                          ? ""
+                          : `${ordinal(borrowedCopy.copyNumber)} - Copy`}
                       </p>
 
+                      {borrowedCopy.isEbook &&
+                        borrowedCopy.statusId === BorrowStatus.CheckedOut &&
+                        !isDue && (
+                          <div>
+                            <Link
+                              to={`/ebooks/${borrowedCopy.id}`}
+                              className="flex items-center gap-1 text-sm mt-1 mb-2  font-semibold underline text-blue-400"
+                            >
+                              Read book &#x2192;
+                            </Link>
+                          </div>
+                        )}
+
+                      {borrowedCopy.isEbook &&
+                        borrowedCopy.statusId === BorrowStatus.CheckedOut &&
+                        isDue && (
+                          <div>
+                            <p className="flex items-center gap-1 text-sm mt-1 mb-2  font-semibold underline text-red-400">
+                              Ebook link has been expired.
+                            </p>
+                          </div>
+                        )}
                       {borrowedCopy.penalty > 0 &&
                         borrowedCopy.statusId === BorrowStatus.CheckedOut && (
                           <small className="text-xs md:text-sm text-error">
@@ -208,4 +260,5 @@ const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
     ? "tab  tab-bordered tab-active inline"
     : "tab tab-bordered inline";
 };
+
 export default BorrowedBooksPage;

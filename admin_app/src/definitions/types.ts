@@ -56,6 +56,7 @@ export interface Book {
   description: string;
   authors: Author[];
   covers: string[];
+  ebook: string;
   authorNumber: string;
   accessions: Accession[];
   searchTags: string[];
@@ -130,6 +131,7 @@ export type BorrowedBook = {
   copyNumber: number;
   dueDate: string;
   penalty: number;
+  isEbook: boolean;
   createdAt: string;
 };
 export type BorrowingTransaction = {

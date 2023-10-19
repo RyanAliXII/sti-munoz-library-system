@@ -43,7 +43,8 @@ const CatalogBookView = () => {
 
   const queryClient = useQueryClient();
   const addItemToBag = useMutation({
-    mutationFn: (item: { accessionId: string }) => Post("/bag/", item, {}),
+    mutationFn: (item: { accessionId?: string; bookId?: string }) =>
+      Post("/bag/", item, {}),
     onSuccess: () => {
       toast.success("Item has been added to bag.");
       queryClient.invalidateQueries(["bagItems"]);
@@ -66,8 +67,12 @@ const CatalogBookView = () => {
     }
   };
 
-  const onSelectCopy = (accession: DetailedAccession) => {
-    addItemToBag.mutate({ accessionId: accession.id ?? "" });
+  const onSelectCopy = (value: DetailedAccession | string) => {
+    if (typeof value === "string") {
+      addItemToBag.mutate({ bookId: value });
+      return;
+    }
+    addItemToBag.mutate({ accessionId: value.id ?? "" });
   };
   const { data: bagItems } = useQuery<BagItem[]>({
     queryFn: fetchBagItems,
@@ -84,9 +89,10 @@ const CatalogBookView = () => {
   );
   const initializeItem = () => {
     if (
-      (book?.accessions?.length ?? 1) > 1 &&
-      isBookAvailable &&
-      !isBookCopiesAlreadyOnTheBag
+      ((book?.accessions?.length ?? 1) > 1 &&
+        isBookAvailable &&
+        !isBookCopiesAlreadyOnTheBag) ||
+      (book?.ebook ?? "").length > 0
     ) {
       openCopySelection();
     } else {
@@ -137,7 +143,10 @@ const CatalogBookView = () => {
           <div className="w-full mt-2">
             <button
               className="btn btn-primary  w-full"
-              disabled={!isBookAvailable || isBookCopiesAlreadyOnTheBag}
+              disabled={
+                (!isBookAvailable || isBookCopiesAlreadyOnTheBag) &&
+                book.ebook.length === 0
+              }
               onClick={initializeItem}
             >
               Add to Bag
