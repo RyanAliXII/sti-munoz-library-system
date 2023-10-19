@@ -18,7 +18,7 @@ const ProfileDropdown = () => {
     <div className="flex items-center relative text-left">
       <div className="flex items-center">
         <img
-          className="rounded-full w-10"
+          className="rounded-full w-10 h-9"
           onError={({ currentTarget }) => {
             currentTarget.onerror = null;
             currentTarget.src = avatarUrl;
@@ -66,32 +66,15 @@ const ProfileDropdown = () => {
       >
         <div className="py-1" role="none">
           <div className="flex flex-col px-4 py-2 gap-1 overflow-hidden">
-            <small className="font-medium">
+            <small className="font-medium text-xs">
               {user.givenName + " " + user.surname}
             </small>
-            <small>{user.email}</small>
+            <small className="text-xs">{user.email}</small>
           </div>
           <Link to="/profile" className="text-gray-700 block px-4 py-2 text-sm">
             Profile
           </Link>
-          <a
-            href="#"
-            className="text-gray-700 block px-4 py-2 text-sm"
-            role="menuitem"
-            tabIndex={-1}
-            id="menu-item-1"
-          >
-            Support
-          </a>
-          <a
-            href="#"
-            className="text-gray-700 block px-4 py-2 text-sm"
-            role="menuitem"
-            tabIndex={-1}
-            id="menu-item-2"
-          >
-            License
-          </a>
+
           <LogoutButton />
         </div>
       </div>
