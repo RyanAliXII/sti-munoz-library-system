@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	_ "time/tzdata"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
