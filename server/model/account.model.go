@@ -9,10 +9,10 @@ import (
 
 type Account struct {
 	Id          string          `json:"id" db:"id" csv:"id" validate:"required,uuid"`
-	DisplayName string          `json:"displayName" db:"display_name" csv:"displayName"`
-	GivenName   string          `json:"givenName" db:"given_name" csv:"givenName"`
+	DisplayName string          `json:"displayName" db:"display_name" csv:"display_name"`
+	GivenName   string          `json:"givenName" db:"given_name" csv:"given_name"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
-	Email       string          `json:"email" db:"email" csv:"mail" validate:"required"`
+	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
 	AccountMetadata AccountMetadata `json:"metaData" db:"meta_data"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
