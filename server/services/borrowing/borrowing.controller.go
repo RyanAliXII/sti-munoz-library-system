@@ -26,6 +26,7 @@ type BorrowingController interface {
 	GetBorrowRequests(ctx * gin.Context)
 	GetBorrowedBooksByGroupId(ctx * gin.Context)
 	UpdateBorrowingStatus(ctx * gin.Context)
+	HandleCancellationByIdAndAccountId( ctx * gin.Context)
 	GetBorrowedBookByAccountId(ctx * gin.Context)
 	GetEbookByBorrowedBookId(ctx * gin.Context)
 	UpdateRemarks(ctx * gin.Context)
@@ -325,7 +326,19 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsCancelled(id, remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		logger.Error(err.Error(), slimlog.Error("MarkAsCancelled"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Status updated."))
+}
+
+func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context){
+	id := ctx.Param("id")
+	accountId := ctx.GetString("requestorId")
+	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, accountId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("Cancel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}

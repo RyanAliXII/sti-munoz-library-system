@@ -23,6 +23,7 @@ type BorrowingRepository interface {
 	MarkAsCancelled(id string, remarks string) error
 	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
 	UpdateRemarks(id string, remarks string) error 
+	CancelByIdAndAccountId(id string, accountId string) error
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -243,6 +244,16 @@ func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
 	_, err := repo.db.Exec(query, remarks , id)
 	return err 	
 }
+
+
+func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error {
+	//cancel the borrowed book only if it is pending and approved.
+	remarks := "Cancelled by user."
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1 , remarks = $2 where account_id = $3 and (status_id = $4 OR status_id = $5)"
+	_, err := repo.db.Exec(query,id, accountId, remarks, status.BorrowStatusPending, status.BorrowStatusApproved)
+	return err 	
+}
+
 
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
