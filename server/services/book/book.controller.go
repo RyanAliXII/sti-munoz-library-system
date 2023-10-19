@@ -1,12 +1,15 @@
 package book
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -48,6 +51,40 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		},
 	}, "New book added."))
 }
+
+
+func(ctrler * BookController) validateHeaders(file multipart.File) error {
+	m, err := gocsv.CSVToMaps(bufio.NewReader(file))
+	if err != nil {
+		return err
+	}
+	requiredHeaders := map[string]struct{}{
+		"accession_number": {},
+		"author":{},
+		"title": {},
+		"publisher": {},
+		"year_published": {},
+	}
+
+	for header := range m[0] {
+		delete(requiredHeaders, header)		
+	}
+	var missingHeaders strings.Builder
+	if len(requiredHeaders) != 0 {
+		idx := 0
+		for header := range requiredHeaders{
+			if idx == 0 {
+				missingHeaders.WriteString(header)
+			}else{
+				missingHeaders.WriteString(fmt.Sprintf(", %s", header))
+			}
+			idx++;
+		}
+		return fmt.Errorf("missing required headers: %s", missingHeaders.String())
+	}
+	return nil
+	
+}
 func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
 	sectionId := ctx.PostForm("sectionId")
@@ -61,6 +98,7 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		return
 	}
 	file, fileErr := fileHeader.Open()
+
 	if fileErr != nil {
 		file.Close()
 		logger.Error(fileErr.Error(), slimlog.Function("BookController.ImportBooks"), slimlog.Error("fileErr"))
@@ -68,6 +106,24 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		return
 	}
 	defer file.Close()
+	err = ctrler.validateHeaders(file)
+	if err != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors": gin.H{
+				"row": 0,
+				"column": 0,
+				"message": err.Error(),
+				
+			},
+		}, "Invalid CSV structure or format."))
+		return
+	}
+	_, err = file.Seek(0,0)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("seekErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	booksImports := make([]model.BookImport, 0)
 	bytesFile, toBytesErr := io.ReadAll(file)
 

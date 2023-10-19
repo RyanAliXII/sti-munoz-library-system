@@ -107,6 +107,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
       setForm(INITIAL_FORM_VALUE);
     }
   }, [isOpen]);
+  if (!isOpen) return null;
   return (
     <Modal
       open={isOpen}
