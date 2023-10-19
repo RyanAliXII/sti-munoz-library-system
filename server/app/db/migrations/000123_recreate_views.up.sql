@@ -1,10 +1,10 @@
+DROP VIEW IF EXISTS account_view;
 DROP VIEW IF EXISTS borrowed_book_all_view;
 DROP VIEW IF EXISTS borrowed_book_view;
 DROP VIEW IF EXISTS bag_view;
 DROP VIEW IF EXISTS borrowed_ebook_view;
 DROP VIEW IF EXISTS book_view;
 DROP VIEW IF EXISTS client_book_view;
-DROP VIEW IF EXISTS account_view;
 CREATE OR REPLACE VIEW book_view as 
 SELECT book.id,title, isbn, 
 	description, 
@@ -90,20 +90,6 @@ display_name, 'email', email, 'givenName', account.given_name, 'surname', accoun
 	ORDER BY bb.created_at desc;
 
 
-
-CREATE OR REPLACE VIEW account_view as 
-SELECT account.id, email, display_name, given_name, surname, profile_picture,
-json_build_object('totalPenalty', COALESCE(penalty_tbl.total, 0))
- as meta_data, 
- search_vector 
- FROM system.account 
-LEFT JOIN
-(SELECT penalty.account_id, 
-SUM(penalty.amount) as total FROM borrowing.penalty WHERE penalty.settled_at is null GROUP BY penalty.account_id) 
-as penalty_tbl on account.id = penalty_tbl.account_id
-GROUP BY account.id, 
-penalty_tbl.account_id,
-penalty_tbl.total;
 
 
 CREATE OR REPLACE VIEW borrowed_ebook_view as 
@@ -204,4 +190,40 @@ INNER JOIN book_view as bv on bag.book_id = bv.id;
 
 
 
-	
+
+CREATE OR REPLACE VIEW account_view as 
+SELECT account.id, email, display_name, given_name, surname, profile_picture,
+json_build_object(
+	'totalPenalty', COALESCE(penalty_tbl.total, 0),
+	'pendingBooks', COALESCE(bb.pending_books, 0),
+	'approvedBooks', COALESCE(bb.approved_books, 0),
+	'checkedOutBooks', COALESCE(bb.checkedout_books, 0),
+	'returnedBooks', COALESCE(bb.returned_books, 0),
+	'cancelledBOoks', COALESCE(bb.cancelled_books, 0)
+)
+ as metadata, 
+ search_vector 
+ FROM system.account 
+LEFT JOIN
+(SELECT penalty.account_id, 
+SUM(penalty.amount) as total FROM borrowing.penalty WHERE penalty.settled_at is null GROUP BY penalty.account_id) 
+as penalty_tbl on account.id = penalty_tbl.account_id
+LEFT JOIN  (
+SELECT account_id, 
+COUNT(1) filter (where status_id = 1) as pending_books,  
+COUNT(1) filter (where status_id = 2) as approved_books,
+COUNT(1) filter (where status_id = 3) as checkedout_books,
+COUNT(1) filter (where status_id = 4) as returned_books,
+COUNT(1) filter (where status_id = 5) as cancelled_books
+FROM borrowed_book_all_view GROUP BY account_id
+) as bb on account.id = bb.account_id
+GROUP BY 
+account.id, 
+bb.account_id,
+bb.pending_books,
+bb.approved_books,
+bb.returned_books,
+bb.cancelled_books,
+bb.checkedout_books,
+penalty_tbl.account_id,
+penalty_tbl.total;
