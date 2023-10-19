@@ -206,15 +206,15 @@ func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.N
 		return err
 	}
 	if isEbook {
-		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1, due_date = $2 where id = $3 and status_id = $4"
-		_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, dueDate, id, status.BorrowStatusApproved)
+		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1, due_date = $2 where id = $3 and (status_id = $4 OR status_id = $5)"
+		_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, dueDate, id, status.BorrowStatusApproved, status.BorrowStatusCheckedOut)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
-	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and status_id = $5"
-	_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved)
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and (status_id = $5 or status_id = $6)"
+	_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved, status.BorrowStatusCheckedOut)
 	return err 
 }
 func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{

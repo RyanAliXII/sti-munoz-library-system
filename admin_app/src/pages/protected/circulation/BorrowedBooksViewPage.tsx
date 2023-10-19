@@ -39,8 +39,9 @@ import {
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
 import DueDateInputModal from "./DueDateInputModal";
-import { AiFillCheckCircle } from "react-icons/ai";
+import { AiFillCheckCircle, AiOutlineEdit } from "react-icons/ai";
 import { MdOutlineCancel } from "react-icons/md";
+import EditDueDateModal from "./EditDueDateModal";
 const BorrowedBooksViewPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -71,6 +72,11 @@ const BorrowedBooksViewPage = () => {
     isOpen: isDueDateInputModalOpen,
     close: closeInputDueDateModal,
     open: openInputDueDateModal,
+  } = useSwitch();
+  const {
+    isOpen: isEditDueDatetModalOpen,
+    close: closeEditDueDateModal,
+    open: openEditDueDateModal,
   } = useSwitch();
   const fetchTransaction = async () => {
     const { data: response } = await Get(`/borrowing/requests/${id}`, {});
@@ -104,6 +110,7 @@ const BorrowedBooksViewPage = () => {
 
   const onConfirmDueDate = ({ date }: { date: string }) => {
     closeInputDueDateModal();
+    closeEditDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
       remarks: "",
@@ -323,13 +330,32 @@ const BorrowedBooksViewPage = () => {
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBookId(borrowedBook.id ?? "");
-                                  openInputDueDateModal();
+                                  openEditDueDateModal();
                                 }}
                               >
                                 <AiFillCheckCircle />
                               </button>
                             </Tippy>
                           )}
+
+                          {borrowedBook.statusId ===
+                            BorrowStatus.CheckedOut && (
+                            <Tippy content="Edit due date.">
+                              <button
+                                className={
+                                  ButtonClasses.PrimaryOutlineButtonClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
+                                  openEditDueDateModal();
+                                }}
+                              >
+                                <AiOutlineEdit />
+                              </button>
+                            </Tippy>
+                          )}
+
                           {borrowedBook.statusId === BorrowStatus.CheckedOut &&
                             !borrowedBook.isEbook && (
                               <Tippy content="Mark borrowed book as unreturned.">
@@ -402,6 +428,13 @@ const BorrowedBooksViewPage = () => {
         closeModal={closeInputDueDateModal}
         isOpen={isDueDateInputModalOpen}
         onConfirmDate={onConfirmDueDate}
+      />
+      <EditDueDateModal
+        onConfirmDate={onConfirmDueDate}
+        key={"editDueDate"}
+        isOpen={isEditDueDatetModalOpen}
+        closeModal={closeEditDueDateModal}
+        book={selectedBorrowedBook}
       />
       <ConfirmDialog
         key={"forApproval"}

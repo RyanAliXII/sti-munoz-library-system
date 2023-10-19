@@ -127,7 +127,7 @@ const BorrowedBooksPage = () => {
             if (book.covers.length > 0) {
               bookCover = buildS3Url(book.covers[0]);
             }
-            const isEbook = book.ebook.length > 0;
+            const isEbook = borrowedCopy.isEbook;
             const isDue = isPastDue(borrowedCopy.dueDate ?? "");
             return (
               <div className="h-54 shadow" key={borrowedCopy.id}>
