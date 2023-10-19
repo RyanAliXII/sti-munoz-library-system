@@ -39,15 +39,13 @@ export const AccountInitialValue: Account = {
   givenName: "",
   surname: "",
   id: "",
-  metaData: {
-    onlineApprovedBooks: 0,
-    onlineCancelledBooks: 0,
-    onlineCheckedOutBooks: 0,
-    onlinePendingBooks: 0,
-    onlineReturnedBooks: 0,
+  metadata: {
+    approvedBooks: 0,
+    cancelledBooks: 0,
+    checkedOutBooks: 0,
+    pendingBooks: 0,
+    returnedBooks: 0,
     totalPenalty: 0,
-    walkInCheckedOutBooks: 0,
-    walkInReturnedBooks: 0,
   },
 };
 export const BorrowedCopyInitialValue: BorrowedCopy = {
@@ -75,15 +73,13 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
     givenName: "",
     surname: "",
     id: "",
-    metaData: {
-      onlineApprovedBooks: 0,
-      onlineCancelledBooks: 0,
-      onlineCheckedOutBooks: 0,
-      onlinePendingBooks: 0,
-      onlineReturnedBooks: 0,
+    metadata: {
+      approvedBooks: 0,
+      cancelledBooks: 0,
+      checkedOutBooks: 0,
+      pendingBooks: 0,
+      returnedBooks: 0,
       totalPenalty: 0,
-      walkInCheckedOutBooks: 0,
-      walkInReturnedBooks: 0,
     },
   },
   isDue: false,

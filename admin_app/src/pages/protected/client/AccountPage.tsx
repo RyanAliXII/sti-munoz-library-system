@@ -48,6 +48,9 @@ const uppy = new Uppy({
   headers: {
     Authorization: `Bearer`,
   },
+  // getResponseError(responseText, response) {
+  //   return new Error(JSON.parse(responseText).message);
+  // },
   endpoint: `${BASE_URL_V1}/accounts/bulk`,
 });
 const AccountPage = () => {
@@ -205,6 +208,7 @@ type UploadAreaProps = {
 const UploadArea = ({ refetch }: UploadAreaProps) => {
   const { instance: msalInstance } = useMsal();
   const [numberOfUploadedFiles, setNumberOfUploadedFiles] = useState(0);
+  const [error, setError] = useState<undefined | string>(undefined);
   useEffect(() => {
     const onSuccessUpload = () => {
       toast.success("Accounts have been imported.");
@@ -216,18 +220,27 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
     const removeFile = () => {
       setNumberOfUploadedFiles((prev) => prev - 1);
     };
+    const onErrorUpload = () => {};
     uppy.on("file-added", addFile);
     uppy.on("file-removed", removeFile);
 
     uppy.on("upload-success", onSuccessUpload);
+    uppy.on("upload-error", (file, err, response) => {
+      const { data } = response?.body;
+      if (data?.error) {
+        setError(data?.error);
+      }
+    });
     return () => {
       uppy.off("upload-success", onSuccessUpload);
       uppy.off("file-added", addFile);
       uppy.off("file-removed", removeFile);
+      uppy.off("upload-error", onErrorUpload);
       uppy.cancelAll();
     };
   }, []);
   const importAccounts = async () => {
+    setError(undefined);
     const tokens = await msalInstance.acquireTokenSilent({
       scopes: [apiScope("LibraryServer.Access")],
     });
@@ -236,14 +249,35 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
         Authorization: `Bearer ${tokens.accessToken}`,
       },
     });
-    await uppy.upload();
+    uppy.upload().finally(() => {
+      uppy.cancelAll();
+    });
   };
 
   return (
-    <>
+    <div>
+      {error && (
+        <div
+          className="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50  dark:text-red-400 "
+          role="alert"
+        >
+          <svg
+            className="flex-shrink-0 inline w-4 h-4 mr-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+          </svg>
+          <span className="sr-only">Info</span>
+          <div>{error}</div>
+        </div>
+      )}
       <Dashboard
         uppy={uppy}
         hideUploadButton={true}
+        hideRetryButton={true}
         locale={{
           strings: {
             browseFiles: " browse",
@@ -257,7 +291,7 @@ const UploadArea = ({ refetch }: UploadAreaProps) => {
           Import accounts
         </PrimaryButton>
       ) : null}
-    </>
+    </div>
   );
 };
 export default AccountPage;

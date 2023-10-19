@@ -9,12 +9,12 @@ import (
 
 type Account struct {
 	Id          string          `json:"id" db:"id" csv:"id" validate:"required,uuid"`
-	DisplayName string          `json:"displayName" db:"display_name" csv:"displayName"`
-	GivenName   string          `json:"givenName" db:"given_name" csv:"givenName"`
+	DisplayName string          `json:"displayName" db:"display_name" csv:"display_name"`
+	GivenName   string          `json:"givenName" db:"given_name" csv:"given_name"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
-	Email       string          `json:"email" db:"email" csv:"mail" validate:"required"`
+	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
-	AccountMetadata AccountMetadata `json:"metaData" db:"meta_data"`
+	AccountMetadata AccountMetadata `json:"metadata" db:"metadata"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
 }
@@ -51,13 +51,11 @@ func (account AccountJSON) Value(value interface{}) (driver.Value, error) {
 
 type AccountMetadata struct {
 	TotalPenalty float64 `json:"totalPenalty"`
-	WalkInCheckedOutBooks int `json:"walkInCheckedOutBooks"`
-	WalkInReturnedBooks int `json:"walkInReturnedBooks"`
-	OnlinePendingBooks int `json:"onlinePendingBooks"`
-	OnlineApprovedBooks int `json:"onlineApprovedBooks"`
-	OnlineCheckedOutBooks int `json:"onlineCheckedOutBooks"`
-	OnlineReturnedBooks int `json:"onlineReturnedBooks"`
-	OnlineCancelledBooks int `json:"onlineCancelledBooks"`
+	CheckedOutBooks int `json:"checkedOutBooks"`
+	ReturnedBooks int `json:"returnedBooks"`
+	PendingBooks int `json:"pendingBooks"`
+	ApprovedBooks int `json:"approvedBooks"`
+	CancelledBooks int `json:"cancelledBooks"`
 }
 func (meta *AccountMetadata) Scan(value interface{}) error {
 	val, valid := value.([]byte)

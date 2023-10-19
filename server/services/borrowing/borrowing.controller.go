@@ -26,8 +26,10 @@ type BorrowingController interface {
 	GetBorrowRequests(ctx * gin.Context)
 	GetBorrowedBooksByGroupId(ctx * gin.Context)
 	UpdateBorrowingStatus(ctx * gin.Context)
+	HandleCancellationByIdAndAccountId( ctx * gin.Context)
 	GetBorrowedBookByAccountId(ctx * gin.Context)
 	GetEbookByBorrowedBookId(ctx * gin.Context)
+	UpdateRemarks(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -237,6 +239,24 @@ func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 	}, "Borrowed books fetched."))
 }
 
+func (ctrler * Borrowing)UpdateRemarks(ctx * gin.Context){
+	id := ctx.Param("id")
+	body := UpdateBorrowStatusBody{}
+	err := ctx.ShouldBind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	err = ctrler.borrowingRepo.UpdateRemarks(id, body.Remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("updateRemarksErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Remarks Updated."))
+}
+
 func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	 statusId, err := strconv.Atoi(ctx.Query("statusId"))
 	 if err != nil {
@@ -306,7 +326,19 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){
 	err := ctrler.borrowingRepo.MarkAsCancelled(id, remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		logger.Error(err.Error(), slimlog.Error("MarkAsCancelled"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Status updated."))
+}
+
+func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context){
+	id := ctx.Param("id")
+	accountId := ctx.GetString("requestorId")
+	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, accountId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("Cancel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -333,6 +365,7 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		return 
 	}
 }
+
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{
 		borrowingRepo: repository.NewBorrowingRepository(),

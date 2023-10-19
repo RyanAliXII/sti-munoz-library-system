@@ -15,32 +15,18 @@ type StatsRepository struct {
 func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
 	var stats model.LibraryStats
 	query := `
-	SELECT (SELECT COUNT(*) FROM system.account) as accounts, 
-		(SELECT COUNT(*) FROM catalog.accession ) as books, 
-		(SELECT COALESCE(SUM(amount),0) FROM circulation.penalty) as penalties,
-		(SELECT COALESCE(SUM(amount),0) FROM circulation.penalty where penalty.settled_at is not null) as settled_penalties,
-		(SELECT COALESCE(SUM(amount),0) FROM circulation.penalty where penalty.settled_at is null) as unsettled_penalties,
-		(SELECT COUNT(*) FROM circulation.online_borrowed_book where status ='pending') as pending_books,
-		(SELECT COUNT(*) FROM circulation.online_borrowed_book where status ='approved') as approved_books,
-		(SELECT COUNT(*) FROM circulation.online_borrowed_book where status ='checked-out') + 
-		(SELECT COUNT(*) FROM  circulation.borrowed_book where returned_at is null and cancelled_at is null and unreturned_at is null ) as checked_out_books,
-
-		(SELECT COUNT(*) FROM circulation.online_borrowed_book where status ='returned') + 
-		(SELECT COUNT(*) FROM  circulation.borrowed_book where returned_at is not null ) as returned_books,
-		(SELECT COUNT(*) FROM circulation.online_borrowed_book where status ='unreturned') + 
-		(SELECT COUNT(*) FROM  circulation.borrowed_book where unreturned_at is not null ) as unreturned_books,
-		(SELECT COUNT(*) FROM circulation.online_borrowed_book where status ='cancelled') + 
-		(SELECT COUNT(*) FROM  circulation.borrowed_book where cancelled_at is not null ) as cancelled_books`
+	SELECT
+    (SELECT COUNT(1) FROM system.account) as accounts,
+    (SELECT COUNT(1) FROM catalog.accession) as books,
+    (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty) as penalties,
+    (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NOT NULL) as settled_penalties,
+    (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NULL) as unsettled_penalties`
     getErr := repo.db.Get(&stats, query)
     if getErr != nil {
 		logger.Error(getErr.Error(), slimlog.Function("StatsRepository.GetLibraryStats"), slimlog.Error("getErrd"))
     }
     return stats
 }
-
-
-
-
 
 func NewStatsRepository() StatsRepositoryInterface {
 	db :=  postgresdb.GetOrCreateInstance()

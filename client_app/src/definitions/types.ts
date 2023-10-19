@@ -73,23 +73,20 @@ export type Audit = {
   id?: string;
   name: string;
 };
-
 export type Account = {
   id?: string;
   displayName: string;
   surname: string;
   givenName: string;
   email: string;
-  profilePicture: "";
-  metaData: {
+  profilePicture: string;
+  metadata: {
     totalPenalty: number;
-    walkInCheckedOutBooks: number;
-    walkInReturnedBooks: number;
-    onlinePendingBooks: number;
-    onlineApprovedBooks: number;
-    onlineCheckedOutBooks: number;
-    onlineReturnedBooks: number;
-    onlineCancelledBooks: number;
+    checkedOutBooks: number;
+    returnedBooks: number;
+    pendingBooks: number;
+    approvedBooks: number;
+    cancelledBooks: number;
   };
 };
 

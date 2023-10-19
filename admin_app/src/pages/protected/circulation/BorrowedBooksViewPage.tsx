@@ -39,8 +39,10 @@ import {
 import { buildS3Url } from "@definitions/configs/s3";
 import ordinal from "ordinal";
 import DueDateInputModal from "./DueDateInputModal";
-import { AiFillCheckCircle } from "react-icons/ai";
+import { AiFillCheckCircle, AiOutlineEdit } from "react-icons/ai";
 import { MdOutlineCancel } from "react-icons/md";
+import EditDueDateModal from "./EditDueDateModal";
+import EditRemarksModal from "./EditRemarksModal";
 const BorrowedBooksViewPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -72,6 +74,17 @@ const BorrowedBooksViewPage = () => {
     close: closeInputDueDateModal,
     open: openInputDueDateModal,
   } = useSwitch();
+  const {
+    isOpen: isEditDueDatetModalOpen,
+    close: closeEditDueDateModal,
+    open: openEditDueDateModal,
+  } = useSwitch();
+
+  const {
+    isOpen: isEditRemarksModalOpen,
+    close: closeEditRemarksModal,
+    open: openEditRemarksModal,
+  } = useSwitch();
   const fetchTransaction = async () => {
     const { data: response } = await Get(`/borrowing/requests/${id}`, {});
     return response?.data?.borrowedBooks ?? [];
@@ -93,6 +106,8 @@ const BorrowedBooksViewPage = () => {
   const [selectedBorrowedBook, setSelectedBorrowedBook] = useState<
     Book | undefined
   >();
+  const [dueDate, setDuedate] = useState("");
+  const [borrowedBook, setBorrowedBook] = useState<BorrowedBook | undefined>();
   const [borrowedBookId, setBorrowedBookId] = useState("");
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
@@ -104,6 +119,7 @@ const BorrowedBooksViewPage = () => {
 
   const onConfirmDueDate = ({ date }: { date: string }) => {
     closeInputDueDateModal();
+    closeEditDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
       remarks: "",
@@ -160,6 +176,20 @@ const BorrowedBooksViewPage = () => {
     },
   });
 
+  const updateRemarks = useMutation({
+    mutationFn: (body: { remarks: string }) =>
+      Patch(`/borrowing/borrowed-books/${borrowedBookId}/remarks`, body),
+    onSuccess: () => {
+      toast.success("Borrowed book has been updated.");
+      refetch();
+    },
+    onError: () => {
+      toast.error(ErrorMsg.Update);
+    },
+    onSettled: () => {
+      closeEditRemarksModal();
+    },
+  });
   const client = borrowedBooks?.[0]?.client ?? {
     displayName: "",
     email: "",
@@ -323,13 +353,33 @@ const BorrowedBooksViewPage = () => {
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBookId(borrowedBook.id ?? "");
-                                  openInputDueDateModal();
+                                  openEditDueDateModal();
                                 }}
                               >
                                 <AiFillCheckCircle />
                               </button>
                             </Tippy>
                           )}
+
+                          {borrowedBook.statusId ===
+                            BorrowStatus.CheckedOut && (
+                            <Tippy content="Edit due date.">
+                              <button
+                                className={
+                                  ButtonClasses.PrimaryOutlineButtonClasslist
+                                }
+                                onClick={() => {
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBook(borrowedBook);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
+                                  openEditDueDateModal();
+                                }}
+                              >
+                                <AiOutlineEdit />
+                              </button>
+                            </Tippy>
+                          )}
+
                           {borrowedBook.statusId === BorrowStatus.CheckedOut &&
                             !borrowedBook.isEbook && (
                               <Tippy content="Mark borrowed book as unreturned.">
@@ -366,6 +416,28 @@ const BorrowedBooksViewPage = () => {
                               </button>
                             </Tippy>
                           )}
+
+                          {(borrowedBook.statusId === BorrowStatus.Returned ||
+                            borrowedBook.statusId === BorrowStatus.Cancelled ||
+                            borrowedBook.statusId ===
+                              BorrowStatus.Unreturned) &&
+                            !borrowedBook.isEbook && (
+                              <Tippy content="Edit Remarks">
+                                <button
+                                  className={
+                                    ButtonClasses.PrimaryOutlineButtonClasslist
+                                  }
+                                  onClick={() => {
+                                    setSelectedBorrowedBook(borrowedBook.book);
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    setBorrowedBook(borrowedBook);
+                                    openEditRemarksModal();
+                                  }}
+                                >
+                                  <AiOutlineEdit />
+                                </button>
+                              </Tippy>
+                            )}
                         </div>
                       </Td>
                     </BodyRow>
@@ -402,6 +474,22 @@ const BorrowedBooksViewPage = () => {
         closeModal={closeInputDueDateModal}
         isOpen={isDueDateInputModalOpen}
         onConfirmDate={onConfirmDueDate}
+      />
+      <EditDueDateModal
+        borrowedBook={borrowedBook}
+        onConfirmDate={onConfirmDueDate}
+        key={"editDueDate"}
+        isOpen={isEditDueDatetModalOpen}
+        closeModal={closeEditDueDateModal}
+      />
+      <EditRemarksModal
+        isOpen={isEditRemarksModalOpen}
+        closeModal={closeEditRemarksModal}
+        borrowedBook={borrowedBook}
+        onConfirm={(data) => {
+          updateRemarks.mutate(data);
+        }}
+        key={"forEditRemarks"}
       />
       <ConfirmDialog
         key={"forApproval"}

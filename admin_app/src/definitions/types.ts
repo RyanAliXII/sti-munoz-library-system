@@ -97,15 +97,13 @@ export type Account = {
   surname: string;
   givenName: string;
   email: string;
-  metaData: {
+  metadata: {
     totalPenalty: number;
-    walkInCheckedOutBooks: number;
-    walkInReturnedBooks: number;
-    onlinePendingBooks: number;
-    onlineApprovedBooks: number;
-    onlineCheckedOutBooks: number;
-    onlineReturnedBooks: number;
-    onlineCancelledBooks: number;
+    checkedOutBooks: number;
+    returnedBooks: number;
+    pendingBooks: number;
+    approvedBooks: number;
+    cancelledBooks: number;
   };
 };
 
@@ -132,6 +130,7 @@ export type BorrowedBook = {
   dueDate: string;
   penalty: number;
   isEbook: boolean;
+  remarks: string;
   createdAt: string;
 };
 export type BorrowingTransaction = {
