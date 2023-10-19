@@ -12,6 +12,7 @@ import pages from "./pages/Pages";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "@assets/css/global.css";
 const queryClient = new QueryClient();
 function App() {
   const msalInstance = new PublicClientApplication(msalConfig);

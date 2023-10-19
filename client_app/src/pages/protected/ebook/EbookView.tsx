@@ -4,9 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import b64toBlob from "b64-to-blob";
 import { useLayoutEffect, useState } from "react";
-import LoadingBoundary, {
-  LoadingBoundaryV2,
-} from "@components/loader/LoadingBoundary";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Page404 from "@pages/error/Page404";
 const EbookView = () => {
   const { id } = useParams();
@@ -39,11 +37,21 @@ const EbookView = () => {
     retry: false,
   });
   useLayoutEffect(() => {
-    window.addEventListener("resize", (event) => {
+    const listenResize = (event: Event) => {
       const target = event.target as Window;
       setWindowData({ width: target.innerWidth, height: target.innerHeight });
-    });
+    };
+    const avoidRightClick = (event: Event) => {
+      event.preventDefault();
+    };
+    window.addEventListener("resize", listenResize);
+    window.addEventListener("contextmenu", avoidRightClick);
+    return () => {
+      window.removeEventListener("resize", listenResize);
+      window.removeEventListener("contextmenu", avoidRightClick);
+    };
   }, []);
+
   if (isError)
     return (
       <Page404
@@ -51,6 +59,7 @@ const EbookView = () => {
         redirectText="Return to borrowed books"
       />
     );
+
   return (
     <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
       <div>

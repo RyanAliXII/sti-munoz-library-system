@@ -53,7 +53,7 @@ const DocumentView = ({
       <Document
         file={eBookUrl}
         noData={"Book has no eBook"}
-        className="w-full p-2"
+        className="w-full p-2 ebook-view"
         onLoadSuccess={onDocumentLoadSuccess}
       >
         <div>
