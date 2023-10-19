@@ -7,7 +7,7 @@ import {
   EbookStatusText,
   StatusText,
 } from "@internal/borrow_status";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -49,14 +49,17 @@ const BorrowedBooksPage = () => {
       return [];
     }
   };
+  const queryClient = useQueryClient();
 
   const cancelRequest = useMutation({
     mutationFn: () =>
-      Patch(
-        `/borrowing/borrowed-books/${selectedBorrowedBookId}}/cancellation`
-      ),
+      Patch(`/borrowing/borrowed-books/${selectedBorrowedBookId}/cancellation`),
     onSuccess: () => {
       toast.success("Request has been cancelled.");
+      queryClient.invalidateQueries(["borrowedBooks"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occurred.");
     },
     onSettled: () => {
       closeCanceConfirm();

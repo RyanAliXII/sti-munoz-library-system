@@ -249,8 +249,23 @@ func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
 func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error {
 	//cancel the borrowed book only if it is pending and approved.
 	remarks := "Cancelled by user."
-	query := "UPDATE borrowing.borrowed_book SET status_id = $1 , remarks = $2 where account_id = $3 and (status_id = $4 OR status_id = $5)"
-	_, err := repo.db.Exec(query,id, accountId, remarks, status.BorrowStatusPending, status.BorrowStatusApproved)
+	isEbook := false
+	
+	err := repo.db.Get(&isEbook, "SELECT is_ebook as isEbook from borrowed_book_all_view where id = $1  LIMIT 1", id)
+	if err != nil {
+		return err
+	}
+	if isEbook {
+
+		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1 where id = $2 and account_id= $3 and (status_id = $4 or status_id = $5 )"
+		_, err = repo.db.Exec(query, status.BorrowStatusCancelled, id, accountId, status.BorrowStatusPending, status.BorrowStatusApproved)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1 , remarks = $2 where id = $3 and account_id = $4 and (status_id = $5 OR status_id = $6)"
+	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks, id, accountId, status.BorrowStatusPending, status.BorrowStatusApproved)
 	return err 	
 }
 
