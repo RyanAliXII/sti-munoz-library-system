@@ -108,6 +108,12 @@ func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
+	err = ctrler.isValidDueDate(string(borrowedBook.DueDate))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("IsValidDueDate"))
+		ctx.JSON(httpresp.Fail404(nil, "Link expired is expired."))
+		return
+	}
 	object, err := ctrler.bookRepo.GetEbookById(borrowedBook.Book.Id)
 	if err != nil {
 		_, isNotEbook := err.(*repository.IsNotEbook)

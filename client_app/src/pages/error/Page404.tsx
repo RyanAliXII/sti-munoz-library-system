@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 
-const Page404 = () => {
+const Page404 = ({
+  redirectTo = "/search",
+  redirectText = "Return to searching",
+}) => {
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center">
       <svg
@@ -163,7 +166,7 @@ const Page404 = () => {
           Sorry, the page you are looking for could not be found.
         </p>
         <Link
-          to="/search"
+          to={redirectTo}
           className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-gray-100 px-4 py-2 mt-12 rounded transition duration-150"
           title="Return Home"
         >
@@ -179,7 +182,7 @@ const Page404 = () => {
               clipRule="evenodd"
             ></path>
           </svg>
-          <span> Return to searching.</span>
+          <span> {redirectText}</span>
         </Link>
       </div>
     </div>

@@ -24,12 +24,10 @@ const DocumentView = ({
       setHeight(900);
       return;
     }
-
     setHeight(windowData.width);
   }, [windowData]);
   useEffect(() => {
     if (isNaN(tempPageNumber)) {
-      console.log("nan");
       setPageNumber(1);
       return;
     }
@@ -48,6 +46,7 @@ const DocumentView = ({
   };
   useEffect(() => {
     setTempPageNumber(pageNumber);
+    gotoTop();
   }, [pageNumber]);
   return (
     <div className="flex flex-col">
@@ -75,7 +74,7 @@ const DocumentView = ({
           <input
             type="number"
             min={1}
-            className="py-1 px-2 border rounded text-sm"
+            className="py-1 px-2 border rounded text-sm lg:text-base"
             max={numPages}
             value={tempPageNumber}
             onChange={(event) => {
@@ -90,7 +89,6 @@ const DocumentView = ({
             className="text-sm border px-2 py-1 rounded lg:text-base"
             onClick={() => {
               setPageNumber((prev) => {
-                gotoTop();
                 if (prev === 1) {
                   return prev;
                 }
@@ -105,7 +103,6 @@ const DocumentView = ({
             className="text-sm border px-2 py-1 rounded lg:text-base"
             onClick={() => {
               setPageNumber((prev) => {
-                gotoTop();
                 if (prev === numPages) {
                   return prev;
                 }
