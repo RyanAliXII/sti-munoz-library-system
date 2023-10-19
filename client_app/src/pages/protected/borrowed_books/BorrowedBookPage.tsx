@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-
+import { isBefore } from "date-fns";
 const BorrowedBooksPage = () => {
   const [searchParams, setSearchParam] = useSearchParams();
   const { Get } = useRequest();
@@ -41,7 +41,17 @@ const BorrowedBooksPage = () => {
       return [];
     }
   };
-
+  const isPastDue = (dateStr: string) => {
+    try {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const dueDate = new Date(dateStr ?? "");
+      dueDate.setHours(0, 0, 0, 0);
+      return isBefore(dueDate, now);
+    } catch (err) {
+      return false;
+    }
+  };
   const {
     data: onlineBorrowedBooks,
     isFetching,
@@ -118,7 +128,7 @@ const BorrowedBooksPage = () => {
               bookCover = buildS3Url(book.covers[0]);
             }
             const isEbook = book.ebook.length > 0;
-
+            const isDue = isPastDue(borrowedCopy.dueDate ?? "");
             return (
               <div className="h-54 shadow" key={borrowedCopy.id}>
                 <div className="p-2 border border-b text-green-700">
@@ -189,7 +199,8 @@ const BorrowedBooksPage = () => {
                       </p>
 
                       {borrowedCopy.isEbook &&
-                        borrowedCopy.statusId === BorrowStatus.CheckedOut && (
+                        borrowedCopy.statusId === BorrowStatus.CheckedOut &&
+                        !isDue && (
                           <div>
                             <Link
                               to={`/ebooks/${borrowedCopy.id}`}
@@ -197,6 +208,16 @@ const BorrowedBooksPage = () => {
                             >
                               Read book &#x2192;
                             </Link>
+                          </div>
+                        )}
+
+                      {borrowedCopy.isEbook &&
+                        borrowedCopy.statusId === BorrowStatus.CheckedOut &&
+                        isDue && (
+                          <div>
+                            <p className="flex items-center gap-1 text-sm mt-1 mb-2  font-semibold underline text-red-400">
+                              Ebook link has been expired.
+                            </p>
                           </div>
                         )}
                       {borrowedCopy.penalty > 0 &&
