@@ -28,4 +28,5 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	middlewares.BlockRequestFromClientApp,
 	ctrler.GetBorrowedBooksByGroupId)
 	r.PATCH("/borrowed-books/:id/status", ctrler.UpdateBorrowingStatus)
+	r.PATCH("/borrowed-books/:id/remarks", middlewares.BlockRequestFromClientApp, ctrler.UpdateRemarks)
 }

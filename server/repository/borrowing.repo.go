@@ -22,6 +22,7 @@ type BorrowingRepository interface {
 	GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error)
 	MarkAsCancelled(id string, remarks string) error
 	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
+	UpdateRemarks(id string, remarks string) error 
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -238,7 +239,9 @@ func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 }
 
 func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
-		return nil
+	query := "UPDATE borrowing.borrowed_book SET  remarks = $1 where id = $2"
+	_, err := repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id)
+	return err 	
 }
 
 func NewBorrowingRepository ()  BorrowingRepository {

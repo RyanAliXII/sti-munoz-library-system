@@ -28,6 +28,7 @@ type BorrowingController interface {
 	UpdateBorrowingStatus(ctx * gin.Context)
 	GetBorrowedBookByAccountId(ctx * gin.Context)
 	GetEbookByBorrowedBookId(ctx * gin.Context)
+	UpdateRemarks(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -237,6 +238,24 @@ func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 	}, "Borrowed books fetched."))
 }
 
+func (ctrler * Borrowing)UpdateRemarks(ctx * gin.Context){
+	id := ctx.Param("id")
+	body := UpdateBorrowStatusBody{}
+	err := ctx.ShouldBind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	err = ctrler.borrowingRepo.UpdateRemarks(id, body.Remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("updateRemarksErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Remarks Updated."))
+}
+
 func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	 statusId, err := strconv.Atoi(ctx.Query("statusId"))
 	 if err != nil {
@@ -333,6 +352,7 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		return 
 	}
 }
+
 func NewBorrowingController () BorrowingController {
 	return &Borrowing{
 		borrowingRepo: repository.NewBorrowingRepository(),
