@@ -90,15 +90,13 @@ const DocumentView = ({ eBookUrl = "" }) => {
         <p className="mb-3">
           Page {pageNumber} of {numPages}
         </p>
-        {Array.from(Array(numPages)).map((_, index) => {
-          return (
-            <Page
-              pageNumber={index + 1}
-              className="shadow border"
-              scale={1.5}
-            />
-          );
-        })}
+
+        <Page
+          renderAnnotationLayer={false}
+          pageNumber={pageNumber}
+          className="shadow border"
+          scale={1.2}
+        />
       </Document>
     </>
   );

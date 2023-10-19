@@ -447,20 +447,18 @@ func(ctrler * BookController) GetEbookById(ctx * gin.Context){
 	id := ctx.Param("id") // book id
 	object ,err := ctrler.bookRepository.GetEbookById(id)
 	if err != nil {
+		_, ok := err.(*repository.IsNotEbook)
+		if ok {
+			logger.Warn(err.Error())
+			ctx.Data(http.StatusNotFound, "application/pdf", []byte{})
+			return 
+		}
 		logger.Error(err.Error(), slimlog.Error("GeEbookByIdErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-
-	if (object == nil){
-		ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf")
-		ctx.Data(http.StatusOK, "application/pdf", []byte{})
-		return
-	}
 	defer func() {
-		if object != nil {
-			object.Close()
-		}
+		object.Close()
 	}()
 	
     ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf") // Modify the filename accordingl

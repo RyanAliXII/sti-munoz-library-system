@@ -777,7 +777,9 @@ func (repo * BookRepository)GetEbookById(id string) (*minio.Object, error) {
 	}
 
 	if(len(ebookKey) == 0){
-		return nil, nil
+		return nil, &IsNotEbook{
+			BookId: id,
+		}
 	}
 	ctx := context.Background()
 	object, err := repo.minio.GetObject(ctx, objstore.BUCKET, ebookKey, minio.GetObjectOptions{})

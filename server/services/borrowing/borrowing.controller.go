@@ -1,6 +1,8 @@
 package borrowing
 
 import (
+	"bytes"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
@@ -27,6 +29,7 @@ type BorrowingController interface {
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
+	bookRepo repository.BookRepositoryInterface
 	settingsRepo repository.SettingsRepositoryInterface
 }
 func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
@@ -94,11 +97,43 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, grou
 }
 func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	id := ctx.Param("id")
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBooksById(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			 logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))
+			 ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			 return
+		}
+		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	object, err := ctrler.bookRepo.GetEbookById(borrowedBook.Book.Id)
+	if err != nil {
+		_, isNotEbook := err.(*repository.IsNotEbook)
+		if isNotEbook {
+			logger.Error(err.Error(), slimlog.Error("GetEbookById"))
+			ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			return
+		}
 
+		logger.Error(err.Error(), slimlog.Error("GetEbookById"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	defer object.Close()
+	var buffer bytes.Buffer
+	_, err = buffer.ReadFrom(object)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("buffer.ReadFrom"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	 ctx.JSON(httpresp.Success200(gin.H{
+		"book": borrowedBook.Book,
+		"ebook":  buffer.Bytes(),
+	 }, ""))
 	
-
-
-
 }
 func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, groupId string)([]model.BorrowedEBook, error){
 	ebooks := make([]model.BorrowedEBook, 0)
@@ -286,5 +321,6 @@ func NewBorrowingController () BorrowingController {
 	return &Borrowing{
 		borrowingRepo: repository.NewBorrowingRepository(),
 		settingsRepo: repository.NewSettingsRepository(),
+		bookRepo: repository.NewBookRepository(),
 	}
 }
