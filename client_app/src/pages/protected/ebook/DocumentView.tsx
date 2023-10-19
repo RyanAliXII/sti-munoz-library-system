@@ -13,18 +13,20 @@ const DocumentView = ({
   const [numPages, setNumPages] = useState<number>(1);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [tempPageNumber, setTempPageNumber] = useState<number>(1);
-  const [height, setHeight] = useState<number>(window.innerHeight);
-
+  const [height, setHeight] = useState<number>(0);
+  const [width, setWidth] = useState<number>(0);
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setPageNumber(1);
     setNumPages(numPages);
   }
   useLayoutEffect(() => {
     if (windowData.width >= 1200) {
-      setHeight(900);
+      setWidth(700);
+      setHeight(windowData.height);
       return;
     }
-    setHeight(windowData.width);
+    setWidth(windowData.width);
+    setHeight(windowData.height);
   }, [windowData]);
   useEffect(() => {
     if (isNaN(tempPageNumber)) {
@@ -49,11 +51,11 @@ const DocumentView = ({
     gotoTop();
   }, [pageNumber]);
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col ">
       <Document
         file={eBookUrl}
         noData={"Book has no eBook"}
-        className="w-full p-2"
+        className="w-full ebook-view "
         onLoadSuccess={onDocumentLoadSuccess}
       >
         <div>
@@ -63,13 +65,13 @@ const DocumentView = ({
         </div>
         <Page
           height={height}
-          //   width={width}
+          width={width}
           renderAnnotationLayer={false}
+          renderTextLayer={false}
           pageNumber={pageNumber}
-          className={"w-full flex justify-center"}
         />
       </Document>
-      <div className="footer  flex gap-2 items-center justify-center pb-6">
+      <div className="footer  flex gap-2 items-center justify-center pb-6 mt-2">
         <div>
           <input
             type="number"

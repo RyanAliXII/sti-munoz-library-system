@@ -1,0 +1,10 @@
+@media print {
+  .ebook-view {
+    display: none;
+  }
+}
+
+/* .react-pdf__Page__canvas {
+  width: 95% !important;
+  height: 95% !important;
+} */
