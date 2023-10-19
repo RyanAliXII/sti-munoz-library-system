@@ -7,15 +7,18 @@ import {
   EbookStatusText,
   StatusText,
 } from "@internal/borrow_status";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { isBefore } from "date-fns";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useSwitch } from "@hooks/useToggle";
+import { toast } from "react-toastify";
 const BorrowedBooksPage = () => {
   const [searchParams, setSearchParam] = useSearchParams();
-  const { Get } = useRequest();
-
+  const { Get, Patch } = useRequest();
+  const [selectedBorrowedBookId, setSelectBorrowedBookId] = useState("");
   const [activeTab, setActiveTab] = useState<BorrowStatus | 0>(() => {
     let statusId = searchParams.get("statusId");
     let parsedStatusId = parseInt(statusId ?? "");
@@ -24,6 +27,11 @@ const BorrowedBooksPage = () => {
     }
     return parsedStatusId;
   });
+  const {
+    isOpen: isCancelConfirmOpen,
+    close: closeCanceConfirm,
+    open: openCancelConfirm,
+  } = useSwitch();
   const fetchBorrowedBooks = async (activeTab: BorrowStatus | 0) => {
     try {
       let params = {};
@@ -41,6 +49,19 @@ const BorrowedBooksPage = () => {
       return [];
     }
   };
+
+  const cancelRequest = useMutation({
+    mutationFn: () =>
+      Patch(
+        `/borrowing/borrowed-books/${selectedBorrowedBookId}}/cancellation`
+      ),
+    onSuccess: () => {
+      toast.success("Request has been cancelled.");
+    },
+    onSettled: () => {
+      closeCanceConfirm();
+    },
+  });
   const isPastDue = (dateStr: string) => {
     try {
       const now = new Date();
@@ -241,6 +262,10 @@ const BorrowedBooksPage = () => {
                       <a
                         role="button"
                         className="text-xs text-error lg:text-sm mr-2"
+                        onClick={() => {
+                          openCancelConfirm();
+                          setSelectBorrowedBookId(borrowedCopy.id ?? "");
+                        }}
                       >
                         Cancel
                       </a>
@@ -252,9 +277,19 @@ const BorrowedBooksPage = () => {
           })}
         </LoadingBoundary>
       </div>
+      <DangerConfirmDialog
+        close={closeCanceConfirm}
+        isOpen={isCancelConfirmOpen}
+        title="Cancel Request!"
+        onConfirm={() => {
+          cancelRequest.mutate();
+        }}
+        text="Are you sure you want to cancel borrow request?"
+      />
     </div>
   );
 };
+
 const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
   return activeTab === tab
     ? "tab  tab-bordered tab-active inline"
