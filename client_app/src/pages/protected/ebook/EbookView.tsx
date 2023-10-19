@@ -11,7 +11,7 @@ const EbookView = () => {
   const { Get } = useRequest();
   const [windowData, setWindowData] = useState({
     width: window.innerWidth,
-    height: window.innerWidth,
+    height: window.innerHeight,
   });
   const fetchEbook = async (): Promise<{
     bookTitle: string;
@@ -63,9 +63,12 @@ const EbookView = () => {
   return (
     <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
       <div>
-        <div className="w-full  flex flex-col items-center mt-5 gap-3">
-          <div className=" flex flex-col w-11/12  gap-2">
-            <h1 className=""></h1>
+        <div className="w-full flex flex-col items-center mt-5 gap-3">
+          <div className="flex flex-col gap-2">
+            <h1 className="font-bold text-center text-lg mt-5">
+              {data?.bookTitle}
+            </h1>
+
             <DocumentView
               eBookUrl={data?.ebook ?? ""}
               windowData={windowData}
