@@ -39,26 +39,25 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 
 	var audited []model.AuditedBook
 	query := `
-	SELECT book.id,title, isbn, 
-	description, 
-	copies,
-	pages,
-	cost_price,
-	edition,
-	year_published,
-	received_at,
-	ddc,
-	publisher,
-	authors
-	author_number,
+	SELECT book.id,title, book.isbn, 
+	book.description, 
+	book.copies,
+	book.pages,
+	book.cost_price,
+	book.edition,
+	book.year_published,
+	book.received_at,
+	book.ddc,
+	book.publisher,
+	COALESCE(book.authors, '[]') as authors,
+	book.author_number,
 	book.created_at,
-	covers,
+	book.covers,
 	COALESCE(json_agg(json_build_object('id',accession.id,'number', accession.number, 'copyNumber', accession.copy_number, 
 	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.transaction_id is null and obb. id is null then false else true end))),'[]') as accessions
-	FROM inventory.audited_book  
+	FROM inventory.audited_book
 	INNER JOIN book_view as book on audited_book.book_id = book.id
 	INNER JOIN catalog.accession as accession on book.id = accession.book_id and accession.weeded_at is null
-
 	LEFT JOIN inventory.audited_accession as aa on accession.id = aa.accession_id AND audited_book.audit_id = aa.audit_id 
 	LEFT JOIN circulation.borrowed_book as bb on accession.book_id = bb.book_id AND  accession.number =  bb. accession_number AND bb.returned_at is null AND bb.cancelled_at is null and bb.unreturned_at is null
 	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id AND status = 'checked-out'
@@ -72,7 +71,7 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	year_published,
 	received_at,
 	ddc,
-	author_number,
+	book.author_number,
 	book.created_at,
 	publisher,
 	authors,
