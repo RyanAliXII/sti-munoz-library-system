@@ -8,6 +8,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
+
 type BorrowingRepository interface {
 
 	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
@@ -76,6 +77,15 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 	err := repo.db.Select(&borrowedBooks, query, groupId)
 	return borrowedBooks, err
 }
+func (repo * Borrowing) GetBorrowedBooksById (id string)(model.BorrowedBook, error) {
+	borrowedBook := model.BorrowedBook{}
+	err := repo.db.Get(&borrowedBook, "SELECT * FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true")
+	if err != nil {
+		return borrowedBook, err
+	}
+	return borrowedBook,nil
+}
+
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
 	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id != 6 order by created_at desc`

@@ -22,6 +22,8 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	r.GET("/borrowed-books", 
 	ctrler.GetBorrowedBookByAccountId)
 
+	r.GET("/ebooks/:id", ctrler.GetEbookByBorrowedBookId)
+
 	r.GET("/requests/:id", 
 	middlewares.BlockRequestFromClientApp,
 	ctrler.GetBorrowedBooksByGroupId)

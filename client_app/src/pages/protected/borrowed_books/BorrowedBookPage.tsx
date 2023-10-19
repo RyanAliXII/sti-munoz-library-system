@@ -10,7 +10,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import ordinal from "ordinal";
 import { useState } from "react";
-import { AiOutlineArrowRight } from "react-icons/ai";
 import { Link, useSearchParams } from "react-router-dom";
 
 const BorrowedBooksPage = () => {

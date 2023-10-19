@@ -23,6 +23,7 @@ type BorrowingController interface {
 	GetBorrowedBooksByGroupId(ctx * gin.Context)
 	UpdateBorrowingStatus(ctx * gin.Context)
 	GetBorrowedBookByAccountId(ctx * gin.Context)
+	GetEbookByBorrowedBookId(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -91,7 +92,14 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, grou
 	}
 	return borrowedBooks, nil
 }
+func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
+	id := ctx.Param("id")
 
+	
+
+
+
+}
 func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, groupId string)([]model.BorrowedEBook, error){
 	ebooks := make([]model.BorrowedEBook, 0)
 	for _, ebook := range body.Ebooks{

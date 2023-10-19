@@ -769,7 +769,7 @@ func (repo * BookRepository)AddEbook(id string, eBook * multipart.FileHeader) er
 	}
 	return nil
 }
-func (repo * BookRepository)GetEbookById(id string, ) (*minio.Object, error) {
+func (repo * BookRepository)GetEbookById(id string) (*minio.Object, error) {
 	ebookKey := ""
 	err := repo.db.Get(&ebookKey, "SELECT ebook from book_view where id = $1", id)
 	if err != nil {

@@ -3,8 +3,10 @@ import { Document, Page, pdfjs } from "react-pdf";
 import { useEffect, useState } from "react";
 import { LightOutlineButton } from "@components/ui/button/Button";
 import { Input } from "@components/ui/form/Input";
+import { useParams } from "react-router-dom";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 const EbookView = () => {
+  const { id } = useParams();
   return (
     <div>
       <div className="w-full  flex flex-col items-center mt-5 gap-3">
@@ -14,7 +16,7 @@ const EbookView = () => {
             maxWidth: "800px",
           }}
         >
-          <DocumentView eBookUrl="https://s29.q4cdn.com/175625835/files/doc_downloads/test.pd" />
+          <DocumentView eBookUrl="" />
         </div>
       </div>
     </div>
