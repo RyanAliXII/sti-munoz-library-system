@@ -1,8 +1,12 @@
 package account
 
 import (
+	"bufio"
+	"fmt"
 	"io"
+	"mime/multipart"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -47,6 +51,39 @@ func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 		"Accounts Fetched.",
 	))
 }
+
+func(ctrler * AccountController) validateHeaders(file multipart.File) error {
+	m, err := gocsv.CSVToMaps(bufio.NewReader(file))
+	if err != nil {
+		return err
+	}
+	requiredHeaders := map[string]struct{}{
+		"id": {},
+		"display_name":{},
+		"surname": {},
+		"given_name": {},
+		"email": {},
+	}
+
+	for header := range m[0] {
+		delete(requiredHeaders, header)		
+	}
+	var missingHeaders strings.Builder
+	if len(requiredHeaders) != 0 {
+		idx := 0
+		for header := range requiredHeaders{
+			if idx == 0 {
+				missingHeaders.WriteString(header)
+			}else{
+				missingHeaders.WriteString(fmt.Sprintf(", %s", header))
+			}
+			idx++;
+		}
+		return fmt.Errorf("missing required headers: %s", missingHeaders.String())
+	}
+	return nil
+	
+}
 func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
 	if fileHeaderErr != nil {
@@ -55,10 +92,23 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	}
 	file, fileErr := fileHeader.Open()
 	if fileErr != nil {
-		file.Close()
 		logger.Error(fileErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("fileErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
+	}
+	defer file.Close()
+	err := ctrler.validateHeaders(file)
+	if err != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"error": err.Error(),
+		}, "Invalid CSV structure."))
+		return 
+	}
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("SeekingErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknowne error occured."))
+		return 
 	}
 	const ExpectedFileExtension = ".csv"
 	fileExtension := filepath.Ext(fileHeader.Filename)

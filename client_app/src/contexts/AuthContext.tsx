@@ -15,15 +15,13 @@ const userInitialData: Account = {
   surname: "",
   id: "",
   profilePicture: "",
-  metaData: {
+  metadata: {
+    approvedBooks: 0,
+    cancelledBooks: 0,
+    checkedOutBooks: 0,
+    pendingBooks: 0,
+    returnedBooks: 0,
     totalPenalty: 0,
-    onlineApprovedBooks: 0,
-    onlineCancelledBooks: 0,
-    onlineCheckedOutBooks: 0,
-    onlinePendingBooks: 0,
-    onlineReturnedBooks: 0,
-    walkInCheckedOutBooks: 0,
-    walkInReturnedBooks: 0,
   },
 };
 
@@ -59,7 +57,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       });
 
       const user = await fetchLoggedInUserData(tokens.accessToken);
-      const accountData: Omit<Account, "metaData" | "profilePicture"> = {
+      const accountData: Omit<Account, "metadata" | "profilePicture"> = {
         id: user.data.id,
         displayName: user.data.displayName,
         email: user.data.mail,
@@ -84,7 +82,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
     return response;
   };
   const verifyAccount = async (
-    account: Omit<Account, "metaData" | "profilePicture">
+    account: Omit<Account, "metadata" | "profilePicture">
   ) => {
     const tokens = await msalClient.acquireTokenSilent({
       scopes: [apiScope("LibraryServer.Access")],

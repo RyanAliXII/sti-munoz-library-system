@@ -22,6 +22,8 @@ type BorrowingRepository interface {
 	GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error)
 	MarkAsCancelled(id string, remarks string) error
 	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
+	UpdateRemarks(id string, remarks string) error 
+	CancelByIdAndAccountId(id string, accountId string) error
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -206,15 +208,15 @@ func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.N
 		return err
 	}
 	if isEbook {
-		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1, due_date = $2 where id = $3 and status_id = $4"
-		_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, dueDate, id, status.BorrowStatusApproved)
+		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1, due_date = $2 where id = $3 and (status_id = $4 OR status_id = $5)"
+		_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, dueDate, id, status.BorrowStatusApproved, status.BorrowStatusCheckedOut)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
-	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and status_id = $5"
-	_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved)
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2, due_date = $3 where id = $4 and (status_id = $5 or status_id = $6)"
+	_, err = repo.db.Exec(query, status.BorrowStatusCheckedOut, remarks , dueDate, id, status.BorrowStatusApproved, status.BorrowStatusCheckedOut)
 	return err 
 }
 func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
@@ -236,6 +238,38 @@ func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
 	return err 
 }
+
+func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
+	query := "UPDATE borrowing.borrowed_book SET  remarks = $1 where id = $2"
+	_, err := repo.db.Exec(query, remarks , id)
+	return err 	
+}
+
+
+func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error {
+	//cancel the borrowed book only if it is pending and approved.
+	remarks := "Cancelled by user."
+	isEbook := false
+	
+	err := repo.db.Get(&isEbook, "SELECT is_ebook as isEbook from borrowed_book_all_view where id = $1  LIMIT 1", id)
+	if err != nil {
+		return err
+	}
+	if isEbook {
+
+		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1 where id = $2 and account_id= $3 and (status_id = $4 or status_id = $5 )"
+		_, err = repo.db.Exec(query, status.BorrowStatusCancelled, id, accountId, status.BorrowStatusPending, status.BorrowStatusApproved)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1 , remarks = $2 where id = $3 and account_id = $4 and (status_id = $5 OR status_id = $6)"
+	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks, id, accountId, status.BorrowStatusPending, status.BorrowStatusApproved)
+	return err 	
+}
+
+
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
 		db: db.Connect(),
