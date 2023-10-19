@@ -160,7 +160,10 @@ func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, gro
 }
 
 func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
-	loc, _ := time.LoadLocation("Asia/Manila")
+	loc, err := time.LoadLocation("Asia/Manila")
+	if err != nil{
+		return err
+	}
 	nowTime := time.Now().In(loc)
 	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
 	layout := "2006-01-02"
