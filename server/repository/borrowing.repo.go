@@ -236,6 +236,11 @@ func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
 	return err 
 }
+
+func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
+		return nil
+}
+
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
 		db: db.Connect(),

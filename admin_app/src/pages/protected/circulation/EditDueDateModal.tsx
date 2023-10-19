@@ -1,25 +1,24 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
 
 import { Input } from "@components/ui/form/Input";
-import { Book, ModalProps } from "@definitions/types";
+import { Book, BorrowedBook, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
 import { format, isMatch, isBefore, isEqual } from "date-fns";
 
 import React, { FormEvent, useEffect } from "react";
 import Modal from "react-responsive-modal";
-import { date, object, string } from "yup";
+import { object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
   onConfirmDate: ({}: { date: string }) => void;
-  book?: Book;
-  dueDate: string;
+  borrowedBook?: BorrowedBook;
 }
 export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
   isOpen,
   closeModal,
   onConfirmDate,
-  dueDate,
+  borrowedBook,
 }) => {
   const { handleFormInput, validate, errors, form, setForm } = useForm<{
     date: string;
@@ -61,8 +60,9 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
     } catch {}
   };
   useEffect(() => {
-    setForm({ date: dueDate });
-  }, [dueDate]);
+    if (!borrowedBook) return;
+    setForm({ date: borrowedBook.dueDate });
+  }, [borrowedBook]);
   if (!isOpen) return null;
 
   return (
