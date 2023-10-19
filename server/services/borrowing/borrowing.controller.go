@@ -99,7 +99,12 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, grou
 }
 func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	id := ctx.Param("id")
-	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBooksById(id)
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedEBookByIdAndStatus(id, status.BorrowStatusCheckedOut)
+	clientId := ctx.GetString("requestorId")
+	if clientId != borrowedBook.Client.Id {
+		ctx.JSON(httpresp.Fail404(nil, "Not found"))
+		return
+	}
 	if err != nil {
 		if err == sql.ErrNoRows {
 			 logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))

@@ -21,7 +21,7 @@ type BorrowingRepository interface {
 	GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error)
 	GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error)
 	MarkAsCancelled(id string, remarks string) error
-	GetBorrowedBooksById (id string)(model.BorrowedBook, error) 
+	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -77,9 +77,9 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 	err := repo.db.Select(&borrowedBooks, query, groupId)
 	return borrowedBooks, err
 }
-func (repo * Borrowing) GetBorrowedBooksById (id string)(model.BorrowedBook, error) {
+func (repo * Borrowing) GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error) {
 	borrowedBook := model.BorrowedBook{}
-	err := repo.db.Get(&borrowedBook, "SELECT * FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true", id)
+	err := repo.db.Get(&borrowedBook, "SELECT * FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
 	if err != nil {
 		return borrowedBook, err
 	}
