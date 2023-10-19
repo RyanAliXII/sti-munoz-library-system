@@ -119,7 +119,7 @@ const ProfilePage = () => {
             <FaMoneyBill className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
               PHP{" "}
-              {account.metaData.totalPenalty.toLocaleString(undefined, {
+              {account.metadata.totalPenalty.toLocaleString(undefined, {
                 maximumFractionDigits: 2,
                 minimumFractionDigits: 2,
               })}
@@ -127,12 +127,12 @@ const ProfilePage = () => {
             <small className="text-xs lg:text-sm">Total Penalty</small>
           </Link>
           <Link
-            to={"/borrowed-books?status=pending"}
+            to={"/borrowed-books?status_id=1"}
             className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-gray-400 gap-2"
           >
             <MdOutlinePending className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {account.metaData.onlinePendingBooks}
+              {account.metadata.pendingBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Pending Borrow Request
@@ -140,50 +140,48 @@ const ProfilePage = () => {
           </Link>
 
           <Link
-            to={"/borrowed-books?status=approved"}
+            to={"/borrowed-books?status_id=2"}
             className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-yellow-500 gap-2"
           >
             <AiFillCheckCircle className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {account.metaData.onlineApprovedBooks}
+              {account.metadata.approvedBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Approved Borrow Request
             </small>
           </Link>
           <Link
-            to={"/borrowed-books?status=checked-out"}
+            to={"/borrowed-books?status_id=3"}
             className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-success gap-2"
           >
             <FaHandHolding className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {account.metaData.onlineCheckedOutBooks +
-                account.metaData.walkInCheckedOutBooks}
+              {account.metadata.checkedOutBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Checked-Out Books
             </small>
           </Link>
           <Link
-            to={"/borrowed-books?status=returned"}
+            to={"/borrowed-books?status_id=4"}
             className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-gray-500 gap-3"
           >
             <BsArrowReturnLeft className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {account.metaData.onlineReturnedBooks +
-                account.metaData.walkInReturnedBooks}
+              {account.metadata.returnedBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Returned Books
             </small>
           </Link>
           <Link
-            to={"/borrowed-books?status=cancelled"}
+            to={"/borrowed-books?status_id=5"}
             className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-orange-500 gap-3"
           >
             <CiCircleRemove className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
-              {account.metaData.onlineCancelledBooks}
+              {account.metadata.cancelledBooks}
             </span>
             <small className="text-xs lg:text-sm text-center">
               Cancelled Borrow Request

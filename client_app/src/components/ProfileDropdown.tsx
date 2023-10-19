@@ -18,7 +18,7 @@ const ProfileDropdown = () => {
     <div className="flex items-center relative text-left">
       <div className="flex items-center">
         <img
-          className="rounded-full w-10 h-9"
+          className="rounded-full w-10 h-10"
           onError={({ currentTarget }) => {
             currentTarget.onerror = null;
             currentTarget.src = avatarUrl;
