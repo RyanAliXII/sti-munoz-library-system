@@ -1,8 +1,11 @@
 package borrowing
 
 import (
+	"bytes"
+	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
@@ -22,9 +25,11 @@ type BorrowingController interface {
 	GetBorrowedBooksByGroupId(ctx * gin.Context)
 	UpdateBorrowingStatus(ctx * gin.Context)
 	GetBorrowedBookByAccountId(ctx * gin.Context)
+	GetEbookByBorrowedBookId(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
+	bookRepo repository.BookRepositoryInterface
 	settingsRepo repository.SettingsRepositoryInterface
 }
 func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
@@ -34,24 +39,38 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 		return 
-	}	
-	borrowedBooks, err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut)
+	}
+	grpId := uuid.New().String()	
+	if len(body.Accessions) == 0 && len(body.Ebooks) == 0 {
+		ctx.JSON(httpresp.Fail400(nil, "Validation error"))
+		return 
+	}
+	borrowedBooks,err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut, grpId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("toBorrowedBookModel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
-	err  = ctrler.borrowingRepo.BorrowBook(borrowedBooks)
+
+	borrowedEbooks, err := ctrler.toBorrowedEbookModel(body, status.BorrowStatusCheckedOut, grpId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("toBorrowedEBookModel"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
+		return
+	}
+	err  = ctrler.borrowingRepo.BorrowBook(borrowedBooks, borrowedEbooks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Book has been borrowed"))
+	ctx.JSON(httpresp.Success200(gin.H{
+		"groupId":  grpId,
+	}, "Book has been borrowed"))
 	
 }
-func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]model.BorrowedBook, error){
-	grpId := uuid.New().String()
+func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
+
 	settings := ctrler.settingsRepo.Get()
 
 	borrowedBooks := make([]model.BorrowedBook, 0)	
@@ -60,8 +79,12 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 	}
 
 	for _, accession := range body.Accessions {
+		err := ctrler.isValidDueDate(string(accession.DueDate))
+		if err != nil {
+			return borrowedBooks, err
+		}
 		borrowedBooks = append(borrowedBooks, model.BorrowedBook{
-			GroupId: grpId,
+			GroupId: groupId,
 			AccessionId: accession.Id,
 			DueDate: accession.DueDate,
 			AccountId: body.ClientId,
@@ -71,6 +94,86 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int )([]m
 		})
 	}
 	return borrowedBooks, nil
+}
+func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
+	id := ctx.Param("id")
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBooksById(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			 logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))
+			 ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			 return
+		}
+		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	err = ctrler.isValidDueDate(string(borrowedBook.DueDate))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("IsValidDueDate"))
+		ctx.JSON(httpresp.Fail404(nil, "Link expired is expired."))
+		return
+	}
+	object, err := ctrler.bookRepo.GetEbookById(borrowedBook.Book.Id)
+	if err != nil {
+		_, isNotEbook := err.(*repository.IsNotEbook)
+		if isNotEbook {
+			logger.Error(err.Error(), slimlog.Error("GetEbookById"))
+			ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			return
+		}
+
+		logger.Error(err.Error(), slimlog.Error("GetEbookById"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	defer object.Close()
+	var buffer bytes.Buffer
+	_, err = buffer.ReadFrom(object)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("buffer.ReadFrom"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	 ctx.JSON(httpresp.Success200(gin.H{
+		"book": borrowedBook.Book,
+		"ebook":  buffer.Bytes(),
+	 }, ""))
+	
+}
+func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, groupId string)([]model.BorrowedEBook, error){
+	ebooks := make([]model.BorrowedEBook, 0)
+	for _, ebook := range body.Ebooks{
+		err := ctrler.isValidDueDate(string(ebook.DueDate))
+		if err != nil {
+			return ebooks, err
+		}
+		ebooks = append(ebooks, model.BorrowedEBook{
+			GroupId: groupId,
+			BookId: ebook.BookId,
+			StatusId: status,
+			DueDate: ebook.DueDate,
+			AccountId: body.ClientId,
+		})
+	}
+	return ebooks, nil	
+}
+
+func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
+	loc, _ := time.LoadLocation("Asia/Manila")
+	nowTime := time.Now().In(loc)
+	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
+	layout := "2006-01-02"
+	parsedTime, err := time.Parse(layout, dateStr)
+	if err != nil {
+		return err
+	}
+	parsedTime = parsedTime.In(loc)
+	dueDate := time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, parsedTime.Location())
+	if (dueDate.Before(nowDate) && !dueDate.Equal(nowDate)){
+		return fmt.Errorf("date must greater than or equal server date")
+	}
+	return nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
 	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
@@ -200,16 +303,22 @@ func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gi
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
-	body := UpdateBorrowStatusBodyWithDueDate{}
+	body := UpdateBorrowStatusCheckout{}
 	err :=  ctx.Bind(&body)
 	if err != nil {
 	   logger.Error(err.Error(), slimlog.Error("BindErr"))
 	   ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	   return
    	}
+	err = ctrler.isValidDueDate(string(body.DueDate))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("isValideDueDate"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
 	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		logger.Error(err.Error(), slimlog.Error("MarkAsCheckedOut"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -218,5 +327,6 @@ func NewBorrowingController () BorrowingController {
 	return &Borrowing{
 		borrowingRepo: repository.NewBorrowingRepository(),
 		settingsRepo: repository.NewSettingsRepository(),
+		bookRepo: repository.NewBookRepository(),
 	}
 }

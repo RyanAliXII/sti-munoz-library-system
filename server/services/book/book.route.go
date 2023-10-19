@@ -8,7 +8,7 @@ import (
 
 func BookRoutes(router *gin.RouterGroup) {
 
-	var controller BookControllerInterface = NewBookController()
+var controller BookControllerInterface = NewBookController()
 	router.Use(middlewares.ValidatePermissions("Book.Access"))
 
 	router.GET("/",
@@ -38,9 +38,7 @@ func BookRoutes(router *gin.RouterGroup) {
 	middlewares.BlockRequestFromClientApp,
 	controller.UpdateBookCover)
 
-	router.DELETE("/:bookId/covers",
-	middlewares.BlockRequestFromClientApp, 
-	controller.DeleteBookCovers)
+	
 	
 	router.GET("/accessions", 
 	middlewares.BlockRequestFromClientApp,
@@ -54,9 +52,29 @@ func BookRoutes(router *gin.RouterGroup) {
 	middlewares.ValidateBody[BookBody], 
 	controller.UpdateBook)
 	
+	router.PUT("/:id/ebooks", 
+	middlewares.BlockRequestFromClientApp,
+	controller.UpdateEbookById)
 
 	router.PATCH("/accessions/:id/status",
 	middlewares.BlockRequestFromClientApp,
 	controller.UpdateAccessionStatus)
+
+	router.POST("/:id/ebooks", 
+	middlewares.BlockRequestFromClientApp, 
+	controller.UploadEBook)
+
+	router.GET("/:id/ebooks", 
+	middlewares.BlockRequestFromClientApp, 
+	controller.GetEbookById)
+
+	deleteGrp := router.Group("/:id")
+	deleteGrp.DELETE("/covers",
+	middlewares.BlockRequestFromClientApp, 
+	controller.DeleteBookCovers)
+	deleteGrp.DELETE("/ebooks", 
+	middlewares.BlockRequestFromClientApp, 
+	controller.RemoveEbookById)
+	
 
 }

@@ -14,6 +14,7 @@ import Page404 from "./error/Page404";
 import BagPage from "./protected/bag/BagPage";
 import ProfilePage from "./protected/profile/ProfilePage";
 import BorrowedBooksPage from "./protected/borrowed_books/BorrowedBookPage";
+import EbookView from "./protected/ebook/EbookView";
 
 const pages = createBrowserRouter(
   createRoutesFromElements(
@@ -29,6 +30,7 @@ const pages = createBrowserRouter(
         <Route path="/catalog/:id" element={<CatalogBookView />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/borrowed-books" element={<BorrowedBooksPage />} />
+        <Route path="/ebooks/:id" element={<EbookView />} />
       </Route>
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />

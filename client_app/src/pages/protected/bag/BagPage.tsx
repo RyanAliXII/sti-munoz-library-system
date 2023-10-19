@@ -236,7 +236,8 @@ const BagPage = () => {
                         unavailableClass
                       }
                     >
-                      {item.book.title} - {item.accessionNumber}
+                      {item.book.title}{" "}
+                      {item.isEbook ? "- eBook" : `- ${item.accessionNumber}`}
                     </Link>
 
                     <p
@@ -256,7 +257,7 @@ const BagPage = () => {
                         unavailableClass
                       }
                     >
-                      {ordinal(item.copyNumber)} - Copy
+                      {item.isEbook ? "" : `${ordinal(item.copyNumber)} - Copy`}
                     </p>
                     {!item.isAvailable && (
                       <small className="text-sm text-warning">

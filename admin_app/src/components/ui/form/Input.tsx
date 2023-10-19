@@ -9,7 +9,7 @@ export interface InputProps extends HTMLInputProps {
 export enum InputClasses {
   InputDefaultClasslist = `form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 
   rounded transition ease-in-out
-  focus:text-gray-700 focus:bg-white focus:outline-yellow-400`,
+  focus:text-gray-700 focus:bg-white focus:outline-yellow-400 disabled:opacity-50`,
   InputErrorClasslist = "border-red-500 focus:border-red-500",
   LabelWrapperClasslist = "h-2 flex items-center mt-2",
   LabelClasslist = "text-gray-500 text-sm ml-1",
@@ -77,7 +77,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               } ${props.error ? InputClasses.InputErrorClasslist : ""}`,
             }}
           />
-          <div className="h-2 flex items-center mt-2">
+          <div className="h-2 flex items-center py-2 mt-1">
             <small className="text-red-500 ml-1">{props.error}</small>
           </div>
         </div>

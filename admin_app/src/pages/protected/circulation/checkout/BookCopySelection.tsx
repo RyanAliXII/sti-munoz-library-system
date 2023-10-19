@@ -17,16 +17,18 @@ import {
 } from "@definitions/types";
 import { useEffect, useMemo, useState } from "react";
 import Modal from "react-responsive-modal";
-import { CheckoutAccession, CheckoutForm } from "./CheckoutPage";
+import { CheckoutAccession, CheckoutForm, BorrowedEbook } from "./CheckoutPage";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BorrowStatuses } from "@internal/borrow-status";
 import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { format } from "date-fns";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
   updateAccessionsToBorrow: (accesions: CheckoutAccession[]) => void;
+  updateEbooksToBorrow: (ebooks: BorrowedEbook[]) => void;
   form: CheckoutForm;
 }
 const BookCopySelectionModal = ({
@@ -34,12 +36,13 @@ const BookCopySelectionModal = ({
   isOpen,
   book,
   updateAccessionsToBorrow,
+  updateEbooksToBorrow,
   form,
 }: BookCopySelectionProps) => {
   const [selectedAccessions, setSelectedAccessions] = useState<
     CheckoutAccession[]
   >([]);
-
+  const [selectedEbooks, setSelectedEbooks] = useState<BorrowedEbook[]>([]);
   const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
@@ -49,6 +52,7 @@ const BookCopySelectionModal = ({
       return [];
     }
   };
+
   const getDate5DaysFromNow = (): Date => {
     let date = new Date();
     date.setDate(date.getDate() + 5);
@@ -66,13 +70,16 @@ const BookCopySelectionModal = ({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
+
   const queryClient = useQueryClient();
   useEffect(() => {
     if (isOpen) {
       setSelectedAccessions([...form.accessions]);
+      setSelectedEbooks([...form.ebooks]);
       refetch();
     } else {
       setSelectedAccessions([]);
+      setSelectedEbooks([]);
       queryClient.setQueryData(["bookAccessions"], []); //clear data
     }
   }, [isOpen]);
@@ -85,9 +92,29 @@ const BookCopySelectionModal = ({
       )
     );
   };
+  const removeEbook = (bookId: string) => {
+    setSelectedEbooks((prevSelected) =>
+      prevSelected.filter((b) => b.bookId != bookId)
+    );
+  };
+  const handleRowClickOnEbook = (book: Book) => {
+    if (!selectedEbookCache.hasOwnProperty(book.id ?? "")) {
+      setSelectedEbooks((prevSelected) => [
+        ...prevSelected,
+        {
+          bookId: book.id ?? "",
+          dueDate: format(new Date(), "yyyy-MM-dd"),
+          bookTitle: book.title,
+        },
+      ]);
+    } else {
+      removeEbook(book.id ?? "");
+    }
+  };
 
   const proceedToAdd = () => {
     updateAccessionsToBorrow(selectedAccessions);
+    updateEbooksToBorrow(selectedEbooks);
     closeModal();
   };
   const selectedAccessionCopiesCache = useMemo(
@@ -100,6 +127,18 @@ const BookCopySelectionModal = ({
         {}
       ),
     [selectedAccessions]
+  );
+
+  const selectedEbookCache = useMemo(
+    () =>
+      selectedEbooks.reduce<Object>(
+        (ac, eBook) => ({
+          ...ac,
+          [eBook.bookId]: eBook,
+        }),
+        {}
+      ),
+    [selectedEbooks]
   );
   const handleCheckonRowClick = (accession: Accession) => {
     if (
@@ -129,10 +168,10 @@ const BookCopySelectionModal = ({
       removeCopy(book.id, accession.number);
     }
   };
-  const hasAvailableCopies = useMemo(
-    () => accessions.some((a) => a.isAvailable),
-    [accessions]
-  );
+  const hasAvailableCopies = useMemo(() => {
+    if (book.ebook.length > 0) return true;
+    return accessions.some((a) => a.isAvailable);
+  }, [accessions]);
   if (!isOpen) return null;
   return (
     <Modal
@@ -155,6 +194,7 @@ const BookCopySelectionModal = ({
                 <Th>Accession number</Th>
                 <Th>Copy number</Th>
                 <Th>Status</Th>
+                <Th>Type</Th>
               </HeadingRow>
             </Thead>
             <Tbody>
@@ -189,10 +229,29 @@ const BookCopySelectionModal = ({
                         ? "Unavailable"
                         : BorrowStatuses.Available}
                     </Td>
+                    <Td></Td>
                   </BodyRow>
                 );
               })}
-              <BodyRow></BodyRow>
+              {book.ebook.length > 0 && (
+                <BodyRow
+                  onClick={() => {
+                    handleRowClickOnEbook(book);
+                  }}
+                >
+                  <Td>
+                    <input
+                      type="checkbox"
+                      readOnly
+                      checked={selectedEbookCache.hasOwnProperty(book.id ?? "")}
+                    />
+                  </Td>
+                  <Td>{book.title}</Td>
+                  <Td>N/A</Td>
+                  <Td>N/A</Td>
+                  <Td>eBook</Td>
+                </BodyRow>
+              )}
             </Tbody>
           </Table>
         </div>
@@ -203,7 +262,7 @@ const BookCopySelectionModal = ({
         onClick={proceedToAdd}
         disabled={!hasAvailableCopies}
       >
-        Add changes
+        Save
       </PrimaryButton>
       <LighButton className="ml-2" onClick={closeModal}>
         Cancel

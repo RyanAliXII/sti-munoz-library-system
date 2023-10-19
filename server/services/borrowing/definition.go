@@ -4,19 +4,24 @@ import "github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 
 type CheckoutBody struct {
 	ClientId   string               `json:"clientId" binding:"required,uuid"`
-	Accessions []CheckoutAccessions `json:"accessions" binding:"required,min=1,dive"`
+	Accessions []CheckoutAccessions `json:"accessions" binding:"dive"`
+	Ebooks []Ebook `json:"ebooks" binding:"dive"`
 }
-
+type  Ebook struct {
+	BookId string `json:"bookId" binding:"required"`
+	DueDate db.NullableDate `json:"dueDate" binding:"required"`
+}
 type CheckoutAccessions struct {
 	Id string `json:"id" binding:"required,uuid"`
 	BookId string `json:"bookId" binding:"required,uuid" `
-	DueDate db.NullableDate `json:"dueDate" binding:"required" copier:"DueDate"`
+	DueDate db.NullableDate `json:"dueDate" binding:"required"`
 }
 
 type UpdateBorrowStatusBody struct {
 	Remarks string `json:"remarks"`
 }
-type UpdateBorrowStatusBodyWithDueDate struct {
+type UpdateBorrowStatusCheckout struct {
 	Remarks string `json:"remarks"`
 	DueDate db.NullableDate `json:"dueDate"`
+	IsEbook bool `json:"isEbook"`
 }

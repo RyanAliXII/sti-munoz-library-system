@@ -17,11 +17,11 @@ import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
 
-import { BorrowedBook } from "@definitions/types";
+import { Book, BorrowedBook } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ButtonClasses } from "@components/ui/button/Button";
 import Divider from "@components/ui/divider/Divider";
@@ -90,8 +90,10 @@ const BorrowedBooksViewPage = () => {
     },
   });
 
-  const [selectedBorrowedBookId, setSelectedBorrowedBookId] =
-    useState<string>("");
+  const [selectedBorrowedBook, setSelectedBorrowedBook] = useState<
+    Book | undefined
+  >();
+  const [borrowedBookId, setBorrowedBookId] = useState("");
   const onConfirmReturn = (remarks: string) => {
     closeReturnRemarkPrompt();
     updateStatus.mutate({
@@ -100,7 +102,7 @@ const BorrowedBooksViewPage = () => {
     });
   };
 
-  const onConfirmDueDate = (date: string) => {
+  const onConfirmDueDate = ({ date }: { date: string }) => {
     closeInputDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
@@ -138,7 +140,7 @@ const BorrowedBooksViewPage = () => {
       dueDate?: string;
     }) =>
       Patch(
-        `/borrowing/borrowed-books/${selectedBorrowedBookId}/status`,
+        `/borrowing/borrowed-books/${borrowedBookId}/status`,
         {
           remarks: body.remarks,
           dueDate: body?.dueDate ?? "",
@@ -211,6 +213,7 @@ const BorrowedBooksViewPage = () => {
                   <Th>Due Date</Th>
                   <Th>Copy number</Th>
                   <Th>Accession number</Th>
+                  <Th>Book Type</Th>
                   <Th>Status</Th>
                   <Th>Penalty</Th>
                   <Th></Th>
@@ -247,36 +250,53 @@ const BorrowedBooksViewPage = () => {
                           ? "No due date"
                           : new Date(borrowedBook.dueDate).toDateString()}
                       </Td>
-                      <Td>{ordinal(borrowedBook.copyNumber)}</Td>
-                      <Td>{borrowedBook.accessionNumber}</Td>
-
+                      <Td>
+                        {borrowedBook.copyNumber === 0
+                          ? "N/A"
+                          : ordinal(borrowedBook.copyNumber)}
+                      </Td>
+                      <Td>
+                        {borrowedBook.accessionNumber === 0
+                          ? "N/A"
+                          : borrowedBook.accessionNumber}
+                      </Td>
+                      <Td>
+                        {borrowedBook.isEbook ? "eBook" : "Physical Book"}
+                      </Td>
                       <Td>{borrowedBook.status}</Td>
-                      <Td className="text-red-500">
-                        PHP{" "}
-                        {borrowedBook.penalty.toLocaleString(undefined, {
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,
-                        })}
+                      <Td>
+                        {borrowedBook.isEbook ? (
+                          "N/A"
+                        ) : (
+                          <span className="text-red-400">
+                            PHP {""}
+                            {borrowedBook.penalty.toLocaleString(undefined, {
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
+                        )}
                       </Td>
 
                       <Td>
                         <div className="flex gap-2">
-                          {borrowedBook.statusId ===
-                            BorrowStatus.CheckedOut && (
-                            <Tippy content="Mark borrowed book as returned.">
-                              <button
-                                className={
-                                  ButtonClasses.PrimaryOutlineButtonClasslist
-                                }
-                                onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
-                                  openReturnRemarkPrompt();
-                                }}
-                              >
-                                <BsArrowReturnLeft />
-                              </button>
-                            </Tippy>
-                          )}
+                          {borrowedBook.statusId === BorrowStatus.CheckedOut &&
+                            !borrowedBook.isEbook && (
+                              <Tippy content="Mark borrowed book as returned.">
+                                <button
+                                  className={
+                                    ButtonClasses.PrimaryOutlineButtonClasslist
+                                  }
+                                  onClick={() => {
+                                    setSelectedBorrowedBook(borrowedBook.book);
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    openReturnRemarkPrompt();
+                                  }}
+                                >
+                                  <BsArrowReturnLeft />
+                                </button>
+                              </Tippy>
+                            )}
                           {borrowedBook.statusId === BorrowStatus.Pending && (
                             <Tippy content="Approve borrowing request.">
                               <button
@@ -284,7 +304,9 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.PrimaryOutlineButtonClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openApprovalConfirmationDialog();
                                 }}
                               >
@@ -299,7 +321,8 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.PrimaryOutlineButtonClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openInputDueDateModal();
                                 }}
                               >
@@ -307,22 +330,23 @@ const BorrowedBooksViewPage = () => {
                               </button>
                             </Tippy>
                           )}
-                          {borrowedBook.statusId ===
-                            BorrowStatus.CheckedOut && (
-                            <Tippy content="Mark borrowed book as unreturned.">
-                              <button
-                                className={
-                                  ButtonClasses.WarningButtonOutlineClasslist
-                                }
-                                onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
-                                  openUnreturnedRemarkPrompt();
-                                }}
-                              >
-                                <BsQuestionDiamond />
-                              </button>
-                            </Tippy>
-                          )}
+                          {borrowedBook.statusId === BorrowStatus.CheckedOut &&
+                            !borrowedBook.isEbook && (
+                              <Tippy content="Mark borrowed book as unreturned.">
+                                <button
+                                  className={
+                                    ButtonClasses.WarningButtonOutlineClasslist
+                                  }
+                                  onClick={() => {
+                                    setSelectedBorrowedBook(borrowedBook.book);
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    openUnreturnedRemarkPrompt();
+                                  }}
+                                >
+                                  <BsQuestionDiamond />
+                                </button>
+                              </Tippy>
+                            )}
                           {(borrowedBook.statusId === BorrowStatus.Pending ||
                             borrowedBook.statusId === BorrowStatus.Approved ||
                             borrowedBook.statusId ===
@@ -333,7 +357,8 @@ const BorrowedBooksViewPage = () => {
                                   ButtonClasses.DangerButtonOutlineClasslist
                                 }
                                 onClick={() => {
-                                  setSelectedBorrowedBookId(borrowedBook.id);
+                                  setSelectedBorrowedBook(borrowedBook.book);
+                                  setBorrowedBookId(borrowedBook.id ?? "");
                                   openCancellationRemarkPrompt();
                                 }}
                               >
@@ -373,6 +398,7 @@ const BorrowedBooksViewPage = () => {
         onProceed={onConfirmCancel}
       />
       <DueDateInputModal
+        book={selectedBorrowedBook}
         closeModal={closeInputDueDateModal}
         isOpen={isDueDateInputModalOpen}
         onConfirmDate={onConfirmDueDate}

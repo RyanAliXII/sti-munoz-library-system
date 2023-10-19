@@ -7,10 +7,12 @@ import BookEditForm from "./BookEditForm";
 import { useState } from "react";
 import EditAccessionPanel from "./EditAccessionPanel";
 import { useSearchParams } from "react-router-dom";
+import EbookPanel from "./ebook-panel/EbookPanel";
 
 enum BookEditTab {
   BookInfo = 1,
   Accessions = 2,
+  Ebook = 3,
 }
 const isActive = (activeTab: BookEditTab, tab: BookEditTab) => {
   if (activeTab === tab) {
@@ -32,6 +34,9 @@ const BookEditPage = () => {
     if (!isNaN(parsedTabId)) {
       if (parsedTabId == BookEditTab.Accessions) {
         return BookEditTab.Accessions;
+      }
+      if (parsedTabId == BookEditTab.Ebook) {
+        return BookEditTab.Ebook;
       }
     }
     return BookEditTab.BookInfo;
@@ -70,6 +75,20 @@ const BookEditPage = () => {
               Accessions
             </a>
           </li>
+          <li className="mr-2">
+            <a
+              role="button"
+              className={isActive(activeTab, BookEditTab.Ebook)}
+              onClick={() => {
+                setSearchParams({
+                  tab: BookEditTab.Ebook.toString(),
+                });
+                setActiveTab(BookEditTab.Ebook);
+              }}
+            >
+              eBook
+            </a>
+          </li>
         </ul>
       </div>
       <div className={isPanelActive(activeTab, BookEditTab.BookInfo)}>
@@ -77,6 +96,9 @@ const BookEditPage = () => {
       </div>
       <div className={isPanelActive(activeTab, BookEditTab.Accessions)}>
         <EditAccessionPanel />
+      </div>
+      <div className={isPanelActive(activeTab, BookEditTab.Ebook)}>
+        <EbookPanel />
       </div>
     </BookEditFormProvider>
   );

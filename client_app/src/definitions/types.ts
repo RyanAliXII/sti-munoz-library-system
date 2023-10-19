@@ -48,6 +48,7 @@ export interface Book {
   covers: string[];
   authorNumber: string;
   accessions: Accession[];
+  ebook: string;
 }
 
 export type AuthorNumber = {
@@ -136,6 +137,7 @@ export type BagItem = {
   copyNumber: number;
   book: Book;
   isChecked: boolean;
+  isEbook: boolean;
   isAvailable: boolean;
 };
 
@@ -147,6 +149,7 @@ export type BorrowedBook = {
   copyNumber: number;
   book: Book;
   statusId: number;
+  isEbook: boolean;
   penalty: number;
   status: string;
   dueDate: string | null; //timestamp

@@ -12,6 +12,7 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	
 	r.POST("/",
 	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidateBody[CheckoutBody],
 	ctrler.HandleBorrowing)
 
 	r.GET("/requests",
@@ -20,6 +21,8 @@ func BorrowingRoutes(r * gin.RouterGroup){
 
 	r.GET("/borrowed-books", 
 	ctrler.GetBorrowedBookByAccountId)
+
+	r.GET("/ebooks/:id", ctrler.GetEbookByBorrowedBookId)
 
 	r.GET("/requests/:id", 
 	middlewares.BlockRequestFromClientApp,

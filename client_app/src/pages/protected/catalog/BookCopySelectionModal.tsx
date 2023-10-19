@@ -7,7 +7,7 @@ import Modal from "react-responsive-modal";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
-  onSelectCopy: (accession: DetailedAccession) => void;
+  onSelectCopy: (accession: DetailedAccession | string) => void;
   bagItemIds: string[];
 }
 const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
@@ -19,7 +19,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
 }) => {
   const [selectedAccession, setSelectedAccession] =
     useState<DetailedAccession | null>(null);
-
+  const [selectedEbookId, setSelectedEbookId] = useState("");
   const { Get } = useRequest();
   const fetchAccessionById = async () => {
     try {
@@ -50,6 +50,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
       setSelectedAccession(null);
     }
   }, [isOpen]);
+  const hasEbook = book.ebook.length > 0;
 
   if (!isOpen) return null;
   return (
@@ -68,6 +69,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
             <thead>
               <tr>
                 <th></th>
+                <th>Book type</th>
                 <th>Accession Number</th>
                 <th>Copy Number</th>
                 <th>Status</th>
@@ -92,6 +94,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
                     key={accession.id}
                     className={trClass}
                     onClick={() => {
+                      setSelectedEbookId("");
                       if (selectedAccession?.id === accession.id) {
                         setSelectedAccession(null);
                         return;
@@ -108,6 +111,7 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
                         checked={selectedAccession?.id === accession.id}
                       />
                     </td>
+                    <td>Physical Book</td>
                     <td>{accession.number}</td>
                     <td>{accession.copyNumber}</td>
                     <td className={statusTdClass}>
@@ -118,16 +122,42 @@ const BookCopySelectionModal: React.FC<BookCopySelectionProps> = ({
                   </tr>
                 );
               })}
+              {hasEbook && (
+                <tr
+                  onClick={() => {
+                    setSelectedAccession(null);
+                    if (selectedEbookId == book.id) {
+                      setSelectedEbookId("");
+                      return;
+                    }
+                    setSelectedEbookId(book.id ?? "");
+                  }}
+                >
+                  <td>
+                    <input
+                      readOnly={true}
+                      checked={selectedEbookId === book.id}
+                      className="h-4 w-4"
+                      type="checkbox"
+                    />
+                  </td>
+                  <td>eBook</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
         <button
           className="btn btn-primary"
-          disabled={selectedAccession === null}
+          disabled={selectedAccession === null && selectedEbookId.length === 0}
           onClick={() => {
             if (selectedAccession) {
               onSelectCopy(selectedAccession);
+              return;
             }
+            onSelectCopy(selectedEbookId);
           }}
         >
           Proceed

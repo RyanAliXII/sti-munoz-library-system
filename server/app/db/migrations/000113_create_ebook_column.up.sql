@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS catalog.book
+ADD COLUMN ebook TEXT DEFAULT ''

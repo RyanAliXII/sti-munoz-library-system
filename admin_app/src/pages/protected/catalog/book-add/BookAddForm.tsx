@@ -53,6 +53,16 @@ const uppy = new Uppy({
   headers: {},
   endpoint: `${BASE_URL_V1}/books/covers`,
 });
+
+const eBookUppy = new Uppy({
+  restrictions: {
+    allowedFileTypes: [".pdf"],
+    maxNumberOfFiles: 1,
+  },
+}).use(XHRUpload, {
+  fieldName: "ebook",
+  endpoint: "",
+});
 const BookAddForm = () => {
   const { instance: msalInstance } = useMsal();
   const {
@@ -163,19 +173,30 @@ const BookAddForm = () => {
         uppy.cancelAll();
         return;
       }
-      const tokens = await msalInstance.acquireTokenSilent({
+      const tokenResponse = await msalInstance.acquireTokenSilent({
         scopes: [apiScope("LibraryServer.Access")],
       });
       uppy.getPlugin("XHRUpload")?.setOptions({
         headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
         },
       });
+      const bookId = response.data.book.id;
       uppy.setMeta({
-        bookId: response.data.book.id,
+        bookId,
       });
       uppy.upload().finally(() => {
         uppy.cancelAll();
+      });
+      eBookUppy.getPlugin("XHRUpload")?.setOptions({
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+        },
+
+        endpoint: `${BASE_URL_V1}/books/${bookId}/ebooks`,
+      });
+      eBookUppy.upload().finally(() => {
+        eBookUppy.cancelAll();
       });
     },
     onError: (error) => {
@@ -395,6 +416,24 @@ const BookAddForm = () => {
                 strings: {
                   browseFiles: " browse",
                   dropPasteFiles: "Drop a book image cover, click to %{browse}",
+                },
+              }}
+            ></Dashboard>
+          </FieldRow>
+
+          <FieldRow
+            label="eBook"
+            fieldDetails="Upload eBook version of the book if available"
+          >
+            <Dashboard
+              uppy={eBookUppy}
+              width={"100%"}
+              height={"250px"}
+              hideUploadButton={true}
+              locale={{
+                strings: {
+                  browseFiles: "browse",
+                  dropPasteFiles: "Drop the PDF here, click to %{browse}",
                 },
               }}
             ></Dashboard>

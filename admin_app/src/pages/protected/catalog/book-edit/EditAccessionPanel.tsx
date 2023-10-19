@@ -16,7 +16,6 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { useSwitch } from "@hooks/useToggle";
 import {
   ConfirmDialog,
-  DangerConfirmDialog,
   PromptInputDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";

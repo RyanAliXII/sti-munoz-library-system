@@ -2,6 +2,7 @@ package bag
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
@@ -33,9 +34,15 @@ func (ctrler * Bag) AddBagItem (ctx * gin.Context){
 	}
 	item := model.BagItem{}
 	ctx.ShouldBindBodyWith(&item, binding.JSON)
+
+	if len(item.AccessionId) == 0 && len(item.BookId) == 0{
+		ctx.JSON(httpresp.Fail500(nil, "Validation error."))
+		return
+	}
 	item.AccountId = parsedAccountId
      addItemErr := ctrler.bagRepo.AddItemToBag(item)
 	 if(addItemErr != nil){
+		logger.Error(addItemErr.Error(), slimlog.Error("addItemErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	 }
@@ -86,6 +93,7 @@ func (ctrler * Bag)CheckItemFromBag(ctx * gin.Context){
 	})
 
 	if checkErr != nil {
+		logger.Error(checkErr.Error(), slimlog.Error("CheckItemFromBagErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
@@ -143,6 +151,7 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 	}
 	checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
 	if checkoutErr != nil{
+		logger.Error(checkoutErr.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
