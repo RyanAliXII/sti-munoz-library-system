@@ -1,12 +1,12 @@
 import {
-  MdOutlineInventory,
   MdManageAccounts,
+  MdOutlineInventory,
   MdRotate90DegreesCcw,
 } from "react-icons/md";
 
 import { RxDashboard } from "react-icons/rx";
 
-import { ReactNode } from "react";
+import { FC, SVGProps } from "react";
 
 import { FiBookOpen, FiSettings } from "react-icons/fi";
 
@@ -15,24 +15,24 @@ export type SidebarNavItem = {
   text?: string;
   items: SidebarNavItem[];
   requiredPermissions?: string[];
-  icon?: ReactNode | JSX.Element | JSX.Element[];
+  icon?: FC<SVGProps<SVGSVGElement>>;
 };
 
 export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Dashboard",
     to: "/dashboard",
-    icon: <RxDashboard className="text-xl" />,
+    icon: RxDashboard,
     items: [],
   },
   {
     text: "Catalog",
     to: "",
-    icon: <FiBookOpen className="text-xl" />,
+    icon: FiBookOpen,
     items: [
       {
         text: "Book",
-        to: "/books/",
+        to: "/books",
         items: [],
         requiredPermissions: ["Book.Access", "Section.Access"],
       },
@@ -66,7 +66,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Inventory",
     to: "/",
-    icon: <MdOutlineInventory className="text-xl" />,
+    icon: MdOutlineInventory,
     items: [
       {
         text: "Audit",
@@ -79,7 +79,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Client",
     to: "/",
-    icon: <MdManageAccounts className="text-xl" />,
+    icon: MdManageAccounts,
     items: [
       {
         text: "Account",
@@ -93,7 +93,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Borrowing",
     to: "/",
-    icon: <MdRotate90DegreesCcw className="text-xl" />,
+    icon: MdRotate90DegreesCcw,
     items: [
       {
         text: "Borrowed Books",
@@ -122,7 +122,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "System",
     to: "/",
-    icon: <FiSettings className="text-xl" />,
+    icon: FiSettings,
     items: [
       {
         requiredPermissions: ["ACL.Access"],

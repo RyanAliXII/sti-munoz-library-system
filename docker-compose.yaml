@@ -51,8 +51,9 @@ services:
     ports:
       - "5201:5201"
     volumes:
-      - ./admin_app:/node/dev/admin
-      - /node/dev/admin/node_modules
+      - ./admin_app/src:/node/dev/admin/src
+      - ./admin_app/vite.config.ts:/node/dev/admin/vite.config.ts
+      - ./admin_app/tailwind.config.cjs:/node/dev/admin/tailwind.config.cjs
     depends_on:
       - server
     environment:
