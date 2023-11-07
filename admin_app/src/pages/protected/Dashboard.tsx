@@ -1,19 +1,12 @@
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import { ContainerNoBackground } from "@components/ui/container/Container";
 import { LibraryStats } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 
-import { FaHandHolding, FaUserFriends } from "react-icons/fa";
-import { ImBooks } from "react-icons/im";
 import { BiMoney } from "react-icons/bi";
+import { FaUserFriends } from "react-icons/fa";
+import { ImBooks } from "react-icons/im";
 import { Link } from "react-router-dom";
-import { MdOutlinePending } from "react-icons/md";
-import { AiFillBackward, AiFillCheckCircle } from "react-icons/ai";
-import { BsArrowReturnLeft } from "react-icons/bs";
-import { CiCircleRemove } from "react-icons/ci";
-
 const Dashboard = () => {
   const { Get } = useRequest();
   const fetchStats = async () => {
