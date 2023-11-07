@@ -2,7 +2,7 @@ import { Sidebar, TextInput } from "flowbite-react";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import { HiSearch } from "react-icons/hi";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { SidebarNavigationItems } from "./SidebarNavigations.definition";
 const SidebarNav: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
@@ -32,6 +32,8 @@ const SidebarNav: FC = function () {
   );
 };
 const SiderbarItems = () => {
+  const location = useLocation();
+  const activeClass = "bg-gray-100 dark:bg-gray-700";
   return (
     <Sidebar.Items>
       <Sidebar.ItemGroup>
@@ -49,6 +51,9 @@ const SiderbarItems = () => {
                       key={innerItem.to}
                       to={innerItem.to}
                       as={NavLink}
+                      className={
+                        location.pathname === innerItem.to ? activeClass : ""
+                      }
                     >
                       {innerItem.text}
                     </Sidebar.Item>
@@ -58,7 +63,17 @@ const SiderbarItems = () => {
             );
           }
 
-          return <Sidebar.Item key={item.to}>{item.text}</Sidebar.Item>;
+          return (
+            <Sidebar.Item
+              icon={item.icon}
+              key={item.to}
+              to={item.to}
+              as={NavLink}
+              className={location.pathname === item.to ? activeClass : ""}
+            >
+              {item.text}
+            </Sidebar.Item>
+          );
         })}
       </Sidebar.ItemGroup>
     </Sidebar.Items>

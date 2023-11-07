@@ -4,7 +4,7 @@ import {
   MdRotate90DegreesCcw,
 } from "react-icons/md";
 
-import { RxDashboard } from "react-icons/rx";
+import { AiOutlineDashboard } from "react-icons/ai";
 
 import { FC, SVGProps } from "react";
 
@@ -22,7 +22,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Dashboard",
     to: "/dashboard",
-    icon: RxDashboard,
+    icon: AiOutlineDashboard,
     items: [],
   },
   {
