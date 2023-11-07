@@ -5,10 +5,14 @@ const Container = (props: React.HTMLAttributes<HTMLDivElement>) => {
     <div
       {...{
         ...props,
-        className: `w-full lg:w-11/12 bg-white lg:rounded-md mx-auto mb-4 border border-2 border-gray-200 ${props.className}`,
+        className: `block items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:flex px-1 ${
+          props.className ?? ""
+        } `,
       }}
     >
-      {props.children}
+      <div className="mb-1 w-full">
+        <div className="mb-4">{props.children}</div>
+      </div>
     </div>
   );
 };
