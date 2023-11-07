@@ -23,6 +23,7 @@
     "b64-to-blob": "^1.2.19",
     "daisyui": "^2.51.5",
     "downshift": "^7.6.0",
+    "flowbite-react": "^0.6.4",
     "html2canvas": "^1.4.1",
     "http-status-codes": "^2.2.0",
     "jspdf": "^2.5.1",
