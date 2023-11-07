@@ -7,7 +7,7 @@ const ProtectedRoutes = () => {
   const { instance } = useMsal();
   if (instance.getActiveAccount())
     return (
-      <NavbarSidebarLayout>
+      <NavbarSidebarLayout isFooter={false}>
         <Outlet></Outlet>
       </NavbarSidebarLayout>
     );

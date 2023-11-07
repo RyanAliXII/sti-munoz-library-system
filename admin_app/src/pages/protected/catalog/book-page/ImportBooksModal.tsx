@@ -5,19 +5,13 @@ import { InputClasses } from "@components/ui/form/Input";
 import { ModalProps, Section } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import { AxiosError } from "axios";
 
 import { FormEvent, useEffect, useState } from "react";
-
-import Modal from "react-responsive-modal";
+import { Button, Modal, Select } from "flowbite-react";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
 
@@ -59,15 +53,17 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
     queryKey: ["sections"],
   });
   const queryClient = useQueryClient();
-  const { form, setForm, errors, validate } = useForm<Section>({
-    initialFormData: INITIAL_FORM_VALUE,
-    schema: object({
-      id: number()
-        .min(1, "Section is required.")
-        .required("Section is required.")
-        .typeError("Section is required."),
-    }),
-  });
+  const { form, setForm, errors, validate, handleFormInput } = useForm<Section>(
+    {
+      initialFormData: INITIAL_FORM_VALUE,
+      schema: object({
+        id: number()
+          .min(1, "Section is required.")
+          .required("Section is required.")
+          .typeError("Section is required."),
+      }),
+    }
+  );
   const { Post } = useRequest();
   const importBooks = useMutation({
     mutationFn: (formData: FormData) => Post("/books/bulk", formData),
@@ -90,6 +86,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
   });
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("submit");
     try {
       await validate();
       if (uppy.getFiles().length === 0) return;
@@ -99,7 +96,9 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
       formData.append("file", file);
       formData.append("sectionId", form?.id?.toString() ?? "");
       importBooks.mutate(formData);
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
   useEffect(() => {
     if (!isOpen) {
@@ -107,71 +106,68 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
       setForm(INITIAL_FORM_VALUE);
     }
   }, [isOpen]);
-  if (!isOpen) return null;
   return (
-    <Modal
-      open={isOpen}
-      onClose={closeModal}
-      showCloseIcon={false}
-      classNames={{
-        modal: "w-11/12  lg:w-12/12  xl: rounded h-[900-px]",
-      }}
-    >
-      {error && (
-        <div
-          className="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50  dark:text-red-400 "
-          role="alert"
-        >
-          <svg
-            className="flex-shrink-0 inline w-4 h-4 mr-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
+    <Modal show={isOpen} size={"3xl"} onClose={closeModal} dismissible>
+      <Modal.Body>
+        {error && (
+          <div
+            className="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50  dark:text-red-400 "
+            role="alert"
           >
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-          </svg>
-          <span className="sr-only">Info</span>
-          <div>
-            <span className="font-medium">{`Row: ${error?.row} Column: ${error?.column}`}</span>{" "}
-            {error?.message}
+            <svg
+              className="flex-shrink-0 inline w-4 h-4 mr-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div>
+              <span className="font-medium">{`Row: ${error?.row} Column: ${error?.column}`}</span>{" "}
+              {error?.message}
+            </div>
           </div>
-        </div>
-      )}
-      <form onSubmit={handleSubmit}>
-        <div className="mt-5">
-          <CustomSelect
-            error={errors?.id}
-            label="Section"
-            placeholder="Select section"
-            value={form}
-            className="w-full"
-            options={sections}
-            onChange={(value) => setForm(value as Section)}
-            getOptionLabel={(option) => option.name}
-            getOptionValue={(option) => option?.id?.toString() ?? ""}
-          />
-          <div className="mb-2 mt-3">
-            <label className={InputClasses.LabelClasslist}>File</label>
-            <Dashboard
-              uppy={uppy}
-              width={"100%"}
-              height={"450px"}
-              hideUploadButton={true}
-              locale={{
-                strings: {
-                  browseFiles: "browse",
-                  dropPasteFiles: "Drop a .csv list of book click to %{browse}",
-                },
-              }}
-            />
-          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div className="mt-5">
+            <Select name="id" onChange={handleFormInput}>
+              {sections?.map((section) => {
+                return (
+                  <option key={section.id} value={section.id}>
+                    {section.name}
+                  </option>
+                );
+              })}
+            </Select>
+            <div className="mb-2 mt-3">
+              <label className={InputClasses.LabelClasslist}>File</label>
+              <Dashboard
+                uppy={uppy}
+                width={"100%"}
+                height={"450px"}
+                hideUploadButton={true}
+                locale={{
+                  strings: {
+                    browseFiles: "browse",
+                    dropPasteFiles:
+                      "Drop a .csv list of book click to %{browse}",
+                  },
+                }}
+              />
+            </div>
 
-          <PrimaryButton isLoading={importBooks.isLoading}>
-            Submit
-          </PrimaryButton>
-        </div>
-      </form>
+            <Button
+              color="primary"
+              type="submit"
+              isProcessing={importBooks.isLoading}
+            >
+              Submit
+            </Button>
+          </div>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };
