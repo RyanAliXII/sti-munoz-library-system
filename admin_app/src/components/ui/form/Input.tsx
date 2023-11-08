@@ -1,5 +1,6 @@
 import React, { ButtonHTMLAttributes } from "react";
-
+import { TextInput } from "flowbite-react";
+import { error } from "console";
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 export interface InputProps extends HTMLInputProps {
   label?: string;
@@ -80,6 +81,28 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <div className="h-2 flex items-center py-2 mt-1">
             <small className="text-red-500 ml-1">{props.error}</small>
           </div>
+        </div>
+      </>
+    );
+  }
+);
+
+export const CustomInput = React.forwardRef<HTMLInputElement, InputProps>(
+  (props, ref) => {
+    const copyProps = { ...props };
+    if (props.error) {
+      copyProps["color"] = "failure";
+    }
+    return (
+      <>
+        {props.label && (
+          <label className={InputClasses.LabelClasslist} htmlFor={props?.name}>
+            {props.label}
+          </label>
+        )}
+        <TextInput {...copyProps} ref={ref}></TextInput>
+        <div className="h-2 flex items-center py-2 mt-1">
+          <small className="text-red-500 ml-1">{props.error}</small>
         </div>
       </>
     );

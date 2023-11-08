@@ -13,7 +13,10 @@ const SidebarNav: FC = function () {
   }, [setCurrentPage]);
 
   return (
-    <Sidebar aria-label="Sidebar with multi-level dropdown example">
+    <Sidebar
+      aria-label="Sidebar with multi-level dropdown example"
+      className="hidden lg:block"
+    >
       <div className="flex h-full flex-col justify-between py-2">
         <div>
           <form className="pb-3">

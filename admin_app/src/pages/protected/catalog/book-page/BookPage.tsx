@@ -90,53 +90,6 @@ const BookPage = () => {
     totalPages <= 1 ? "hidden" : "inline-flex -space-x-px text-sm";
   return (
     <>
-      {/* <ContainerNoBackground className="flex gap-2 justify-between px-0 mb-0 lg:mb-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-gray-700">Books</h1>
-          <div className="mt-1 gap-2 flex items-center">
-            <HasAccess
-              requiredPermissions={[
-                "Book.Access",
-                "Publisher.Access",
-                "Section.Access",
-                "Author.Access",
-              ]}
-            >
-              <Link
-                to="/books/new"
-                className={`${ButtonClasses.PrimaryButtonDefaultClasslist} px-3 py-2.5 gap-0.5 flex items-center`}
-              >
-                
-                New Book
-              </Link>
-            </HasAccess>
-            <HasAccess requiredPermissions={["Book.Access", "Section.Access"]}>
-              <PrimaryOutlineButton
-                className="flex items-center gap-0.5"
-                onClick={openImportModal}
-              >
-                <TbDatabaseImport className="text-lg" />
-                Import
-              </PrimaryOutlineButton>
-            </HasAccess>
-          </div>
-        </div>
-        <div className="gap-2 items-center lg:basis-9/12 lg:flex"></div>
-      </ContainerNoBackground>
-      <ContainerNoBackground>
-        <div className="lg:flex gap-2">
-          <Input
-            type="text"
-            placeholder="Search..."
-           
-            
-          ></Input>
-          <div className="w-full lg:w-5/12  mb-4 ">
-            <CustomSelect placeholder="Section" />
-          </div>
-        </div>
-      </ContainerNoBackground> */}
-
       <Container>
         <div className="p-2 flex justify-between ">
           <div>
@@ -176,93 +129,101 @@ const BookPage = () => {
           </div>
         </div>
         <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
-          <Table>
-            <Table.Head>
-              <Table.HeadCell>Date Received</Table.HeadCell>
-              <Table.HeadCell>Title</Table.HeadCell>
-              <Table.HeadCell>Copies</Table.HeadCell>
-              <Table.HeadCell>Year Published</Table.HeadCell>
-              <Table.HeadCell></Table.HeadCell>
-            </Table.Head>
-            <Table.Body>
-              {books?.map((book) => {
-                return (
-                  <Table.Row key={book.id}>
-                    <Table.Cell>
-                      {isValid(new Date(book.receivedAt))
-                        ? new Date(book.receivedAt).toLocaleDateString(
-                            undefined,
-                            { month: "short", day: "2-digit", year: "numeric" }
-                          )
-                        : "Unspecified"}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <div className="text-base font-semibold text-gray-900 dark:text-white">
-                        {book.title}
-                      </div>
-                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                        {book.section.name}
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>{book.copies}</Table.Cell>
-                    <Table.Cell>{book.yearPublished}</Table.Cell>
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                <Table.Head>
+                  <Table.HeadCell>Date Received</Table.HeadCell>
+                  <Table.HeadCell>Title</Table.HeadCell>
+                  <Table.HeadCell>Copies</Table.HeadCell>
+                  <Table.HeadCell>Year Published</Table.HeadCell>
+                  <Table.HeadCell></Table.HeadCell>
+                </Table.Head>
+                <Table.Body>
+                  {books?.map((book) => {
+                    return (
+                      <Table.Row key={book.id}>
+                        <Table.Cell>
+                          {isValid(new Date(book.receivedAt))
+                            ? new Date(book.receivedAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )
+                            : "Unspecified"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="text-base font-semibold text-gray-900 dark:text-white">
+                            {book.title}
+                          </div>
+                          <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                            {book.section.name}
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>{book.copies}</Table.Cell>
+                        <Table.Cell>{book.yearPublished}</Table.Cell>
 
-                    <Table.Cell className="flex gap-3">
-                      <Tippy content="View Printables">
-                        <button
-                          className={
-                            ButtonClasses.PrimaryOutlineButtonClasslist
-                          }
-                          onClick={() => {
-                            setBookForPrintingAndOpenModal(book);
-                          }}
-                        >
-                          <AiOutlinePrinter className="text-blue-500 text-lg cursor-pointer " />
-                        </button>
-                      </Tippy>
-                      <HasAccess
-                        requiredPermissions={[
-                          "Book.Access",
-                          "Publisher.Access",
-                          "Section.Access",
-                          "Author.Access",
-                        ]}
-                      >
-                        <Tippy content="Edit Book">
-                          <Link
-                            to={`/books/edit/${book.id}`}
-                            className={
-                              ButtonClasses.SecondaryOutlineButtonClasslist
-                            }
+                        <Table.Cell className="flex gap-3">
+                          <Tippy content="View Printables">
+                            <button
+                              className={
+                                ButtonClasses.PrimaryOutlineButtonClasslist
+                              }
+                              onClick={() => {
+                                setBookForPrintingAndOpenModal(book);
+                              }}
+                            >
+                              <AiOutlinePrinter className="text-blue-500 text-lg cursor-pointer " />
+                            </button>
+                          </Tippy>
+                          <HasAccess
+                            requiredPermissions={[
+                              "Book.Access",
+                              "Publisher.Access",
+                              "Section.Access",
+                              "Author.Access",
+                            ]}
                           >
-                            <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
-                          </Link>
-                        </Tippy>
-                      </HasAccess>
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table>
-          <div className="p-4">
-            <ReactPaginate
-              nextLabel="Next"
-              pageLinkClassName="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              pageRangeDisplayed={5}
-              pageCount={totalPages}
-              forcePage={filterParams?.page - 1}
-              disabledClassName="opacity-60 pointer-events-none"
-              onPageChange={({ selected }) => {
-                setFilterParams({ page: selected + 1 });
-              }}
-              className={paginationClass}
-              previousLabel="Previous"
-              previousClassName="flex items-center justify-center px-4 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              nextClassName="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-              activeLinkClassName="text-blue-700 bg-blue-200 dark:bg-blue-700 dark:text-gray-100"
-              renderOnZeroPageCount={null}
-            />
+                            <Tippy content="Edit Book">
+                              <Link
+                                to={`/books/edit/${book.id}`}
+                                className={
+                                  ButtonClasses.SecondaryOutlineButtonClasslist
+                                }
+                              >
+                                <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
+                              </Link>
+                            </Tippy>
+                          </HasAccess>
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
+                </Table.Body>
+              </Table>
+              <div className="p-4">
+                <ReactPaginate
+                  nextLabel="Next"
+                  pageLinkClassName="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  pageRangeDisplayed={5}
+                  pageCount={totalPages}
+                  forcePage={filterParams?.page - 1}
+                  disabledClassName="opacity-60 pointer-events-none"
+                  onPageChange={({ selected }) => {
+                    setFilterParams({ page: selected + 1 });
+                  }}
+                  className={paginationClass}
+                  previousLabel="Previous"
+                  previousClassName="flex items-center justify-center px-4 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  nextClassName="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                  activeLinkClassName="text-blue-700 bg-blue-200 dark:bg-blue-700 dark:text-gray-100"
+                  renderOnZeroPageCount={null}
+                />
+              </div>
+            </div>
           </div>
         </LoadingBoundaryV2>
       </Container>

@@ -108,6 +108,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
   }, [isOpen]);
   return (
     <Modal show={isOpen} size={"3xl"} onClose={closeModal} dismissible>
+      <Modal.Header>Import Books</Modal.Header>
       <Modal.Body>
         {error && (
           <div

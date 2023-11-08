@@ -1,4 +1,4 @@
-import { Input, SelectClasses } from "@components/ui/form/Input";
+import { CustomInput, Input, SelectClasses } from "@components/ui/form/Input";
 
 import {
   PrimaryButton,
@@ -20,7 +20,9 @@ import DDCSelectionModal from "./DDCSelectionModal";
 import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
-import { ContainerNoBackground } from "@components/ui/container/Container";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 import { FieldRow } from "@components/ui/form/FieldRow";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
@@ -216,12 +218,14 @@ const BookAddForm = () => {
       uppy.cancelAll();
     };
   }, []);
+
+  console.log(form);
   return (
     <>
       <form onSubmit={submit}>
-        <ContainerNoBackground>
+        <Container className="px-4">
           <div className="mb-5">
-            <h1 className="text-2xl">General Information</h1>
+            <h1 className="text-2xl dark:text-white">General Information</h1>
             <hr className="mb-5"></hr>
           </div>
           <FieldRow
@@ -230,13 +234,12 @@ const BookAddForm = () => {
             label="Title"
             ref={registerFormGroup("title")}
           >
-            <Input
-              wrapperclass="flex flex-col "
-              error={errors?.title}
-              value={form.title}
-              onChange={handleFormInput}
-              placeholder="Book title"
+            <CustomInput
               name="title"
+              error={errors?.title}
+              onChange={handleFormInput}
+              value={form.title}
+              placeholder="Title"
             />
           </FieldRow>
           <FieldRow
@@ -244,13 +247,12 @@ const BookAddForm = () => {
             label="Subject"
             ref={registerFormGroup("subject")}
           >
-            <Input
-              wrapperclass="flex flex-col "
-              error={errors?.subject}
-              value={form.subject}
-              onChange={handleFormInput}
-              placeholder="Book subject"
+            <CustomInput
               name="subject"
+              error={errors?.subject}
+              onChange={handleFormInput}
+              value={form.subject}
+              placeholder="Subject of the book"
             />
           </FieldRow>
           <FieldRow
@@ -438,7 +440,7 @@ const BookAddForm = () => {
               }}
             ></Dashboard>
           </FieldRow>
-        </ContainerNoBackground>
+        </Container>
         <ContainerNoBackground>
           <h1 className="mt-10 text-2xl">Authors and Classification</h1>
           <hr className="mb-5"></hr>
