@@ -1,23 +1,15 @@
-import {
-  Table,
-  BodyRow,
-  HeadingRow,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-
-import { useQuery } from "@tanstack/react-query";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import CustomPagination from "@components/pagination/CustomPagination";
+import { CustomInput } from "@components/ui/form/Input";
+import TableContainer from "@components/ui/table/TableContainer";
 import { Author } from "@definitions/types";
+import useDebounce from "@hooks/useDebounce";
+import usePaginate from "@hooks/usePaginate";
+import { useRequest } from "@hooks/useRequest";
+import { useQuery } from "@tanstack/react-query";
+import { Checkbox, Table } from "flowbite-react";
 import { ChangeEvent, useMemo, useState } from "react";
 import { useBookAddFormContext } from "../BookAddFormContext";
-import { useRequest } from "@hooks/useRequest";
-import usePaginate from "@hooks/usePaginate";
-import ReactPaginate from "react-paginate";
-import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { Input } from "@components/ui/form/Input";
-import useDebounce from "@hooks/useDebounce";
 
 const AuthorSelection = () => {
   const { Get } = useRequest();
@@ -76,8 +68,7 @@ const AuthorSelection = () => {
       ),
     [form.authors]
   );
-  const paginationClass =
-    totalPages <= 1 ? "hidden" : "flex gap-2 items-center mt-4";
+
   const searchDebounce = useDebounce();
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
@@ -91,68 +82,56 @@ const AuthorSelection = () => {
   };
   return (
     <div>
-      <Input
-        type="text"
-        placeholder="Search"
-        className="mt-3"
-        onChange={handleSearch}
-      />
+      <CustomInput placeholder="Search" onChange={handleSearch}></CustomInput>
       <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
-        <Table className="w-full border-b-0">
-          <Thead>
-            <HeadingRow>
-              <Th></Th>
-              <Th>Name</Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {authors?.map((author) => {
-              const isChecked = author.id
-                ? selectedCache.hasOwnProperty(author.id)
-                : false;
-              return (
-                <BodyRow
-                  key={author.id}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    if (!isChecked) {
-                      selectAuthor(author);
-                      return;
-                    }
-                    removeAuthor(author);
-                  }}
-                >
-                  <Td>
-                    <input
-                      type="checkbox"
-                      readOnly
-                      checked={isChecked}
-                      className="h-4 w-4 border"
-                    />
-                  </Td>
-                  <Td>{author.name}</Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
-        <ReactPaginate
-          nextLabel="Next"
-          pageLinkClassName="border px-3 py-0.5  text-center rounded"
-          pageRangeDisplayed={5}
-          pageCount={totalPages}
-          disabledClassName="opacity-60 pointer-events-none"
-          onPageChange={({ selected }) => {
-            setCurrentPage(selected + 1);
-          }}
-          forcePage={currentPage - 1}
-          className={paginationClass}
-          previousLabel="Previous"
-          previousClassName="px-2 border text-gray-500 py-1 rounded"
-          nextClassName="px-2 border text-blue-500 py-1 rounded"
-          renderOnZeroPageCount={null}
-          activeClassName="border-none bg-blue-500 text-white rounded"
-        />
+        <TableContainer>
+          <Table className="w-full border-b-0">
+            <Table.Head>
+              <Table.HeadCell>Action</Table.HeadCell>
+              <Table.HeadCell>Name</Table.HeadCell>
+            </Table.Head>
+            <Table.Body>
+              {authors?.map((author) => {
+                const isChecked = author.id
+                  ? selectedCache.hasOwnProperty(author.id)
+                  : false;
+                return (
+                  <Table.Row
+                    key={author.id}
+                    color="primary"
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (!isChecked) {
+                        selectAuthor(author);
+                        return;
+                      }
+                      removeAuthor(author);
+                    }}
+                  >
+                    <Table.Cell>
+                      <Checkbox color="primary" readOnly checked={isChecked} />
+                    </Table.Cell>
+                    <Table.Cell>{author.name}</Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table>
+        </TableContainer>
+        <div className="mt-3">
+          <CustomPagination
+            nextLabel="Next"
+            pageRangeDisplayed={-5}
+            pageCount={totalPages}
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            forcePage={currentPage - 1}
+            isHidden={totalPages <= 1}
+            previousLabel="Previous"
+            renderOnZeroPageCount={null}
+          />
+        </div>
       </LoadingBoundaryV2>
     </div>
   );

@@ -25,7 +25,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(
             </label>
 
             {isRequired && (
-              <small className="text-gray-600 p-1 rounded bg-gray-200 dark:bg-none dark:border-white dark:text-gray-50 dark:bg-transparent border  border-white">
+              <small className="text-gray-600 p-1 rounded bg-gray-200 dark:bg-gray-700 dark:border-white dark:text-gray-50  ">
                 Required
               </small>
             )}

@@ -447,7 +447,7 @@ const BookAddForm = () => {
           </FieldRow>
         </Container>
         <Container>
-          <div className="mb-5">
+          <div className="mb-5 mt-3">
             <h1 className="text-2xl dark:text-white">
               Authors and Classification
             </h1>

@@ -1,14 +1,5 @@
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
 import { useBookEditFormContext } from "./BookEditFormContext";
-import { CiCircleRemove } from "react-icons/ci";
+
 import { BsFillTrashFill } from "react-icons/bs";
 import Tippy from "@tippyjs/react";
 import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
@@ -30,6 +21,9 @@ import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { text } from "stream/consumers";
 import { useForm } from "@hooks/useForm";
 import { number, object, string } from "yup";
+import Container from "@components/ui/container/Container";
+import { Button, Table } from "flowbite-react";
+import TableContainer from "@components/ui/table/TableContainer";
 
 enum Action {
   Weed = 1,
@@ -132,79 +126,78 @@ const EditAccessionPanel = () => {
     queryKey: ["bookAccessions"],
   });
   return (
-    <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
-      <div className="w-full flex justify-between mb-5">
-        <h1 className="text-2xl">Accessions</h1>
-        <PrimaryButton
-          className="flex items-center gap-2"
+    <Container>
+      <div>
+        <Button
+          color="primary"
           onClick={() => {
             openAddCopyDialog();
           }}
         >
           <AiOutlinePlus />
           Add Copy
-        </PrimaryButton>
+        </Button>
       </div>
 
-      <div>
+      <div className="mt-4">
         <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Accession Number</Th>
-                <Th>Copy Number</Th>
-                <Th>Status</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {accessions?.map((accession) => {
-                return (
-                  <BodyRow key={accession.id}>
-                    <Td>{accession.number}</Td>
-                    <Td>{accession.copyNumber}</Td>
-                    <Td>
-                      {accession.isWeeded ? (
-                        <span className="text-red-400">Weeded</span>
-                      ) : (
-                        <span className="text-green-500">Active</span>
-                      )}
-                    </Td>
-                    <Td>
-                      {!accession.isWeeded && (
-                        <Tippy content="Weed book">
-                          <button
-                            className={
-                              ButtonClasses.DangerButtonOutlineClasslist
-                            }
-                            onClick={() => {
-                              setSelectedAccession(accession?.id ?? "");
-                              openWeedingDialog();
-                            }}
-                          >
-                            <BsFillTrashFill className="text-lg text-red-400" />
-                          </button>
-                        </Tippy>
-                      )}
-                      {accession.isWeeded && (
-                        <Tippy content="Re-circulate book">
-                          <button
-                            className="p-2 border border-green-500 rounded"
-                            onClick={() => {
-                              setSelectedAccession(accession?.id ?? "");
-                              openRecirculateConfirmation();
-                            }}
-                          >
-                            <GiRecycle className="text-lg text-green-500" />
-                          </button>
-                        </Tippy>
-                      )}
-                    </Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
+          <TableContainer>
+            <Table>
+              <Table.Head>
+                <Table.HeadCell>Accession Number</Table.HeadCell>
+                <Table.HeadCell>Copy Number</Table.HeadCell>
+                <Table.HeadCell>Status</Table.HeadCell>
+                <Table.HeadCell></Table.HeadCell>
+              </Table.Head>
+              <Table.Body>
+                {accessions?.map((accession) => {
+                  return (
+                    <Table.Row key={accession.id}>
+                      <Table.Cell>{accession.number}</Table.Cell>
+                      <Table.Cell>{accession.copyNumber}</Table.Cell>
+                      <Table.Cell>
+                        {accession.isWeeded ? (
+                          <span className="text-red-400">Weeded</span>
+                        ) : (
+                          <span className="text-green-500">Active</span>
+                        )}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {!accession.isWeeded && (
+                          <Tippy content="Weed book">
+                            <button
+                              className={
+                                ButtonClasses.DangerButtonOutlineClasslist
+                              }
+                              onClick={() => {
+                                setSelectedAccession(accession?.id ?? "");
+                                openWeedingDialog();
+                              }}
+                            >
+                              <BsFillTrashFill className="text-lg text-red-400" />
+                            </button>
+                          </Tippy>
+                        )}
+                        {accession.isWeeded && (
+                          <Tippy content="Re-circulate book">
+                            <button
+                              className="p-2 border border-green-500 rounded"
+                              onClick={() => {
+                                setSelectedAccession(accession?.id ?? "");
+                                openRecirculateConfirmation();
+                              }}
+                            >
+                              <GiRecycle className="text-lg text-green-500" />
+                            </button>
+                          </Tippy>
+                        )}
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+          </TableContainer>
         </LoadingBoundaryV2>
       </div>
       <PromptTextAreaDialog
@@ -264,7 +257,7 @@ const EditAccessionPanel = () => {
         }}
         text="Are you sure you want to re-circulate this book? This copy will be available again?"
       />
-    </div>
+    </Container>
   );
 };
 

@@ -13,6 +13,7 @@ import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { toast } from "react-toastify";
+import { Button } from "flowbite-react";
 
 const eBookUppy = new Uppy({
   restrictions: {
@@ -78,8 +79,8 @@ const UploadEbook = () => {
 
   return (
     <div>
-      <h2 className="text-2xl mb-1">Upload eBook</h2>
-      <hr></hr>
+      <h2 className="dark:text-white text-2xl">Upload eBook</h2>
+
       <form onSubmit={onSubmit}>
         <DashboardComponent
           className="mt-5"
@@ -88,16 +89,19 @@ const UploadEbook = () => {
           uppy={eBookUppy}
           height={"400px"}
         />
-        <div className="mt-1">
-          <PrimaryButton className="mt-2">Save</PrimaryButton>
-          <DangerButton
+        <div className="mt-3 flex">
+          <Button color="primary" type="submit">
+            Save
+          </Button>
+          <Button
+            color="failure"
             type="button"
             className="ml-2"
             disabled={book.ebook.length === 0}
             onClick={openRemoveDialog}
           >
             Remove eBook
-          </DangerButton>
+          </Button>
         </div>
       </form>
       <DangerConfirmDialog

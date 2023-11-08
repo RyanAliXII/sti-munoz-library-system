@@ -19,6 +19,7 @@ import { isValid } from "date-fns";
 import { Button, Table, TextInput } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
 import { BookPrintablesModal } from "./BookPrintablesModal";
+import CustomPagination from "@components/pagination/CustomPagination";
 
 const BookPage = () => {
   const {
@@ -86,8 +87,6 @@ const BookPage = () => {
     isOpen: isImportModalOpen,
   } = useSwitch();
 
-  const paginationClass =
-    totalPages <= 1 ? "hidden" : "inline-flex -space-x-px text-sm";
   return (
     <>
       <Container>
@@ -205,21 +204,16 @@ const BookPage = () => {
                 </Table.Body>
               </Table>
               <div className="p-4">
-                <ReactPaginate
+                <CustomPagination
                   nextLabel="Next"
-                  pageLinkClassName="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
                   pageRangeDisplayed={5}
                   pageCount={totalPages}
                   forcePage={filterParams?.page - 1}
-                  disabledClassName="opacity-60 pointer-events-none"
                   onPageChange={({ selected }) => {
                     setFilterParams({ page: selected + 1 });
                   }}
-                  className={paginationClass}
+                  isHidden={totalPages <= 1}
                   previousLabel="Previous"
-                  previousClassName="flex items-center justify-center px-4 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  nextClassName="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  activeLinkClassName="text-blue-700 bg-blue-200 dark:bg-blue-700 dark:text-gray-100"
                   renderOnZeroPageCount={null}
                 />
               </div>

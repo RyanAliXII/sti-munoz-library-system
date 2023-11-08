@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import DocumentView from "./DocumentView";
 import UploadEbook from "./UploadEbook";
+import Container from "@components/ui/container/Container";
 
 const EbookPanel = () => {
   const { form: book } = useBookEditFormContext();
@@ -33,12 +34,12 @@ const EbookPanel = () => {
   });
 
   return (
-    <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10 ">
+    <Container>
       <UploadEbook />
       <div className="flex gap-2"></div>
       <hr className="mb-3 mt-3"></hr>
       <DocumentView eBookUrl={eBookUrl} />
-    </div>
+    </Container>
   );
 };
 
