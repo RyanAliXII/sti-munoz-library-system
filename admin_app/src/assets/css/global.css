@@ -27,3 +27,24 @@
 .sidebar-scroll::-webkit-scrollbar-thumb {
   background: #fefefe;
 }
+.react-datepicker__day-name {
+  color: unset !important;
+}
+.tox .tox-edit-area__iframe {
+  background-color: unset !important;
+}
+.tox-statusbar {
+  background-color: unset !important;
+}
+.tox:not(.tox-tinymce-inline) .tox-editor-header {
+  background-color: unset !important;
+}
+.tox:not(.tox-tinymce-inline) .tox-editor-header {
+  padding: unset !important;
+}
+.tox .tox-menubar + .tox-toolbar-overlord {
+  border-top: none !important;
+}
+.tox .tox-toolbar-overlord {
+  background-color: unset !important;
+}
