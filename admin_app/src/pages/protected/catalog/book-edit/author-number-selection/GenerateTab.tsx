@@ -1,21 +1,9 @@
-import { AuthorNumber } from "@definitions/types";
-
-import { Input } from "@components/ui/form/Input";
-
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-import { PrimaryButton } from "@components/ui/button/Button";
-import { useBookEditFormContext } from "../BookEditFormContext";
-import { toast } from "react-toastify";
 import useCutter from "@hooks/use-cutter/useCutter";
+import { Button, Table } from "flowbite-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import { useBookEditFormContext } from "../BookEditFormContext";
+import { CustomInput } from "@components/ui/form/Input";
 
 const GenerateTab = () => {
   const { form, setFieldValue, removeFieldError } = useBookEditFormContext();
@@ -49,10 +37,9 @@ const GenerateTab = () => {
   return (
     <>
       <div>
-        <div className="w-full mb-3">
-          <Input
+        <div className="w-full mb-4">
+          <CustomInput
             label="Author Number"
-            wrapperclass="flex items-center"
             className="disabled:bg-gray-100"
             type="text"
             readOnly
@@ -60,96 +47,73 @@ const GenerateTab = () => {
             value={form.authorNumber}
           />
         </div>
-        <div className="lg:grid lg:grid-cols-9 lg:gap-2 ">
-          <div className="flex justify-end mb-3 flex-col h-20 lg:h-24 lg:mb-0 lg:col-span-2 lg:justify-center">
-            <div className="h-7 flex items-center gap-2">
-              <label className=" text-sm font-semibold text-gray-600 ml-1 ">
-                <span className="font-semi">
-                  {title.length > 0 ? title : "NO TITLE"}
-                </span>
-              </label>
-            </div>
-            <div>
-              <small className="text-gray-500 pr-5 ml-1">
-                Generate author number based on the book title.
-              </small>
-            </div>
-          </div>
 
-          <div className="flex items-center h-20 lg:h-24 col-span-7 gap-2">
-            <PrimaryButton
-              type="button"
-              onClick={generateByTitle}
-              className="w-28 lg:w-36 disabled:bg-blue-200"
-              disabled={title.length === 0}
-            >
-              Generate
-            </PrimaryButton>
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <CustomInput
+              label="Generate based on book title"
+              value={title}
+              readOnly={title.length <= 0}
+            ></CustomInput>
           </div>
+          <Button
+            color="primary"
+            onClick={generateByTitle}
+            disabled={title.length === 0}
+          >
+            Generate
+          </Button>
         </div>
-        <div className="lg:grid lg:grid-cols-9 lg:gap-2 ">
-          <div className="flex justify-end mb-3 flex-col h-20 lg:h-24 lg:mb-0 lg:col-span-2 lg:justify-center">
-            <div>
-              <Input
-                type="text"
-                label="Generate based on the text you have given."
-                onChange={(event) => {
-                  setText(event.target.value);
-                }}
-                value={text}
-              />
-            </div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <CustomInput
+              type="text"
+              label="Generate based on the text you have given"
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+              value={text}
+            />
           </div>
-
-          <div className="flex items-center h-20 lg:h-24 col-span-7 gap-2">
-            <PrimaryButton
-              type="button"
-              onClick={generateAuthorNumberByText}
-              className="w-28 lg:w-36 disabled:bg-blue-200 mt-1"
-              disabled={text.length === 0}
-            >
-              Generate
-            </PrimaryButton>
-          </div>
+          <Button
+            color="primary"
+            type="button"
+            onClick={generateAuthorNumberByText}
+            disabled={text.length === 0}
+          >
+            Generate
+          </Button>
         </div>
       </div>
-      <hr></hr>
+
       {form.authors.length === 0 ? (
-        <div className="h-80 w-full flex items-center justify-center flex-col">
+        <div className="h-80 w-full flex items-center justify-center flex-col ">
           <small className="text-sm text-gray-400 ">
-            You have not selected any authors. Please select one to generate.
+            You have not selected any authors. Please select one to generate
+            author number.
           </small>
-          <a className="text-sm text-gray-400 underline cursor-pointer">
-            Select an author
-          </a>
         </div>
       ) : (
         <>
-          <div className="mt-5 mb-4">
-            <span className="text-md ml-1 text-gray-500 text-sm"></span>
-          </div>
-          <Table className="w-full">
-            <Thead className=" sticky top-0">
-              <HeadingRow>
-                {/* <Th></Th> */}
-                <Th>Author</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
+          <Table className="w-full" hoverable>
+            <Table.Head className=" sticky top-0">
+              <Table.HeadCell>Author</Table.HeadCell>
+            </Table.Head>
+            <Table.Body>
               {form.authors.map((author) => {
                 return (
-                  <BodyRow
+                  <Table.Row
                     className="cursor-pointer"
                     key={author.id}
                     onClick={() => {
                       generateAuthorNumberByAuthor(author.name);
                     }}
                   >
-                    <Td>{author.name}</Td>
-                  </BodyRow>
+                    <Table.Cell>{author.name}</Table.Cell>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
+            </Table.Body>
           </Table>
         </>
       )}

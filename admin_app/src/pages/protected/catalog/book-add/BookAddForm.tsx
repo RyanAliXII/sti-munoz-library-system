@@ -576,7 +576,11 @@ const BookAddForm = () => {
 
           <div>
             <div>
-              <Button color="primary" type="submit">
+              <Button
+                color="primary"
+                type="submit"
+                isProcessing={newBook.isLoading}
+              >
                 Add to Collection
               </Button>
             </div>

@@ -10,7 +10,7 @@ const AuthorSelectionModal = ({ closeModal, isOpen }: ModalProps) => {
       <Modal
         show={isOpen}
         onClose={closeModal}
-        size={"3xl"}
+        size={"4xl"}
         position={"center"}
         dismissible
       >
@@ -22,7 +22,7 @@ const AuthorSelectionModal = ({ closeModal, isOpen }: ModalProps) => {
           </span>
         </Modal.Header>
 
-        <Modal.Body style={{ maxHeight: "800px" }}>
+        <Modal.Body style={{ maxHeight: "700px" }}>
           <AuthorSelection />
         </Modal.Body>
       </Modal>

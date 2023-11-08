@@ -1,31 +1,18 @@
 import { AuthorNumber } from "@definitions/types";
 import { useState } from "react";
 
+import { CustomInput } from "@components/ui/form/Input";
+import { useQuery } from "@tanstack/react-query";
 import { useBookAddFormContext } from "../BookAddFormContext";
-import { Input } from "@components/ui/form/Input";
-import {
-  useInfiniteQuery,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
 
 import useDebounce from "@hooks/useDebounce";
 
-import { useRequest } from "@hooks/useRequest";
-import { toast } from "react-toastify";
-import usePaginate from "@hooks/usePaginate";
-import ReactPaginate from "react-paginate";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import CustomPagination from "@components/pagination/CustomPagination";
+import usePaginate from "@hooks/usePaginate";
+import { useRequest } from "@hooks/useRequest";
+import { Table } from "flowbite-react";
+import { toast } from "react-toastify";
 
 const BrowseTab = () => {
   const { form, setFieldValue, removeFieldError } = useBookAddFormContext();
@@ -72,24 +59,21 @@ const BrowseTab = () => {
     removeFieldError("authorNumber");
     toast.info("Author number has been selected.");
   };
-  const paginationClass =
-    totalPages <= 1 ? "hidden" : "flex gap-2 items-center mt-4";
+
   return (
     <div>
       <div className="flex gap-2 items-center mb-3">
         <div>
-          <Input
+          <CustomInput
             label="Author Number"
-            wrapperclass="flex items-center"
-            className="disabled:bg-gray-100"
             type="text"
             readOnly
             disabled
             value={form.authorNumber}
           />
         </div>
-        <Input
-          wrapperclass="flex items-end h-14 mt-1"
+        <CustomInput
+          className="flex-1"
           onChange={(event) => {
             debounceSearch(
               () => {
@@ -102,61 +86,47 @@ const BrowseTab = () => {
           }}
           type="text"
           placeholder="Search..."
-        ></Input>
+        ></CustomInput>
       </div>
 
       <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Surname</Th>
-              <Th>Number</Th>
-            </HeadingRow>
-          </Thead>
+        <Table hoverable>
+          <Table.Head>
+            <Table.HeadCell>Surname</Table.HeadCell>
+            <Table.HeadCell>Number</Table.HeadCell>
+          </Table.Head>
 
-          <Tbody>
+          <Table.Body>
             {authorNumbers?.map((authorNumber, index) => {
               return (
-                <BodyRow
+                <Table.Row
                   key={authorNumber.surname}
                   onClick={() => {
                     selectAuthorNumber(authorNumber);
                   }}
                   className="cursor-pointer"
                 >
-                  {/* <Td>
-                    <Input
-                      wrapperclass="flex items-center"
-                      type="checkbox"
-                      className="h-4"
-                      readOnly
-                    ></Input>
-                  </Td> */}
-                  <Td>{authorNumber.surname}</Td>
-                  <Td>{authorNumber.number}</Td>
-                </BodyRow>
+                  <Table.Cell>{authorNumber.surname}</Table.Cell>
+                  <Table.Cell>{authorNumber.number}</Table.Cell>
+                </Table.Row>
               );
             })}
-          </Tbody>
+          </Table.Body>
         </Table>
-
-        <ReactPaginate
-          nextLabel="Next"
-          pageLinkClassName="border px-3 py-0.5  text-center rounded"
-          pageRangeDisplayed={5}
-          pageCount={totalPages}
-          disabledClassName="opacity-60 pointer-events-none"
-          onPageChange={({ selected }) => {
-            setCurrentPage(selected + 1);
-          }}
-          forcePage={currentPage - 1}
-          className={paginationClass}
-          previousLabel="Previous"
-          previousClassName="px-2 border text-gray-500 py-1 rounded"
-          nextClassName="px-2 border text-blue-500 py-1 rounded"
-          renderOnZeroPageCount={null}
-          activeClassName="border-none bg-blue-500 text-white rounded"
-        />
+        <div className="mt-3">
+          <CustomPagination
+            nextLabel="Next"
+            pageRangeDisplayed={5}
+            pageCount={totalPages}
+            disabledClassName="opacity-60 pointer-events-none"
+            onPageChange={({ selected }) => {
+              setCurrentPage(selected + 1);
+            }}
+            forcePage={currentPage - 1}
+            isHidden={totalPages <= 1}
+            previousLabel="Previous"
+          />
+        </div>
       </LoadingBoundaryV2>
     </div>
   );

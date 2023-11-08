@@ -1,8 +1,3 @@
-import {
-  PrimaryButton,
-  PrimaryOutlineButton,
-  SecondaryButton,
-} from "@components/ui/button/Button";
 import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
@@ -27,6 +22,7 @@ import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { HttpStatusCode } from "axios";
 import { format, isValid } from "date-fns";
+import { Button } from "flowbite-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MultiValue, SingleValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
@@ -343,16 +339,18 @@ const BookEditForm = () => {
                 error={errors?.publisher?.id}
                 options={publishers}
               />
-              <PrimaryOutlineButton
-                className="text-sm ml-2"
+              <Button
                 type="button"
+                outline
+                gradientDuoTone="primaryToPrimary"
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
                 onClick={() => {
                   openAddPublisherModal();
                 }}
                 style={{ maxHeight: "38px" }}
               >
                 Add Publisher
-              </PrimaryOutlineButton>
+              </Button>
             </div>
           </FieldRow>
 
@@ -414,6 +412,9 @@ const BookEditForm = () => {
               apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
               onEditorChange={handleDescriptionInput}
               value={form.description}
+              init={{
+                statusbar: false,
+              }}
             />
           </FieldRow>
           <FieldRow
@@ -480,20 +481,22 @@ const BookEditForm = () => {
             <div className="w-full h-full flex ">
               <CustomInput
                 type="number"
-                wrapperclass="flex flex-col "
+                className="flex-1"
                 error={errors?.ddc}
                 value={form.ddc}
                 onChange={handleFormInput}
                 placeholder="DDC"
                 name="ddc"
               />
-              <SecondaryButton
+              <Button
                 type="button"
-                className="self-start ml-2"
+                outline
+                gradientDuoTone="primaryToPrimary"
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
                 onClick={openDDCSelection}
               >
                 Browse
-              </SecondaryButton>
+              </Button>
             </div>
           </FieldRow>
           <FieldRow
@@ -505,22 +508,24 @@ const BookEditForm = () => {
           >
             <div className="w-full h-full flex">
               <CustomInput
-                wrapperclass="flex flex-col "
+                className="flex-1"
                 error={errors?.authorNumber}
                 value={form.authorNumber}
                 onChange={handleFormInput}
                 placeholder="Author number"
                 name="authorNumber"
               />
-              <SecondaryButton
+              <Button
                 type="button"
-                className="self-start ml-2"
+                outline
+                gradientDuoTone="primaryToPrimary"
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
                 onClick={() => {
                   openAuthorNumberSelection();
                 }}
               >
                 Browse
-              </SecondaryButton>
+              </Button>
             </div>
           </FieldRow>
           <FieldRow
@@ -530,6 +535,14 @@ const BookEditForm = () => {
           >
             <CreatableSelect
               isMulti
+              classNames={{
+                control: () =>
+                  "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-0.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                menu: () =>
+                  "bg-gray-50 text-gray-500 dark:bg-gray-700 dark:text-white",
+                multiValue: () => "dark:bg-gray-800 dark:text-white",
+                multiValueLabel: () => "dark:text-white",
+              }}
               value={
                 form?.searchTags?.map((v) => ({ value: v, label: v })) ?? []
               }
@@ -555,15 +568,16 @@ const BookEditForm = () => {
             closeModal={closeAuthorNumberSelection}
             isOpen={isAuthorNumberSelectionOpen}
           />
-        </Container>
-
-        <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
           <div>
-            <PrimaryButton className="ml-2 lg:ml-0" type="submit">
-              Update Book
-            </PrimaryButton>
+            <Button
+              type="button"
+              color="primary"
+              isProcessing={mutation.isLoading}
+            >
+              Save
+            </Button>
           </div>
-        </div>
+        </Container>
       </form>
 
       <AddPublisherModal

@@ -1,15 +1,7 @@
-import { Input } from "@components/ui/form/Input";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
+import { CustomInput } from "@components/ui/form/Input";
+
 import { DDC, ModalProps } from "@definitions/types";
-import Modal from "react-responsive-modal";
+
 import { useBookEditFormContext } from "./BookEditFormContext";
 
 import { useQuery } from "@tanstack/react-query";
@@ -19,31 +11,18 @@ import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import CustomPagination from "@components/pagination/CustomPagination";
 import usePaginate from "@hooks/usePaginate";
-import ReactPaginate from "react-paginate";
+import { Button, Checkbox, Modal, Table } from "flowbite-react";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   if (!isOpen) return null;
   return (
-    <Modal
-      ref={modalRef}
-      onClose={closeModal}
-      open={isOpen}
-      closeIcon
-      center
-      styles={{
-        modal: {
-          maxWidth: "none",
-        },
-      }}
-      classNames={{
-        modalContainer: "",
-        modal: "w-11/12 lg:w-9/12 rounded h-[750px]",
-      }}
-    >
-      <DDCTable closeModal={closeModal} />
+    <Modal onClose={closeModal} show={isOpen} dismissible size={"4xl"}>
+      <Modal.Body>
+        <DDCTable closeModal={closeModal} />
+      </Modal.Body>
     </Modal>
   );
 };
@@ -122,64 +101,60 @@ const DDCTable = ({ closeModal }: DDCTableProps) => {
           has been selected.
         </p>
       )}
-      <div className="flex gap-2 items-center mb-3">
-        <Input
-          wrapperclass="flex items-end h-14 mt-1"
+      <div className="mt-2">
+        <CustomInput
           name="keyword"
           type="text"
           placeholder="Search..."
           onChange={handleSearch}
-        ></Input>
+        ></CustomInput>
       </div>
 
       <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
         <Table>
-          <Thead>
-            <HeadingRow>
-              <Th></Th>
-              <Th>Class name</Th>
-              <Th>Number</Th>
-            </HeadingRow>
-          </Thead>
+          <Table.Head>
+            <Table.HeadCell></Table.HeadCell>
+            <Table.HeadCell>Class name</Table.HeadCell>
+            <Table.HeadCell>Number</Table.HeadCell>
+          </Table.Head>
 
-          <Tbody>
+          <Table.Body>
             {ddc?.map((d) => {
               return (
-                <BodyRow
+                <Table.Row
                   key={d.id}
                   onClick={() => {
                     selectDDC(d);
                   }}
                   className="cursor-pointer"
                 >
-                  <Td>
-                    <Input
-                      wrapperclass="flex items-center"
-                      type="checkbox"
+                  <Table.Cell>
+                    <Checkbox
+                      color="primary"
                       checked={d.number === selectedDDC.number}
                       className="h-4"
                       readOnly
-                    ></Input>
-                  </Td>
-                  <Td>{d.name}</Td>
-                  <Td>{d.number}</Td>
-                </BodyRow>
+                    ></Checkbox>
+                  </Table.Cell>
+                  <Table.Cell>{d.name}</Table.Cell>
+                  <Table.Cell>{d.number}</Table.Cell>
+                </Table.Row>
               );
             })}
-          </Tbody>
+          </Table.Body>
         </Table>
         <div className="flex justify-between items-center mt-10">
-          <ReactPaginate
+          <CustomPagination
             nextLabel="Next"
             pageLinkClassName="border px-3 py-0.5  text-center rounded"
-            pageRangeDisplayed={3}
+            marginPagesDisplayed={1}
+            pageRangeDisplayed={1}
             forcePage={currentPage - 1}
             pageCount={totalPages}
             disabledClassName="opacity-60 pointer-events-none"
             onPageChange={({ selected }) => {
               setCurrentPage(selected + 1);
             }}
-            className={paginationClass}
             previousLabel="Previous"
             previousClassName="px-2 border text-gray-500 py-1 rounded"
             nextClassName="px-2 border text-blue-500 py-1 rounded"
@@ -187,19 +162,21 @@ const DDCTable = ({ closeModal }: DDCTableProps) => {
             activeClassName="border-none bg-blue-500 text-white rounded"
           />
           <div className="flex gap-2">
-            <PrimaryButton
+            <Button
+              color="primary"
               disabled={selectedDDC.id != 0 ? false : true}
               onClick={proceed}
             >
               Proceed
-            </PrimaryButton>
-            <LighButton
+            </Button>
+            <Button
+              color="light"
               onClick={() => {
                 closeModal();
               }}
             >
               Cancel
-            </LighButton>
+            </Button>
           </div>
         </div>
       </LoadingBoundaryV2>
