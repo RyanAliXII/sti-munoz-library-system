@@ -1,16 +1,11 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
+import Container from "@components/ui/container/Container";
+import TableContainer from "@components/ui/table/TableContainer";
+
 import { ClientLog } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
+import { Table } from "flowbite-react";
 import TimeAgo from "timeago-react";
 
 const ClientLogPage = () => {
@@ -28,27 +23,21 @@ const ClientLogPage = () => {
     queryKey: ["clientLogs"],
   });
   return (
-    <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto mb-10">
-      <div className="w-full flex  mb-5">
-        <h1 className="text-2xl">Client Logs</h1>
-      </div>
-
-      <div>
-        <LoadingBoundaryV2 isError={false} isLoading={false}>
+    <Container>
+      <LoadingBoundaryV2 isError={false} isLoading={false}>
+        <TableContainer>
           <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Created At</Th>
-                <Th>Client</Th>
-                <Th>Scanner</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
+            <Table.Head>
+              <Table.HeadCell>Created At</Table.HeadCell>
+              <Table.HeadCell>Client</Table.HeadCell>
+              <Table.HeadCell>Scanner</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {clientLogs?.map((log) => {
                 return (
-                  <BodyRow key={log.id}>
-                    <Td>
+                  <Table.Row key={log.id}>
+                    <Table.Cell>
                       {new Date(log.createdAt).toLocaleString(undefined, {
                         month: "long",
                         day: "2-digit",
@@ -56,22 +45,22 @@ const ClientLogPage = () => {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
-                    </Td>
-                    <Td>{log.client.displayName}</Td>
-                    <Td>
+                    </Table.Cell>
+                    <Table.Cell>{log.client.displayName}</Table.Cell>
+                    <Table.Cell>
                       {log.scanner.username} - {log.scanner.description}
-                    </Td>
-                    <Td>
+                    </Table.Cell>
+                    <Table.Cell>
                       <TimeAgo datetime={log.createdAt} />
-                    </Td>
-                  </BodyRow>
+                    </Table.Cell>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
+            </Table.Body>
           </Table>
-        </LoadingBoundaryV2>
-      </div>
-    </div>
+        </TableContainer>
+      </LoadingBoundaryV2>
+    </Container>
   );
 };
 

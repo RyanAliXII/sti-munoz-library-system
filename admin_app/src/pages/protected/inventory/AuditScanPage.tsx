@@ -1,34 +1,20 @@
 import { Accession, Audit, Book } from "@definitions/types";
-import { useNavigate, useParams } from "react-router-dom";
-import { HiOutlineDocumentReport } from "react-icons/hi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import jsonpack from "jsonpack";
-import {
-  Thead,
-  Table,
-  HeadingRow,
-  Tbody,
-  Th,
-  BodyRow,
-  Td,
-} from "@components/ui/table/Table";
+import { HiOutlineDocumentReport } from "react-icons/hi";
+import { useNavigate, useParams } from "react-router-dom";
 
-import useQRScanner from "@hooks/useQRScanner";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-import { useRequest } from "@hooks/useRequest";
-import { BaseSyntheticEvent, useEffect, useRef } from "react";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import { PrimaryButton } from "@components/ui/button/Button";
+import Container from "@components/ui/container/Container";
+import { useRequest } from "@hooks/useRequest";
+import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 
 import BookSearchBox from "@components/BookSearchBox";
-import ordinal from "ordinal";
 import Tippy from "@tippyjs/react";
-import { MdOutlineCancel, MdOutlineKeyboardReturn } from "react-icons/md";
-import { BsFillQuestionDiamondFill } from "react-icons/bs";
+import { Button, Table } from "flowbite-react";
+import ordinal from "ordinal";
 import { AiFillCheckCircle } from "react-icons/ai";
+import { BsFillQuestionDiamondFill } from "react-icons/bs";
 
 export interface AuditedAccession
   extends Omit<
@@ -41,10 +27,7 @@ export interface AuditedAccession
 export interface AuditedBooks extends Omit<Book, "authors"> {
   accessions: AuditedAccession[];
 }
-type QrResult = {
-  accessionNumber: number;
-  bookId: string;
-};
+
 const AuditScan = () => {
   const { id } = useParams();
   const { Get, Post, Delete } = useRequest();
@@ -140,125 +123,102 @@ const AuditScan = () => {
   };
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">
-          Inventory: {audit?.name}
+      <Container>
+        <h1 className="text-2xl font-bold text-gray-900 py-3 dark:text-gray-50">
+          Audit: {audit?.name}
         </h1>
-      </ContainerNoBackground>
-      <ContainerNoBackground>
-        <div className="flex gap-2 items-center">
-          <PrimaryButton
-            className="mb-2 flex items-center"
+        <div className="flex gap-2 items-center my-4">
+          <Button
+            color="primary"
             onClick={() => {
               toast.info("Feature is still in development.");
             }}
           >
             <HiOutlineDocumentReport className="text-lg mr-2" />
             Generate Report
-          </PrimaryButton>
-          <div className="mb-1.5 flex-1">
+          </Button>
+          <div className="flex-1">
             <BookSearchBox selectBook={onSelectBook} />
           </div>
         </div>
-      </ContainerNoBackground>
-      <Container>
+
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Book Title</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
+            <Table.Head>
+              <Table.HeadCell>Book title</Table.HeadCell>
+              <Table.HeadCell>Accession number</Table.HeadCell>
+              <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {auditedBooks?.map((book) => {
-                return (
-                  <BodyRow key={book.id}>
-                    <Td className="border-r border-l">{book.title}</Td>
-                    <Td className="border-r">
-                      <Table>
-                        <Thead>
-                          <HeadingRow>
-                            <Th>Accession Number</Th>
-                            <Th>Copy Number</Th>
-                            <Th>Status</Th>
-                            <Th></Th>
-                          </HeadingRow>
-                        </Thead>
-                        <Tbody>
-                          {book.accessions?.map((accession) => {
-                            return (
-                              <BodyRow
-                                key={`${book.id}_${accession.copyNumber}`}
-                              >
-                                <Td>{accession.number}</Td>
-                                <Td>{ordinal(accession.copyNumber)}</Td>
+                return book.accessions?.map((accession) => {
+                  return (
+                    <Table.Row key={`${book.id}_${accession.copyNumber}`}>
+                      <Table.Cell>
+                        <div>
+                          <div className="text-base font-semibold text-gray-900 dark:text-white">
+                            {book.title}
+                          </div>
+                          <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                            {book.copies === 1
+                              ? "Single Copy"
+                              : `${ordinal(accession.copyNumber)} copy`}
+                          </div>
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>{accession.number}</Table.Cell>
 
-                                <Td>
-                                  {accession.isCheckedOut ? (
-                                    <span className="text-gray-400">
-                                      Book has been checked out
-                                    </span>
-                                  ) : accession.isAudited ? (
-                                    <span className="text-green-400">
-                                      Found
-                                    </span>
-                                  ) : (
-                                    <span className="text-yellow-500">
-                                      Missing
-                                    </span>
-                                  )}
-                                </Td>
-                                <Td className="flex gap-2">
-                                  {!accession.isAudited &&
-                                    !accession.isCheckedOut && (
-                                      <Tippy content="Mark Book as Found">
-                                        <button
-                                          className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
-                                          onClick={() => {
-                                            sendBookCopy.mutate(
-                                              accession.id ?? ""
-                                            );
-                                          }}
-                                        >
-                                          <AiFillCheckCircle
-                                            className="
-                                      text-lg"
-                                          />
-                                        </button>
-                                      </Tippy>
-                                    )}
+                      <Table.Cell>
+                        {accession.isCheckedOut ? (
+                          <span className="text-gray-400">
+                            Book has been checked out
+                          </span>
+                        ) : accession.isAudited ? (
+                          <span className="text-green-400">Found</span>
+                        ) : (
+                          <span className="text-yellow-500">Missing</span>
+                        )}
+                      </Table.Cell>
+                      <Table.Cell className="flex gap-2">
+                        {!accession.isAudited && !accession.isCheckedOut && (
+                          <Tippy content="Mark Book as Found">
+                            <button
+                              className="flex items-center border p-2  rounded bg-white text-green-600 border-green-600"
+                              onClick={() => {
+                                sendBookCopy.mutate(accession.id ?? "");
+                              }}
+                            >
+                              <AiFillCheckCircle
+                                className="
+                          text-lg"
+                              />
+                            </button>
+                          </Tippy>
+                        )}
 
-                                  {accession.isAudited &&
-                                    !accession.isCheckedOut && (
-                                      <Tippy content="Mark as Missing">
-                                        <button className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500">
-                                          <BsFillQuestionDiamondFill
-                                            className="
-                                      text-lg"
-                                            onClick={() => {
-                                              deleteBookCopy.mutate(
-                                                accession.id ?? ""
-                                              );
-                                            }}
-                                          />
-                                        </button>
-                                      </Tippy>
-                                    )}
-                                </Td>
-                              </BodyRow>
-                            );
-                          })}
-                        </Tbody>
-                      </Table>
-                    </Td>
-                  </BodyRow>
-                );
+                        {accession.isAudited && !accession.isCheckedOut && (
+                          <Tippy content="Mark as Missing">
+                            <button className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500">
+                              <BsFillQuestionDiamondFill
+                                className="
+                          text-lg"
+                                onClick={() => {
+                                  deleteBookCopy.mutate(accession.id ?? "");
+                                }}
+                              />
+                            </button>
+                          </Tippy>
+                        )}
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                });
               })}
-            </Tbody>
+            </Table.Body>
           </Table>
           {(auditedBooks?.length ?? 0) === 0 ? (
-            <div className="w-full flex justify-center h-20 items-center">
+            <div className="w-full flex justify-center h-20 items-center dark:text-gray-50">
               <small>No books have been scanned.</small>
             </div>
           ) : null}
@@ -269,3 +229,5 @@ const AuditScan = () => {
 };
 
 export default AuditScan;
+{
+}

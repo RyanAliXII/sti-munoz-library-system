@@ -3,7 +3,7 @@ import Spinner from "../../assets/images/Spinner.svg";
 import { BiErrorCircle } from "react-icons/bi";
 import { BaseProps } from "../../definitions/props.definition";
 import useDebounce from "@hooks/useDebounce";
-
+import { ClipLoader } from "react-spinners";
 interface LoadingBoundaryProps extends BaseProps {
   isLoading: boolean;
   isError: boolean;
@@ -39,7 +39,7 @@ const LoadingBoundary: React.FC<LoadingBoundaryProps> = ({
     return (
       <div className="w-full h-full flex items-center justify-center">
         <BiErrorCircle className="text-lg text-gray-500" />
-        <small className="text-sm text-gray-500">
+        <small className="text-sm text-gray-500 dark:text-white">
           There is a problem fetching resources. Try refreshing the page or try
           again later.
         </small>
@@ -48,7 +48,7 @@ const LoadingBoundary: React.FC<LoadingBoundaryProps> = ({
   if ((isLoading || !isDebounceDone) && !isLoadingDisabled)
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <img src={Spinner} alt="loading" className="w-10"></img>
+        <ClipLoader />
       </div>
     );
 
@@ -92,14 +92,14 @@ export const LoadingBoundaryV2: React.FC<LoadingBoundaryProps> = ({
   return (
     <>
       <div className={errorClass}>
-        <BiErrorCircle className="text-lg text-gray-500" />
-        <small className="text-sm text-gray-500">
+        <BiErrorCircle className="text-lg text-gray-500 dark:text-white" />
+        <small className="text-sm text-gray-500 dark:text-white">
           There is a problem fetching resources. Try refreshing the page or try
           again later.
         </small>
       </div>
       <div className={loaderClass}>
-        <img src={Spinner} alt="loading" className="w-10"></img>
+        <ClipLoader />
       </div>
       <div className={contentClass}>{children}</div>
     </>

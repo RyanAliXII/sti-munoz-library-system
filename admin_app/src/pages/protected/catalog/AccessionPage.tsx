@@ -1,15 +1,6 @@
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { Input } from "@components/ui/form/Input";
-import {
-  HeadingRow,
-  Th,
-  Table,
-  Thead,
-  Tbody,
-  BodyRow,
-  Td,
-} from "@components/ui/table/Table";
+import { CustomInput, Input } from "@components/ui/form/Input";
+
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -22,6 +13,9 @@ import ReactPaginate from "react-paginate";
 import { ChangeEvent, useState } from "react";
 import useDebounce from "@hooks/useDebounce";
 import { useSearchParamsState } from "react-use-search-params-state";
+import { Table } from "flowbite-react";
+import TableContainer from "@components/ui/table/TableContainer";
+import CustomPagination from "@components/pagination/CustomPagination";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
@@ -71,67 +65,64 @@ const AccessionPage = () => {
     totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Accession</h1>
-      </ContainerNoBackground>
-      <ContainerNoBackground>
+      <Container>
         <div className="lg:flex gap-2">
-          <Input
+          <CustomInput
             type="text"
             placeholder="Search..."
             onChange={handleSearch}
             defaultValue={filterParams?.keyword}
-          ></Input>
+          ></CustomInput>
           <div className="w-full lg:w-5/12  mb-4 ">
             <CustomSelect placeholder="Section" />
           </div>
         </div>
-      </ContainerNoBackground>
-      <LoadingBoundary isError={isError} isLoading={isFetching}>
-        <Container className="p-0 lg:p-0">
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Accession Number</Th>
-                <Th>Book Title</Th>
-                <Th>Section</Th>
-                <Th>Year Published</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {accessions?.map((accession) => {
-                return (
-                  <BodyRow key={accession.id}>
-                    <Td>{accession.number}</Td>
-                    <Td>{accession.book.title}</Td>
-                    <Td>{accession.book.section.name}</Td>
-                    <Td>{accession.book.yearPublished}</Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </Container>
-        <ContainerNoBackground>
-          <ReactPaginate
-            nextLabel="Next"
-            pageLinkClassName="border px-3 py-0.5  text-center rounded"
-            pageRangeDisplayed={5}
-            pageCount={totalPages}
-            forcePage={filterParams?.page - 1}
-            disabledClassName="opacity-60 pointer-events-none"
-            onPageChange={({ selected }) => {
-              setFilterParams({ page: selected + 1 });
-            }}
-            className={paginationClass}
-            previousLabel="Previous"
-            previousClassName="px-2 border text-gray-500 py-1 rounded"
-            nextClassName="px-2 border text-blue-500 py-1 rounded"
-            renderOnZeroPageCount={null}
-            activeClassName="border-none bg-blue-500 text-white rounded"
-          />
-        </ContainerNoBackground>
-      </LoadingBoundary>
+        <LoadingBoundary isError={isError} isLoading={isFetching}>
+          <TableContainer>
+            <Table>
+              <Table.Head>
+                <Table.HeadCell>Accession Number</Table.HeadCell>
+                <Table.HeadCell>Book Title</Table.HeadCell>
+                <Table.HeadCell>Section</Table.HeadCell>
+                <Table.HeadCell>Year Published</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y dark:divide-gray-700">
+                {accessions?.map((accession) => {
+                  return (
+                    <Table.Row key={accession.id}>
+                      <Table.Cell>{accession.number}</Table.Cell>
+                      <Table.Cell>
+                        <div className="text-base font-semibold text-gray-900 dark:text-white">
+                          {accession.book.title}
+                        </div>
+                        <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                          {accession.book.section.name}
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>{accession.book.section.name}</Table.Cell>
+                      <Table.Cell>{accession.book.yearPublished}</Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+          </TableContainer>
+          <div className="mt-3">
+            <CustomPagination
+              nextLabel="Next"
+              pageRangeDisplayed={1}
+              pageCount={totalPages}
+              forcePage={filterParams?.page - 1}
+              onPageChange={({ selected }) => {
+                setFilterParams({ page: selected + 1 });
+              }}
+              isHidden={totalPages <= 1}
+              previousLabel="Previous"
+              renderOnZeroPageCount={null}
+            />
+          </div>
+        </LoadingBoundary>
+      </Container>
     </>
   );
 };

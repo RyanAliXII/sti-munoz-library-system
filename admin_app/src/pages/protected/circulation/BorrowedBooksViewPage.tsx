@@ -1,46 +1,28 @@
-import ProfileIcon from "@components/ProfileIcon";
 import {
   ConfirmDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
 
-import {
-  Thead,
-  BodyRow,
-  HeadingRow,
-  Table,
-  Td,
-  Tbody,
-  Th,
-} from "@components/ui/table/Table";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import Container from "@components/ui/container/Container";
 
+import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { ButtonClasses } from "@components/ui/button/Button";
 import { Book, BorrowedBook } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
+import { BorrowStatus } from "@internal/borrow-status";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { ButtonClasses } from "@components/ui/button/Button";
-import Divider from "@components/ui/divider/Divider";
-import { useState } from "react";
-import { useRequest } from "@hooks/useRequest";
-import { BorrowStatus } from "@internal/borrow-status";
-import LoadingBoundary from "@components/loader/LoadingBoundary";
 
-import Tippy from "@tippyjs/react";
-import {
-  BsArrowReturnLeft,
-  BsHandThumbsUpFill,
-  BsQuestionDiamond,
-} from "react-icons/bs";
+import TableContainer from "@components/ui/table/TableContainer";
 import { buildS3Url } from "@definitions/configs/s3";
+import Tippy from "@tippyjs/react";
+import { Avatar, Button, Table } from "flowbite-react";
 import ordinal from "ordinal";
-import DueDateInputModal from "./DueDateInputModal";
-import { AiFillCheckCircle, AiOutlineEdit } from "react-icons/ai";
-import { MdOutlineCancel } from "react-icons/md";
+import { AiOutlineEdit } from "react-icons/ai";
 import EditDueDateModal from "./EditDueDateModal";
 import EditRemarksModal from "./EditRemarksModal";
 const BorrowedBooksViewPage = () => {
@@ -69,11 +51,7 @@ const BorrowedBooksViewPage = () => {
     close: closeCancellationRemarkPrompt,
     open: openCancellationRemarkPrompt,
   } = useSwitch();
-  const {
-    isOpen: isDueDateInputModalOpen,
-    close: closeInputDueDateModal,
-    open: openInputDueDateModal,
-  } = useSwitch();
+
   const {
     isOpen: isEditDueDatetModalOpen,
     close: closeEditDueDateModal,
@@ -118,7 +96,6 @@ const BorrowedBooksViewPage = () => {
   };
 
   const onConfirmDueDate = ({ date }: { date: string }) => {
-    closeInputDueDateModal();
     closeEditDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
@@ -196,64 +173,50 @@ const BorrowedBooksViewPage = () => {
     givenName: "",
     surname: "",
   };
+  const url = new URL(
+    "https://ui-avatars.com/api/&background=2563EB&color=fff"
+  );
+  url.searchParams.set("name", `${client.givenName} ${client.surname}`);
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Borrowed Books</h1>
-      </ContainerNoBackground>
-      <Container className="flex px-4 py-6">
+      <Container className="px-4 py-6">
         <LoadingBoundary isLoading={isFetching} isError={isError}>
-          <div>
+          <div className="py-4 px-2 mb-2 border rounded-lg dark:border-gray-700">
             <div className="flex gap-5">
               <div>
-                <ProfileIcon
-                  givenName={client.givenName ?? ""}
-                  surname={client.surname ?? ""}
-                ></ProfileIcon>
+                <Avatar img={url.toString()} rounded></Avatar>
               </div>
               <div className="flex flex-col">
-                <span className="text-gray-600 font-bold">
+                <span className="text-gray-600 font-bold dark:text-gray-50">
                   {client.displayName}
                 </span>
-                <small className="text-gray-500">{client.email}</small>
+                <small className="text-gray-300">{client.email}</small>
               </div>
             </div>
           </div>
-        </LoadingBoundary>
-      </Container>
-      <ContainerNoBackground className="px-4 py-6">
-        <LoadingBoundary isLoading={isFetching} isError={isError}>
-          <Divider
-            heading="h2"
-            headingProps={{
-              className: "text-xl",
-            }}
-            hrProps={{
-              className: "mb-5",
-            }}
-          >
-            Borrowed Books
-          </Divider>
-          <Container className="mx-0 lg:w-full">
+
+          <TableContainer>
             <Table>
-              <Thead>
-                <HeadingRow>
-                  <Th>Title</Th>
-                  <Th>Created At</Th>
-                  <Th>Due Date</Th>
-                  <Th>Copy number</Th>
-                  <Th>Accession number</Th>
-                  <Th>Book Type</Th>
-                  <Th>Status</Th>
-                  <Th>Penalty</Th>
-                  <Th></Th>
-                </HeadingRow>
-              </Thead>
-              <Tbody>
+              <Table.Head>
+                <Table.HeadCell>Created At</Table.HeadCell>
+                <Table.HeadCell>Title</Table.HeadCell>
+
+                <Table.HeadCell>Due Date</Table.HeadCell>
+                <Table.HeadCell>Copy number</Table.HeadCell>
+                <Table.HeadCell>Accession number</Table.HeadCell>
+                <Table.HeadCell>Book Type</Table.HeadCell>
+                <Table.HeadCell>Status</Table.HeadCell>
+                <Table.HeadCell>Penalty</Table.HeadCell>
+                <Table.HeadCell></Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {borrowedBooks?.map((borrowedBook) => {
                   return (
-                    <BodyRow key={borrowedBook.id}>
-                      <Td className="font-bold flex items-center gap-2">
+                    <Table.Row key={borrowedBook.id}>
+                      <Table.Cell>
+                        {new Date(borrowedBook.createdAt).toDateString()}
+                      </Table.Cell>
+                      <Table.Cell className="font-bold flex items-center gap-2">
                         {borrowedBook.book.covers?.[0] ? (
                           <img
                             className="rounded"
@@ -273,28 +236,28 @@ const BorrowedBooksViewPage = () => {
                           ></div>
                         )}
                         {borrowedBook.book.title}
-                      </Td>
-                      <Td>{new Date(borrowedBook.createdAt).toDateString()}</Td>
-                      <Td>
+                      </Table.Cell>
+
+                      <Table.Cell>
                         {borrowedBook.dueDate === ""
                           ? "No due date"
                           : new Date(borrowedBook.dueDate).toDateString()}
-                      </Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>
                         {borrowedBook.copyNumber === 0
                           ? "N/A"
                           : ordinal(borrowedBook.copyNumber)}
-                      </Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>
                         {borrowedBook.accessionNumber === 0
                           ? "N/A"
                           : borrowedBook.accessionNumber}
-                      </Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>
                         {borrowedBook.isEbook ? "eBook" : "Physical Book"}
-                      </Td>
-                      <Td>{borrowedBook.status}</Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>{borrowedBook.status}</Table.Cell>
+                      <Table.Cell>
                         {borrowedBook.isEbook ? (
                           "N/A"
                         ) : (
@@ -306,68 +269,65 @@ const BorrowedBooksViewPage = () => {
                             })}
                           </span>
                         )}
-                      </Td>
+                      </Table.Cell>
 
-                      <Td>
+                      <Table.Cell>
                         <div className="flex gap-2">
                           {borrowedBook.statusId === BorrowStatus.CheckedOut &&
                             !borrowedBook.isEbook && (
-                              <Tippy content="Mark borrowed book as returned.">
-                                <button
-                                  className={
-                                    ButtonClasses.PrimaryOutlineButtonClasslist
-                                  }
+                              <Tippy
+                                content="Mark borrowed book as returned."
+                                key={"return"}
+                              >
+                                <Button
+                                  color="success"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
                                     openReturnRemarkPrompt();
                                   }}
                                 >
-                                  <BsArrowReturnLeft />
-                                </button>
+                                  Return
+                                </Button>
                               </Tippy>
                             )}
                           {borrowedBook.statusId === BorrowStatus.Pending && (
-                            <Tippy content="Approve borrowing request.">
-                              <button
-                                className={
-                                  ButtonClasses.PrimaryOutlineButtonClasslist
-                                }
+                            <Tippy
+                              content="Approve borrowing request."
+                              key={"approve"}
+                            >
+                              <Button
+                                color="primary"
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
-
                                   setBorrowedBookId(borrowedBook.id ?? "");
                                   openApprovalConfirmationDialog();
                                 }}
                               >
-                                <BsHandThumbsUpFill />
-                              </button>
+                                Approve
+                              </Button>
                             </Tippy>
                           )}
                           {borrowedBook.statusId === BorrowStatus.Approved && (
-                            <Tippy content="Approve borrowing request.">
-                              <button
-                                className={
-                                  ButtonClasses.PrimaryOutlineButtonClasslist
-                                }
+                            <Tippy content="Checkout book.">
+                              <Button
+                                color="primary"
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBookId(borrowedBook.id ?? "");
                                   openEditDueDateModal();
                                 }}
                               >
-                                <AiFillCheckCircle />
-                              </button>
+                                Check out
+                              </Button>
                             </Tippy>
                           )}
 
                           {borrowedBook.statusId ===
                             BorrowStatus.CheckedOut && (
                             <Tippy content="Edit due date.">
-                              <button
-                                className={
-                                  ButtonClasses.PrimaryOutlineButtonClasslist
-                                }
+                              <Button
+                                color="primary"
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBook(borrowedBook);
@@ -375,26 +335,24 @@ const BorrowedBooksViewPage = () => {
                                   openEditDueDateModal();
                                 }}
                               >
-                                <AiOutlineEdit />
-                              </button>
+                                Edit
+                              </Button>
                             </Tippy>
                           )}
 
                           {borrowedBook.statusId === BorrowStatus.CheckedOut &&
                             !borrowedBook.isEbook && (
                               <Tippy content="Mark borrowed book as unreturned.">
-                                <button
-                                  className={
-                                    ButtonClasses.WarningButtonOutlineClasslist
-                                  }
+                                <Button
+                                  color="warning"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
                                     openUnreturnedRemarkPrompt();
                                   }}
                                 >
-                                  <BsQuestionDiamond />
-                                </button>
+                                  Unreturn
+                                </Button>
                               </Tippy>
                             )}
                           {(borrowedBook.statusId === BorrowStatus.Pending ||
@@ -402,18 +360,16 @@ const BorrowedBooksViewPage = () => {
                             borrowedBook.statusId ===
                               BorrowStatus.CheckedOut) && (
                             <Tippy content="Cancel Request">
-                              <button
-                                className={
-                                  ButtonClasses.DangerButtonOutlineClasslist
-                                }
+                              <Button
+                                color="failure"
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBookId(borrowedBook.id ?? "");
                                   openCancellationRemarkPrompt();
                                 }}
                               >
-                                <MdOutlineCancel />
-                              </button>
+                                Cancel
+                              </Button>
                             </Tippy>
                           )}
 
@@ -439,15 +395,15 @@ const BorrowedBooksViewPage = () => {
                               </Tippy>
                             )}
                         </div>
-                      </Td>
-                    </BodyRow>
+                      </Table.Cell>
+                    </Table.Row>
                   );
                 })}
-              </Tbody>
+              </Table.Body>
             </Table>
-          </Container>
+          </TableContainer>
         </LoadingBoundary>
-      </ContainerNoBackground>
+      </Container>
       <PromptTextAreaDialog
         key={"forReturn"}
         close={closeReturnRemarkPrompt}
@@ -469,12 +425,7 @@ const BorrowedBooksViewPage = () => {
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
       />
-      <DueDateInputModal
-        book={selectedBorrowedBook}
-        closeModal={closeInputDueDateModal}
-        isOpen={isDueDateInputModalOpen}
-        onConfirmDate={onConfirmDueDate}
-      />
+
       <EditDueDateModal
         borrowedBook={borrowedBook}
         onConfirmDate={onConfirmDueDate}

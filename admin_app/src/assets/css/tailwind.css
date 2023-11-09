@@ -5,3 +5,78 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.react-datepicker {
+  @apply bg-gray-50 dark:bg-gray-700 border-none text-gray-900 dark:text-white;
+}
+.react-datepicker__header {
+  @apply bg-gray-50 dark:bg-gray-700 border-none text-gray-900 dark:text-white;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header
+  .react-datepicker__day
+  .react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name
+  .react-datepicker__day-names
+  .tox-edit-area__iframe
+  .tox
+  .tox-statusbar {
+  @apply dark:text-white text-gray-900;
+}
+.react-datepicker {
+  @apply !border-0 rounded-sm;
+}
+.react-datepicker-popper {
+  @apply rounded;
+}
+.react-datepicker__triangle {
+  @apply hidden;
+}
+.tox .tox-toolbar,
+.tox .tox-toolbar__overflow,
+.tox .tox-toolbar__primary {
+  @apply bg-gray-50 dark:bg-gray-700;
+}
+.react-datepicker__day--disabled {
+  opacity: 75%;
+}
+.tox-tinymce {
+  @apply border border-gray-300 dark:border-gray-600;
+}
+.tox-icon svg {
+  @apply fill-gray-900 dark:fill-white !important;
+}
+.tox-menubar {
+  @apply bg-white dark:bg-gray-700 dark:text-white text-gray-900 !important;
+}
+
+.tox-mbtn__select-label {
+  @apply dark:text-white text-gray-900;
+}
+.uppy-Dashboard-inner,
+.uppy-DashboardContent-bar {
+  @apply dark:text-white text-gray-900 bg-gray-50 dark:bg-gray-700 !important;
+}
+
+.uppy-Dashboard-AddFiles-title,
+.uppy-DashboardContent-bar {
+  @apply text-gray-900 dark:text-white;
+}
+.uppy-DashboardContent-bar {
+  @apply text-gray-900 dark:text-white;
+}
+
+.small-scroll::-webkit-scrollbar {
+  @apply w-1;
+}
+
+.small-scroll::-webkit-scrollbar-track {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.small-scroll::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700;
+}

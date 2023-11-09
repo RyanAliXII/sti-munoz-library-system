@@ -1,18 +1,17 @@
-import { InputClasses } from "@components/ui/form/Input";
-
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
+import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import Downshift from "downshift";
+import { Label } from "flowbite-react";
 import { BaseSyntheticEvent, useState } from "react";
 import { ClipLoader } from "react-spinners";
-import { useRequest } from "@hooks/useRequest";
 
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
   className?: string;
 };
-const HIGHLIGHTED_CLASS = "bg-gray-100";
+const HIGHLIGHTED_CLASS = "bg-gray-100 dark:bg-gray-600";
 const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
@@ -61,12 +60,13 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
               className ? className + " relative" : "w-10/12  relative"
             }
           >
-            <label className={InputClasses.LabelClasslist}>Search client</label>
+            <Label>Search client</Label>
             <input
               {...getInputProps({
-                placeholder: "Enter client's surname, given name or email",
+                placeholder: "Enter book's title or description",
                 onChange: handleSearchBoxChange,
-                className: InputClasses.InputDefaultClasslist,
+                className:
+                  "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
               })}
             />
 
@@ -75,7 +75,7 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
                 <ul
                   {...getMenuProps({
                     className:
-                      "w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded z-10",
+                      "w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded dark:bg-gray-700 dark:border-gray-600 small-scroll z-10",
                   })}
                 >
                   {accounts?.map((account, index) => {
@@ -84,28 +84,28 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
                         {...getItemProps({
                           key: account.id,
                           item: account,
-                          className: `p-3 border flex flex-col ${
+                          className: `p-3 border flex dark:border-gray-600 flex-col ${
                             index === highlightedIndex ? HIGHLIGHTED_CLASS : ""
                           }`,
                         })}
                       >
-                        <span className="text-gray-600">
+                        <span className="text-gray-600 dark:text-gray-100">
                           {account.displayName}
                         </span>
-                        <small className="text-gray-400">{account.email}</small>
+                        <small className="text-gray-300">{account.email}</small>
                       </li>
                     );
                   })}
                 </ul>
               ) : (
-                <div className="w-full absolute list-none h-52 overflow-y-auto cursor-pointer items-center flex justify-center bg-white border rounded mt-2">
+                <div className="w-full absolute list-none h-52 overflow-y-auto cursor-pointer items-center flex justify-center bg-white border rounded mt-2 dark:bg-gray-700 z-10">
                   <ClipLoader color="#C5C5C5" />
                 </div>
               )
             ) : null}
 
             {isOpen && accounts.length === 0 ? (
-              <div className="w-full absolute list-none h-52 bg-white overflow-y-auto cursor-pointer border mt-2 rounded flex items-center justify-center">
+              <div className="w-full absolute list-none h-52 bg-white overflow-y-auto cursor-pointer border mt-2 rounded flex items-center justify-center dark:bg-gray-700 dark:border-none z-10">
                 <span className="text-gray-400 text-sm">
                   No result found for {searchKeyword}
                 </span>

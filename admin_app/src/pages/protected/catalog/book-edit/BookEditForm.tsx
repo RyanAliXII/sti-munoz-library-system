@@ -1,42 +1,39 @@
-import { Input } from "@components/ui/form/Input";
-import {
-  PrimaryButton,
-  PrimaryOutlineButton,
-  SecondaryButton,
-} from "@components/ui/button/Button";
+import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 
-import { Section, Publisher, Book } from "@definitions/types";
+import { Book, Publisher, Section } from "@definitions/types";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { MultiValue, SingleValue } from "react-select";
-import CustomSelect from "@components/ui/form/CustomSelect";
+import { useMsal } from "@azure/msal-react";
+import Container from "@components/ui/container/Container";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
-import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
-import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
-import { useBookEditFormContext } from "./BookEditFormContext";
-import DDCSelectionModal from "./DDCSelectionModal";
-import { toast } from "react-toastify";
-import { ErrorMsg } from "@definitions/var";
-import { Editor } from "@tinymce/tinymce-react";
+import CustomSelect from "@components/ui/form/CustomSelect";
 import { FieldRow } from "@components/ui/form/FieldRow";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { apiScope } from "@definitions/configs/msal/scopes";
+import { buildS3Url } from "@definitions/configs/s3";
+import { ErrorMsg } from "@definitions/var";
+import useDebounce from "@hooks/useDebounce";
+import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Editor } from "@tinymce/tinymce-react";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
-import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import { buildS3Url } from "@definitions/configs/s3";
-import { useNavigate, useParams } from "react-router-dom";
 import { HttpStatusCode } from "axios";
-import { useRequest } from "@hooks/useRequest";
-import { useMsal } from "@azure/msal-react";
-import { apiScope } from "@definitions/configs/msal/scopes";
-import AddPublisherModal from "./AddPublisherModal";
-import AddAuthorModal from "./AddAuthorModal";
 import { format, isValid } from "date-fns";
+import { Button } from "flowbite-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { MultiValue, SingleValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
-import useDebounce from "@hooks/useDebounce";
+import { toast } from "react-toastify";
+import AddAuthorModal from "./AddAuthorModal";
+import AddPublisherModal from "./AddPublisherModal";
+import { useBookEditFormContext } from "./BookEditFormContext";
+import DDCSelectionModal from "./DDCSelectionModal";
+import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
+import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
+import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
@@ -237,15 +234,18 @@ const BookEditForm = () => {
   return (
     <>
       <form onSubmit={submit}>
-        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10  lg:rounded-md mx-auto mb-10">
-          <h1 className="text-2xl mb-4">General Information</h1>
+        <Container>
+          <div className="mb-5">
+            <h1 className="text-2xl dark:text-white">General Information</h1>
+            <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+          </div>
           <FieldRow
             fieldDetails="The title can be found in the cover of the book."
             isRequired
             label="Title"
             ref={registerFormGroup("title")}
           >
-            <Input
+            <CustomInput
               wrapperclass="flex flex-col "
               error={errors?.title}
               value={form.title}
@@ -259,7 +259,7 @@ const BookEditForm = () => {
             label="Subject"
             ref={registerFormGroup("subject")}
           >
-            <Input
+            <CustomInput
               wrapperclass="flex flex-col "
               error={errors?.subject}
               value={form.subject}
@@ -274,7 +274,7 @@ const BookEditForm = () => {
             label="ISBN"
             ref={registerFormGroup("isbn")}
           >
-            <Input
+            <CustomInput
               wrapperclass="flex flex-col "
               error={errors?.isbn}
               value={form.isbn}
@@ -284,7 +284,7 @@ const BookEditForm = () => {
             />
           </FieldRow>
           <FieldRow label="Pages" ref={registerFormGroup("pages")}>
-            <Input
+            <CustomInput
               wrapperclass="flex flex-col"
               error={errors?.pages}
               type="number"
@@ -339,21 +339,23 @@ const BookEditForm = () => {
                 error={errors?.publisher?.id}
                 options={publishers}
               />
-              <PrimaryOutlineButton
-                className="text-sm ml-2"
+              <Button
                 type="button"
+                outline
+                gradientDuoTone="primaryToPrimary"
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
                 onClick={() => {
                   openAddPublisherModal();
                 }}
                 style={{ maxHeight: "38px" }}
               >
                 Add Publisher
-              </PrimaryOutlineButton>
+              </Button>
             </div>
           </FieldRow>
 
           <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
-            <Input
+            <CustomInput
               error={errors?.costPrice}
               type="number"
               value={form.costPrice}
@@ -363,7 +365,7 @@ const BookEditForm = () => {
             />
           </FieldRow>
           <FieldRow label="Edition" ref={registerFormGroup("edition")}>
-            <Input
+            <CustomInput
               error={errors?.edition}
               type="number"
               value={form.edition}
@@ -410,6 +412,9 @@ const BookEditForm = () => {
               apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
               onEditorChange={handleDescriptionInput}
               value={form.description}
+              init={{
+                statusbar: false,
+              }}
             />
           </FieldRow>
           <FieldRow
@@ -432,10 +437,14 @@ const BookEditForm = () => {
               hideRetryButton={true}
             ></Dashboard>
           </FieldRow>
-        </div>
-        <div className="w-full lg:w-11/12 bg-white p-6 lg:p-10 -md lg:rounded-md mx-auto">
-          <h1 className="mt-10 text-2xl">Authors and Classification</h1>
-          <hr className="mb-5"></hr>
+        </Container>
+        <Container>
+          <div className="mb-5">
+            <h1 className="text-2xl dark:text-white">
+              Authors and Classification
+            </h1>
+            <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+          </div>
           <div className="flex gap-3 mb-5 ">
             <a
               className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer font-semibold"
@@ -451,7 +460,7 @@ const BookEditForm = () => {
             </a>
           </div>
           <div
-            className="mb-10 overflow-y-auto scroll-smooth"
+            className="mb-10 overflow-y-auto scroll-smooth small-scroll"
             style={{ maxHeight: "300px" }}
           >
             {form.authors.length === 0 ? (
@@ -472,22 +481,24 @@ const BookEditForm = () => {
             ref={registerFormGroup("ddc")}
           >
             <div className="w-full h-full flex ">
-              <Input
+              <CustomInput
                 type="number"
-                wrapperclass="flex flex-col "
+                className="flex-1"
                 error={errors?.ddc}
                 value={form.ddc}
                 onChange={handleFormInput}
                 placeholder="DDC"
                 name="ddc"
               />
-              <SecondaryButton
+              <Button
                 type="button"
-                className="self-start ml-2"
+                outline
+                gradientDuoTone="primaryToPrimary"
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
                 onClick={openDDCSelection}
               >
                 Browse
-              </SecondaryButton>
+              </Button>
             </div>
           </FieldRow>
           <FieldRow
@@ -498,23 +509,25 @@ const BookEditForm = () => {
             ref={registerFormGroup("authorNumber")}
           >
             <div className="w-full h-full flex">
-              <Input
-                wrapperclass="flex flex-col "
+              <CustomInput
+                className="flex-1"
                 error={errors?.authorNumber}
                 value={form.authorNumber}
                 onChange={handleFormInput}
                 placeholder="Author number"
                 name="authorNumber"
               />
-              <SecondaryButton
+              <Button
                 type="button"
-                className="self-start ml-2"
+                outline
+                gradientDuoTone="primaryToPrimary"
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
                 onClick={() => {
                   openAuthorNumberSelection();
                 }}
               >
                 Browse
-              </SecondaryButton>
+              </Button>
             </div>
           </FieldRow>
           <FieldRow
@@ -524,6 +537,14 @@ const BookEditForm = () => {
           >
             <CreatableSelect
               isMulti
+              classNames={{
+                control: () =>
+                  "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-0.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
+                menu: () =>
+                  "bg-gray-50 text-gray-500 dark:bg-gray-700 dark:text-white",
+                multiValue: () => "dark:bg-gray-800 dark:text-white",
+                multiValueLabel: () => "dark:text-white",
+              }}
               value={
                 form?.searchTags?.map((v) => ({ value: v, label: v })) ?? []
               }
@@ -549,15 +570,16 @@ const BookEditForm = () => {
             closeModal={closeAuthorNumberSelection}
             isOpen={isAuthorNumberSelectionOpen}
           />
-        </div>
-
-        <div className="w-full lg:w-11/12 mt-10 -md lg:rounded-md mx-auto mb-10 pb-5">
           <div>
-            <PrimaryButton className="ml-2 lg:ml-0" type="submit">
-              Update Book
-            </PrimaryButton>
+            <Button
+              type="submit"
+              color="primary"
+              isProcessing={mutation.isLoading}
+            >
+              Save
+            </Button>
           </div>
-        </div>
+        </Container>
       </form>
 
       <AddPublisherModal

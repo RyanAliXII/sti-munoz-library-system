@@ -1,17 +1,16 @@
 import ClientSearchBox from "@components/ClientSearchBox";
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import { Input } from "@components/ui/form/Input";
+import { CustomInput } from "@components/ui/form/Input";
 
+import { Account, ModalProps, Penalty } from "@definitions/types";
+import { useForm } from "@hooks/useForm";
+import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
+import { Button, Modal, Textarea } from "flowbite-react";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { MdRemoveCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
 import { EditPenaltyValidation } from "./schema";
-import { useForm } from "@hooks/useForm";
-import { Account, ModalProps, Penalty } from "@definitions/types";
-import { useRequest } from "@hooks/useRequest";
-import Modal from "react-responsive-modal";
 
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
@@ -77,108 +76,109 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
       resetForm();
     },
   });
-  if (!props.isOpen) return null;
+
   return (
-    <Modal
-      open={props.isOpen}
-      closeOnEsc={true}
-      closeOnOverlayClick={true}
-      showCloseIcon={false}
-      center={true}
-      onClose={props.closeModal}
-      focusTrapped={false}
-      styles={{
-        modal: {
-          height: "590px",
-        },
-      }}
-      classNames={{
-        modal: "w-11/12 lg:w-1/2 h-95 rounded border-none",
-      }}
-    >
-      <h2 className="text-lg font-semibold mb-3">Edit Penalty</h2>
-      <form onSubmit={onSubmit}>
-        {selectedAccount === null && (
-          <>
-            <ClientSearchBox
-              setClient={(account) => {
-                setSelectedAccount(account);
-                setForm({
-                  ...form,
-                  accountId: account.id ?? "",
-                });
-              }}
-              className="w-full"
-            />
-            <small className="text-red-500 ml-0.5 ">{errors?.accountId}</small>
-          </>
-        )}
-        {selectedAccount && (
-          <div className="flex w-full p-5 border gap-3 items-center">
-            <div>
-              <img
-                className="w-12 rounded-full h-12"
-                src={`https://ui-avatars.com/api/?name=${selectedAccount.givenName}${selectedAccount.surname}&background=2563EB&color=fff`}
-              ></img>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-gray-600">
-                {selectedAccount.displayName}
-              </span>
-              <small className="text-gray-500 ml-0.5">
-                {selectedAccount.email}
+    <Modal show={props.isOpen} onClose={props.closeModal} dismissible>
+      <Modal.Header>Edit Penalty</Modal.Header>
+      <Modal.Body>
+        <form onSubmit={onSubmit}>
+          {selectedAccount === null && (
+            <>
+              <ClientSearchBox
+                setClient={(account) => {
+                  setSelectedAccount(account);
+                  setForm({
+                    ...form,
+                    accountId: account.id ?? "",
+                  });
+                }}
+                className="w-full"
+              />
+              <small className="text-red-500 ml-0.5 ">
+                {errors?.accountId}
               </small>
+            </>
+          )}
+          {selectedAccount && (
+            <div className="flex w-full p-5 border dark:border-gray-700 rounded gap-3 items-center">
+              <div>
+                <img
+                  className="w-12 rounded-full h-12"
+                  src={`https://ui-avatars.com/api/?name=${selectedAccount.givenName}${selectedAccount.surname}&background=2563EB&color=fff`}
+                ></img>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-gray-600 dark:text-gray-100">
+                  {selectedAccount.displayName}
+                </span>
+                <small className="text-gray-500 ml-0.5 dark:text-gray-300">
+                  {selectedAccount.email}
+                </small>
+              </div>
+              <div className="flex items-center">
+                <Tippy content="Unselect account">
+                  <button
+                    className="p-2 text-red-500"
+                    type="button"
+                    onClick={() => {
+                      setSelectedAccount(null);
+                      setForm({
+                        ...form,
+                        accountId: "",
+                      });
+                    }}
+                  >
+                    <MdRemoveCircleOutline className="text-xl" />
+                  </button>
+                </Tippy>
+              </div>
             </div>
-            <div className="flex items-center">
-              <Tippy content="Unselect account">
-                <button
-                  className="p-2 text-red-500"
-                  type="button"
-                  onClick={() => {
-                    setSelectedAccount(null);
-                    setForm({
-                      ...form,
-                      accountId: "",
-                    });
-                  }}
-                >
-                  <MdRemoveCircleOutline className="text-xl" />
-                </button>
-              </Tippy>
-            </div>
+          )}
+          <div className="mt-3">
+            <label
+              htmlFor="description"
+              className="text-sm text-gray-500 ml-0.5"
+            >
+              Description
+            </label>
+            <Textarea
+              name="description"
+              value={form.description}
+              onChange={handleFormInput}
+              className={
+                errors?.description
+                  ? "w-full resize-none h-52 mt-1 focus:outline-none border p-3 border-red-500"
+                  : "w-full resize-none h-52 mt-1 focus:outline-none border p-3 "
+              }
+            ></Textarea>
+            <small className="text-red-500 ml-0.5 ">
+              {errors?.description}
+            </small>
           </div>
-        )}
-        <div className="mt-3">
-          <label htmlFor="description" className="text-sm text-gray-500 ml-0.5">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleFormInput}
-            className={
-              errors?.description
-                ? "w-full resize-none h-52 mt-1 focus:outline-none border p-3 border-red-500"
-                : "w-full resize-none h-52 mt-1 focus:outline-none border p-3 "
-            }
-          ></textarea>
-          <small className="text-red-500 ml-0.5 ">{errors?.description}</small>
-        </div>
-        <div>
-          <Input
-            value={form.amount}
-            error={errors?.amount}
-            type="number"
-            label="Amount"
-            name="amount"
-            onChange={handleFormInput}
-          ></Input>
-        </div>
-        <div className="flex gap-1 mt-5">
-          <PrimaryButton disabled={updatePenalty.isLoading}>Save</PrimaryButton>
-          <LighButton onClick={props.closeModal}>Cancel</LighButton>
-        </div>
-      </form>
+          <div>
+            <CustomInput
+              value={form.amount}
+              error={errors?.amount}
+              type="number"
+              label="Amount"
+              name="amount"
+              onChange={handleFormInput}
+            ></CustomInput>
+          </div>
+          <div className="flex gap-1 mt-5">
+            <Button
+              color="primary"
+              type="submit"
+              isProcessing={updatePenalty.isLoading}
+            >
+              Save
+            </Button>
+            <Button color="light" onClick={props.closeModal}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };

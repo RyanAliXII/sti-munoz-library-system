@@ -1,14 +1,3 @@
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-
 import {
   Accession,
   Book,
@@ -16,14 +5,15 @@ import {
   ModalProps,
 } from "@definitions/types";
 import { useEffect, useMemo, useState } from "react";
-import Modal from "react-responsive-modal";
-import { CheckoutAccession, CheckoutForm, BorrowedEbook } from "./CheckoutPage";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BorrowStatuses } from "@internal/borrow-status";
-import { useRequest } from "@hooks/useRequest";
+import { BorrowedEbook, CheckoutAccession, CheckoutForm } from "./CheckoutPage";
+
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import { useRequest } from "@hooks/useRequest";
+import { BorrowStatuses } from "@internal/borrow-status";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { Button, Checkbox, Modal, Table } from "flowbite-react";
 
 interface BookCopySelectionProps extends ModalProps {
   book: Book;
@@ -172,101 +162,101 @@ const BookCopySelectionModal = ({
     if (book.ebook.length > 0) return true;
     return accessions.some((a) => a.isAvailable);
   }, [accessions]);
-  if (!isOpen) return null;
+
   return (
-    <Modal
-      center
-      onClose={closeModal}
-      open={isOpen}
-      showCloseIcon={false}
-      classNames={{
-        modal: "w-11/12 md:w-7/12 lg:w-9/12 rounded",
-      }}
-    >
-      <LoadingBoundary isError={isError} isLoading={isFetching}>
-        {" "}
-        <div>
-          <h1 className="mb-5 text-xl">{book.title}</h1>
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th></Th>
-                <Th>Accession number</Th>
-                <Th>Copy number</Th>
-                <Th>Status</Th>
-                <Th>Type</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {accessions.map((accession) => {
-                const isAdded = selectedAccessionCopiesCache.hasOwnProperty(
-                  `${accession.bookId}_${accession.number}`
-                );
-                return (
-                  <BodyRow
-                    key={accession.number}
-                    className={
-                      !accession.isAvailable
-                        ? "bg-gray-100 hover:bg-gray-100 pointer-events-none "
-                        : "cursor-pointer"
-                    }
+    <Modal onClose={closeModal} show={isOpen} dismissible>
+      <Modal.Header>{book.title}</Modal.Header>
+      <Modal.Body
+        className="small-scroll"
+        style={{
+          maxHeight: "700px",
+        }}
+      >
+        <LoadingBoundary isError={isError} isLoading={isFetching}>
+          {" "}
+          <div>
+            <Table>
+              <Table.Head>
+                <Table.HeadCell></Table.HeadCell>
+                <Table.HeadCell>Accession number</Table.HeadCell>
+                <Table.HeadCell>Copy number</Table.HeadCell>
+                <Table.HeadCell>Status</Table.HeadCell>
+                <Table.HeadCell>Type</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y dark:divide-gray-700">
+                {accessions.map((accession) => {
+                  const isAdded = selectedAccessionCopiesCache.hasOwnProperty(
+                    `${accession.bookId}_${accession.number}`
+                  );
+                  return (
+                    <Table.Row
+                      key={accession.number}
+                      className={
+                        !accession.isAvailable
+                          ? "bg-gray-100 hover:bg-gray-100 pointer-events-none "
+                          : "cursor-pointer"
+                      }
+                      onClick={() => {
+                        handleCheckonRowClick(accession);
+                      }}
+                    >
+                      <Table.Cell>
+                        <Checkbox
+                          color="primary"
+                          checked={isAdded}
+                          readOnly
+                          disabled={!accession.isAvailable}
+                        />
+                      </Table.Cell>
+                      <Table.Cell>{accession.number}</Table.Cell>
+                      <Table.Cell>Copy {accession.copyNumber}</Table.Cell>
+                      <Table.Cell>
+                        {!accession.isAvailable
+                          ? "Unavailable"
+                          : BorrowStatuses.Available}
+                      </Table.Cell>
+                      <Table.Cell></Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+                {book.ebook.length > 0 && (
+                  <Table.Row
                     onClick={() => {
-                      handleCheckonRowClick(accession);
+                      handleRowClickOnEbook(book);
                     }}
                   >
-                    <Td>
+                    <Table.Cell>
                       <input
                         type="checkbox"
-                        checked={isAdded}
                         readOnly
-                        disabled={!accession.isAvailable}
+                        checked={selectedEbookCache.hasOwnProperty(
+                          book.id ?? ""
+                        )}
                       />
-                    </Td>
-                    <Td>{accession.number}</Td>
-                    <Td>Copy {accession.copyNumber}</Td>
-                    <Td>
-                      {!accession.isAvailable
-                        ? "Unavailable"
-                        : BorrowStatuses.Available}
-                    </Td>
-                    <Td></Td>
-                  </BodyRow>
-                );
-              })}
-              {book.ebook.length > 0 && (
-                <BodyRow
-                  onClick={() => {
-                    handleRowClickOnEbook(book);
-                  }}
-                >
-                  <Td>
-                    <input
-                      type="checkbox"
-                      readOnly
-                      checked={selectedEbookCache.hasOwnProperty(book.id ?? "")}
-                    />
-                  </Td>
-                  <Td>{book.title}</Td>
-                  <Td>N/A</Td>
-                  <Td>N/A</Td>
-                  <Td>eBook</Td>
-                </BodyRow>
-              )}
-            </Tbody>
-          </Table>
-        </div>
-      </LoadingBoundary>
-
-      <PrimaryButton
-        className="mt-5"
-        onClick={proceedToAdd}
-        disabled={!hasAvailableCopies}
-      >
-        Save
-      </PrimaryButton>
-      <LighButton className="ml-2" onClick={closeModal}>
-        Cancel
-      </LighButton>
+                    </Table.Cell>
+                    <Table.Cell>{book.title}</Table.Cell>
+                    <Table.Cell>N/A</Table.Cell>
+                    <Table.Cell>N/A</Table.Cell>
+                    <Table.Cell>eBook</Table.Cell>
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table>
+          </div>
+          <div className="flex gap-2 py-3">
+            <Button
+              color="primary"
+              onClick={proceedToAdd}
+              disabled={!hasAvailableCopies}
+            >
+              Save
+            </Button>
+            <Button color="light" onClick={closeModal}>
+              Cancel
+            </Button>
+          </div>
+        </LoadingBoundary>
+      </Modal.Body>
     </Modal>
   );
 };

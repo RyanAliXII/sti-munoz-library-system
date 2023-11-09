@@ -20,19 +20,19 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(
       >
         <div className="flex justify-end mb-3 flex-col h-14 lg:mb-0 lg:col-span-2 lg:justify-center">
           <div className="h-7 flex items-center gap-2">
-            <label className="font-semibold text-sm text-gray-600 ">
+            <label className="font-semibold text-sm text-gray-500 dark:text-white ">
               {label}
             </label>
 
             {isRequired && (
-              <small className="text-gray-600 p-1 rounded bg-gray-200">
+              <small className="text-gray-600 p-1 rounded bg-gray-200 dark:bg-gray-700 dark:border-white dark:text-gray-50  ">
                 Required
               </small>
             )}
           </div>
           <div>
             {fieldDetails && (
-              <small className="text-gray-500 hidden lg:block">
+              <small className="text-gray-500 hidden xl:block dark:text-gray-300">
                 {fieldDetails}
               </small>
             )}

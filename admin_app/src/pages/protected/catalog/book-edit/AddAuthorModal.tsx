@@ -1,14 +1,14 @@
 import { Author, ModalProps } from "@definitions/types";
-import React, { BaseSyntheticEvent, useState } from "react";
-import { CreateAuthorSchema } from "../schema";
-import { useRequest } from "@hooks/useRequest";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
-import Modal from "react-responsive-modal";
-import { Input } from "@components/ui/form/Input";
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { BaseSyntheticEvent } from "react";
+import { toast } from "react-toastify";
+import { CreateAuthorSchema } from "../schema";
+
+import { CustomInput } from "@components/ui/form/Input";
+import { Button, Modal } from "flowbite-react";
 import { useBookEditFormContext } from "./BookEditFormContext";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
@@ -16,23 +16,12 @@ export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
 };
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  if (!isOpen) return null;
-
   return (
-    <Modal
-      open={isOpen}
-      onClose={closeModal}
-      styles={{ modal: { maxWidth: "500px" } }}
-      classNames={{ modal: "w-11/12 md:w-9/12 lg:w-6/12 rounded" }}
-      showCloseIcon={false}
-      center
-    >
-      <div className="w-full  rounded  mb-5">
-        <h1 className="text-lg p-3">New Author</h1>
-        <div>
-          <AuthorForm closeModal={closeModal} />
-        </div>
-      </div>
+    <Modal show={isOpen} onClose={closeModal} dismissible size={"lg"}>
+      <Modal.Header>New Author</Modal.Header>
+      <Modal.Body>
+        <AuthorForm closeModal={closeModal} />
+      </Modal.Body>
     </Modal>
   );
 };
@@ -82,8 +71,8 @@ const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
   return (
     <form onSubmit={submit}>
       <div className="w-full ">
-        <div className="px-2 mb-2">
-          <Input
+        <div>
+          <CustomInput
             label="Peron's name or organization's name"
             error={errors?.name}
             type="text"
@@ -93,11 +82,13 @@ const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
           />
         </div>
 
-        <div className="flex gap-1 p-2">
-          <PrimaryButton>Add author</PrimaryButton>
-          <LighButton type="button" onClick={closeModal}>
+        <div className="flex gap-1 py-3">
+          <Button color="primary" type="submit">
+            Add author
+          </Button>
+          <Button color="light" type="button" onClick={closeModal}>
             Cancel
-          </LighButton>
+          </Button>
         </div>
       </div>
     </form>
