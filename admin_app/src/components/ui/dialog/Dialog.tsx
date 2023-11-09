@@ -1,16 +1,11 @@
-import {
-  DangerButton,
-  LighButton,
-  LightOutlineButton,
-  PrimaryButton,
-} from "../button/Button";
+import { Button, Modal, Textarea } from "flowbite-react";
 import { useState } from "react";
-import { Input, InputProps } from "../form/Input";
-import { Button, Modal } from "flowbite-react";
 import {
   HiOutlineExclamationCircle,
   HiOutlineInformationCircle,
 } from "react-icons/hi";
+import { LighButton, PrimaryButton } from "../button/Button";
+import { Input, InputProps } from "../form/Input";
 type DialogProps = {
   title?: string;
   text?: string;
@@ -77,22 +72,6 @@ export const ConfirmDialog = ({
         </div>
       </Modal.Body>
     </Modal>
-    // <Modal show={isOpen} onClose={close}>
-    //   <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
-    //     <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
-    //       <span className="text-xl font-semibold">{title}</span>
-    //       <small className="text-sm text-gray-500">{text}</small>
-    //     </div>
-    //     <div className="flex w-11/12 mx-auto justify-center gap-5">
-    //       <LightOutlineButton onClick={close} className="px-14">
-    //         Cancel
-    //       </LightOutlineButton>
-    //       <PrimaryButton onClick={onConfirm} className="px-14">
-    //         Confirm
-    //       </PrimaryButton>
-    //     </div>
-    //   </div>
-    // </Modal>
   );
 };
 
@@ -114,52 +93,37 @@ export const PromptTextAreaDialog = ({
   proceedBtnText,
 }: PromptDialogProps) => {
   const [text, setText] = useState<string>("");
-  if (!isOpen) return null;
+
   return (
-    <Modal onClose={close}>
-      <div className="w-96 rounded">
-        <div className="header w-full h-10 px-2 py-2 text-lg font-medium  text-gray-600">
-          <span>{title}</span>
-        </div>
-        <div className="px-2 h-36 flex items-center">
-          <div className="w-full ">
-            <textarea
-              className="
-              block
-              w-full
-              px-3
-              py-1.5
-              text-base
-              font-normal
-              text-gray-700
-              bg-white bg-clip-padding
-              border border-solid border-gray-300
-              rounded
-              transition
-              ease-in-out
-              m-0
-              h-28
-              focus:text-gray-700 focus:bg-white focus:border-yellow-400 focus:outline-none
-              resize-none"
+    <Modal onClose={close} show={isOpen} size="lg">
+      <Modal.Header>{title}</Modal.Header>
+      <Modal.Body>
+        <div>
+          <div>
+            <Textarea
+              className="resize-none"
               placeholder={placeholder}
               onChange={(event) => {
                 setText(event.target.value);
               }}
-            ></textarea>
+            ></Textarea>
           </div>
           {/* <Input label={label} placeholder={placeholder}></Input> */}
         </div>
         <div className="flex gap-2 h-30 p-2 w-full justify-end">
-          <LighButton onClick={close}>Cancel</LighButton>
-          <PrimaryButton
+          <Button
+            color="primary"
             onClick={() => {
               onProceed?.(text);
             }}
           >
             {proceedBtnText}
-          </PrimaryButton>
+          </Button>
+          <Button color="light" onClick={close}>
+            Cancel
+          </Button>
         </div>
-      </div>
+      </Modal.Body>
     </Modal>
   );
 };

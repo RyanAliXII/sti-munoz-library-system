@@ -72,6 +72,7 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
             <div className="mb-3">
               <div>
                 <Input
+                  color="primary"
                   type="date"
                   name="date"
                   onChange={handleFormInput}

@@ -4,14 +4,14 @@ import { Input } from "@components/ui/form/Input";
 import { Account, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
-import Modal from "react-responsive-modal";
-import { AddPenaltyValidation } from "./schema";
-import { BaseSyntheticEvent, useState } from "react";
-import { MdRemoveCircle, MdRemoveCircleOutline } from "react-icons/md";
-import Tippy from "@tippyjs/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Tippy from "@tippyjs/react";
+import { BaseSyntheticEvent, useState } from "react";
+import { MdRemoveCircleOutline } from "react-icons/md";
+import Modal from "react-responsive-modal";
 import { toast } from "react-toastify";
+import { AddPenaltyValidation } from "./schema";
 
 const AddPenaltyModal = (props: ModalProps) => {
   const { Post } = useRequest();

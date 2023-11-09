@@ -1,43 +1,29 @@
-import { PrimaryButton, SecondaryButton } from "@components/ui/button/Button";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-import { AiOutlineScan } from "react-icons/ai";
-
 import { useState } from "react";
 
-import { useMutation } from "@tanstack/react-query";
 import { Account, Book, DetailedAccession } from "@definitions/types";
+import { useMutation } from "@tanstack/react-query";
 
-import { useForm } from "@hooks/useForm";
 import ProfileIcon from "@components/ProfileIcon";
+import { useForm } from "@hooks/useForm";
 
+import Container from "@components/ui/container/Container";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import { BookInitialValue } from "@definitions/defaults";
+import { ErrorMsg } from "@definitions/var";
+import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
+import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { toast } from "react-toastify";
 import { CheckoutSchemaValidation } from "../schema";
-import { ErrorMsg } from "@definitions/var";
-import ClientSearchBox from "./ClientSearchBox";
 import BookCopySelectionModal from "./BookCopySelection";
 import BookSearchBox from "./BookSearchBox";
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-import Divider from "@components/ui/divider/Divider";
-import { IoIosRemoveCircleOutline } from "react-icons/io";
-import { BookInitialValue } from "@definitions/defaults";
-import { useRequest } from "@hooks/useRequest";
+import ClientSearchBox from "./ClientSearchBox";
 
-import Tippy from "@tippyjs/react";
-import { MdOutlineRemoveCircle } from "react-icons/md";
 import { ConfirmDialog } from "@components/ui/dialog/Dialog";
+import Tippy from "@tippyjs/react";
 import { format } from "date-fns";
+import { Button, Table } from "flowbite-react";
+import { MdOutlineRemoveCircle } from "react-icons/md";
 
 export interface CheckoutAccession extends DetailedAccession {
   dueDate: string;
@@ -82,7 +68,6 @@ const CheckoutPage = () => {
     validate,
     resetForm,
     errors,
-    setErrors,
     removeFieldError,
     setFieldValue,
   } = useForm<CheckoutForm>({
@@ -186,17 +171,7 @@ const CheckoutPage = () => {
   };
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Borrow Book</h1>
-      </ContainerNoBackground>
-      <ContainerNoBackground className="px-4 py-6">
-        <Divider
-          heading="h2"
-          headingProps={{ className: "text-xl" }}
-          hrProps={{ className: "mb-5" }}
-        >
-          Select Client
-        </Divider>
+      <Container>
         <div>
           <ClientSearchBox setClient={setClient} />
         </div>
@@ -209,10 +184,10 @@ const CheckoutPage = () => {
                   <ProfileIcon givenName="test" surname="test"></ProfileIcon>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-gray-600 font-bold">
+                  <span className="text-gray-900 font-bold dark:text-gray-100">
                     {checkout.client.displayName}
                   </span>
-                  <small className="text-gray-500">
+                  <small className="text-gray-300">
                     {checkout.client.email}
                   </small>
                 </div>
@@ -227,19 +202,21 @@ const CheckoutPage = () => {
           </div>
         ) : (
           <div className="px-2 py-4 mt-5 ">
-            <span className="text-sm text-gray-500">No client selected.</span>{" "}
+            <span className="text-sm text-gray-500 dark:text-gray-100">
+              No client selected.
+            </span>{" "}
           </div>
         )}
-      </ContainerNoBackground>
+      </Container>
 
-      <ContainerNoBackground className="p-4">
-        <Divider
+      <Container>
+        {/* <Divider
           heading="h2"
           headingProps={{ className: "text-xl" }}
           hrProps={{ className: "mb-5" }}
         >
           Select Books
-        </Divider>
+        </Divider> */}
         <div>
           <BookSearchBox selectBook={selectBook} />
         </div>
@@ -247,22 +224,21 @@ const CheckoutPage = () => {
         {checkout.accessions.length > 0 || checkout.ebooks.length > 0 ? (
           <Container className="mx-0 mt-5 lg:w-full">
             <Table>
-              <Thead>
-                <HeadingRow>
-                  <Th>Book title</Th>
-                  <Th>Copy number</Th>
-                  <Th>Accession number</Th>
-                  <Th>Due Date</Th>
-                </HeadingRow>
-              </Thead>
-              <Tbody>
+              <Table.Head>
+                <Table.HeadCell>Book title</Table.HeadCell>
+                <Table.HeadCell>Copy number</Table.HeadCell>
+                <Table.HeadCell>Accession number</Table.HeadCell>
+                <Table.HeadCell>Due Date</Table.HeadCell>
+                <Table.HeadCell></Table.HeadCell>
+              </Table.Head>
+              <Table.Body>
                 {checkout.accessions?.map((accession) => {
                   return (
-                    <BodyRow key={accession.id}>
-                      <Td>{accession.book.title}</Td>
-                      <Td>{accession.copyNumber}</Td>
-                      <Td>{accession.number}</Td>
-                      <Td>
+                    <Table.Row key={accession.id}>
+                      <Table.Cell>{accession.book.title}</Table.Cell>
+                      <Table.Cell>{accession.copyNumber}</Table.Cell>
+                      <Table.Cell>{accession.number}</Table.Cell>
+                      <Table.Cell>
                         <CustomDatePicker
                           name="dueDate"
                           value={new Date(accession.dueDate).toDateString()}
@@ -281,8 +257,8 @@ const CheckoutPage = () => {
                             }));
                           }}
                         />
-                      </Td>
-                      <Td>
+                      </Table.Cell>
+                      <Table.Cell>
                         <Tippy content="Remove Book">
                           <button>
                             <MdOutlineRemoveCircle
@@ -293,17 +269,17 @@ const CheckoutPage = () => {
                             />
                           </button>
                         </Tippy>
-                      </Td>
-                    </BodyRow>
+                      </Table.Cell>
+                    </Table.Row>
                   );
                 })}
                 {checkout.ebooks.map((eBook) => {
                   return (
-                    <BodyRow key={eBook.bookId}>
-                      <Td>{eBook.bookTitle}</Td>
-                      <Td>N/A</Td>
-                      <Td>N/A</Td>
-                      <Td>
+                    <Table.Row key={eBook.bookId}>
+                      <Table.Cell>{eBook.bookTitle}</Table.Cell>
+                      <Table.Cell>N/A</Table.Cell>
+                      <Table.Cell>N/A</Table.Cell>
+                      <Table.Cell>
                         <CustomDatePicker
                           name="dueDate"
                           error={errors?.dueDate}
@@ -323,9 +299,9 @@ const CheckoutPage = () => {
                             }));
                           }}
                         />
-                      </Td>
+                      </Table.Cell>
 
-                      <Td>
+                      <Table.Cell>
                         <Tippy content="Remove Book">
                           <button>
                             <MdOutlineRemoveCircle
@@ -336,30 +312,44 @@ const CheckoutPage = () => {
                             />
                           </button>
                         </Tippy>
-                      </Td>
-                    </BodyRow>
+                      </Table.Cell>
+                    </Table.Row>
                   );
                 })}
-              </Tbody>
+              </Table.Body>
             </Table>
           </Container>
         ) : (
           <div className="px-2 py-4 mt-5 ">
-            <span className="text-sm text-gray-500">No books selected.</span>
+            <span className="text-sm text-gray-500 dark:text-gray-100">
+              No books selected.
+            </span>
           </div>
         )}
-      </ContainerNoBackground>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5  flex gap-2">
-        <PrimaryButton onClick={validateAndOpenConfirm}>
-          Proceed to checkout
-        </PrimaryButton>
-      </div>
+        <div>
+          <div className="py-7">
+            <Button
+              isProcessing={submitCheckout.isLoading}
+              disabled={
+                checkout.client.id?.length === 0 ||
+                (checkout.accessions.length === 0 &&
+                  checkout.ebooks.length === 0)
+              }
+              color="primary"
+              onClick={validateAndOpenConfirm}
+            >
+              Proceed to checkout
+            </Button>
+          </div>
+        </div>
+      </Container>
+
       <ConfirmDialog
         isOpen={isCheckoutConfirmationOpen}
         key={"forConfirmation"}
         close={closeCheckoutConfirmation}
         onConfirm={proceedCheckout}
-        title="Checkout books!"
+        title="Checkout books?"
         text="Are you want to checkout books?"
       />
       <BookCopySelectionModal

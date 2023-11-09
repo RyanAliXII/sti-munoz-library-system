@@ -1,11 +1,10 @@
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 
-import { Input } from "@components/ui/form/Input";
 import { BorrowedBook, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
 import { format, isBefore, isEqual, isMatch } from "date-fns";
-import { Button, Datepicker, Label, Modal } from "flowbite-react";
+import { Button, Modal } from "flowbite-react";
 
 import React, { FormEvent, useEffect } from "react";
 
@@ -21,11 +20,11 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
   onConfirmDate,
   borrowedBook,
 }) => {
-  const { handleFormInput, validate, errors, form, setForm } = useForm<{
+  const { validate, errors, form, setForm, removeFieldError } = useForm<{
     date: string;
   }>({
     initialFormData: {
-      date: "",
+      date: format(new Date(), "yyyy-MM-dd"),
     },
     schema: object({
       date: string()
@@ -69,20 +68,24 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
       <Modal.Header>Edit due date</Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="small-scroll">
         <form onSubmit={onSubmit}>
-          <div className="w-full  mt-2">
-            <div>
-              <div>
-                <Label> Due date</Label>
-                <Datepicker
-                  name="date"
-                  onSelectedDateChanged={(date) => {}}
-                  minDate={new Date()}
-                />
-              </div>
-            </div>
-            <div className="flex gap-1 mt-2 p-2">
+          <div>
+            <CustomDatePicker
+              label="Due date"
+              error={errors?.date}
+              selected={new Date(form.date)}
+              minDate={new Date()}
+              onChange={(date) => {
+                if (!date) return;
+                removeFieldError("date");
+                setForm({
+                  date: format(date, "yyyy-MM-dd"),
+                });
+              }}
+            />
+
+            <div className="flex gap-1 py-2">
               <Button color="primary" type="submit">
                 Save
               </Button>

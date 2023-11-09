@@ -5,6 +5,7 @@ import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import Downshift from "downshift";
+import { Label } from "flowbite-react";
 import { BaseSyntheticEvent, useState } from "react";
 import { ClipLoader } from "react-spinners";
 
@@ -57,9 +58,7 @@ const BookSearchBox = ({ selectBook, label }: BookSearchBoxProps) => {
           highlightedIndex,
         }) => (
           <div className="w-10/12  relative ">
-            {label && (
-              <label className={InputClasses.LabelClasslist}>{label}</label>
-            )}
+            {label && <Label>{label}</Label>}
             <input
               {...getInputProps({
                 placeholder: "Enter book's title or description",

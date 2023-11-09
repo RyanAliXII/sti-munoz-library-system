@@ -95,6 +95,15 @@ const flowbiteTheme: CustomFlowbiteTheme = {
       },
     },
   },
-};
 
+  // datepicker: {
+  //   popup: {
+  //     root: {
+  //       base: "absolute top-10 block pt-2 z-50",
+  //       inline: "relative top-0 z-auto",
+  //       inner: " rounded-lg bg-white p-4  dark:bg-gray-700",
+  //     },
+  //   },
+  // },
+};
 export default flowbiteTheme;

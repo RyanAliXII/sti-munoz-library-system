@@ -1,33 +1,16 @@
 import { LighButton } from "@components/ui/button/Button";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { ModalProps, Penalty } from "@definitions/types";
-
-import Modal from "react-responsive-modal";
-import { ref } from "yup";
+import { Modal } from "flowbite-react";
 
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
 }
 const ViewPenaltyModal = (props: EditPenaltyModalProps) => {
-  if (!props.isOpen) return null;
   return (
-    <Modal
-      open={props.isOpen}
-      closeOnEsc={true}
-      closeOnOverlayClick={true}
-      showCloseIcon={false}
-      center={true}
-      onClose={props.closeModal}
-      focusTrapped={false}
-      styles={{
-        modal: { maxHeight: "none" },
-      }}
-      classNames={{
-        modal: "w-11/12 lg:w-1/2 h-95 rounded border-none",
-      }}
-    >
+    <Modal dismissible show={props.isOpen} onClose={props.closeModal}>
       <ModalContent
         closeModal={props.closeModal}
         penalty={props.penalty}
@@ -50,7 +33,7 @@ const ModalContent = ({
   }, [textAreaRef.current]);
   return (
     <div>
-      <div className="flex w-full p-5 border gap-3 items-center">
+      <div className="flex w-full p-5 border gap-3 items-center dark:border-gray-700 rounded">
         <div>
           <img
             className="w-12 rounded-full h-12"

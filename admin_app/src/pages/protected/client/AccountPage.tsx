@@ -89,12 +89,6 @@ const AccountPage = () => {
 
   return (
     <>
-      <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex items-center gap-5">
-        <div>
-          <HasAccess requiredPermissions={["Account.Access"]}></HasAccess>
-        </div>
-      </div>
-
       <Container>
         <div className="flex items-center justify-between py-4">
           <CustomInput
@@ -103,16 +97,17 @@ const AccountPage = () => {
             onChange={handleSearch}
             defaultValue={filterParams?.keyword}
           ></CustomInput>
-
-          <Button
-            color="primary"
-            onClick={() => {
-              openImportModal();
-            }}
-          >
-            <TbFileImport className="text-lg" />
-            Import
-          </Button>
+          <HasAccess requiredPermissions={["Account.Access"]}>
+            <Button
+              color="primary"
+              onClick={() => {
+                openImportModal();
+              }}
+            >
+              <TbFileImport className="text-lg" />
+              Import
+            </Button>
+          </HasAccess>
         </div>
         <TableContainer>
           <LoadingBoundaryV2

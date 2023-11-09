@@ -26,13 +26,23 @@
   .tox-statusbar {
   @apply dark:text-white text-gray-900;
 }
-
+.react-datepicker {
+  @apply !border-0 rounded-sm;
+}
+.react-datepicker-popper {
+  @apply rounded;
+}
+.react-datepicker__triangle {
+  @apply hidden;
+}
 .tox .tox-toolbar,
 .tox .tox-toolbar__overflow,
 .tox .tox-toolbar__primary {
   @apply bg-gray-50 dark:bg-gray-700;
 }
-
+.react-datepicker__day--disabled {
+  opacity: 75%;
+}
 .tox-tinymce {
   @apply border border-gray-300 dark:border-gray-600;
 }

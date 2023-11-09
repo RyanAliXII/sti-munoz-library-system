@@ -23,7 +23,6 @@ import Tippy from "@tippyjs/react";
 import { Avatar, Button, Table } from "flowbite-react";
 import ordinal from "ordinal";
 import { AiOutlineEdit } from "react-icons/ai";
-import DueDateInputModal from "./DueDateInputModal";
 import EditDueDateModal from "./EditDueDateModal";
 import EditRemarksModal from "./EditRemarksModal";
 const BorrowedBooksViewPage = () => {
@@ -52,11 +51,7 @@ const BorrowedBooksViewPage = () => {
     close: closeCancellationRemarkPrompt,
     open: openCancellationRemarkPrompt,
   } = useSwitch();
-  const {
-    isOpen: isDueDateInputModalOpen,
-    close: closeInputDueDateModal,
-    open: openInputDueDateModal,
-  } = useSwitch();
+
   const {
     isOpen: isEditDueDatetModalOpen,
     close: closeEditDueDateModal,
@@ -101,7 +96,6 @@ const BorrowedBooksViewPage = () => {
   };
 
   const onConfirmDueDate = ({ date }: { date: string }) => {
-    closeInputDueDateModal();
     closeEditDueDateModal();
     updateStatus.mutate({
       status: BorrowStatus.CheckedOut,
@@ -193,10 +187,10 @@ const BorrowedBooksViewPage = () => {
                 <Avatar img={url.toString()} rounded></Avatar>
               </div>
               <div className="flex flex-col">
-                <span className="text-gray-600 font-bold">
+                <span className="text-gray-600 font-bold dark:text-gray-50">
                   {client.displayName}
                 </span>
-                <small className="text-gray-500">{client.email}</small>
+                <small className="text-gray-300">{client.email}</small>
               </div>
             </div>
           </div>
@@ -281,9 +275,12 @@ const BorrowedBooksViewPage = () => {
                         <div className="flex gap-2">
                           {borrowedBook.statusId === BorrowStatus.CheckedOut &&
                             !borrowedBook.isEbook && (
-                              <Tippy content="Mark borrowed book as returned.">
+                              <Tippy
+                                content="Mark borrowed book as returned."
+                                key={"return"}
+                              >
                                 <Button
-                                  color="primary"
+                                  color="success"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
@@ -295,7 +292,10 @@ const BorrowedBooksViewPage = () => {
                               </Tippy>
                             )}
                           {borrowedBook.statusId === BorrowStatus.Pending && (
-                            <Tippy content="Approve borrowing request.">
+                            <Tippy
+                              content="Approve borrowing request."
+                              key={"approve"}
+                            >
                               <Button
                                 color="primary"
                                 onClick={() => {
@@ -326,10 +326,8 @@ const BorrowedBooksViewPage = () => {
                           {borrowedBook.statusId ===
                             BorrowStatus.CheckedOut && (
                             <Tippy content="Edit due date.">
-                              <button
-                                className={
-                                  ButtonClasses.PrimaryOutlineButtonClasslist
-                                }
+                              <Button
+                                color="primary"
                                 onClick={() => {
                                   setSelectedBorrowedBook(borrowedBook.book);
                                   setBorrowedBook(borrowedBook);
@@ -337,26 +335,24 @@ const BorrowedBooksViewPage = () => {
                                   openEditDueDateModal();
                                 }}
                               >
-                                <AiOutlineEdit />
-                              </button>
+                                Edit
+                              </Button>
                             </Tippy>
                           )}
 
                           {borrowedBook.statusId === BorrowStatus.CheckedOut &&
                             !borrowedBook.isEbook && (
                               <Tippy content="Mark borrowed book as unreturned.">
-                                <button
-                                  className={
-                                    ButtonClasses.WarningButtonOutlineClasslist
-                                  }
+                                <Button
+                                  color="warning"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
                                     openUnreturnedRemarkPrompt();
                                   }}
                                 >
-                                  {/* <BsQuestionDiamond /> */}
-                                </button>
+                                  Unreturn
+                                </Button>
                               </Tippy>
                             )}
                           {(borrowedBook.statusId === BorrowStatus.Pending ||
@@ -429,12 +425,7 @@ const BorrowedBooksViewPage = () => {
         placeholder="Eg. Cancellation reason"
         onProceed={onConfirmCancel}
       />
-      <DueDateInputModal
-        book={selectedBorrowedBook}
-        closeModal={closeInputDueDateModal}
-        isOpen={isDueDateInputModalOpen}
-        onConfirmDate={onConfirmDueDate}
-      />
+
       <EditDueDateModal
         borrowedBook={borrowedBook}
         onConfirmDate={onConfirmDueDate}
