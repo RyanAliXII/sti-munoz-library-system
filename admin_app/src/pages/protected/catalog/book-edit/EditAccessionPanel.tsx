@@ -165,30 +165,30 @@ const EditAccessionPanel = () => {
                       <Table.Cell>
                         {!accession.isWeeded && (
                           <Tippy content="Weed book">
-                            <button
-                              className={
-                                ButtonClasses.DangerButtonOutlineClasslist
-                              }
+                            <Button
+                              size={"xs"}
+                              color="failure"
                               onClick={() => {
                                 setSelectedAccession(accession?.id ?? "");
                                 openWeedingDialog();
                               }}
                             >
-                              <BsFillTrashFill className="text-lg text-red-400" />
-                            </button>
+                              <BsFillTrashFill className="text-lg" />
+                            </Button>
                           </Tippy>
                         )}
                         {accession.isWeeded && (
                           <Tippy content="Re-circulate book">
-                            <button
-                              className="p-2 border border-green-500 rounded"
+                            <Button
+                              size={"xs"}
+                              color="success"
                               onClick={() => {
                                 setSelectedAccession(accession?.id ?? "");
                                 openRecirculateConfirmation();
                               }}
                             >
-                              <GiRecycle className="text-lg text-green-500" />
-                            </button>
+                              <GiRecycle className="text-lg" />
+                            </Button>
                           </Tippy>
                         )}
                       </Table.Cell>

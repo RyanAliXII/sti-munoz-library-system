@@ -167,16 +167,16 @@ const BookPage = () => {
 
                         <Table.Cell className="flex gap-3">
                           <Tippy content="View Printables">
-                            <button
-                              className={
-                                ButtonClasses.PrimaryOutlineButtonClasslist
-                              }
+                            <Button
+                              color="primary"
+                              gradientMonochrome={"blue"}
+                              outline
                               onClick={() => {
                                 setBookForPrintingAndOpenModal(book);
                               }}
                             >
-                              <AiOutlinePrinter className="text-blue-500 text-lg cursor-pointer " />
-                            </button>
+                              <AiOutlinePrinter className="text-lg cursor-pointer " />
+                            </Button>
                           </Tippy>
                           <HasAccess
                             requiredPermissions={[
@@ -187,14 +187,14 @@ const BookPage = () => {
                             ]}
                           >
                             <Tippy content="Edit Book">
-                              <Link
+                              <Button
+                                as={Link}
+                                color="secondary"
                                 to={`/books/edit/${book.id}`}
-                                className={
-                                  ButtonClasses.SecondaryOutlineButtonClasslist
-                                }
+                                outline
                               >
-                                <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
-                              </Link>
+                                <AiOutlineEdit className="text-lg cursor-pointer" />
+                              </Button>
                             </Tippy>
                           </HasAccess>
                         </Table.Cell>
