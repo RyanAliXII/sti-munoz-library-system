@@ -1,14 +1,10 @@
-import { AuthorNumber } from "@definitions/types";
-
+import { CustomInput } from "@components/ui/form/Input";
 import { useBookAddFormContext } from "../BookAddFormContext";
-import { CustomInput, Input } from "@components/ui/form/Input";
 
-import { PrimaryButton } from "@components/ui/button/Button";
-import { toast } from "react-toastify";
 import useCutter from "@hooks/use-cutter/useCutter";
-import { useState } from "react";
 import { Button, Table } from "flowbite-react";
-import { FieldRow } from "@components/ui/form/FieldRow";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 const GenerateTab = () => {
   const { form, setFieldValue, removeFieldError } = useBookAddFormContext();

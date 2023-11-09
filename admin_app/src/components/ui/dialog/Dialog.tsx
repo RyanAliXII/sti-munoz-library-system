@@ -1,4 +1,3 @@
-import Modal from "react-responsive-modal";
 import {
   DangerButton,
   LighButton,
@@ -7,7 +6,8 @@ import {
 } from "../button/Button";
 import { useState } from "react";
 import { Input, InputProps } from "../form/Input";
-
+import { Button, Modal } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 type DialogProps = {
   title?: string;
   text?: string;
@@ -24,37 +24,38 @@ export const DangerConfirmDialog = ({
 }: DialogProps) => {
   if (!isOpen) return null;
   return (
-    <Modal
-      showCloseIcon={false}
-      open={isOpen}
-      center
-      styles={{
-        modalContainer: {
-          boxShadow: "none",
-        },
-        modal: {
-          padding: 0,
-          borderRadius: "3px",
-          border: "none",
-          boxShadow: "none",
-        },
-      }}
-      onClose={close}
-    >
-      <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
-        <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
-          <span className="text-xl font-semibold">{title}</span>
-          <small className="text-sm text-gray-500">{text}</small>
+    <Modal show={isOpen} dismissible onClose={close} size="md">
+      <Modal.Body>
+        <div className="text-center">
+          <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+          <h2 className="text-lg  text-gray-900 dark:text-white">{title}</h2>
+          <h3 className="mb-5 text-base font-normal text-gray-500 dark:text-gray-400">
+            {text}
+          </h3>
+          <div className="flex justify-center gap-4">
+            <Button color="failure" onClick={onConfirm}>
+              {"Yes, I'm sure"}
+            </Button>
+            <Button color="light" onClick={close}>
+              No, cancel
+            </Button>
+          </div>
         </div>
-        <div className="flex w-11/12 mx-auto justify-center gap-5">
-          <LightOutlineButton onClick={close} className="px-14">
-            Cancel
-          </LightOutlineButton>
-          <DangerButton onClick={onConfirm} className="px-14">
-            Confirm
-          </DangerButton>
-        </div>
-      </div>
+        {/* <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
+          <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
+            <span className="text-xl font-semibold">{title}</span>
+            <small className="text-sm text-gray-500">{text}</small>
+          </div>
+          <div className="flex w-11/12 mx-auto justify-center gap-5">
+            <LightOutlineButton onClick={close} className="px-14">
+              Cancel
+            </LightOutlineButton>
+            <DangerButton onClick={onConfirm} className="px-14">
+              Confirm
+            </DangerButton>
+          </div>
+        </div> */}
+      </Modal.Body>
     </Modal>
   );
 };
@@ -68,23 +69,7 @@ export const ConfirmDialog = ({
 }: DialogProps) => {
   if (!isOpen) return null;
   return (
-    <Modal
-      showCloseIcon={false}
-      open={isOpen}
-      center
-      styles={{
-        modalContainer: {
-          boxShadow: "none",
-        },
-        modal: {
-          padding: 0,
-          borderRadius: "3px",
-          border: "none",
-          boxShadow: "none",
-        },
-      }}
-      onClose={close}
-    >
+    <Modal show={isOpen} onClose={close}>
       <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
         <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
           <span className="text-xl font-semibold">{title}</span>
@@ -123,23 +108,7 @@ export const PromptTextAreaDialog = ({
   const [text, setText] = useState<string>("");
   if (!isOpen) return null;
   return (
-    <Modal
-      showCloseIcon={false}
-      open={isOpen}
-      center
-      styles={{
-        modalContainer: {
-          boxShadow: "none",
-        },
-        modal: {
-          padding: 0,
-          borderRadius: "3px",
-          border: "none",
-          boxShadow: "none",
-        },
-      }}
-      onClose={close}
-    >
+    <Modal onClose={close}>
       <div className="w-96 rounded">
         <div className="header w-full h-10 px-2 py-2 text-lg font-medium  text-gray-600">
           <span>{title}</span>
@@ -208,23 +177,7 @@ export const PromptInputDialog = ({
 }: PromptInputDialogProps) => {
   if (!isOpen) return null;
   return (
-    <Modal
-      showCloseIcon={false}
-      open={isOpen}
-      center
-      styles={{
-        modalContainer: {
-          boxShadow: "none",
-        },
-        modal: {
-          padding: 0,
-          borderRadius: "3px",
-          border: "none",
-          boxShadow: "none",
-        },
-      }}
-      onClose={close}
-    >
+    <Modal show={isOpen} onClose={close}>
       <div className="w-96 rounded">
         <div className="header w-full h-10 px-2 py-2 text-lg font-medium  text-gray-600">
           <span>{title}</span>

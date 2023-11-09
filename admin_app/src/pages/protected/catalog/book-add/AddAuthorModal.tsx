@@ -9,7 +9,6 @@ import { CreateAuthorSchema } from "../schema";
 
 import { CustomInput } from "@components/ui/form/Input";
 
-import useModalToggleListener from "@hooks/useModalToggleListener";
 import { Button, Modal } from "flowbite-react";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
