@@ -1,12 +1,12 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { BaseProps } from "@definitions/props.definition";
+import { EventMessage, EventType } from "@azure/msal-browser";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
-import axios from "axios";
-import { Account, Role } from "@definitions/types";
-import { EventType, EventMessage } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/configs/axios";
+import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
+import { BaseProps } from "@definitions/props.definition";
+import { Account } from "@definitions/types";
+import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const userInitialData: Account = {
   displayName: "",

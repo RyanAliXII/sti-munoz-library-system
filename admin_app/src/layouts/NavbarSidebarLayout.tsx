@@ -4,6 +4,7 @@ import Navbar from "@components/navbar/Navbar";
 import Sidebar from "@components/sidebar/SidebarNav";
 import { MdFacebook } from "react-icons/md";
 import { FaDribbble, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";
+import SidebarProvider from "@contexts/SiderbarContext";
 
 interface NavbarSidebarLayoutProps {
   isFooter?: boolean;
@@ -13,11 +14,13 @@ const NavbarSidebarLayout: FC<PropsWithChildren<NavbarSidebarLayoutProps>> =
   function ({ children, isFooter = true }) {
     return (
       <>
-        <Navbar />
-        <div className="flex items-start pt-16">
-          <Sidebar />
-          <MainContent isFooter={isFooter}>{children}</MainContent>
-        </div>
+        <SidebarProvider>
+          <Navbar />
+          <div className="flex items-start pt-16">
+            <Sidebar />
+            <MainContent isFooter={isFooter}>{children}</MainContent>
+          </div>
+        </SidebarProvider>
       </>
     );
   };

@@ -8,6 +8,7 @@ import {
 } from "flowbite-react";
 import { useAuthContext } from "@contexts/AuthContext";
 import { useMsal } from "@azure/msal-react";
+import { useSidebarState } from "@contexts/SiderbarContext";
 
 const NavbarHeader: FC = function () {
   const [mode, , toggleMode] = useThemeMode();
@@ -21,13 +22,19 @@ const NavbarHeader: FC = function () {
       logoutHint: account?.idTokenClaims?.login_hint,
     });
   };
+  const { toggle } = useSidebarState();
   const avatarUrl = `https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`;
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Navbar.Brand href="/">
+            <Navbar.Toggle
+              onClick={() => {
+                toggle();
+              }}
+            />
+            <Navbar.Brand href="/" className="hidden lg:flex">
               <img
                 src="/library-icon.svg"
                 className="mr-3 h-6 sm:h-9"
@@ -57,7 +64,7 @@ const NavbarHeader: FC = function () {
               <Dropdown.Divider />
               <Dropdown.Item onClick={logout}>Sign out</Dropdown.Item>
             </Dropdown>
-            <Navbar.Toggle />
+
             <DarkThemeToggle
               onClick={() => {
                 let newMode = mode === "dark" ? "light" : "dark";

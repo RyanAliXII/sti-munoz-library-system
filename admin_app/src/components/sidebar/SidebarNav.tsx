@@ -1,3 +1,4 @@
+import { useSidebarState } from "@contexts/SiderbarContext";
 import { Sidebar, TextInput } from "flowbite-react";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
@@ -6,16 +7,16 @@ import { NavLink, useLocation } from "react-router-dom";
 import { SidebarNavigationItems } from "./SidebarNavigations.definition";
 const SidebarNav: FC = function () {
   const [currentPage, setCurrentPage] = useState("");
-
   useEffect(() => {
     const newPage = window.location.pathname;
     setCurrentPage(newPage);
   }, [setCurrentPage]);
-
+  const { isOpen } = useSidebarState();
+  const sidebarClass = isOpen ? "!flex" : "";
   return (
     <Sidebar
       aria-label="Sidebar with multi-level dropdown example"
-      className="hidden lg:block "
+      className={`hidden lg:flex ${sidebarClass}`}
     >
       <div className="flex h-full flex-col justify-between py-2">
         <div>
