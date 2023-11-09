@@ -139,7 +139,7 @@ const PublisherPage = () => {
                 <Table.HeadCell>Publisher</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {publishers?.map((publisher) => {
                   return (
                     <Table.Row key={publisher.id}>

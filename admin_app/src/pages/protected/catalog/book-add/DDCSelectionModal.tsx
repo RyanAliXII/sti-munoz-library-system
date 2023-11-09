@@ -115,7 +115,7 @@ const DDCTable = ({ closeModal }: DDCTableProps) => {
             <Table.HeadCell>Number</Table.HeadCell>
           </Table.Head>
 
-          <Table.Body>
+          <Table.Body className="divide-y dark:divide-gray-700">
             {ddc?.map((d) => {
               return (
                 <Table.Row

@@ -138,7 +138,7 @@ const BookPage = () => {
                   <Table.HeadCell>Year Published</Table.HeadCell>
                   <Table.HeadCell></Table.HeadCell>
                 </Table.Head>
-                <Table.Body>
+                <Table.Body className="divide-y dark:divide-gray-700">
                   {books?.map((book) => {
                     return (
                       <Table.Row key={book.id}>

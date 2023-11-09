@@ -151,7 +151,7 @@ const AuthorPage = () => {
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
 
-            <Table.Body>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {authors?.map((author, index) => (
                 <AuthorTableRow
                   author={author}

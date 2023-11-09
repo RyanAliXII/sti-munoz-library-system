@@ -149,7 +149,7 @@ const EditAccessionPanel = () => {
                 <Table.HeadCell>Status</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {accessions?.map((accession) => {
                   return (
                     <Table.Row key={accession.id}>

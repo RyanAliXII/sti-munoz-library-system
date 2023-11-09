@@ -86,7 +86,7 @@ const AccessionPage = () => {
                 <Table.HeadCell>Section</Table.HeadCell>
                 <Table.HeadCell>Year Published</Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {accessions?.map((accession) => {
                   return (
                     <Table.Row key={accession.id}>

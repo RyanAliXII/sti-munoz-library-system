@@ -15,7 +15,7 @@ const SidebarNav: FC = function () {
   return (
     <Sidebar
       aria-label="Sidebar with multi-level dropdown example"
-      className="hidden lg:block"
+      className="hidden lg:block "
     >
       <div className="flex h-full flex-col justify-between py-2">
         <div>

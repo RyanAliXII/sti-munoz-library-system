@@ -93,7 +93,7 @@ const AuthorSelection = () => {
             <Table.HeadCell></Table.HeadCell>
             <Table.HeadCell>Name</Table.HeadCell>
           </Table.Head>
-          <Table.Body>
+          <Table.Body className="divide-y dark:divide-gray-700">
             {authors?.map((author) => {
               const isChecked = author.id
                 ? selectedCache.hasOwnProperty(author.id)

@@ -99,7 +99,7 @@ const GenerateTab = () => {
             <Table.Head className=" sticky top-0">
               <Table.HeadCell>Author</Table.HeadCell>
             </Table.Head>
-            <Table.Body>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {form.authors.map((author) => {
                 return (
                   <Table.Row

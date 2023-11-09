@@ -59,7 +59,7 @@ const SectionPage = () => {
                 <Table.HeadCell>Different Accession</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {sections?.map((section) => {
                   return (
                     <Table.Row key={section.id}>
