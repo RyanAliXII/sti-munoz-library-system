@@ -5,7 +5,7 @@ import Login from "./Login";
 import AuthorPage from "./protected/catalog/author/AuthorPage";
 import BookAddPage from "./protected/catalog/book-add/BookAddPage";
 import Dashboard from "./protected/Dashboard";
-import SectionPage from "./protected/catalog/SectionPage";
+import SectionPage from "./protected/catalog/section/SectionPage";
 import PublisherPage from "./protected/catalog/PublisherPage";
 import BookPage from "./protected/catalog/book-page/BookPage";
 import BookEditPage from "./protected/catalog/book-edit/BookEditPage";

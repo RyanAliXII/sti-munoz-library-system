@@ -1,5 +1,5 @@
 import React, { ButtonHTMLAttributes } from "react";
-import { TextInput } from "flowbite-react";
+import { Checkbox, CheckboxProps, TextInput } from "flowbite-react";
 import { error } from "console";
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 export interface InputProps extends HTMLInputProps {
@@ -13,7 +13,7 @@ export enum InputClasses {
   focus:text-gray-700 focus:bg-white focus:outline-yellow-400 disabled:opacity-50`,
   InputErrorClasslist = "border-red-500 focus:border-red-500",
   LabelWrapperClasslist = "h-2 flex items-center mt-2",
-  LabelClasslist = "text-gray-500 text-sm ml-1",
+  LabelClasslist = "text-gray-500 text-sm ml-1 dark:text-gray-400",
   InputBorderClasslist = "border-solid border-gray-300",
 }
 export enum SelectClasses {
@@ -108,3 +108,31 @@ export const CustomInput = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
+
+interface CustomCheckboxProps extends CheckboxProps {
+  label?: string;
+  error?: any;
+}
+export const CustomCheckBox = React.forwardRef<
+  HTMLInputElement,
+  CustomCheckboxProps
+>((props, ref) => {
+  const copyProps = { ...props };
+  if (props.error) {
+    copyProps["color"] = "failure";
+  }
+  return (
+    <>
+      <Checkbox />
+      {props.label && (
+        <label className={InputClasses.LabelClasslist} htmlFor={props?.name}>
+          {props.label}
+        </label>
+      )}
+
+      <div className="h-2 flex items-center py-2 mt-1">
+        <small className="text-red-500 ml-1">{props.error}</small>
+      </div>
+    </>
+  );
+});

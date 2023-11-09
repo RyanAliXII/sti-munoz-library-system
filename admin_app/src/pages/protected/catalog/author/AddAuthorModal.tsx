@@ -9,6 +9,7 @@ import { BaseSyntheticEvent } from "react";
 import { toast } from "react-toastify";
 import { CreateAuthorSchema } from "../schema";
 import { ADD_AUTHOR_INITIAL_FORM } from "./AuthorPage";
+import useModalToggleListener from "@hooks/useModalToggleListener";
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { form, errors, validate, handleFormInput, resetForm } = useForm<
@@ -43,7 +44,9 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       resetForm();
     },
   });
-
+  useModalToggleListener(isOpen, () => {
+    resetForm();
+  });
   return (
     <Modal show={isOpen} onClose={closeModal} size="lg" dismissible>
       <Modal.Header>New Author</Modal.Header>

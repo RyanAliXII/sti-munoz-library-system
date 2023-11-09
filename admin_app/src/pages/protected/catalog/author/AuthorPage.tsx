@@ -219,7 +219,7 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   return (
     <Table.Row>
       <Table.Cell>
-        <div className="text-base font-semibold text-gray-900 dark:text-white">
+        <div className=" font-semibold text-gray-900 dark:text-white">
           {author.name}
         </div>
       </Table.Cell>
