@@ -1,13 +1,14 @@
-import Container from "@components/ui/container/Container";
+import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
+import Container, {
+  ContainerNoBackground,
+} from "@components/ui/container/Container";
 
-import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
-import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import {
   AiFillCheckCircle,
@@ -21,6 +22,8 @@ import TimeAgo from "timeago-react";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
+import { Button, Table } from "flowbite-react";
+import TableContainer from "@components/ui/table/TableContainer";
 
 const PenaltyPage = () => {
   const { Get, Patch } = useRequest();

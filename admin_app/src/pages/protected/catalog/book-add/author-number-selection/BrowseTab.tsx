@@ -96,7 +96,7 @@ const BrowseTab = () => {
             <Table.HeadCell>Number</Table.HeadCell>
           </Table.Head>
 
-          <Table.Body className="divide-y dark:divide-gray-700">
+          <Table.Body className="divide-y dark:divide-gray-700 ">
             {authorNumbers?.map((authorNumber, index) => {
               return (
                 <Table.Row

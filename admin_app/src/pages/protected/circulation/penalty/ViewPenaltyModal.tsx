@@ -1,9 +1,7 @@
-import { LighButton } from "@components/ui/button/Button";
-
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { ModalProps, Penalty } from "@definitions/types";
-import { Modal } from "flowbite-react";
+import { Button, Modal, Textarea } from "flowbite-react";
 
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
@@ -11,10 +9,12 @@ interface EditPenaltyModalProps extends ModalProps {
 const ViewPenaltyModal = (props: EditPenaltyModalProps) => {
   return (
     <Modal dismissible show={props.isOpen} onClose={props.closeModal}>
-      <ModalContent
-        closeModal={props.closeModal}
-        penalty={props.penalty}
-      ></ModalContent>
+      <Modal.Body>
+        <ModalContent
+          closeModal={props.closeModal}
+          penalty={props.penalty}
+        ></ModalContent>
+      </Modal.Body>
     </Modal>
   );
 };
@@ -50,18 +50,20 @@ const ModalContent = ({
         </div>
       </div>
       <div>
-        <textarea
+        <Textarea
           style={{
             height: textAreaHeight,
           }}
           ref={textAreaRef}
           readOnly={true}
-          className="w-full   mt-1 focus:outline-none  p-3 h-content border-none"
+          className="w-full  mt-1 focus:outline-none focus:ring-0 border-0 dark:bg-gray-800 bg-white  p-3 h-content border-none "
           defaultValue={penalty?.description}
-        ></textarea>
+        ></Textarea>
       </div>
       <div className="flex gap-1 mt-5">
-        <LighButton onClick={closeModal}>Close</LighButton>
+        <Button color="light" onClick={closeModal}>
+          Close
+        </Button>
       </div>
     </div>
   );

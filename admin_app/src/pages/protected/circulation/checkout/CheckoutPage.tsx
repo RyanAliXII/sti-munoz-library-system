@@ -231,7 +231,7 @@ const CheckoutPage = () => {
                 <Table.HeadCell>Due Date</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {checkout.accessions?.map((accession) => {
                   return (
                     <Table.Row key={accession.id}>

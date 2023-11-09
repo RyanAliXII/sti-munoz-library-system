@@ -170,7 +170,6 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
               color="primary"
               type="submit"
               isProcessing={updatePenalty.isLoading}
-              disabled={updatePenalty.isLoading}
             >
               Save
             </Button>

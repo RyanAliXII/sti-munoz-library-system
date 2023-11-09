@@ -209,7 +209,7 @@ const BorrowedBooksViewPage = () => {
                 <Table.HeadCell>Penalty</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
-              <Table.Body className="divide-y divide-gray-700">
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {borrowedBooks?.map((borrowedBook) => {
                   return (
                     <Table.Row key={borrowedBook.id}>

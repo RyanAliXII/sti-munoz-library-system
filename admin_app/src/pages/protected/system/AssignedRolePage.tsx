@@ -1,23 +1,13 @@
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import Container from "@components/ui/container/Container";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
 
 import { AccountRole } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Table } from "flowbite-react";
 
 import { useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
@@ -71,42 +61,37 @@ const AssignedRolePage = () => {
   });
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold">Role Assignments</h1>
-      </ContainerNoBackground>
-      <LoadingBoundary
-        isError={isError}
-        isLoading={isFetching}
-      ></LoadingBoundary>
       <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>User Account</Th>
-              <Th>Role</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
-            {accounts?.map((accountRole) => {
-              return (
-                <BodyRow key={accountRole.account.id}>
-                  <Td>{accountRole.account.displayName}</Td>
-                  <Td>{accountRole.role.name}</Td>
-                  <Td>
-                    <AiOutlineDelete
-                      className="text-red-400 text-xl cursor-pointer"
-                      onClick={() => {
-                        setSelectedRow(accountRole);
-                        open();
-                      }}
-                    ></AiOutlineDelete>
-                  </Td>
-                </BodyRow>
-              );
-            })}
-          </Tbody>
-        </Table>
+        <LoadingBoundary isError={isError} isLoading={isFetching}>
+          <Table>
+            <Table.Head>
+              <Table.HeadCell>User Account</Table.HeadCell>
+              <Table.HeadCell>Role</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body>
+              {accounts?.map((accountRole) => {
+                return (
+                  <Table.Row key={accountRole.account.id}>
+                    <Table.Cell>{accountRole.account.displayName}</Table.Cell>
+                    <Table.Cell>{accountRole.role.name}</Table.Cell>
+                    <Table.Cell>
+                      <Button
+                        color="failure"
+                        onClick={() => {
+                          setSelectedRow(accountRole);
+                          open();
+                        }}
+                      >
+                        <AiOutlineDelete />
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table>
+        </LoadingBoundary>
       </Container>
       <DangerConfirmDialog
         close={close}

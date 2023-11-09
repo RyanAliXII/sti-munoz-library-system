@@ -183,7 +183,7 @@ const BookCopySelectionModal = ({
                 <Table.HeadCell>Status</Table.HeadCell>
                 <Table.HeadCell>Type</Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {accessions.map((accession) => {
                   const isAdded = selectedAccessionCopiesCache.hasOwnProperty(
                     `${accession.bookId}_${accession.number}`
