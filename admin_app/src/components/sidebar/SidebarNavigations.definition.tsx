@@ -9,6 +9,7 @@ import { AiOutlineDashboard } from "react-icons/ai";
 import { FC, SVGProps } from "react";
 
 import { FiBookOpen, FiSettings } from "react-icons/fi";
+import { Bs123 } from "react-icons/bs";
 
 export type SidebarNavItem = {
   to: string;
@@ -16,6 +17,7 @@ export type SidebarNavItem = {
   items: SidebarNavItem[];
   requiredPermissions?: string[];
   icon?: FC<SVGProps<SVGSVGElement>>;
+  isCollapse?: boolean;
 };
 
 export const SidebarNavigationItems: SidebarNavItem[] = [
@@ -29,11 +31,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     text: "Catalog",
     to: "",
     icon: FiBookOpen,
+    isCollapse: false,
     items: [
       {
         text: "Book",
         to: "/books",
         items: [],
+        icon: Bs123,
         requiredPermissions: ["Book.Access", "Section.Access"],
       },
       {

@@ -20,23 +20,24 @@ const App = () => {
   const msalInstance = new PublicClientApplication(msalConfig);
   const router = createBrowserRouter(pages);
   const [currentTheme, _, toggleMode] = useThemeMode();
-  useEffect(() => {
-    const storageTheme = localStorage.getItem("theme");
-    if (!storageTheme) {
-      localStorage.setItem("storageTheme", "light");
-      return;
-    }
-    if (storageTheme != "light" && storageTheme != "dark") {
-      localStorage.setItem("storageTheme", "light");
-      return;
-    }
-    if (currentTheme != storageTheme) {
-      let newMode = currentTheme === "dark" ? "light" : "dark";
-      localStorage.setItem("theme", newMode);
-      toggleMode();
-      return;
-    }
-  }, []);
+  // useEffect(() => {
+  //   const storageTheme = localStorage.getItem("theme");
+  //   if (!storageTheme) {
+  //     localStorage.setItem("storageTheme", "light");
+  //     return;
+  //   }
+  //   if (storageTheme != "light" && storageTheme != "dark") {
+  //     localStorage.setItem("storageTheme", "light");
+  //     return;
+  //   }
+
+  //   if (currentTheme != storageTheme) {
+  //     let newMode = currentTheme === "dark" ? "light" : "dark";
+  //     localStorage.setItem("theme", newMode);
+  //     toggleMode();
+  //     return;
+  //   }
+  // }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <MsalProvider instance={msalInstance}>
