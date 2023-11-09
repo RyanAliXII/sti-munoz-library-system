@@ -1,7 +1,8 @@
 import type { FC } from "react";
-import { Button, DarkThemeToggle, Navbar } from "flowbite-react";
+import { DarkThemeToggle, Navbar, useThemeMode } from "flowbite-react";
 
 const NavbarHeader: FC = function () {
+  const [mode, , toggleMode] = useThemeMode();
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3">
@@ -15,7 +16,7 @@ const NavbarHeader: FC = function () {
             </Navbar.Brand>
           </div>
           <div className="flex items-center gap-3">
-            <iframe
+            {/* <iframe
               height="30"
               src="https://ghbtns.com/github-btn.html?user=themesberg&repo=flowbite-react-admin-dashboard&type=star&count=true&size=large"
               title="GitHub"
@@ -24,8 +25,14 @@ const NavbarHeader: FC = function () {
             />
             <Button color="primary" href="https://flowbite.com/pro/">
               Upgrade to Pro
-            </Button>
-            <DarkThemeToggle />
+            </Button> */}
+            <DarkThemeToggle
+              onClick={() => {
+                let newMode = mode === "dark" ? "light" : "dark";
+                localStorage.setItem("theme", newMode);
+                toggleMode();
+              }}
+            />
           </div>
         </div>
       </div>

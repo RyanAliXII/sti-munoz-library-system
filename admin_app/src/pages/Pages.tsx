@@ -6,7 +6,7 @@ import AuthorPage from "./protected/catalog/author/AuthorPage";
 import BookAddPage from "./protected/catalog/book-add/BookAddPage";
 import Dashboard from "./protected/Dashboard";
 import SectionPage from "./protected/catalog/section/SectionPage";
-import PublisherPage from "./protected/catalog/PublisherPage";
+import PublisherPage from "./protected/catalog/publisher/PublisherPage";
 import BookPage from "./protected/catalog/book-page/BookPage";
 import BookEditPage from "./protected/catalog/book-edit/BookEditPage";
 import AccessionPage from "./protected/catalog/AccessionPage";

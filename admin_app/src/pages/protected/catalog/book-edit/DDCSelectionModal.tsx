@@ -16,8 +16,6 @@ import usePaginate from "@hooks/usePaginate";
 import { Button, Checkbox, Modal, Table } from "flowbite-react";
 
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  if (!isOpen) return null;
   return (
     <Modal onClose={closeModal} show={isOpen} dismissible size={"4xl"}>
       <Modal.Body>
@@ -94,7 +92,7 @@ const DDCTable = ({ closeModal }: DDCTableProps) => {
   return (
     <>
       {selectedDDC.id != 0 && (
-        <p className="">
+        <p className="text-gray-900 dark:text-gray-50">
           <span className="underline underline-offset-2">
             {selectedDDC.name}{" "}
           </span>
