@@ -1,13 +1,13 @@
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 
-import { Input } from "@components/ui/form/Input";
-import { Book, BorrowedBook, ModalProps } from "@definitions/types";
+import { BorrowedBook, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
-import { format, isMatch, isBefore, isEqual } from "date-fns";
+import { format, isBefore, isEqual, isMatch } from "date-fns";
+import { Button, Modal } from "flowbite-react";
 
 import React, { FormEvent, useEffect } from "react";
-import Modal from "react-responsive-modal";
+
 import { object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
@@ -20,11 +20,11 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
   onConfirmDate,
   borrowedBook,
 }) => {
-  const { handleFormInput, validate, errors, form, setForm } = useForm<{
+  const { validate, errors, form, setForm, removeFieldError } = useForm<{
     date: string;
   }>({
     initialFormData: {
-      date: "",
+      date: format(new Date(), "yyyy-MM-dd"),
     },
     schema: object({
       date: string()
@@ -66,42 +66,36 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Modal
-      focusTrapped={false}
-      open={isOpen}
-      onClose={closeModal}
-      center
-      showCloseIcon={false}
-      classNames={{ modal: "w-11/12 md:w-5/12 lg:w-5/12 xl:w-3/12 rounded" }}
-      containerId="dueDateInputOverlay"
-      modalId="dueDateInputModal"
-    >
-      <form onSubmit={onSubmit}>
-        <div className="w-full  mt-2">
-          <div className="px-2 mb-4">
-            <h1 className="text-xl font-medium">Edit Due Date</h1>
-          </div>
-          <div className="mb-3">
-            <div>
-              <Input
-                type="date"
-                name="date"
-                onChange={handleFormInput}
-                label="Due date"
-                value={form.date}
-                error={errors?.date}
-                min={format(new Date(), "yyyy-MM-dd")}
-              />
+    <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
+      <Modal.Header>Edit due date</Modal.Header>
+      <Modal.Body className="small-scroll">
+        <form onSubmit={onSubmit}>
+          <div>
+            <CustomDatePicker
+              label="Due date"
+              error={errors?.date}
+              selected={new Date(form.date)}
+              minDate={new Date()}
+              onChange={(date) => {
+                if (!date) return;
+                removeFieldError("date");
+                setForm({
+                  date: format(date, "yyyy-MM-dd"),
+                });
+              }}
+            />
+
+            <div className="flex gap-1 py-2">
+              <Button color="primary" type="submit">
+                Save
+              </Button>
+              <Button color="light" onClick={closeModal} type="button">
+                Cancel
+              </Button>
             </div>
           </div>
-          <div className="flex gap-1 mt-2 p-2">
-            <PrimaryButton>Save</PrimaryButton>
-            <LighButton onClick={closeModal} type="button">
-              Cancel
-            </LighButton>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };

@@ -1,48 +1,25 @@
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import CustomSelect from "@components/ui/form/CustomSelect";
-import { Input } from "@components/ui/form/Input";
-import {
-  ButtonClasses,
-  LighButton,
-  PrimaryOutlineButton,
-} from "@components/ui/button/Button";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
+import { ButtonClasses } from "@components/ui/button/Button";
 
 import { Book } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import { ChangeEvent, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
-
 import { Link } from "react-router-dom";
-
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-
-import { useRequest } from "@hooks/useRequest";
+import Container from "@components/ui/container/Container";
 import HasAccess from "@components/auth/HasAccess";
-
+import { useRequest } from "@hooks/useRequest";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
-
 import { TbDatabaseImport } from "react-icons/tb";
-import ImportBooksModal from "./ImportBooksModal";
 import ReactPaginate from "react-paginate";
-
-import { isValid } from "date-fns";
+import ImportBooksModal from "./ImportBooksModal";
 import useDebounce from "@hooks/useDebounce";
-import { BookPrintablesModal } from "./BookPrintablesModal";
-
+import { isValid } from "date-fns";
+import { Button, Table, TextInput } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
+import { BookPrintablesModal } from "./BookPrintablesModal";
+import CustomPagination from "@components/pagination/CustomPagination";
 
 const BookPage = () => {
   const {
@@ -110,14 +87,21 @@ const BookPage = () => {
     isOpen: isImportModalOpen,
   } = useSwitch();
 
-  const paginationClass =
-    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
   return (
     <>
-      <ContainerNoBackground className="flex gap-2 justify-between px-0 mb-0 lg:mb-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-gray-700">Books</h1>
-          <div className="mt-1 gap-2 flex items-center">
+      <Container>
+        <div className="p-2 flex justify-between ">
+          <div>
+            <form>
+              <TextInput
+                onChange={handleSearch}
+                placeholder="Search books"
+                defaultValue={filterParams?.keyword}
+              />
+            </form>
+          </div>
+
+          <div className="flex gap-2">
             <HasAccess
               requiredPermissions={[
                 "Book.Access",
@@ -126,132 +110,114 @@ const BookPage = () => {
                 "Author.Access",
               ]}
             >
-              <Link
-                to="/books/new"
-                className={`${ButtonClasses.PrimaryButtonDefaultClasslist} px-3 py-2.5 gap-0.5 flex items-center`}
-              >
-                <AiOutlinePlus className="text-lg" />
-                New Book
-              </Link>
+              <Button color="primary" to="/books/new" as={Link}>
+                <AiOutlinePlus /> New Book
+              </Button>
             </HasAccess>
             <HasAccess requiredPermissions={["Book.Access", "Section.Access"]}>
-              <PrimaryOutlineButton
-                className="flex items-center gap-0.5"
+              <Button
+                outline
+                gradientDuoTone={"blueToBlue"}
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400"
                 onClick={openImportModal}
               >
                 <TbDatabaseImport className="text-lg" />
                 Import
-              </PrimaryOutlineButton>
+              </Button>
             </HasAccess>
           </div>
         </div>
-        <div className="gap-2 items-center lg:basis-9/12 lg:flex"></div>
-      </ContainerNoBackground>
-      <ContainerNoBackground>
-        <div className="lg:flex gap-2">
-          <Input
-            type="text"
-            placeholder="Search..."
-            onChange={handleSearch}
-            defaultValue={filterParams?.keyword}
-          ></Input>
-          <div className="w-full lg:w-5/12  mb-4 ">
-            <CustomSelect placeholder="Section" />
-          </div>
-        </div>
-      </ContainerNoBackground>
+        <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                <Table.Head>
+                  <Table.HeadCell>Date Received</Table.HeadCell>
+                  <Table.HeadCell>Title</Table.HeadCell>
+                  <Table.HeadCell>Copies</Table.HeadCell>
+                  <Table.HeadCell>Year Published</Table.HeadCell>
+                  <Table.HeadCell></Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="divide-y dark:divide-gray-700">
+                  {books?.map((book) => {
+                    return (
+                      <Table.Row key={book.id}>
+                        <Table.Cell>
+                          {isValid(new Date(book.receivedAt))
+                            ? new Date(book.receivedAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )
+                            : "Unspecified"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="text-base font-semibold text-gray-900 dark:text-white">
+                            {book.title}
+                          </div>
+                          <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                            {book.section.name}
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>{book.copies}</Table.Cell>
+                        <Table.Cell>{book.yearPublished}</Table.Cell>
 
-      <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
-        <Container className="lg:p-0">
-          {" "}
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Date Received</Th>
-                <Th>Title</Th>
-
-                <Th>Copies</Th>
-                <Th>Year Published</Th>
-
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {books?.map((book) => {
-                return (
-                  <BodyRow key={book.id}>
-                    <Td>
-                      {isValid(new Date(book.receivedAt))
-                        ? new Date(book.receivedAt).toLocaleDateString(
-                            undefined,
-                            { month: "short", day: "2-digit", year: "numeric" }
-                          )
-                        : "Unspecified"}
-                    </Td>
-                    <Td>{book.title}</Td>
-                    {/* <Td className="hidden lg:block">{book.isbn}</Td> */}
-                    <Td>{book.copies}</Td>
-                    <Td>{book.yearPublished}</Td>
-
-                    <Td className="flex gap-3">
-                      <Tippy content="View Printables">
-                        <button
-                          className={
-                            ButtonClasses.PrimaryOutlineButtonClasslist
-                          }
-                          onClick={() => {
-                            setBookForPrintingAndOpenModal(book);
-                          }}
-                        >
-                          <AiOutlinePrinter className="text-blue-500 text-lg cursor-pointer " />
-                        </button>
-                      </Tippy>
-                      <HasAccess
-                        requiredPermissions={[
-                          "Book.Access",
-                          "Publisher.Access",
-                          "Section.Access",
-                          "Author.Access",
-                        ]}
-                      >
-                        <Tippy content="Edit Book">
-                          <Link
-                            to={`/books/edit/${book.id}`}
-                            className={
-                              ButtonClasses.SecondaryOutlineButtonClasslist
-                            }
+                        <Table.Cell className="flex gap-3">
+                          <Tippy content="View Printables">
+                            <Button
+                              color="primary"
+                              onClick={() => {
+                                setBookForPrintingAndOpenModal(book);
+                              }}
+                            >
+                              <AiOutlinePrinter className="text-lg cursor-pointer " />
+                            </Button>
+                          </Tippy>
+                          <HasAccess
+                            requiredPermissions={[
+                              "Book.Access",
+                              "Publisher.Access",
+                              "Section.Access",
+                              "Author.Access",
+                            ]}
                           >
-                            <AiOutlineEdit className="text-yellow-500 text-lg cursor-pointer " />
-                          </Link>
-                        </Tippy>
-                      </HasAccess>
-                    </Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </Container>
-        <ContainerNoBackground>
-          <ReactPaginate
-            nextLabel="Next"
-            pageLinkClassName="border px-3 py-0.5  text-center rounded"
-            pageRangeDisplayed={5}
-            pageCount={totalPages}
-            forcePage={filterParams?.page - 1}
-            disabledClassName="opacity-60 pointer-events-none"
-            onPageChange={({ selected }) => {
-              setFilterParams({ page: selected + 1 });
-            }}
-            className={paginationClass}
-            previousLabel="Previous"
-            previousClassName="px-2 border text-gray-500 py-1 rounded"
-            nextClassName="px-2 border text-blue-500 py-1 rounded"
-            renderOnZeroPageCount={null}
-            activeClassName="border-none bg-blue-500 text-white rounded"
-          />
-        </ContainerNoBackground>
-      </LoadingBoundaryV2>
+                            <Tippy content="Edit Book">
+                              <Button
+                                as={Link}
+                                color="secondary"
+                                to={`/books/edit/${book.id}`}
+                              >
+                                <AiOutlineEdit className="text-lg cursor-pointer" />
+                              </Button>
+                            </Tippy>
+                          </HasAccess>
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
+                </Table.Body>
+              </Table>
+              <div className="p-4">
+                <CustomPagination
+                  nextLabel="Next"
+                  pageRangeDisplayed={5}
+                  pageCount={totalPages}
+                  forcePage={filterParams?.page - 1}
+                  onPageChange={({ selected }) => {
+                    setFilterParams({ page: selected + 1 });
+                  }}
+                  isHidden={totalPages <= 1}
+                  previousLabel="Previous"
+                  renderOnZeroPageCount={null}
+                />
+              </div>
+            </div>
+          </div>
+        </LoadingBoundaryV2>
+      </Container>
 
       <BookPrintablesModal
         closeModal={closePrintablesModal}

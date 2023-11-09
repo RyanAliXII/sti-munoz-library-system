@@ -1,25 +1,14 @@
-import {
-  Thead,
-  Table,
-  BodyRow,
-  HeadingRow,
-  Tbody,
-  Td,
-  Th,
-} from "@components/ui/table/Table";
-
 import { useQuery } from "@tanstack/react-query";
 
+import Container from "@components/ui/container/Container";
 import { BorrowRequest } from "@definitions/types";
-import { useNavigate } from "react-router-dom";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
+import { useNavigate } from "react-router-dom";
 
-import TimeAgo from "timeago-react";
-import { BiErrorAlt } from "react-icons/bi";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
+import { BiErrorAlt } from "react-icons/bi";
+import TimeAgo from "timeago-react";
+import { Table } from "flowbite-react";
 
 const BorrowRequestPage = () => {
   const { Get } = useRequest();
@@ -39,38 +28,34 @@ const BorrowRequestPage = () => {
   const navigate = useNavigate();
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold text-gray-700">Borrow Requests</h1>
-      </ContainerNoBackground>
-
       <Container>
-        <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Created At</Th>
-              <Th>Client</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
+        <Table hoverable>
+          <Table.Head>
+            <Table.HeadCell>Created At</Table.HeadCell>
+            <Table.HeadCell>Client</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y dark:divide-gray-700">
             {requests?.map((request) => {
               return (
-                <BodyRow
+                <Table.Row
                   key={request.id}
                   className="cursor-pointer"
                   onClick={() => navigate(`/borrowing/requests/${request.id}`)}
                 >
-                  <Td>
+                  <Table.Cell>
                     <TimeAgo datetime={request.createdAt} />
-                  </Td>
-                  <Td>{request.client.displayName}</Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell className="font-semibold text-gray-50">
+                    {request.client.displayName}
+                  </Table.Cell>
+                  <Table.Cell>
                     <RequiresAttentionText request={request} />
-                  </Td>
-                </BodyRow>
+                  </Table.Cell>
+                </Table.Row>
               );
             })}
-          </Tbody>
+          </Table.Body>
         </Table>
       </Container>
     </>

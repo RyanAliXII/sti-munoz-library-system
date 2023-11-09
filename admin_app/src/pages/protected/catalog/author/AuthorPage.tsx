@@ -1,47 +1,33 @@
 import "react-responsive-modal/styles.css";
 
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-import React, { ChangeEvent, useEffect, useState } from "react";
-import {
-  Tbody,
-  BodyRow,
-  HeadingRow,
-  Table,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
+import Container from "@components/ui/container/Container";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { ChangeEvent, useState } from "react";
 
-import { toast } from "react-toastify";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { Author } from "@definitions/types";
-import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
+import { toast } from "react-toastify";
 
-import { useSwitch } from "@hooks/useToggle";
-import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
-import EditAuthorModal from "./EditAuthorModal";
-import AddAuthorModal from "./AddPersonModal";
-import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
-import { useRequest } from "@hooks/useRequest";
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
+import AddAuthorModal from "./AddAuthorModal";
+import EditAuthorModal from "./EditAuthorModal";
 
 import Tippy from "@tippyjs/react";
-import ReactPaginate from "react-paginate";
 
+import { CustomInput } from "@components/ui/form/Input";
 import { ErrorMsg } from "@definitions/var";
-import { Input } from "@components/ui/form/Input";
 
 import useDebounce from "@hooks/useDebounce";
 
-import {
-  useSearchParamsState,
-  SearchParamsStateType,
-} from "react-use-search-params-state";
-import { filter } from "lodash";
+import CustomPagination from "@components/pagination/CustomPagination";
+import { Button, Table } from "flowbite-react";
+import { useSearchParamsState } from "react-use-search-params-state";
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
 };
@@ -140,81 +126,70 @@ const AuthorPage = () => {
     queryFn: fetchAuthors,
     queryKey: ["authors", filterParams],
   });
-  const paginationClass =
-    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
-
   return (
-    <>
+    <Container>
       <HasAccess requiredPermissions={["Author.Access"]}>
-        <ContainerNoBackground className="flex gap-2">
-          <div className="w-full">
-            <PrimaryButton onClick={openAddModal}> New Author</PrimaryButton>
-          </div>
-        </ContainerNoBackground>
-      </HasAccess>
-      <ContainerNoBackground>
-        <Input
-          type="text"
-          placeholder="Search Author"
-          onChange={handleSearch}
-          defaultValue={filterParams?.keyword}
-        />
-      </ContainerNoBackground>
-      <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
-        <Container>
-          <div className="w-full">
-            <Table>
-              <Thead>
-                <HeadingRow>
-                  <Th>Author</Th>
-                  <Th></Th>
-                </HeadingRow>
-              </Thead>
-
-              <Tbody>
-                {authors?.map((author, index) => (
-                  <AuthorTableRow
-                    author={author}
-                    openEditModal={() => {
-                      setSelectedRow({ ...author });
-                      openEditModal();
-                    }}
-                    openDialog={() => {
-                      setSelectedRow({ ...author });
-                      openConfirmDialog();
-                    }}
-                    key={author.id}
-                  ></AuthorTableRow>
-                ))}
-              </Tbody>
-            </Table>
-          </div>
-          <HasAccess requiredPermissions={["Author.Access"]}>
-            <AddAuthorModal
-              isOpen={isAddModalOpen}
-              closeModal={closeAddModal}
-            />
-          </HasAccess>
-          <HasAccess requiredPermissions={["Author.Access"]}>
-            <EditAuthorModal
-              isOpen={isEditModalOpen}
-              formData={selectedRow}
-              closeModal={closeEditModal}
-            />
-          </HasAccess>
-          <DangerConfirmDialog
-            close={closeConfirmDialog}
-            isOpen={isConfirmDialogOpen}
-            title="Delete Author"
-            text="Are you sure that you want to delete this author?"
-            onConfirm={onConfirmDialog}
+        <div className="w-full flex justify-between py-5">
+          <CustomInput
+            type="text"
+            placeholder="Search Author"
+            onChange={handleSearch}
+            defaultValue={filterParams?.keyword}
           />
-        </Container>
+          <Button color="primary" onClick={openAddModal} className="flex">
+            <AiOutlinePlus />
+            New Author
+          </Button>
+        </div>
+      </HasAccess>
+
+      <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
+        <div className="w-full">
+          <Table>
+            <Table.Head>
+              <Table.HeadCell>Author</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+
+            <Table.Body className="divide-y dark:divide-gray-700">
+              {authors?.map((author, index) => (
+                <AuthorTableRow
+                  author={author}
+                  openEditModal={() => {
+                    setSelectedRow({ ...author });
+                    openEditModal();
+                  }}
+                  openDialog={() => {
+                    setSelectedRow({ ...author });
+                    openConfirmDialog();
+                  }}
+                  key={author.id}
+                ></AuthorTableRow>
+              ))}
+            </Table.Body>
+          </Table>
+        </div>
+        <HasAccess requiredPermissions={["Author.Access"]}>
+          <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+        </HasAccess>
+        <HasAccess requiredPermissions={["Author.Access"]}>
+          <EditAuthorModal
+            isOpen={isEditModalOpen}
+            formData={selectedRow}
+            closeModal={closeEditModal}
+          />
+        </HasAccess>
+        <DangerConfirmDialog
+          close={closeConfirmDialog}
+          isOpen={isConfirmDialogOpen}
+          title="Delete Author"
+          text="Are you sure that you want to delete this author?"
+          onConfirm={onConfirmDialog}
+        />
       </LoadingBoundaryV2>
-      <ContainerNoBackground>
-        <ReactPaginate
+      <div className="py-5">
+        <CustomPagination
           nextLabel="Next"
-          pageLinkClassName="border px-3 py-0.5  text-center rounded"
           pageRangeDisplayed={5}
           pageCount={totalPages}
           disabledClassName="opacity-60 pointer-events-none"
@@ -222,15 +197,11 @@ const AuthorPage = () => {
             setFilterParams({ page: selected + 1 });
           }}
           forcePage={filterParams?.page - 1}
-          className={paginationClass}
+          isHidden={totalPages <= 1}
           previousLabel="Previous"
-          previousClassName="px-2 border text-gray-500 py-1 rounded"
-          nextClassName="px-2 border text-blue-500 py-1 rounded"
-          renderOnZeroPageCount={null}
-          activeClassName="border-none bg-blue-500 text-white rounded"
         />
-      </ContainerNoBackground>
-    </>
+      </div>
+    </Container>
   );
 };
 
@@ -246,31 +217,27 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   openDialog,
 }) => {
   return (
-    <BodyRow>
-      <Td>{author.name}</Td>
-      <Td className="p-2 flex gap-2 items-center">
+    <Table.Row>
+      <Table.Cell>
+        <div>{author.name}</div>
+      </Table.Cell>
+      <Table.Cell className="p-2 flex gap-2 items-center">
         <HasAccess requiredPermissions={["Author.Access"]}>
           <Tippy content="Edit Author">
-            <button
-              className={ButtonClasses.SecondaryOutlineButtonClasslist}
-              onClick={openEditModal}
-            >
+            <Button size="xs" color="secondary" onClick={openEditModal}>
               <AiOutlineEdit className="cursor-pointer  text-xl" />
-            </button>
+            </Button>
           </Tippy>
         </HasAccess>
         <HasAccess requiredPermissions={["Author.Access"]}>
           <Tippy content="Delete Author">
-            <button
-              className={ButtonClasses.DangerButtonOutlineClasslist}
-              onClick={openDialog}
-            >
-              <AiOutlineDelete className="cursor-pointer   text-xl" />
-            </button>
+            <Button size="xs" color="failure" onClick={openDialog}>
+              <AiOutlineDelete className="cursor-pointer  text-xl" />
+            </Button>
           </Tippy>
         </HasAccess>
-      </Td>
-    </BodyRow>
+      </Table.Cell>
+    </Table.Row>
   );
 };
 

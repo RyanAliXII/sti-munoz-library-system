@@ -4,16 +4,10 @@ import Container, {
 import { LibraryStats } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
-
-import { FaHandHolding, FaUserFriends } from "react-icons/fa";
-import { ImBooks } from "react-icons/im";
 import { BiMoney } from "react-icons/bi";
+import { FaUserFriends } from "react-icons/fa";
+import { ImBooks } from "react-icons/im";
 import { Link } from "react-router-dom";
-import { MdOutlinePending } from "react-icons/md";
-import { AiFillBackward, AiFillCheckCircle } from "react-icons/ai";
-import { BsArrowReturnLeft } from "react-icons/bs";
-import { CiCircleRemove } from "react-icons/ci";
-
 const Dashboard = () => {
   const { Get } = useRequest();
   const fetchStats = async () => {
@@ -58,21 +52,21 @@ const Dashboard = () => {
   if (!stats)
     return (
       <>
-        <ContainerNoBackground className="ml-1">
+        <Container className="ml-1">
           <h1 className="text-2xl">Dashboard</h1>
-        </ContainerNoBackground>
+        </Container>
       </>
     );
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-2xl font-semibold ml-5">Dashboard</h1>
-      </ContainerNoBackground>
-      <ContainerNoBackground>
+      <Container className="h-screen">
+        <h1 className="text-2xl font-semibold py-3 text-gray-900 dark:text-gray-50">
+          Dashboard
+        </h1>
         <div className="grid grid-cols-2 w-full gap-5 lg:grid-cols-3">
           <Link
             to="/books"
-            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow"
+            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow dark:bg-gray-700 dark:border-none dark:text-gray-50"
           >
             <ImBooks className="text-3xl lg:text-4xl" />
             <span className="text-xl  font-bold break-words text-center lg:text-2xl ">
@@ -82,7 +76,7 @@ const Dashboard = () => {
           </Link>
           <Link
             to="/clients/accounts"
-            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow text-indigo-500"
+            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow dark:bg-gray-700 dark:border-none text-indigo-500"
           >
             <FaUserFriends className="text-3xl lg:text-4xl" />
             <span className="text-xl  font-bold break-words text-center lg:text-2xl ">
@@ -92,7 +86,7 @@ const Dashboard = () => {
           </Link>
           <Link
             to="/circulation/penalties"
-            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow text-orange-500"
+            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow  text-orange-500 dark:bg-gray-700 dark:border-none"
           >
             <BiMoney className="text-3xl lg:text-4xl" />
             <span className="text-xl  font-bold break-words text-center lg:text-2xl ">
@@ -106,7 +100,7 @@ const Dashboard = () => {
           </Link>
           <Link
             to="/circulation/penalties"
-            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow text-red-500"
+            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow text-red-500 dark:bg-gray-700 dark:border-none"
           >
             <BiMoney className="text-3xl lg:text-4xl" />
             <span className="text-xl  font-bold break-words text-center lg:text-2xl ">
@@ -122,7 +116,7 @@ const Dashboard = () => {
           </Link>
           <Link
             to="/circulation/penalties"
-            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow text-green-500"
+            className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow text-green-500 dark:bg-gray-700 dark:border-none"
           >
             <BiMoney className="text-3xl lg:text-4xl" />
             <span className="text-xl  font-bold break-words text-center lg:text-2xl ">
@@ -135,7 +129,7 @@ const Dashboard = () => {
             <small className="lg:text-lg text-center">Settled Penalties</small>
           </Link>
         </div>
-      </ContainerNoBackground>
+      </Container>
     </>
   );
 };

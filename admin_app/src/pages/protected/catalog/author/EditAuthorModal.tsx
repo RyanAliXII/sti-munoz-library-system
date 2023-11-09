@@ -1,16 +1,15 @@
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import { Input } from "@components/ui/form/Input";
+import { CustomInput } from "@components/ui/form/Input";
 
-import { Author, ModalProps, PersonAuthor } from "@definitions/types";
+import { Author, ModalProps } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
+import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button, Modal } from "flowbite-react";
 import React, { BaseSyntheticEvent, useEffect } from "react";
 import { toast } from "react-toastify";
 import { CreateAuthorSchema } from "../schema";
-import Modal from "react-responsive-modal";
 import { EDIT_AUTHOR_INITIAL_FORM } from "./AuthorPage";
-import { useRequest } from "@hooks/useRequest";
 
 interface EditModalProps<T> extends ModalProps {
   formData: T;
@@ -62,36 +61,32 @@ const EditAuthorPersonModal: React.FC<EditModalProps<Author>> = ({
     },
   });
   return (
-    <Modal
-      open={isOpen}
-      onClose={closeModal}
-      classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
-      showCloseIcon={false}
-      center
-    >
-      <form onSubmit={submit}>
-        <div className="w-full h-48 mt-2">
-          <div className="px-2 mb-3">
-            <h1 className="text-xl font-medium">Edit Author</h1>
+    <Modal show={isOpen} onClose={closeModal} size="lg" dismissible>
+      <Modal.Header>New Author</Modal.Header>
+      <Modal.Body>
+        <form onSubmit={submit}>
+          <div className="w-full ">
+            <div>
+              <CustomInput
+                label="Person's name or organization's name"
+                error={errors?.name}
+                type="text"
+                name="name"
+                onChange={handleFormInput}
+                value={form.name}
+              />
+            </div>
+            <div className="flex gap-1  py-3">
+              <Button color="primary" type="submit">
+                Submit
+              </Button>
+              <Button color="light" type="button" onClick={closeModal}>
+                Cancel
+              </Button>
+            </div>
           </div>
-          <div className="px-2 mb-2">
-            <Input
-              label="name"
-              error={errors?.name}
-              type="text"
-              name="name"
-              onChange={handleFormInput}
-              value={form.name}
-            />
-          </div>
-          <div className="flex gap-1 p-2">
-            <PrimaryButton>Update author</PrimaryButton>
-            <LighButton onClick={closeModal} type="button">
-              Cancel
-            </LighButton>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };

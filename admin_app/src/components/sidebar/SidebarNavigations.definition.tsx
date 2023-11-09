@@ -1,44 +1,53 @@
 import {
-  MdOutlineInventory,
+  MdAccountCircle,
   MdManageAccounts,
+  MdOutlineInventory,
+  MdOutlinePublish,
   MdRotate90DegreesCcw,
 } from "react-icons/md";
+import { TfiWrite } from "react-icons/tfi";
+import { SiBookstack } from "react-icons/si";
+import { AiOutlineDashboard } from "react-icons/ai";
 
-import { RxDashboard } from "react-icons/rx";
-
-import { ReactNode } from "react";
+import { FC, SVGProps } from "react";
 
 import { FiBookOpen, FiSettings } from "react-icons/fi";
+import { Bs123 } from "react-icons/bs";
+import { GiBookshelf } from "react-icons/gi";
 
 export type SidebarNavItem = {
   to: string;
   text?: string;
   items: SidebarNavItem[];
   requiredPermissions?: string[];
-  icon?: ReactNode | JSX.Element | JSX.Element[];
+  icon?: FC<SVGProps<SVGSVGElement>>;
+  isCollapse?: boolean;
 };
 
 export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Dashboard",
     to: "/dashboard",
-    icon: <RxDashboard className="text-xl" />,
+    icon: AiOutlineDashboard,
     items: [],
   },
   {
     text: "Catalog",
-    to: "",
-    icon: <FiBookOpen className="text-xl" />,
+    to: "/catalog",
+    icon: FiBookOpen,
+    isCollapse: false,
     items: [
       {
         text: "Book",
-        to: "/books/",
+        to: "/books",
         items: [],
+        icon: GiBookshelf,
         requiredPermissions: ["Book.Access", "Section.Access"],
       },
       {
         text: "Accession",
         to: "/books/accessions",
+        icon: Bs123,
         requiredPermissions: ["Book.Access"],
         items: [],
       },
@@ -46,16 +55,19 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Author",
         to: "/books/authors",
         requiredPermissions: ["Author.Access"],
+        icon: TfiWrite,
         items: [],
       },
       {
         text: "Section",
         to: "/books/sections",
         requiredPermissions: ["Section.Access"],
+        icon: SiBookstack,
         items: [],
       },
       {
         text: "Publisher",
+        icon: MdOutlinePublish,
         requiredPermissions: ["Publisher.Access"],
         to: "/books/publishers",
         items: [],
@@ -65,12 +77,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
 
   {
     text: "Inventory",
-    to: "/",
-    icon: <MdOutlineInventory className="text-xl" />,
+    to: "/inventory",
+    icon: MdOutlineInventory,
     items: [
       {
         text: "Audit",
         to: "/inventory/audits",
+        icon: MdOutlineInventory,
         items: [],
         requiredPermissions: ["Audit.Access"],
       },
@@ -78,13 +91,14 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
   {
     text: "Client",
-    to: "/",
-    icon: <MdManageAccounts className="text-xl" />,
+    to: "/clients",
+    icon: MdManageAccounts,
     items: [
       {
         text: "Account",
         requiredPermissions: ["Account.Access"],
         to: "/clients/accounts",
+        icon: MdAccountCircle,
         items: [],
       },
     ],
@@ -92,8 +106,9 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
 
   {
     text: "Borrowing",
-    to: "/",
-    icon: <MdRotate90DegreesCcw className="text-xl" />,
+    to: "/borrowing",
+    isCollapse: true,
+    icon: MdRotate90DegreesCcw,
     items: [
       {
         text: "Borrowed Books",
@@ -121,8 +136,9 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
   {
     text: "System",
-    to: "/",
-    icon: <FiSettings className="text-xl" />,
+    to: "/system",
+    icon: FiSettings,
+    isCollapse: true,
     items: [
       {
         requiredPermissions: ["ACL.Access"],

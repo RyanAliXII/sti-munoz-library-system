@@ -1,29 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
+import Container from "@components/ui/container/Container";
 
 import { Account, Role } from "@definitions/types";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-import AccountSearchBox from "@components/account-search/AccountSearchBox";
 
+import ClientSearchBox from "@components/ClientSearchBox";
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRequest } from "@hooks/useRequest";
-import { SingleValue } from "react-select";
-import { PrimaryButton } from "@components/ui/button/Button";
-import { AssignRoleFormSchemaValidation } from "./schema";
-import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
+import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Table } from "flowbite-react";
 import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { SingleValue } from "react-select";
+import { toast } from "react-toastify";
+import { AssignRoleFormSchemaValidation } from "./schema";
 
 type AssignForm = {
   account: Account;
@@ -102,28 +92,29 @@ const AssignRolePage = () => {
   };
   return (
     <>
-      <ContainerNoBackground>
-        <AccountSearchBox
-          setClient={handleAccountSelect}
-          label="Search Accounts"
-          placeholder="Enter account given name, surname or email"
-        ></AccountSearchBox>
-      </ContainerNoBackground>
       <Container>
+        <div className="py-4">
+          <ClientSearchBox className="w-full" setClient={handleAccountSelect} />
+        </div>
         <Table>
-          <Thead>
-            <HeadingRow>
-              <Th>Selected Account</Th>
-              <Th>Role</Th>
-              <Th></Th>
-            </HeadingRow>
-          </Thead>
-          <Tbody>
+          <Table.Head>
+            <Table.HeadCell>Selected Account</Table.HeadCell>
+            <Table.HeadCell>Role</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y divide-gray-700">
             {form.map((d, index) => {
               return (
-                <BodyRow key={d.account.id}>
-                  <Td>{d.account.displayName}</Td>
-                  <Td style={{ maxWidth: "100px" }}>
+                <Table.Row key={d.account.id}>
+                  <Table.Cell>
+                    <div className="text-base font-semibold text-gray-900 dark:text-white">
+                      {d.account.givenName} {d.account.surname}
+                    </div>
+                    <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                      {d.account.email}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>
                     <CustomSelect
                       value={form[index].role}
                       onChange={(value) => {
@@ -133,38 +124,33 @@ const AssignRolePage = () => {
                       getOptionLabel={(option) => option.name}
                       getOptionValue={(option) => option.id?.toString() ?? ""}
                     ></CustomSelect>
-                  </Td>
-                  <Td>
-                    <Td
-                      style={{
-                        minWidth: "50px",
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      color="failure"
+                      onClick={() => {
+                        removeRow(d.account);
                       }}
-                      className="flex justify-center"
                     >
-                      <IoIosRemoveCircleOutline
-                        className="text-red-400 cursor-pointer text-2xl"
-                        onClick={() => {
-                          removeRow(d.account);
-                        }}
-                      />
-                    </Td>
-                  </Td>
-                </BodyRow>
+                      <IoIosRemoveCircleOutline className="cursor-pointer text-2xl" />
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
               );
             })}
-          </Tbody>
+          </Table.Body>
         </Table>
         {form.length === 0 ? (
-          <div className="h-52 flex items-center justify-center text-gray-500">
+          <div className="h-52 flex items-center justify-center text-gray-500 dark:text-gray-100">
             <small>No accounts selected.</small>
           </div>
         ) : null}
+        <div className="flex justify-end py-4">
+          <Button color="primary" onClick={submit} disabled={form.length === 0}>
+            Assign role
+          </Button>
+        </div>
       </Container>
-      <ContainerNoBackground>
-        <PrimaryButton onClick={submit} disabled={form.length === 0}>
-          Assign role
-        </PrimaryButton>
-      </ContainerNoBackground>
     </>
   );
 };

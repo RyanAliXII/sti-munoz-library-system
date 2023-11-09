@@ -1,7 +1,8 @@
 import { Document, Page, pdfjs } from "react-pdf";
 import { useEffect, useState } from "react";
 import { LightOutlineButton } from "@components/ui/button/Button";
-import { Input } from "@components/ui/form/Input";
+import { CustomInput, Input } from "@components/ui/form/Input";
+import { Button } from "flowbite-react";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 const DocumentView = ({ eBookUrl = "" }) => {
   const [numPages, setNumPages] = useState<number>(1);
@@ -40,7 +41,7 @@ const DocumentView = ({ eBookUrl = "" }) => {
     <>
       <div className="header flex gap-2 mb-2 items-center ">
         <div className="mb-1">
-          <Input
+          <CustomInput
             label="Page"
             type="number"
             min={1}
@@ -54,7 +55,8 @@ const DocumentView = ({ eBookUrl = "" }) => {
           />
         </div>
 
-        <LightOutlineButton
+        <Button
+          color="light"
           onClick={() => {
             setPageNumber((prev) => {
               if (prev === 1) {
@@ -64,10 +66,10 @@ const DocumentView = ({ eBookUrl = "" }) => {
             });
           }}
         >
-          {" "}
           Previous
-        </LightOutlineButton>
-        <LightOutlineButton
+        </Button>
+        <Button
+          color="light"
           onClick={() => {
             setPageNumber((prev) => {
               if (prev === numPages) {
@@ -77,9 +79,8 @@ const DocumentView = ({ eBookUrl = "" }) => {
             });
           }}
         >
-          {" "}
-          Next{" "}
-        </LightOutlineButton>
+          Next
+        </Button>
       </div>
       <Document
         file={eBookUrl}

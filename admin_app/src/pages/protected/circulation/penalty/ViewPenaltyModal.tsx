@@ -1,37 +1,20 @@
-import { LighButton } from "@components/ui/button/Button";
-
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { ModalProps, Penalty } from "@definitions/types";
-
-import Modal from "react-responsive-modal";
-import { ref } from "yup";
+import { Button, Modal, Textarea } from "flowbite-react";
 
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
 }
 const ViewPenaltyModal = (props: EditPenaltyModalProps) => {
-  if (!props.isOpen) return null;
   return (
-    <Modal
-      open={props.isOpen}
-      closeOnEsc={true}
-      closeOnOverlayClick={true}
-      showCloseIcon={false}
-      center={true}
-      onClose={props.closeModal}
-      focusTrapped={false}
-      styles={{
-        modal: { maxHeight: "none" },
-      }}
-      classNames={{
-        modal: "w-11/12 lg:w-1/2 h-95 rounded border-none",
-      }}
-    >
-      <ModalContent
-        closeModal={props.closeModal}
-        penalty={props.penalty}
-      ></ModalContent>
+    <Modal dismissible show={props.isOpen} onClose={props.closeModal}>
+      <Modal.Body>
+        <ModalContent
+          closeModal={props.closeModal}
+          penalty={props.penalty}
+        ></ModalContent>
+      </Modal.Body>
     </Modal>
   );
 };
@@ -50,7 +33,7 @@ const ModalContent = ({
   }, [textAreaRef.current]);
   return (
     <div>
-      <div className="flex w-full p-5 border gap-3 items-center">
+      <div className="flex w-full p-5 border gap-3 items-center dark:border-gray-700 rounded">
         <div>
           <img
             className="w-12 rounded-full h-12"
@@ -67,18 +50,20 @@ const ModalContent = ({
         </div>
       </div>
       <div>
-        <textarea
+        <Textarea
           style={{
             height: textAreaHeight,
           }}
           ref={textAreaRef}
           readOnly={true}
-          className="w-full   mt-1 focus:outline-none  p-3 h-content border-none"
+          className="w-full  mt-1 focus:outline-none focus:ring-0 border-0 dark:bg-gray-800 bg-white  p-3 h-content border-none "
           defaultValue={penalty?.description}
-        ></textarea>
+        ></Textarea>
       </div>
       <div className="flex gap-1 mt-5">
-        <LighButton onClick={closeModal}>Close</LighButton>
+        <Button color="light" onClick={closeModal}>
+          Close
+        </Button>
       </div>
     </div>
   );

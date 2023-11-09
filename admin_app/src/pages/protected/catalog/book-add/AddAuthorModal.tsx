@@ -1,15 +1,15 @@
 import { Author, ModalProps, PersonAuthor } from "@definitions/types";
-import React, { BaseSyntheticEvent } from "react";
-import { CreateAuthorSchema } from "../schema";
-import { useRequest } from "@hooks/useRequest";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
-import Modal from "react-responsive-modal";
-import { Input } from "@components/ui/form/Input";
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
+import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { BaseSyntheticEvent } from "react";
+import { toast } from "react-toastify";
+import { CreateAuthorSchema } from "../schema";
 
+import { CustomInput } from "@components/ui/form/Input";
+
+import { Button, Modal } from "flowbite-react";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
@@ -20,25 +20,25 @@ export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   return (
-    <Modal
-      open={isOpen}
-      onClose={closeModal}
-      styles={{ modal: { maxWidth: "500px" } }}
-      classNames={{ modal: "w-11/12 md:w-9/12 lg:w-6/12 rounded" }}
-      showCloseIcon={false}
-      center
-    >
-      <div className="w-full  rounded  mb-5">
-        <h1 className="text-lg p-3">New Author</h1>
+    <Modal show={isOpen} dismissible onClose={closeModal} size={"lg"}>
+      <Modal.Header>
+        <span>New Author</span>
+      </Modal.Header>
+      <Modal.Body>
         <div>
-          <AuthorForm closeModal={closeModal} />
+          <AuthorForm closeModal={closeModal} isOpen={isOpen} />
         </div>
-      </div>
+      </Modal.Body>
     </Modal>
   );
 };
 
-const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
+const AuthorForm = ({
+  closeModal,
+}: {
+  closeModal: () => void;
+  isOpen: boolean;
+}) => {
   const { form, errors, validate, handleFormInput, resetForm } = useForm<
     Omit<Author, "id">
   >({
@@ -83,26 +83,27 @@ const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
       resetForm();
     },
   });
+
   return (
     <form onSubmit={submit}>
-      <div className="w-full ">
-        <div className="px-2 mb-2">
-          <Input
-            label="Peron's name or organization's name"
-            error={errors?.name}
-            type="text"
-            name="name"
-            onChange={handleFormInput}
-            value={form.name}
-          />
-        </div>
+      <div>
+        <CustomInput
+          label="Peron's name or organization's name"
+          error={errors?.name}
+          type="text"
+          name="name"
+          onChange={handleFormInput}
+          value={form.name}
+        />
+      </div>
 
-        <div className="flex gap-1 p-2">
-          <PrimaryButton>Add author</PrimaryButton>
-          <LighButton type="button" onClick={closeModal}>
-            Cancel
-          </LighButton>
-        </div>
+      <div className="flex gap-1 mt-3">
+        <Button color="primary" type="submit">
+          Add author
+        </Button>
+        <Button color="light" type="button" onClick={closeModal}>
+          Cancel
+        </Button>
       </div>
     </form>
   );

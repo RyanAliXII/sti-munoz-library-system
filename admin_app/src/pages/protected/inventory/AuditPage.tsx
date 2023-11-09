@@ -1,33 +1,17 @@
-import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
-
-import { Audit, ModalProps } from "@definitions/types";
-import { useForm } from "@hooks/useForm";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AiOutlineEdit, AiOutlineScan } from "react-icons/ai";
-import Modal from "react-responsive-modal";
-import { Link } from "react-router-dom";
-import { AuditSchemaValidation } from "../catalog/schema";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { ErrorMsg } from "@definitions/var";
-import { useSwitch } from "@hooks/useToggle";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-import { Input } from "@components/ui/form/Input";
-import { useRequest } from "@hooks/useRequest";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
+import Container from "@components/ui/container/Container";
+import { Audit } from "@definitions/types";
+import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { AiOutlineEdit, AiOutlinePlus, AiOutlineScan } from "react-icons/ai";
+import { Link } from "react-router-dom";
 
 import Tippy from "@tippyjs/react";
+import { Button, Table } from "flowbite-react";
+import EditAuditModal from "./EditAuditModal";
+import NewAuditModal from "./NewAuditModal";
 
 const AuditPage = () => {
   const {
@@ -65,53 +49,54 @@ const AuditPage = () => {
   });
   return (
     <>
-      <ContainerNoBackground className="flex gap-2 justify-between">
-        <h1 className="text-3xl font-bold text-gray-700">Inventory Audit</h1>
-        <PrimaryButton type="button" onClick={openNewAuditModal}>
-          New Audit
-        </PrimaryButton>
-      </ContainerNoBackground>
-      <LoadingBoundary isLoading={isFetching} isError={isError}>
-        <Container>
+      <Container>
+        <LoadingBoundary isLoading={isFetching} isError={isError}>
+          <div className="flex justify-end w-full py-4">
+            <Button color="primary" onClick={openNewAuditModal}>
+              <div className="flex gap-2">
+                <AiOutlinePlus />
+                <span>New Audit</span>
+              </div>
+            </Button>
+          </div>
           <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Name</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
+            <Table.Head>
+              <Table.HeadCell>Name</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {audits?.map((audit) => {
                 return (
-                  <BodyRow key={audit.id}>
-                    <Td>{audit.name}</Td>
-                    <Td className="flex gap-2">
+                  <Table.Row key={audit.id}>
+                    <Table.Cell>{audit.name}</Table.Cell>
+                    <Table.Cell className="flex gap-2">
                       <Tippy content="Scan Books">
                         <Link to={`/inventory/audits/${audit.id}`}>
-                          <button className="p-2 border rounded border-blue-500">
-                            <AiOutlineScan className="text-blue-500 text-lg cursor-pointer"></AiOutlineScan>
-                          </button>
+                          <Button size="xs" color="primary">
+                            <AiOutlineScan className=" text-lg cursor-pointer"></AiOutlineScan>
+                          </Button>
                         </Link>
                       </Tippy>
                       <Tippy content="Edit">
-                        <button className="p-2 border border-yellow-500 rounded">
-                          <AiOutlineEdit
-                            className="text-yellow-500  text-lg cursor-pointer"
-                            onClick={() => {
-                              setEditModalFormData({ ...audit });
-                              openEditAuditModal();
-                            }}
-                          ></AiOutlineEdit>
-                        </button>
+                        <Button
+                          size="xs"
+                          color="secondary"
+                          onClick={() => {
+                            setEditModalFormData({ ...audit });
+                            openEditAuditModal();
+                          }}
+                        >
+                          <AiOutlineEdit className=" text-lg cursor-pointer"></AiOutlineEdit>
+                        </Button>
                       </Tippy>
-                    </Td>
-                  </BodyRow>
+                    </Table.Cell>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
+            </Table.Body>
           </Table>
-        </Container>
-      </LoadingBoundary>
+        </LoadingBoundary>
+      </Container>
       <NewAuditModal
         closeModal={closeNewAuditModal}
         isOpen={isNewAuditModalOpen}
@@ -125,161 +110,4 @@ const AuditPage = () => {
   );
 };
 
-type NewAuditForm = Omit<Audit, "id">;
-const NewAuditModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, validate, handleFormInput, resetForm } =
-    useForm<NewAuditForm>({
-      initialFormData: {
-        name: "",
-      },
-      schema: AuditSchemaValidation,
-    });
-  const queryClient = useQueryClient();
-  const submit = async (event: BaseSyntheticEvent) => {
-    event.preventDefault();
-    try {
-      let parsedForm = await validate();
-      if (!parsedForm) return;
-      newAudit.mutate(parsedForm);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const { Post } = useRequest();
-  const newAudit = useMutation({
-    mutationFn: (parsedForm: NewAuditForm) =>
-      Post("/inventory/audits", parsedForm, {}),
-    onSuccess: () => {
-      toast.success("New audit has been added.");
-      queryClient.invalidateQueries(["audits"]);
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
-      closeModal();
-      resetForm();
-    },
-  });
-
-  if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
-
-  return (
-    <Modal
-      open={isOpen}
-      onClose={closeModal}
-      classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
-      showCloseIcon={false}
-      center
-    >
-      <form onSubmit={submit}>
-        <div className="w-full h-44">
-          <div className="px-2 mb-3">
-            <h1 className="text-xl font-medium">New Audit</h1>
-          </div>
-          <div className="px-2 mb-2">
-            <Input
-              label="Name"
-              error={errors?.name}
-              type="text"
-              name="name"
-              onChange={handleFormInput}
-              value={form.name}
-            />
-          </div>
-          <div className="flex gap-1 p-2">
-            <PrimaryButton>Add audit</PrimaryButton>
-            <LighButton type="button" onClick={closeModal}>
-              Cancel
-            </LighButton>
-          </div>
-        </div>
-      </form>
-    </Modal>
-  );
-};
-interface EditModalProps<T> extends ModalProps {
-  formData: T;
-}
-const EditAuditModal: React.FC<EditModalProps<Audit>> = ({
-  isOpen,
-  closeModal,
-  formData,
-}) => {
-  const { form, errors, validate, handleFormInput, resetForm, setForm } =
-    useForm<Audit>({
-      initialFormData: {
-        name: "",
-      },
-      schema: AuditSchemaValidation,
-    });
-
-  useEffect(() => {
-    setForm({ ...formData });
-  }, [formData]);
-  const queryClient = useQueryClient();
-  const submit = async (event: BaseSyntheticEvent) => {
-    event.preventDefault();
-    try {
-      let parsedForm = await validate();
-      if (!parsedForm) return;
-      updateAudit.mutate(parsedForm);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const { Put } = useRequest();
-  const updateAudit = useMutation({
-    mutationFn: (parsedForm: Audit) =>
-      Put(`/inventory/audits/${parsedForm.id}`, parsedForm),
-    onSuccess: () => {
-      toast.success("Audit has been updated.");
-      queryClient.invalidateQueries(["audits"]);
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
-      closeModal();
-    },
-  });
-
-  if (!isOpen) return null; //; temporary fix for react-responsive-modal bug
-
-  return (
-    <Modal
-      open={isOpen}
-      onClose={closeModal}
-      classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
-      showCloseIcon={false}
-      center
-    >
-      <form onSubmit={submit}>
-        <div className="w-full h-44">
-          <div className="px-2 mb-3">
-            <h1 className="text-xl font-medium">Update Audit</h1>
-          </div>
-          <div className="px-2 mb-2">
-            <Input
-              label="Name"
-              error={errors?.name}
-              type="text"
-              name="name"
-              onChange={handleFormInput}
-              value={form.name}
-            />
-          </div>
-          <div className="flex gap-1 p-2">
-            <PrimaryButton>Update</PrimaryButton>
-            <LighButton type="button" onClick={closeModal}>
-              Cancel
-            </LighButton>
-          </div>
-        </div>
-      </form>
-    </Modal>
-  );
-};
 export default AuditPage;

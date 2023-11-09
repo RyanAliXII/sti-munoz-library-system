@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, createContext } from "react";
-import { useAuthContext } from "./AuthContext";
+import { ReactNode, createContext, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useAuthContext } from "./AuthContext";
 
 const SocketContext = createContext({});
 

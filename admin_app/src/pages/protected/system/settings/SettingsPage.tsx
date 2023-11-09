@@ -2,19 +2,11 @@ import { ButtonClasses } from "@components/ui/button/Button";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
-import {
-  BodyRow,
-  HeadingRow,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-} from "@components/ui/table/Table";
 import { Settings } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
+import { Button, Table } from "flowbite-react";
 import { AiOutlineEdit } from "react-icons/ai";
 
 const SettingsPage = () => {
@@ -39,42 +31,33 @@ const SettingsPage = () => {
   });
   return (
     <>
-      <ContainerNoBackground>
-        <h1 className="text-3xl font-bold">App Settings</h1>
-      </ContainerNoBackground>
       <Container>
         {
           <Table>
-            <Thead>
-              <HeadingRow>
-                <Th>Setting</Th>
-                <Th>Description</Th>
-                <Th>Value</Th>
-                <Th></Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
+            <Table.Head>
+              <Table.HeadCell>Setting</Table.HeadCell>
+              <Table.HeadCell>Description</Table.HeadCell>
+              <Table.HeadCell>Value</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {Object.values(settings ?? {}).map((setting) => {
                 return (
-                  <BodyRow key={setting.id}>
-                    <Td>{setting.label}</Td>
-                    <Td>{setting.description}</Td>
-                    <Td>{setting.value}</Td>
-                    <Td>
+                  <Table.Row key={setting.id}>
+                    <Table.Cell>{setting.label}</Table.Cell>
+                    <Table.Cell>{setting.description}</Table.Cell>
+                    <Table.Cell>{setting.value}</Table.Cell>
+                    <Table.Cell>
                       <Tippy content="Edit Setting">
-                        <button
-                          className={
-                            ButtonClasses.SecondaryOutlineButtonClasslist
-                          }
-                        >
+                        <Button color="secondary">
                           <AiOutlineEdit className="text-lg"></AiOutlineEdit>
-                        </button>
+                        </Button>
                       </Tippy>
-                    </Td>
-                  </BodyRow>
+                    </Table.Cell>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
+            </Table.Body>
           </Table>
         }
       </Container>
