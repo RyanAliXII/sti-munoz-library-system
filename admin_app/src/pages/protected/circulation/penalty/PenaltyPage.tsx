@@ -109,7 +109,7 @@ const PenaltyPage = () => {
               <Table.HeadCell>Status</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
-            <Table.Body>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {penalties?.map((penalty) => (
                 <Table.Row key={penalty.id}>
                   <Table.Cell>

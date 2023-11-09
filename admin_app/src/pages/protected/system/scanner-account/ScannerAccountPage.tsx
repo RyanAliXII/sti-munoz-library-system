@@ -1,5 +1,4 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { ButtonClasses } from "@components/ui/button/Button";
 
 import { ScannerAccount as ScannerAccountType } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
@@ -12,11 +11,11 @@ import { toast } from "react-toastify";
 
 import Container from "@components/ui/container/Container";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import TableContainer from "@components/ui/table/TableContainer";
 import { Button, Table } from "flowbite-react";
 import { BsTrashFill } from "react-icons/bs";
 import EditAccountModal from "./EditAccountModal";
 import NewAccountModal from "./NewAccountModal";
-import TableContainer from "@components/ui/table/TableContainer";
 
 const ScannerAccountPage = () => {
   const { Get, Delete } = useRequest();
@@ -89,7 +88,7 @@ const ScannerAccountPage = () => {
                 <Table.HeadCell>Description</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="divide-y dark:divide-gray-700">
                 {scannerAccounts?.map((account) => {
                   return (
                     <Table.Row key={account.id}>

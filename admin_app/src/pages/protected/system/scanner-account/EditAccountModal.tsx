@@ -2,13 +2,13 @@ import { ModalProps, ScannerAccount } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { BaseSyntheticEvent, useEffect } from "react";
 
-import { EditAccountValidation } from "../schema";
+import { CustomInput } from "@components/ui/form/Input";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { toast } from "react-toastify";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
-import { CustomInput } from "@components/ui/form/Input";
+import { toast } from "react-toastify";
+import { EditAccountValidation } from "../schema";
 
 interface EditAccountModalProps extends ModalProps {
   account: ScannerAccount;

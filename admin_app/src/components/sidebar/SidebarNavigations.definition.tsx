@@ -82,6 +82,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Audit",
         to: "/inventory/audits",
+        icon: MdOutlineInventory,
         items: [],
         requiredPermissions: ["Audit.Access"],
       },

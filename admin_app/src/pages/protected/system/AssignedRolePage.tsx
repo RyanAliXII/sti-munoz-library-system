@@ -69,7 +69,7 @@ const AssignedRolePage = () => {
               <Table.HeadCell>Role</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
-            <Table.Body>
+            <Table.Body className="divide-y dark:divide-gray-700">
               {accounts?.map((accountRole) => {
                 return (
                   <Table.Row key={accountRole.account.id}>
