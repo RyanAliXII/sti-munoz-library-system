@@ -219,9 +219,7 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
   return (
     <Table.Row>
       <Table.Cell>
-        <div className=" font-semibold text-gray-900 dark:text-white">
-          {author.name}
-        </div>
+        <div>{author.name}</div>
       </Table.Cell>
       <Table.Cell className="p-2 flex gap-2 items-center">
         <HasAccess requiredPermissions={["Author.Access"]}>

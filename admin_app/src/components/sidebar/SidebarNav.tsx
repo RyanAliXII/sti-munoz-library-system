@@ -37,22 +37,45 @@ const SidebarNav: FC = function () {
 const SiderbarItems = () => {
   const location = useLocation();
   const activeClass = "bg-gray-100 dark:bg-gray-700";
+
   return (
     <Sidebar.Items>
       <Sidebar.ItemGroup>
         {SidebarNavigationItems.map((item) => {
           if (item.items.length > 0) {
+            if (item.isCollapse) {
+              return (
+                <Sidebar.Collapse
+                  key={item.text}
+                  label={item.text}
+                  icon={item.icon}
+                >
+                  {item.items.map((innerItem) => {
+                    return (
+                      <Sidebar.Item
+                        key={innerItem.to}
+                        to={innerItem.to}
+                        as={NavLink}
+                        className={
+                          location.pathname === innerItem.to ? activeClass : ""
+                        }
+                      >
+                        {innerItem.text}
+                      </Sidebar.Item>
+                    );
+                  })}
+                </Sidebar.Collapse>
+              );
+            }
+
             return (
-              <Sidebar.Collapse
-                key={item.text}
-                label={item.text}
-                icon={item.icon}
-              >
+              <Sidebar.ItemGroup>
                 {item.items.map((innerItem) => {
                   return (
                     <Sidebar.Item
                       key={innerItem.to}
                       to={innerItem.to}
+                      icon={innerItem.icon}
                       as={NavLink}
                       className={
                         location.pathname === innerItem.to ? activeClass : ""
@@ -62,7 +85,7 @@ const SiderbarItems = () => {
                     </Sidebar.Item>
                   );
                 })}
-              </Sidebar.Collapse>
+              </Sidebar.ItemGroup>
             );
           }
 

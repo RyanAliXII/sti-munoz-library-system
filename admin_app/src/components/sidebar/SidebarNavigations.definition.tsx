@@ -1,15 +1,18 @@
 import {
   MdManageAccounts,
   MdOutlineInventory,
+  MdOutlinePublish,
   MdRotate90DegreesCcw,
 } from "react-icons/md";
-
+import { TfiWrite } from "react-icons/tfi";
+import { SiBookstack } from "react-icons/si";
 import { AiOutlineDashboard } from "react-icons/ai";
 
 import { FC, SVGProps } from "react";
 
 import { FiBookOpen, FiSettings } from "react-icons/fi";
 import { Bs123 } from "react-icons/bs";
+import { GiBookshelf } from "react-icons/gi";
 
 export type SidebarNavItem = {
   to: string;
@@ -37,12 +40,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Book",
         to: "/books",
         items: [],
-        icon: Bs123,
+        icon: GiBookshelf,
         requiredPermissions: ["Book.Access", "Section.Access"],
       },
       {
         text: "Accession",
         to: "/books/accessions",
+        icon: Bs123,
         requiredPermissions: ["Book.Access"],
         items: [],
       },
@@ -50,16 +54,19 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Author",
         to: "/books/authors",
         requiredPermissions: ["Author.Access"],
+        icon: TfiWrite,
         items: [],
       },
       {
         text: "Section",
         to: "/books/sections",
         requiredPermissions: ["Section.Access"],
+        icon: SiBookstack,
         items: [],
       },
       {
         text: "Publisher",
+        icon: MdOutlinePublish,
         requiredPermissions: ["Publisher.Access"],
         to: "/books/publishers",
         items: [],
@@ -97,6 +104,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   {
     text: "Borrowing",
     to: "/",
+    isCollapse: true,
     icon: MdRotate90DegreesCcw,
     items: [
       {
@@ -127,6 +135,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     text: "System",
     to: "/",
     icon: FiSettings,
+    isCollapse: true,
     items: [
       {
         requiredPermissions: ["ACL.Access"],

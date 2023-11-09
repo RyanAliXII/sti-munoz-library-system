@@ -144,9 +144,7 @@ const PublisherPage = () => {
                   return (
                     <Table.Row key={publisher.id}>
                       <Table.Cell>
-                        <div className="text-gray-900 dark:text-white font-semibold">
-                          {publisher.name}
-                        </div>
+                        <div>{publisher.name}</div>
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex gap-2">
