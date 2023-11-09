@@ -50,7 +50,11 @@ const flowbiteTheme: CustomFlowbiteTheme = {
       on: "transition-all duration-75 ease-in group-hover:bg-opacity-0 group-hover:text-inherit",
     },
     size: {
+      xs: "text-xs px-2 py-1",
+      sm: "text-sm px-3 py-1.5",
       md: "text-sm px-3 py-2",
+      lg: "text-base px-5 py-2.5",
+      xl: "text-base px-6 py-3",
     },
   },
   dropdown: {

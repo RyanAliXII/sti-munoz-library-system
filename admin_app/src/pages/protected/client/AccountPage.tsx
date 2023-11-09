@@ -1,14 +1,3 @@
-import ProfileIcon from "@components/ProfileIcon";
-
-import {
-  Table,
-  BodyRow,
-  HeadingRow,
-  Td,
-  Th,
-  Tbody,
-  Thead,
-} from "@components/ui/table/Table";
 import Container, {
   ContainerNoBackground,
 } from "@components/ui/container/Container";
@@ -16,29 +5,32 @@ import Container, {
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
-import { Input } from "@components/ui/form/Input";
 import { PrimaryButton } from "@components/ui/button/Button";
-import { TbFileImport } from "react-icons/tb";
+import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
-import Modal from "react-responsive-modal";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Uppy from "@uppy/core";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { TbFileImport } from "react-icons/tb";
+import Modal from "react-responsive-modal";
 
-import "@uppy/core/dist/style.css";
-import "@uppy/dashboard/dist/style.css";
-import XHRUpload from "@uppy/xhr-upload";
-import Dashboard from "@uppy/react/src/Dashboard";
-import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import { toast } from "react-toastify";
-import { useRequest } from "@hooks/useRequest";
 import { useMsal } from "@azure/msal-react";
 import HasAccess from "@components/auth/HasAccess";
-import { apiScope } from "@definitions/configs/msal/scopes";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { apiScope } from "@definitions/configs/msal/scopes";
+import { useRequest } from "@hooks/useRequest";
+import "@uppy/core/dist/style.css";
+import "@uppy/dashboard/dist/style.css";
+import Dashboard from "@uppy/react/src/Dashboard";
+import XHRUpload from "@uppy/xhr-upload";
+import { toast } from "react-toastify";
 
-import ReactPaginate from "react-paginate";
+import CustomPagination from "@components/pagination/CustomPagination";
+import TableContainer from "@components/ui/table/TableContainer";
+import { Avatar, Button, Table } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
+
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -48,9 +40,7 @@ const uppy = new Uppy({
   headers: {
     Authorization: `Bearer`,
   },
-  // getResponseError(responseText, response) {
-  //   return new Error(JSON.parse(responseText).message);
-  // },
+
   endpoint: `${BASE_URL_V1}/accounts/bulk`,
 });
 const AccountPage = () => {
@@ -96,89 +86,98 @@ const AccountPage = () => {
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
   };
-  const paginationClass =
-    totalPages <= 1 ? "hidden" : "flex gap-2 items-center";
+
   return (
     <>
       <div className="w-full lg:w-11/12 p-6 lg:p-2 mx-auto mb-5 flex items-center gap-5">
-        <h1 className="text-3xl font-bold text-gray-700">Accounts</h1>
-        <div className="w-8/12 ">
-          <Input
-            type="text"
-            className="mt-5"
-            placeholder="Search account by email or name"
-            onChange={handleSearch}
-            defaultValue={filterParams?.keyword}
-          ></Input>
-        </div>
         <div>
-          <HasAccess requiredPermissions={["Account.Access"]}>
-            <PrimaryButton
-              className="flex gap-1 items-center"
-              onClick={() => {
-                openImportModal();
-              }}
-            >
-              <TbFileImport className="text-lg" />
-              Import
-            </PrimaryButton>
-          </HasAccess>
+          <HasAccess requiredPermissions={["Account.Access"]}></HasAccess>
         </div>
       </div>
-      <LoadingBoundaryV2
-        isLoading={isFetching}
-        isError={isError}
-        contentLoadDelay={150}
-      >
-        <Container>
-          <Table>
-            <Thead>
-              <HeadingRow>
-                <Td></Td>
-                <Th>Email</Th>
-                <Th>Client</Th>
-              </HeadingRow>
-            </Thead>
-            <Tbody>
-              {accounts?.map((account) => {
-                return (
-                  <BodyRow key={account.id}>
-                    <Td>
-                      <div className="h-10">
-                        <ProfileIcon
-                          surname={account.surname}
-                          givenName={account.givenName}
-                        />
-                      </div>
-                    </Td>
-                    <Td>{account.email}</Td>
-                    <Td>{account.displayName}</Td>
-                  </BodyRow>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </Container>
-        <ContainerNoBackground>
-          <ReactPaginate
-            nextLabel="Next"
-            pageLinkClassName="border px-3 py-0.5  text-center rounded"
-            pageRangeDisplayed={5}
-            pageCount={totalPages}
-            disabledClassName="opacity-60 pointer-events-none"
-            onPageChange={({ selected }) => {
-              setFilterParams({ page: selected + 1 });
+
+      <Container>
+        <div className="flex items-center justify-between py-4">
+          <CustomInput
+            type="text"
+            placeholder="Search accounts"
+            onChange={handleSearch}
+            defaultValue={filterParams?.keyword}
+          ></CustomInput>
+
+          <Button
+            color="primary"
+            onClick={() => {
+              openImportModal();
             }}
-            className={paginationClass}
-            previousLabel="Previous"
-            forcePage={filterParams?.page - 1}
-            previousClassName="px-2 border text-gray-500 py-1 rounded"
-            nextClassName="px-2 border text-blue-500 py-1 rounded"
-            renderOnZeroPageCount={null}
-            activeClassName="border-none bg-blue-500 text-white rounded"
-          />
-        </ContainerNoBackground>
-      </LoadingBoundaryV2>
+          >
+            <TbFileImport className="text-lg" />
+            Import
+          </Button>
+        </div>
+        <TableContainer>
+          <LoadingBoundaryV2
+            isLoading={isFetching}
+            isError={isError}
+            contentLoadDelay={150}
+          >
+            <Table>
+              <Table.Head>
+                <Table.HeadCell></Table.HeadCell>
+                <Table.HeadCell>User</Table.HeadCell>
+                <Table.HeadCell>Email</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y dark:divide-gray-700">
+                {accounts?.map((account) => {
+                  const url = new URL(
+                    "https://ui-avatars.com/api/&background=2563EB&color=fff"
+                  );
+                  url.searchParams.set(
+                    "name",
+                    `${account.givenName} ${account.surname}`
+                  );
+                  return (
+                    <Table.Row key={account.id}>
+                      <Table.Cell>
+                        <div className="h-10">
+                          <Avatar img={url.toString()} rounded></Avatar>
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <div className="text-base font-semibold text-gray-900 dark:text-white">
+                          {account.givenName.length + account.surname.length ===
+                          0
+                            ? "Unnamed"
+                            : `${account.givenName} ${account.surname}`}
+                        </div>
+                        <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                          {account.displayName}
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>{account.email}</Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+            <div className="py-3">
+              <CustomPagination
+                nextLabel="Next"
+                pageRangeDisplayed={5}
+                pageCount={totalPages}
+                onPageChange={({ selected }) => {
+                  setFilterParams({ page: selected + 1 });
+                }}
+                isHidden={totalPages <= 1}
+                previousLabel="Previous"
+                forcePage={filterParams?.page - 1}
+                renderOnZeroPageCount={null}
+              />
+            </div>
+          </LoadingBoundaryV2>
+        </TableContainer>
+      </Container>
+      <ContainerNoBackground></ContainerNoBackground>
+
       <HasAccess requiredPermissions={["Account.Access"]}>
         {isImportModalOpen && (
           <Modal

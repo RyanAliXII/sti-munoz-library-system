@@ -4,10 +4,11 @@ import { Input } from "@components/ui/form/Input";
 import { Book, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
-import { format, isMatch, isBefore, isEqual } from "date-fns";
+import { format, isBefore, isEqual, isMatch } from "date-fns";
+import { Modal } from "flowbite-react";
 
 import React, { FormEvent } from "react";
-import Modal from "react-responsive-modal";
+
 import { object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
@@ -61,41 +62,34 @@ export const DueDateInputModal: React.FC<DueDateInputModelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Modal
-      focusTrapped={false}
-      open={isOpen}
-      onClose={closeModal}
-      center
-      showCloseIcon={false}
-      classNames={{ modal: "w-11/12 md:w-5/12 lg:w-5/12 xl:w-3/12 rounded" }}
-      containerId="dueDateInputOverlay"
-      modalId="dueDateInputModal"
-    >
-      <form onSubmit={onSubmit}>
-        <div className="w-full  mt-2">
-          <div className="px-2 mb-4">
-            <h1 className="text-xl font-medium">Approve Request</h1>
-          </div>
-          <div className="mb-3">
-            <div>
-              <Input
-                type="date"
-                name="date"
-                onChange={handleFormInput}
-                label="Due date"
-                error={errors?.date}
-                min={format(new Date(), "yyyy-MM-dd")}
-              />
+    <Modal show={isOpen} onClose={closeModal} dismissible>
+      <Modal.Body>
+        <form onSubmit={onSubmit}>
+          <div className="w-full  mt-2">
+            <div className="px-2 mb-4">
+              <h1 className="text-xl font-medium">Approve Request</h1>
+            </div>
+            <div className="mb-3">
+              <div>
+                <Input
+                  type="date"
+                  name="date"
+                  onChange={handleFormInput}
+                  label="Due date"
+                  error={errors?.date}
+                  min={format(new Date(), "yyyy-MM-dd")}
+                />
+              </div>
+            </div>
+            <div className="flex gap-1 mt-2 p-2">
+              <PrimaryButton>Save</PrimaryButton>
+              <LighButton onClick={closeModal} type="button">
+                Cancel
+              </LighButton>
             </div>
           </div>
-          <div className="flex gap-1 mt-2 p-2">
-            <PrimaryButton>Save</PrimaryButton>
-            <LighButton onClick={closeModal} type="button">
-              Cancel
-            </LighButton>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };

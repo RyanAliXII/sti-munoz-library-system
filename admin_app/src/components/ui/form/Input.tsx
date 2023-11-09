@@ -1,5 +1,5 @@
 import React, { ButtonHTMLAttributes } from "react";
-import { Checkbox, CheckboxProps, TextInput } from "flowbite-react";
+import { Checkbox, CheckboxProps, Label, TextInput } from "flowbite-react";
 import { error } from "console";
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 export interface InputProps extends HTMLInputProps {
@@ -95,11 +95,7 @@ export const CustomInput = React.forwardRef<HTMLInputElement, InputProps>(
     }
     return (
       <>
-        {props.label && (
-          <label className={InputClasses.LabelClasslist} htmlFor={props?.name}>
-            {props.label}
-          </label>
-        )}
+        {props.label && <Label>{props.label}</Label>}
         <TextInput {...copyProps} ref={ref}></TextInput>
         <div className="h-2 flex items-center py-2 mt-1">
           <small className="text-red-500 ml-1">{props.error}</small>
