@@ -1,4 +1,5 @@
 import {
+  MdAccountCircle,
   MdManageAccounts,
   MdOutlineInventory,
   MdOutlinePublish,
@@ -32,7 +33,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
   {
     text: "Catalog",
-    to: "",
+    to: "/catalog",
     icon: FiBookOpen,
     isCollapse: false,
     items: [
@@ -76,7 +77,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
 
   {
     text: "Inventory",
-    to: "/",
+    to: "/inventory",
     icon: MdOutlineInventory,
     items: [
       {
@@ -90,13 +91,14 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
   {
     text: "Client",
-    to: "/",
+    to: "/clients",
     icon: MdManageAccounts,
     items: [
       {
         text: "Account",
         requiredPermissions: ["Account.Access"],
         to: "/clients/accounts",
+        icon: MdAccountCircle,
         items: [],
       },
     ],
@@ -104,7 +106,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
 
   {
     text: "Borrowing",
-    to: "/",
+    to: "/borrowing",
     isCollapse: true,
     icon: MdRotate90DegreesCcw,
     items: [
@@ -134,7 +136,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
   },
   {
     text: "System",
-    to: "/",
+    to: "/system",
     icon: FiSettings,
     isCollapse: true,
     items: [

@@ -47,7 +47,7 @@ const SiderbarItems = () => {
             if (item.isCollapse) {
               return (
                 <Sidebar.Collapse
-                  key={item.text}
+                  key={item.to}
                   label={item.text}
                   icon={item.icon}
                 >
@@ -70,7 +70,7 @@ const SiderbarItems = () => {
             }
 
             return (
-              <Sidebar.ItemGroup>
+              <Sidebar.ItemGroup key={item.to}>
                 {item.items.map((innerItem) => {
                   return (
                     <Sidebar.Item
