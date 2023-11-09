@@ -35,15 +35,17 @@ const flowbiteTheme: CustomFlowbiteTheme = {
     color: {
       primary:
         "text-white bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800",
+      secondary:
+        "text-white bg-yellow-300  dark:bg-yellow-300  focus:ring-yellow-200 dark:focus:ring-yellow-200 hover:bg-yellow-300 hover:bg-yellow-400",
       light:
         "group flex items-center justify-center p-0.5 text-center font-medium relative focus:z-10 focus:outline-none text-gray-900 bg-white border border-gray-300 enabled:hover:bg-gray-100 focus:ring-gray-300 dark:bg-gray-600 dark:text-white dark:border-gray-600 dark:enabled:hover:bg-gray-700 dark:enabled:hover:border-gray-700 dark:focus:ring-gray-700 rounded-lg focus:ring-2",
     },
     outline: {
       color: {
         primary:
-          "text-primary-500 bg-transparent dark:bg-transparent border border-primary-500 focus:ring-primary-300  dark:focus:ring-primary-300",
+          "text-primary-500 bg-transparent dark:bg-transparent border border-primary-500 focus:ring-primary-300  dark:focus:ring-primary-300 hover:bg-transparent hover:ring-2 hover:ring-primary-400",
         secondary:
-          "text-yellow-500 bg-transparent dark:bg-transparent border  border-yellow-500 focus:ring-yellow-200 dark:focus:ring-yellow-200",
+          "text-yellow-400 bg-transparent dark:bg-transparent border  border-yellow-400 focus:ring-yellow-200 dark:focus:ring-yellow-200 hover:bg-transparent hover:ring-2 hover:ring-yellow-300",
       },
       on: "transition-all duration-75 ease-in group-hover:bg-opacity-0 group-hover:text-inherit",
     },

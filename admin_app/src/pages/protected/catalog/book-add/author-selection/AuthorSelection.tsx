@@ -111,7 +111,11 @@ const AuthorSelection = () => {
                     <Table.Cell>
                       <Checkbox color="primary" readOnly checked={isChecked} />
                     </Table.Cell>
-                    <Table.Cell>{author.name}</Table.Cell>
+                    <Table.Cell>
+                      <div className=" font-semibold text-gray-900 dark:text-white">
+                        {author.name}
+                      </div>
+                    </Table.Cell>
                   </Table.Row>
                 );
               })}

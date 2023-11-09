@@ -58,3 +58,15 @@
 .uppy-DashboardContent-bar {
   @apply text-gray-900 dark:text-white;
 }
+
+.small-scroll::-webkit-scrollbar {
+  @apply w-1;
+}
+
+.small-scroll::-webkit-scrollbar-track {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.small-scroll::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700;
+}

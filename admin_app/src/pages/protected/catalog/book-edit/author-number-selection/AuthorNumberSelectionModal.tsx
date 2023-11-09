@@ -46,7 +46,7 @@ const AuthorNumberSelectionModal: React.FC<ModalProps> = ({
       size={"5xl"}
       dismissible
     >
-      <Modal.Body style={{ maxHeight: "800px" }}>
+      <Modal.Body style={{ maxHeight: "800px" }} className="small-scroll">
         <div>
           <nav className="mb-6">
             <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b  border-gray-200 dark:border-b-gray-600 ">

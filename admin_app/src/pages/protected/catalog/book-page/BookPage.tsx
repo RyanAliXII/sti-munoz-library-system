@@ -169,8 +169,6 @@ const BookPage = () => {
                           <Tippy content="View Printables">
                             <Button
                               color="primary"
-                              gradientMonochrome={"blue"}
-                              outline
                               onClick={() => {
                                 setBookForPrintingAndOpenModal(book);
                               }}
@@ -191,7 +189,6 @@ const BookPage = () => {
                                 as={Link}
                                 color="secondary"
                                 to={`/books/edit/${book.id}`}
-                                outline
                               >
                                 <AiOutlineEdit className="text-lg cursor-pointer" />
                               </Button>

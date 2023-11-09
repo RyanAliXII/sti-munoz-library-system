@@ -134,7 +134,11 @@ const DDCTable = ({ closeModal }: DDCTableProps) => {
                       readOnly
                     ></Checkbox>
                   </Table.Cell>
-                  <Table.Cell>{d.name}</Table.Cell>
+                  <Table.Cell>
+                    <div className=" font-semibold text-gray-900 dark:text-white">
+                      {d.name}
+                    </div>
+                  </Table.Cell>
                   <Table.Cell>{d.number}</Table.Cell>
                 </Table.Row>
               );

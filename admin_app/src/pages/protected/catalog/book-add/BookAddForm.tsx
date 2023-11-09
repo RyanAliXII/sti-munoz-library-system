@@ -1,10 +1,5 @@
 import { CustomInput } from "@components/ui/form/Input";
 
-import {
-  PrimaryButton,
-  PrimaryOutlineButton,
-} from "@components/ui/button/Button";
-
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 
@@ -15,9 +10,7 @@ import CustomSelect from "@components/ui/form/CustomSelect";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MultiValue, SingleValue } from "react-select";
 
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import Container from "@components/ui/container/Container";
 import { FieldRow } from "@components/ui/form/FieldRow";
 import { ErrorMsg } from "@definitions/var";
 import { Editor } from "@tinymce/tinymce-react";
@@ -39,10 +32,10 @@ import { useMsal } from "@azure/msal-react";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import useDebounce from "@hooks/useDebounce";
 import { format } from "date-fns";
+import { Button } from "flowbite-react";
 import CreatableSelect from "react-select/creatable";
 import AddAuthorModal from "./AddAuthorModal";
 import AddPublisherModal from "./AddPublisherModal";
-import { Button } from "flowbite-react";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -468,7 +461,7 @@ const BookAddForm = () => {
             </a>
           </div>
           <div
-            className="mb-10 overflow-y-auto scroll-smooth"
+            className="mb-10 overflow-y-auto scroll-smooth small-scroll"
             style={{ maxHeight: "300px" }}
           >
             {form.authors.length === 0 ? (

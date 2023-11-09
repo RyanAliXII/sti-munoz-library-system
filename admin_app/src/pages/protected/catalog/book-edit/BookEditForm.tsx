@@ -440,7 +440,9 @@ const BookEditForm = () => {
         </Container>
         <Container>
           <div className="mb-5">
-            <h1 className="text-2xl dark:text-white">General Information</h1>
+            <h1 className="text-2xl dark:text-white">
+              Authors and Classification
+            </h1>
             <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
           </div>
           <div className="flex gap-3 mb-5 ">
@@ -458,7 +460,7 @@ const BookEditForm = () => {
             </a>
           </div>
           <div
-            className="mb-10 overflow-y-auto scroll-smooth"
+            className="mb-10 overflow-y-auto scroll-smooth small-scroll"
             style={{ maxHeight: "300px" }}
           >
             {form.authors.length === 0 ? (
@@ -570,7 +572,7 @@ const BookEditForm = () => {
           />
           <div>
             <Button
-              type="button"
+              type="submit"
               color="primary"
               isProcessing={mutation.isLoading}
             >

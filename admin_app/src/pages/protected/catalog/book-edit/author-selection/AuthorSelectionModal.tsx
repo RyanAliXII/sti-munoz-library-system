@@ -26,7 +26,7 @@ const AuthorSelectionModal = ({ closeModal, isOpen }: ModalProps) => {
           </span>
         </Modal.Header>
 
-        <Modal.Body style={{ maxHeight: "700px" }}>
+        <Modal.Body style={{ maxHeight: "700px" }} className="small-scroll">
           <AuthorSelection />
         </Modal.Body>
       </Modal>
