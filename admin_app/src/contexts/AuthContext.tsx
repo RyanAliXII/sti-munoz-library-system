@@ -1,4 +1,5 @@
-import { EventMessage, EventType } from "@azure/msal-browser";
+import { EventMessage } from "@azure/msal-browser/dist/event/EventMessage";
+import { EventType } from "@azure/msal-browser/dist/event/EventType";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
 import axiosClient from "@definitions/configs/axios";

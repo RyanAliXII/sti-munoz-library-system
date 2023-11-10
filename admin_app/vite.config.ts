@@ -5,6 +5,19 @@ export default defineConfig({
   server: {
     port: 5201,
   },
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-select": ["react-select"],
+          "react-router-dom": ["react-router-dom"],
+          "@azure/msal-browser": ["@azure/msal-browser"],
+          "react-pdf": ["react-pdf"],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@components": path.resolve(__dirname, "./src/components"),
