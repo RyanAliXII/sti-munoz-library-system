@@ -12,32 +12,13 @@ import { SocketProvider } from "@contexts/SocketContext";
 import "@assets/css/global.css";
 import "tippy.js/dist/tippy.css";
 import "react-toastify/dist/ReactToastify.min.css";
-import { useEffect } from "react";
 import { useThemeMode } from "flowbite-react";
 const queryClient = new QueryClient();
 
 const App = () => {
   const msalInstance = new PublicClientApplication(msalConfig);
   const router = createBrowserRouter(pages);
-  const [currentTheme, _, toggleMode] = useThemeMode();
-  // useEffect(() => {
-  //   const storageTheme = localStorage.getItem("theme");
-  //   if (!storageTheme) {
-  //     localStorage.setItem("storageTheme", "light");
-  //     return;
-  //   }
-  //   if (storageTheme != "light" && storageTheme != "dark") {
-  //     localStorage.setItem("storageTheme", "light");
-  //     return;
-  //   }
-
-  //   if (currentTheme != storageTheme) {
-  //     let newMode = currentTheme === "dark" ? "light" : "dark";
-  //     localStorage.setItem("theme", newMode);
-  //     toggleMode();
-  //     return;
-  //   }
-  // }, []);
+  const [currentTheme, ,] = useThemeMode();
   return (
     <QueryClientProvider client={queryClient}>
       <MsalProvider instance={msalInstance}>

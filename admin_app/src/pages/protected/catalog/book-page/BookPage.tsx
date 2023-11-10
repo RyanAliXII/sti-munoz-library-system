@@ -1,5 +1,3 @@
-import { ButtonClasses } from "@components/ui/button/Button";
-
 import { Book } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +10,7 @@ import { useRequest } from "@hooks/useRequest";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Tippy from "@tippyjs/react";
 import { TbDatabaseImport } from "react-icons/tb";
-import ReactPaginate from "react-paginate";
+
 import ImportBooksModal from "./ImportBooksModal";
 import useDebounce from "@hooks/useDebounce";
 import { isValid } from "date-fns";

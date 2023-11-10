@@ -1,5 +1,5 @@
-import { array, number, object, string } from "yup";
-import validator from "validator";
+import { object, string, array, number } from "yup";
+import isISBN from "validator/lib/isISBN";
 export const CreateAuthorSchema = object().shape({
   name: string()
     .max(100, "Name should not exceed 100 characters.")
@@ -30,7 +30,7 @@ export const BookSchema = object().shape({
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
       if (!value) return true;
       if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
+      return isISBN(value ?? " ");
     }),
   copies: number()
     .typeError("Value must not be empty and should be numeric.")
@@ -84,7 +84,7 @@ export const NewBookSchemaValidation = object().shape({
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
       if (!value) return true;
       if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
+      return isISBN(value ?? " ");
     }),
   copies: number()
     .typeError("Value must not be empty and should be numeric.")
@@ -153,7 +153,7 @@ export const UpdateBookSchemaValidation = object().shape({
     .test("check-isbn", "Invalid ISBN number.", (value: string | undefined) => {
       if (!value) return true;
       if (value.length === 0) return true;
-      return validator.isISBN(value ?? " ");
+      return isISBN(value ?? " ");
     }),
   pages: number()
     .typeError("Value must not be empty and should be numeric.")

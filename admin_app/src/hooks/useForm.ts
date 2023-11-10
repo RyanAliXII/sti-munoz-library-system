@@ -6,7 +6,8 @@ import React, {
 } from "react";
 import { ObjectSchema, ValidationError } from "yup";
 import { ObjectShape } from "yup/lib/object";
-import { get, set } from "lodash";
+import get from "lodash/get";
+import set from "lodash/set";
 import scrollToElement from "scroll-to-element";
 
 type UseFormProps<T> = {

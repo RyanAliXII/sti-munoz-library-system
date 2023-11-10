@@ -1,7 +1,8 @@
-import { Document, Page, pdfjs } from "react-pdf";
 import { useEffect, useState } from "react";
-import { LightOutlineButton } from "@components/ui/button/Button";
-import { CustomInput, Input } from "@components/ui/form/Input";
+import Document from "react-pdf/dist/cjs/Document";
+import Page from "react-pdf/dist/cjs/Page";
+import pdfjs from "react-pdf/dist/cjs/pdfjs";
+import { CustomInput } from "@components/ui/form/Input";
 import { Button } from "flowbite-react";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 const DocumentView = ({ eBookUrl = "" }) => {

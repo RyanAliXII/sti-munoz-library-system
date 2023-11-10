@@ -23,7 +23,10 @@ const NavbarHeader: FC = function () {
     });
   };
   const { toggle } = useSidebarState();
-  const avatarUrl = `https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`;
+  const avatarUrl = new URL(
+    "https://ui-avatars.com/api/&background=2563EB&color=fff"
+  );
+  avatarUrl.searchParams.set("name", `${user.givenName} ${user.surname}`);
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3">
@@ -49,7 +52,13 @@ const NavbarHeader: FC = function () {
             <Dropdown
               arrowIcon={false}
               inline
-              label={<Avatar alt="User settings" img={avatarUrl} rounded />}
+              label={
+                <Avatar
+                  alt="User settings"
+                  img={avatarUrl.toString()}
+                  rounded
+                />
+              }
             >
               <Dropdown.Header>
                 <span className="block text-sm">{user.displayName}</span>

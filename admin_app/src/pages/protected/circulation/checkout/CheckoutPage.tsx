@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Account, Book, DetailedAccession } from "@definitions/types";
 import { useMutation } from "@tanstack/react-query";
 
-import ProfileIcon from "@components/ProfileIcon";
 import { useForm } from "@hooks/useForm";
 
 import Container from "@components/ui/container/Container";
@@ -22,7 +21,7 @@ import ClientSearchBox from "./ClientSearchBox";
 import { ConfirmDialog } from "@components/ui/dialog/Dialog";
 import Tippy from "@tippyjs/react";
 import { format } from "date-fns";
-import { Button, Table } from "flowbite-react";
+import { Avatar, Button, Table } from "flowbite-react";
 import { MdOutlineRemoveCircle } from "react-icons/md";
 
 export interface CheckoutAccession extends DetailedAccession {
@@ -169,6 +168,14 @@ const CheckoutPage = () => {
       toast.error("Client and book is required.");
     }
   };
+
+  const avatarUrl = new URL(
+    "https://ui-avatars.com/api/&background=2563EB&color=fff"
+  );
+  avatarUrl.searchParams.set(
+    "name",
+    `${checkout.client.givenName} ${checkout.client.surname}`
+  );
   return (
     <>
       <Container>
@@ -181,7 +188,7 @@ const CheckoutPage = () => {
             <div>
               <div className="flex gap-5">
                 <div>
-                  <ProfileIcon givenName="test" surname="test"></ProfileIcon>
+                  <Avatar rounded img={avatarUrl.toString()} />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-gray-900 font-bold dark:text-gray-100">
