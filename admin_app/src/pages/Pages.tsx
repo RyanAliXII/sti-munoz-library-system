@@ -1,230 +1,326 @@
 import { createRoutesFromChildren, Route } from "react-router-dom";
-import ProtectedRoutes from "../components/auth/ProtectedRoutes";
-import PublicRoutes from "../components/auth/PublicRoutes";
-import Login from "./Login";
-import AuthorPage from "./protected/catalog/author/AuthorPage";
-import BookAddPage from "./protected/catalog/book-add/BookAddPage";
-import Dashboard from "./protected/Dashboard";
-import SectionPage from "./protected/catalog/section/SectionPage";
-import PublisherPage from "./protected/catalog/publisher/PublisherPage";
-import BookPage from "./protected/catalog/book-page/BookPage";
-import BookEditPage from "./protected/catalog/book-edit/BookEditPage";
-import AccessionPage from "./protected/catalog/AccessionPage";
-import Page404 from "./error/Page404";
-import AuditPage from "./protected/inventory/AuditPage";
-import AuditScanPage from "./protected/inventory/AuditScanPage";
-import AccountPage from "./protected/client/AccountPage";
-import CheckoutPage from "./protected/circulation/checkout/CheckoutPage";
-import BorrowRequestPage from "./protected/circulation/BorrowRequestPage";
-import BorrowedBooksViewPage from "./protected/circulation/BorrowedBooksViewPage";
-import AccessControlPage from "./protected/system/access-control/AccessControlPage";
-import AssignRolePage from "./protected/system/AssignRole";
-import PermissionGate from "@components/auth/PermissionGate";
-import Page403 from "./error/Page403";
-import AssignedRolePage from "./protected/system/AssignedRolePage";
-import SettingsPage from "./protected/system/settings/SettingsPage";
-import PenaltyPage from "./protected/circulation/penalty/PenaltyPage";
-import ScannerAccountPage from "./protected/system/scanner-account/ScannerAccountPage";
-import ClientLogPage from "./protected/system/client-log/ClientLogPage";
+import { lazy, Suspense } from "react";
+import Loader from "@components/Loader";
+import ProtectedRoutes from "@components/auth/ProtectedRoutes";
+import PublicRoutes from "@components/auth/PublicRoutes";
+const LoginPage = lazy(() => import("./Login"));
+const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
+const BookAddPage = lazy(
+  () => import("./protected/catalog/book-add/BookAddPage")
+);
+const Dashboard = lazy(() => import("./protected/Dashboard"));
+const SectionPage = lazy(
+  () => import("./protected/catalog/section/SectionPage")
+);
+const PublisherPage = lazy(
+  () => import("./protected/catalog/publisher/PublisherPage")
+);
+const BookPage = lazy(() => import("./protected/catalog/book-page/BookPage"));
+const BookEditPage = lazy(
+  () => import("./protected/catalog/book-edit/BookEditPage")
+);
+const AccessionPage = lazy(() => import("./protected/catalog/AccessionPage"));
+const Page404 = lazy(() => import("./error/Page404"));
+const AuditPage = lazy(() => import("./protected/inventory/AuditPage"));
+const AuditScanPage = lazy(() => import("./protected/inventory/AuditScanPage"));
+const AccountPage = lazy(() => import("./protected/client/AccountPage"));
+const CheckoutPage = lazy(
+  () => import("./protected/circulation/checkout/CheckoutPage")
+);
+const BorrowRequestPage = lazy(
+  () => import("./protected/circulation/BorrowRequestPage")
+);
+const BorrowedBooksViewPage = lazy(
+  () => import("./protected/circulation/BorrowedBooksViewPage")
+);
+const AccessControlPage = lazy(
+  () => import("./protected/system/access-control/AccessControlPage")
+);
+const AssignRolePage = lazy(() => import("./protected/system/AssignRole"));
+const PermissionGate = lazy(() => import("@components/auth/PermissionGate"));
+const Page403 = lazy(() => import("./error/Page403"));
+const AssignedRolePage = lazy(
+  () => import("./protected/system/AssignedRolePage")
+);
+const SettingsPage = lazy(
+  () => import("./protected/system/settings/SettingsPage")
+);
+const PenaltyPage = lazy(
+  () => import("./protected/circulation/penalty/PenaltyPage")
+);
+const ScannerAccountPage = lazy(
+  () => import("./protected/system/scanner-account/ScannerAccountPage")
+);
+const ClientLogPage = lazy(
+  () => import("./protected/system/client-log/ClientLogPage")
+);
 
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route
+        path="/dashboard"
+        element={
+          <Suspense fallback={<Loader />}>
+            <Dashboard />
+          </Suspense>
+        }
+      />
       <Route
         path="/books"
         element={
-          <PermissionGate
-            requiredPermissions={["Book.Access", "Section.Access"]}
-          >
-            <BookPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={["Book.Access", "Section.Access"]}
+            >
+              <BookPage />
+            </PermissionGate>
+          </Suspense>
         }
       ></Route>
       <Route
         path="/books/accessions"
         element={
-          <PermissionGate requiredPermissions={["Book.Access"]}>
-            <AccessionPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Book.Access"]}>
+              <AccessionPage />
+            </PermissionGate>
+          </Suspense>
         }
       ></Route>
       <Route
         path="/books/new"
         element={
-          <PermissionGate
-            requiredPermissions={[
-              "Book.Access",
-              "Publisher.Access",
-              "Section.Access",
-              "Author.Access",
-            ]}
-          >
-            <BookAddPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={[
+                "Book.Access",
+                "Publisher.Access",
+                "Section.Access",
+                "Author.Access",
+              ]}
+            >
+              <BookAddPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/books/edit/:id"
         element={
-          <PermissionGate
-            requiredPermissions={[
-              "Book.Access",
-              "Publisher.Access",
-              "Section.Access",
-              "Author.Access",
-            ]}
-          >
-            <BookEditPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={[
+                "Book.Access",
+                "Publisher.Access",
+                "Section.Access",
+                "Author.Access",
+              ]}
+            >
+              <BookEditPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/books/authors"
         element={
-          <PermissionGate requiredPermissions={["Author.Access"]}>
-            <AuthorPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Author.Access"]}>
+              <AuthorPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/books/sections"
         element={
-          <PermissionGate requiredPermissions={["Section.Access"]}>
-            <SectionPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Section.Access"]}>
+              <SectionPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/books/publishers"
         element={
-          <PermissionGate requiredPermissions={["Publisher.Access"]}>
-            <PublisherPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Publisher.Access"]}>
+              <PublisherPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/inventory/audits"
         element={
-          <PermissionGate requiredPermissions={["Audit.Access"]}>
-            <AuditPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Audit.Access"]}>
+              <AuditPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/inventory/audits/:id"
         element={
-          <PermissionGate requiredPermissions={["Audit.Access"]}>
-            <AuditScanPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Audit.Access"]}>
+              <AuditScanPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/clients/accounts"
         element={
-          <PermissionGate requiredPermissions={["Account.Access"]}>
-            <AccountPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Account.Access"]}>
+              <AccountPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
 
       <Route
         path="/borrowing/requests"
         element={
-          <PermissionGate requiredPermissions={["Borrowing.Access"]}>
-            <BorrowRequestPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Borrowing.Access"]}>
+              <BorrowRequestPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/system/access-control"
         element={
-          <PermissionGate requiredPermissions={["ACL.Access"]}>
-            <AccessControlPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["ACL.Access"]}>
+              <AccessControlPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/system/access-control/assign"
         element={
-          <PermissionGate
-            requiredPermissions={["ACL.Access", "Account.Access"]}
-          >
-            <AssignRolePage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={["ACL.Access", "Account.Access"]}
+            >
+              <AssignRolePage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/system/access-control/assignments"
         element={
-          <PermissionGate requiredPermissions={["ACL.Access"]}>
-            <AssignedRolePage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["ACL.Access"]}>
+              <AssignedRolePage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/system/settings"
         element={
-          <PermissionGate requiredPermissions={["Settings.Access"]}>
-            <SettingsPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Settings.Access"]}>
+              <SettingsPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/borrowing/requests/:id"
         element={
-          <PermissionGate requiredPermissions={["Borrowing.Access"]}>
-            <BorrowedBooksViewPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Borrowing.Access"]}>
+              <BorrowedBooksViewPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/borrowing/checkout"
         element={
-          <PermissionGate
-            requiredPermissions={[
-              "Borrowing.Access",
-              "Book.Access",
-              "Account.Access",
-            ]}
-          >
-            <CheckoutPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={[
+                "Borrowing.Access",
+                "Book.Access",
+                "Account.Access",
+              ]}
+            >
+              <CheckoutPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/borrowing/penalties"
         element={
-          <PermissionGate
-            requiredPermissions={["Penalty.Access", "Account.Access"]}
-          >
-            <PenaltyPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={["Penalty.Access", "Account.Access"]}
+            >
+              <PenaltyPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/system/scanner-accounts"
         element={
-          <PermissionGate requiredPermissions={["ScannerAccount.Access"]}>
-            <ScannerAccountPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["ScannerAccount.Access"]}>
+              <ScannerAccountPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
       <Route
         path="/system/client-logs"
         element={
-          <PermissionGate requiredPermissions={["ClientLog.Access"]}>
-            <ClientLogPage />
-          </PermissionGate>
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["ClientLog.Access"]}>
+              <ClientLogPage />
+            </PermissionGate>
+          </Suspense>
         }
       />
     </Route>
 
     <Route element={<PublicRoutes restricted={true} />}>
-      <Route path="/" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={<Loader />}>
+            <LoginPage />
+          </Suspense>
+        }
+      />
     </Route>
-    <Route path="/forbidden" element={<Page403 />}></Route>
-    <Route path="*" element={<Page404 />}></Route>
+    <Route
+      path="/forbidden"
+      element={
+        <Suspense fallback={<Loader />}>
+          <Page403 />
+        </Suspense>
+      }
+    ></Route>
+    <Route
+      path="*"
+      element={
+        <Suspense fallback={<Loader />}>
+          <Page404 />
+        </Suspense>
+      }
+    ></Route>
   </>
 );
 
