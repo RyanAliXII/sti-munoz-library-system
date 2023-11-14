@@ -204,6 +204,24 @@ func (ctrler * AccountController)MarkAsActive(ctx * gin.Context) {
 
 	ctx.JSON(httpresp.Success200(nil, "Accounts marked."))
 }
+
+func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.DeleteAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteAccounts"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+
+	ctx.JSON(httpresp.Success200(nil, "Accounts marked."))
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -223,4 +241,5 @@ type AccountControllerInterface interface {
 	GetAccountById(ctx * gin.Context)
 	UpdateProfilePicture(ctx * gin.Context)
 	MarkAsActive(ctx * gin.Context)
+	DeleteAccounts(ctx * gin.Context)
 }

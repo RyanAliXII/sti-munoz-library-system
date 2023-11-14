@@ -120,15 +120,13 @@ const AccountPage = () => {
         }
       ),
     onSuccess: () => {
-      toast.success("Account/s have been activated.");
+      toast.success("Account/s have been deleted.");
       dispatchAccountIdSelection({
         payload: "",
         type: AccountIdsSelectionAction.UnselectAll,
       });
     },
-    onSettled: () => {
-      closeConfirmActivateDialog();
-    },
+    onSettled: () => {},
   });
 
   const isActivateButtonDisabled = selectedAccountIds.length === 0;

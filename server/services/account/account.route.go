@@ -20,4 +20,5 @@ func ClientRoutes(router *gin.RouterGroup) {
 	middlewares.BlockRequestFromClientApp,
 	ctrler.GetAccountRoles)
 	router.PATCH("/activation", ctrler.MarkAsActive)
+	router.PATCH("/deletion", ctrler.DeleteAccounts)
 }
