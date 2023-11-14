@@ -188,16 +188,17 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
 func (ctrler * AccountController)MarkAsActive(ctx * gin.Context) {
-	accountIds := []string{}
-	err := ctx.Bind(&accountIds)
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.accountRepository.MarkAccountsAsActive(accountIds)
+	err = ctrler.accountRepository.MarkAccountsAsActive(body.AccountIds)
 	if err != nil {
-		ctx.JSON(httpresp.Success200(nil, "Unknown error occured."))
+		logger.Error(err.Error(), slimlog.Error("MarkAccountsAsActive"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 

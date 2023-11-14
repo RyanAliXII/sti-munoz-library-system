@@ -1,6 +1,7 @@
 export enum AccountIdsSelectionAction {
   Select = "Select",
   Unselect = "Unselect",
+  UnselectAll = "UnselectAll",
 }
 export type SelectedAccountIdsAction = {
   type: AccountIdsSelectionAction;
@@ -16,6 +17,8 @@ export const selectedAccountIdsReducer = (
       return [...state, payload];
     case AccountIdsSelectionAction.Unselect:
       return state.filter((accountId) => accountId != payload);
+    case AccountIdsSelectionAction.UnselectAll:
+      return [];
     default:
       return state;
   }

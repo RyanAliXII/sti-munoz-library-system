@@ -247,19 +247,17 @@ func(repo * AccountRepository)MarkAccountsAsActive(accountIds []string) error {
 		return nil
 	}
 	ds := dialect.Update(goqu.T("account").Schema("system"))
-	ds = ds.Set(goqu.Record{"is_active": goqu.L("now()")})
-	ds = ds.Where(goqu.Ex{
+	ds = ds.Set(goqu.Record{"active_since": goqu.L("now()")})
+	ds = ds.Where(goqu.ExOr{
 		"id" : accountIds,
 	}).Prepared(true)
 	query, args, err := ds.ToSQL()
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(args)
-	fmt.Println(query)
-
-	return nil
+	_, err = repo.db.Exec(query, args...)
+	
+	return err
 }
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{

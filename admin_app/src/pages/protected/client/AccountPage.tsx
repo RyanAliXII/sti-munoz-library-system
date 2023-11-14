@@ -25,7 +25,12 @@ import { Button, Modal } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
 import AccountTable from "./AccountTable";
 import UploadArea from "./UploadArea";
-import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
+import {
+  AccountIdsSelectionAction,
+  selectedAccountIdsReducer,
+} from "./selected-account-ids-reducer";
+import { ConfirmDialog } from "@components/ui/dialog/Dialog";
+import { toast } from "react-toastify";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -70,7 +75,7 @@ const AccountPage = () => {
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
   };
-  const [selectedAccountIds, dispatch] = useReducer(
+  const [selectedAccountIds, dispatchAccountIdSelection] = useReducer(
     selectedAccountIdsReducer,
     []
   );
@@ -79,7 +84,7 @@ const AccountPage = () => {
   const markAsActive = useMutation({
     mutationFn: () =>
       Patch(
-        "/accounts/activations",
+        "/accounts/activation",
         {
           accountIds: selectedAccountIds,
         },
@@ -89,8 +94,30 @@ const AccountPage = () => {
           },
         }
       ),
+
+    onSuccess: () => {
+      toast.success("Account/s have been activated.");
+      dispatchAccountIdSelection({
+        payload: "",
+        type: AccountIdsSelectionAction.UnselectAll,
+      });
+    },
+    onSettled: () => {
+      closeConfirmActivateDialog();
+    },
   });
   const isActivateButtonDisabled = selectedAccountIds.length === 0;
+  const {
+    isOpen: isConfirmActivateDialogOpen,
+    close: closeConfirmActivateDialog,
+    open: openConfirmActivateDialog,
+  } = useSwitch();
+  const initActivation = () => {
+    openConfirmActivateDialog();
+  };
+  const onConfirmActivate = () => {
+    markAsActive.mutate();
+  };
   return (
     <>
       <Container>
@@ -104,7 +131,11 @@ const AccountPage = () => {
 
           <HasAccess requiredPermissions={["Account.Access"]}>
             <div className="flex gap-2">
-              <Button color="success" disabled={isActivateButtonDisabled}>
+              <Button
+                color="success"
+                disabled={isActivateButtonDisabled}
+                onClick={initActivation}
+              >
                 Activate
               </Button>
               <Button
@@ -127,7 +158,7 @@ const AccountPage = () => {
           >
             <AccountTable
               selectedAccountIds={selectedAccountIds}
-              dispatchSelection={dispatch}
+              dispatchSelection={dispatchAccountIdSelection}
               accounts={accounts ?? []}
             />
             <div className="py-3">
@@ -148,7 +179,13 @@ const AccountPage = () => {
         </TableContainer>
       </Container>
       <ContainerNoBackground></ContainerNoBackground>
-
+      <ConfirmDialog
+        close={closeConfirmActivateDialog}
+        isOpen={isConfirmActivateDialogOpen}
+        title="Account Activation"
+        text="Are you want to activate selected accounts ?"
+        onConfirm={onConfirmActivate}
+      />
       <HasAccess requiredPermissions={["Account.Access"]}>
         <Modal show={isImportModalOpen} onClose={closeImportModal} dismissible>
           <Modal.Header>Import Account</Modal.Header>
