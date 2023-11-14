@@ -18,6 +18,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
     for (const accountId of selectedAccountIds) {
       map.set(accountId, accountId);
     }
+
     return map;
   }, [selectedAccountIds]);
 
@@ -38,18 +39,26 @@ const AccountTable: React.FC<AccountTableProps> = ({
   };
   const selectedText =
     selectedAccountIds.size > 0 ? `${selectedAccountIds.size} selected` : "";
-  const selectAll = () => {
+  const selectAll = (event: ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
     const accountIds = accounts.map((account) => account.id ?? "");
-    if (selectedAccountIds.size >= accountIds.length) {
-      dispatchSelection({ type: "unselect-all", payload: {} });
+    if (checked) {
+      dispatchSelection({
+        type: "select-all-page",
+        payload: { multiple: accountIds ?? [] },
+      });
       return;
     }
-    dispatchSelection({
-      type: "select-all-page",
-      payload: { multiple: accountIds ?? [] },
-    });
+    dispatchSelection({ type: "unselect-all", payload: {} });
+    return;
   };
-  const isSelectAllChecked = selectedAccountIds.size >= accounts.length;
+  const isSelectAllChecked = useMemo(
+    () =>
+      accounts.every((account) =>
+        selectedAccountIdsCache.has(account.id ?? "")
+      ),
+    [accounts, selectedAccountIds]
+  );
   return (
     <Table>
       <Table.Head>
