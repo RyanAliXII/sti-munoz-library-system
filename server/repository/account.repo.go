@@ -50,16 +50,28 @@ func (repo *AccountRepository) GetAccountById(id string) model.Account {
 }
 
 func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
+	
 	query := `
-			SELECT id, email, 
-			display_name,
-			given_name, surname,metadata, profile_picture
-			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery and account.deleted_at is null
-			ORDER BY (  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
-			) DESC
-			LIMIT $2
-			OFFSET $3
-		`
+	SELECT id, email, 
+	display_name,
+	given_name, 
+	surname,
+	metadata,
+	profile_picture
+	FROM account_view where 
+	(search_vector @@ (phraseto_tsquery('simple', '$1') :: text) :: tsquery  
+	 OR 
+	 search_vector @@ (plainto_tsquery('simple', '$1')::text) :: tsquery
+	 OR
+	 email ILIKE '%' || $1 || '%'
+	 OR 
+	 given_name ILIKE '%' || $1 || '%'
+	 OR
+	 surname ILIKE'%' || $1 || '%'
+	) 
+	and account_view.deleted_at is null
+	LIMIT $2 OFFSET $3
+	`
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Keyword, filter.Limit, filter.Offset)

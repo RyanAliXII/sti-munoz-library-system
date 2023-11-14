@@ -219,7 +219,7 @@ func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-
+	ctrler.recordMetadataRepository.InvalidateAccount()
 	ctx.JSON(httpresp.Success200(nil, "Accounts marked."))
 }
 func NewAccountController() AccountControllerInterface {
