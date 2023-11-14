@@ -94,7 +94,6 @@ const AccountPage = () => {
           },
         }
       ),
-
     onSuccess: () => {
       toast.success("Account/s have been activated.");
       dispatchAccountIdSelection({
@@ -106,7 +105,34 @@ const AccountPage = () => {
       closeConfirmActivateDialog();
     },
   });
+
+  const deleteAccount = useMutation({
+    mutationFn: () =>
+      Patch(
+        "/accounts/deleteion",
+        {
+          accountIds: selectedAccountIds,
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: () => {
+      toast.success("Account/s have been activated.");
+      dispatchAccountIdSelection({
+        payload: "",
+        type: AccountIdsSelectionAction.UnselectAll,
+      });
+    },
+    onSettled: () => {
+      closeConfirmActivateDialog();
+    },
+  });
+
   const isActivateButtonDisabled = selectedAccountIds.length === 0;
+  const isDeleteButtonDisabled = selectedAccountIds.length === 0;
   const {
     isOpen: isConfirmActivateDialogOpen,
     close: closeConfirmActivateDialog,
@@ -131,6 +157,9 @@ const AccountPage = () => {
 
           <HasAccess requiredPermissions={["Account.Access"]}>
             <div className="flex gap-2">
+              <Button color="failure" disabled={isDeleteButtonDisabled}>
+                Delete
+              </Button>
               <Button
                 color="success"
                 disabled={isActivateButtonDisabled}
