@@ -19,4 +19,5 @@ func ClientRoutes(router *gin.RouterGroup) {
 	router.GET("/roles",
 	middlewares.BlockRequestFromClientApp,
 	ctrler.GetAccountRoles)
+	router.PATCH("/accounts/activation", ctrler.MarkAsActive)
 }

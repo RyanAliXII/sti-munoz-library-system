@@ -186,6 +186,15 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 		}
 		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
+func (ctrler * AccountController)MarkAsActive(ctx * gin.Context) {
+	accountIds := []string{}
+	err := ctx.Bind(&accountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+	}
+	ctx.JSON(httpresp.Success200(nil, "Marked as active."))
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -204,4 +213,5 @@ type AccountControllerInterface interface {
 	GetAccountRoles(ctx * gin.Context)
 	GetAccountById(ctx * gin.Context)
 	UpdateProfilePicture(ctx * gin.Context)
+	MarkAsActive(ctx * gin.Context)
 }
