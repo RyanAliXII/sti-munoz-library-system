@@ -1,14 +1,34 @@
 import { Account } from "@definitions/types";
-import { Avatar, Table } from "flowbite-react";
-import React from "react";
+import { Avatar, Checkbox, Table } from "flowbite-react";
+import React, { ChangeEvent, useMemo, useState } from "react";
 
 type AccountTableProps = {
   accounts: Account[];
 };
 const AccountTable: React.FC<AccountTableProps> = ({ accounts }) => {
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+  const selectedAccountIdsCache = useMemo<Map<string, string>>(() => {
+    const map = new Map<string, string>();
+    for (const accountId of selectedAccountIds) {
+      map.set(accountId, accountId);
+    }
+    return map;
+  }, [selectedAccountIds]);
+
+  const handleAccountSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked;
+    const accountId = event.target.value;
+    if (isChecked) {
+      setSelectedAccountIds((prevSelected) => [...prevSelected, accountId]);
+    }
+    setSelectedAccountIds((prevSelected) =>
+      prevSelected.filter((selectedId) => selectedId != accountId)
+    );
+  };
   return (
     <Table>
       <Table.Head>
+        <Table.HeadCell></Table.HeadCell>
         <Table.HeadCell></Table.HeadCell>
         <Table.HeadCell>User</Table.HeadCell>
         <Table.HeadCell>Email</Table.HeadCell>
@@ -24,6 +44,14 @@ const AccountTable: React.FC<AccountTableProps> = ({ accounts }) => {
           );
           return (
             <Table.Row key={account.id}>
+              <Table.Cell>
+                <Checkbox
+                  checked={selectedAccountIdsCache.has(account.id ?? "")}
+                  color="primary"
+                  onChange={handleAccountSelect}
+                  value={account.id}
+                ></Checkbox>
+              </Table.Cell>
               <Table.Cell>
                 <div className="h-10">
                   <Avatar img={url.toString()} rounded></Avatar>
