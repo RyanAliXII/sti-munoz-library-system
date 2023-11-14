@@ -29,7 +29,10 @@ import {
   AccountIdsSelectionAction,
   selectedAccountIdsReducer,
 } from "./selected-account-ids-reducer";
-import { ConfirmDialog } from "@components/ui/dialog/Dialog";
+import {
+  ConfirmDialog,
+  DangerConfirmDialog,
+} from "@components/ui/dialog/Dialog";
 import { toast } from "react-toastify";
 
 const AccountPage = () => {
@@ -109,7 +112,7 @@ const AccountPage = () => {
   const deleteAccount = useMutation({
     mutationFn: () =>
       Patch(
-        "/accounts/deleteion",
+        "/accounts/deletion",
         {
           accountIds: selectedAccountIds,
         },
@@ -126,7 +129,9 @@ const AccountPage = () => {
         type: AccountIdsSelectionAction.UnselectAll,
       });
     },
-    onSettled: () => {},
+    onSettled: () => {
+      closeConfirmDeleteDialog();
+    },
   });
 
   const isActivateButtonDisabled = selectedAccountIds.length === 0;
@@ -136,8 +141,19 @@ const AccountPage = () => {
     close: closeConfirmActivateDialog,
     open: openConfirmActivateDialog,
   } = useSwitch();
+  const {
+    isOpen: isConfirmDeleteDialogOpen,
+    close: closeConfirmDeleteDialog,
+    open: openConfirmDeleteDialog,
+  } = useSwitch();
   const initActivation = () => {
     openConfirmActivateDialog();
+  };
+  const initDeletion = () => {
+    openConfirmDeleteDialog();
+  };
+  const onConfirmDelete = () => {
+    deleteAccount.mutate();
   };
   const onConfirmActivate = () => {
     markAsActive.mutate();
@@ -151,11 +167,14 @@ const AccountPage = () => {
             placeholder="Search accounts"
             onChange={handleSearch}
             defaultValue={filterParams?.keyword}
-          ></CustomInput>
-
+          />
           <HasAccess requiredPermissions={["Account.Access"]}>
             <div className="flex gap-2">
-              <Button color="failure" disabled={isDeleteButtonDisabled}>
+              <Button
+                color="failure"
+                disabled={isDeleteButtonDisabled}
+                onClick={initDeletion}
+              >
                 Delete
               </Button>
               <Button
@@ -205,13 +224,19 @@ const AccountPage = () => {
           </LoadingBoundaryV2>
         </TableContainer>
       </Container>
-      <ContainerNoBackground></ContainerNoBackground>
       <ConfirmDialog
         close={closeConfirmActivateDialog}
         isOpen={isConfirmActivateDialogOpen}
         title="Account Activation"
-        text="Are you want to activate selected accounts ?"
+        text="Are you want to activate selected accounts?"
         onConfirm={onConfirmActivate}
+      />
+      <DangerConfirmDialog
+        close={closeConfirmDeleteDialog}
+        isOpen={isConfirmDeleteDialogOpen}
+        title="Account Deletion"
+        text="Are you want to delete selected accounts?"
+        onConfirm={onConfirmDelete}
       />
       <HasAccess requiredPermissions={["Account.Access"]}>
         <Modal show={isImportModalOpen} onClose={closeImportModal} dismissible>
