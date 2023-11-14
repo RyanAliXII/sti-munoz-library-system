@@ -14,6 +14,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/gocarina/gocsv"
@@ -192,8 +193,15 @@ func (ctrler * AccountController)MarkAsActive(ctx * gin.Context) {
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Marked as active."))
+	err = ctrler.accountRepository.MarkAccountsAsActive(accountIds)
+	if err != nil {
+		ctx.JSON(httpresp.Success200(nil, "Unknown error occured."))
+		return
+	}
+
+	ctx.JSON(httpresp.Success200(nil, "Accounts marked."))
 }
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{

@@ -7,9 +7,9 @@ import useDebounce from "@hooks/useDebounce";
 
 import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { BaseSyntheticEvent, useState } from "react";
+import { BaseSyntheticEvent, useReducer, useState } from "react";
 import { TbFileImport } from "react-icons/tb";
 
 import HasAccess from "@components/auth/HasAccess";
@@ -25,6 +25,7 @@ import { Button, Modal } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
 import UploadArea from "./UploadArea";
 import AccountTable from "./AccountTable";
+import { selectedAccountIdsReducer } from "./reducer";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -69,7 +70,25 @@ const AccountPage = () => {
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
   };
-
+  const { Patch } = useRequest();
+  const markAsActive = useMutation({
+    mutationFn: ({ accountIds }: { accountIds: string[] }) =>
+      Patch(
+        "/accounts/activations",
+        {
+          accountIds: accountIds,
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+  });
+  const [selectedAccountIds, dispatch] = useReducer(
+    selectedAccountIdsReducer,
+    []
+  );
   return (
     <>
       <Container>
@@ -98,7 +117,11 @@ const AccountPage = () => {
             isError={isError}
             contentLoadDelay={150}
           >
-            <AccountTable accounts={accounts ?? []} />
+            <AccountTable
+              selectedAccountIds={selectedAccountIds}
+              dispatchSelection={dispatch}
+              accounts={accounts ?? []}
+            />
             <div className="py-3">
               <CustomPagination
                 nextLabel="Next"

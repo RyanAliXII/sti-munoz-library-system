@@ -1,12 +1,18 @@
 import { Account } from "@definitions/types";
 import { Avatar, Checkbox, Table } from "flowbite-react";
-import React, { ChangeEvent, useMemo, useState } from "react";
+import React, { ChangeEvent, Dispatch, useMemo, useState } from "react";
+import { AccountIdsSelectionAction, SelectedAccountIdsAction } from "./reducer";
 
 type AccountTableProps = {
   accounts: Account[];
+  selectedAccountIds: string[];
+  dispatchSelection: Dispatch<SelectedAccountIdsAction>;
 };
-const AccountTable: React.FC<AccountTableProps> = ({ accounts }) => {
-  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+const AccountTable: React.FC<AccountTableProps> = ({
+  accounts,
+  selectedAccountIds,
+  dispatchSelection,
+}) => {
   const selectedAccountIdsCache = useMemo<Map<string, string>>(() => {
     const map = new Map<string, string>();
     for (const accountId of selectedAccountIds) {
@@ -19,17 +25,22 @@ const AccountTable: React.FC<AccountTableProps> = ({ accounts }) => {
     const isChecked = event.target.checked;
     const accountId = event.target.value;
     if (isChecked) {
-      setSelectedAccountIds((prevSelected) => [...prevSelected, accountId]);
+      dispatchSelection({
+        payload: accountId,
+        type: AccountIdsSelectionAction.Select,
+      });
       return;
     }
-    setSelectedAccountIds((prevSelected) =>
-      prevSelected.filter((selectedId) => selectedId != accountId)
-    );
+    dispatchSelection({
+      payload: accountId,
+      type: AccountIdsSelectionAction.Unselect,
+    });
   };
   const selectedText =
     selectedAccountIds.length > 0
       ? `${selectedAccountIds.length} selected`
       : "";
+
   return (
     <Table>
       <Table.Head>

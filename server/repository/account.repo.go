@@ -241,6 +241,26 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	transaction.Commit()
 	return nil
 }
+func(repo * AccountRepository)MarkAccountsAsActive(accountIds []string) error {
+	dialect := goqu.Dialect("postgres")
+	if len(accountIds) == 0 {
+		return nil
+	}
+	ds := dialect.Update(goqu.T("account").Schema("system"))
+	ds = ds.Set(goqu.Record{"is_active": goqu.L("now()")})
+	ds = ds.Where(goqu.Ex{
+		"id" : accountIds,
+	}).Prepared(true)
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(args)
+	fmt.Println(query)
+
+	return nil
+}
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
@@ -257,5 +277,6 @@ type AccountRepositoryInterface interface {
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	GetAccountById(id string) model.Account
 	UpdateProfilePictureById(id string, image * multipart.FileHeader) error
+	MarkAccountsAsActive(accountIds []string) error
 	
 }
