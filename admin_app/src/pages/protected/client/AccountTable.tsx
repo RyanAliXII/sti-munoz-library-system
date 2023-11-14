@@ -1,5 +1,5 @@
 import { Account } from "@definitions/types";
-import { Avatar, Checkbox, Table } from "flowbite-react";
+import { Avatar, Badge, Checkbox, Table } from "flowbite-react";
 import React, { ChangeEvent, Dispatch, useMemo } from "react";
 import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
@@ -82,6 +82,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
         <Table.HeadCell></Table.HeadCell>
         <Table.HeadCell>User</Table.HeadCell>
         <Table.HeadCell>Email</Table.HeadCell>
+        <Table.HeadCell>Status</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y dark:divide-gray-700">
         {accounts?.map((account) => {
@@ -121,11 +122,28 @@ const AccountTable: React.FC<AccountTableProps> = ({
                 </div>
               </Table.Cell>
               <Table.Cell>{account.email}</Table.Cell>
+              <Table.Cell>
+                <StatusBadge isActive={account.isActive}></StatusBadge>
+              </Table.Cell>
             </Table.Row>
           );
         })}
       </Table.Body>
     </Table>
+  );
+};
+
+const StatusBadge = ({ isActive }: { isActive: boolean }) => {
+  if (isActive)
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Badge color="success">Active</Badge>
+      </div>
+    );
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Badge color="warning">Disabled</Badge>
+    </div>
   );
 };
 
