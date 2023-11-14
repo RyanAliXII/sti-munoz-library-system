@@ -21,3 +21,7 @@ type ProfilePictureBody struct{
 type AccountSlice struct {
 	Accounts []model.Account `json:"accounts" validate:"required,dive"`
 }
+
+type SelectedAccountIdsBody struct{
+	AccountIds []string `json:"accountIds"`
+}

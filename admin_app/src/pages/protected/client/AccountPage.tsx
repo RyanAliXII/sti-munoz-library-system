@@ -23,9 +23,9 @@ import CustomPagination from "@components/pagination/CustomPagination";
 import TableContainer from "@components/ui/table/TableContainer";
 import { Button, Modal } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
-import UploadArea from "./UploadArea";
 import AccountTable from "./AccountTable";
-import { selectedAccountIdsReducer } from "./reducer";
+import UploadArea from "./UploadArea";
+import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -70,13 +70,18 @@ const AccountPage = () => {
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
   };
+  const [selectedAccountIds, dispatch] = useReducer(
+    selectedAccountIdsReducer,
+    []
+  );
   const { Patch } = useRequest();
+
   const markAsActive = useMutation({
-    mutationFn: ({ accountIds }: { accountIds: string[] }) =>
+    mutationFn: () =>
       Patch(
         "/accounts/activations",
         {
-          accountIds: accountIds,
+          accountIds: selectedAccountIds,
         },
         {
           headers: {
@@ -85,10 +90,7 @@ const AccountPage = () => {
         }
       ),
   });
-  const [selectedAccountIds, dispatch] = useReducer(
-    selectedAccountIdsReducer,
-    []
-  );
+  const isActivateButtonDisabled = selectedAccountIds.length === 0;
   return (
     <>
       <Container>
@@ -99,16 +101,22 @@ const AccountPage = () => {
             onChange={handleSearch}
             defaultValue={filterParams?.keyword}
           ></CustomInput>
+
           <HasAccess requiredPermissions={["Account.Access"]}>
-            <Button
-              color="primary"
-              onClick={() => {
-                openImportModal();
-              }}
-            >
-              <TbFileImport className="text-lg" />
-              Import
-            </Button>
+            <div className="flex gap-2">
+              <Button color="success" disabled={isActivateButtonDisabled}>
+                Activate
+              </Button>
+              <Button
+                color="primary"
+                onClick={() => {
+                  openImportModal();
+                }}
+              >
+                <TbFileImport className="text-lg" />
+                Import
+              </Button>
+            </div>
           </HasAccess>
         </div>
         <TableContainer>

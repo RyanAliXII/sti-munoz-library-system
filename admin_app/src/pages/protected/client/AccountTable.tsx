@@ -1,7 +1,10 @@
 import { Account } from "@definitions/types";
 import { Avatar, Checkbox, Table } from "flowbite-react";
-import React, { ChangeEvent, Dispatch, useMemo, useState } from "react";
-import { AccountIdsSelectionAction, SelectedAccountIdsAction } from "./reducer";
+import React, { ChangeEvent, Dispatch, useMemo } from "react";
+import {
+  AccountIdsSelectionAction,
+  SelectedAccountIdsAction,
+} from "./selected-account-ids-reducer";
 
 type AccountTableProps = {
   accounts: Account[];
