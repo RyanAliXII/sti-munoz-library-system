@@ -3,7 +3,12 @@ export type AccountIdSelectionPayload = {
   multiple?: string[];
 };
 export type SelectedAccountIdsAction = {
-  type: "select" | "unselect" | "unselect-all" | "select-all-page";
+  type:
+    | "select"
+    | "unselect"
+    | "unselect-all"
+    | "select-all-page"
+    | "unselect-all-page";
   payload: AccountIdSelectionPayload;
 };
 export const selectedAccountIdsReducer = (
@@ -11,19 +16,23 @@ export const selectedAccountIdsReducer = (
   action: SelectedAccountIdsAction
 ) => {
   const { type, payload } = action;
+  payload.multiple = payload.multiple ?? [];
+  payload.single = payload.single ?? "";
   switch (type) {
     case "select":
-      if (!payload.single) return state;
       return new Set([...state, payload.single]);
     case "unselect":
-      if (!payload.single) return state;
       state.delete(payload.single);
       return new Set([...state]);
     case "unselect-all":
       return new Set([]);
     case "select-all-page":
-      if (!payload.multiple) return state;
       return new Set([...state, ...payload.multiple]);
+    case "unselect-all-page":
+      const filteredSet = [...state].filter(
+        (id) => !payload.multiple?.includes(id)
+      );
+      return new Set(filteredSet);
     default:
       return state;
   }

@@ -23,7 +23,7 @@ import {
   DangerConfirmDialog,
 } from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
-import { Button, Modal } from "flowbite-react";
+import { Button, Dropdown, Modal } from "flowbite-react";
 import { toast } from "react-toastify";
 import { useSearchParamsState } from "react-use-search-params-state";
 import AccountTable from "./AccountTable";
@@ -133,6 +133,7 @@ const AccountPage = () => {
 
   const isActivateButtonDisabled = selectedAccountIds.size === 0;
   const isDeleteButtonDisabled = selectedAccountIds.size === 0;
+  const isClearSelectionButtonDisabled = selectedAccountIds.size === 0;
   const {
     isOpen: isConfirmActivateDialogOpen,
     close: closeConfirmActivateDialog,
@@ -155,18 +156,48 @@ const AccountPage = () => {
   const onConfirmActivate = () => {
     markAsActive.mutate();
   };
+  const clearAllSelection = () => {
+    dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
+  };
   return (
     <>
       <Container>
         <div className="flex items-center justify-between py-4">
-          <CustomInput
-            type="text"
-            placeholder="Search accounts"
-            onChange={handleSearch}
-            defaultValue={filterParams?.keyword}
-          />
+          <div className="flex gap-2">
+            <CustomInput
+              type="text"
+              placeholder="Search accounts"
+              onChange={handleSearch}
+              defaultValue={filterParams?.keyword}
+            />
+            <Button
+              outline
+              color="light"
+              disabled={isClearSelectionButtonDisabled}
+              onClick={clearAllSelection}
+            >
+              Clear all selection
+            </Button>
+          </div>
           <HasAccess requiredPermissions={["Account.Access"]}>
-            <div className="flex gap-2">
+            <div className="md:hidden">
+              <Dropdown color="primary" label="Actions">
+                <Dropdown.Item
+                  disabled={isDeleteButtonDisabled}
+                  onClick={initDeletion}
+                >
+                  Delete
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isActivateButtonDisabled}
+                  onClick={initActivation}
+                >
+                  Activate
+                </Dropdown.Item>
+                <Dropdown.Item onClick={openImportModal}>Import</Dropdown.Item>
+              </Dropdown>
+            </div>
+            <div className="hidden gap-2 md:flex">
               <Button
                 color="failure"
                 disabled={isDeleteButtonDisabled}

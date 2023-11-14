@@ -1,5 +1,5 @@
 import { Account } from "@definitions/types";
-import { Avatar, Checkbox, Table } from "flowbite-react";
+import { Avatar, Button, Checkbox, Table } from "flowbite-react";
 import React, { ChangeEvent, Dispatch, useMemo } from "react";
 import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
@@ -49,7 +49,12 @@ const AccountTable: React.FC<AccountTableProps> = ({
       });
       return;
     }
-    dispatchSelection({ type: "unselect-all", payload: {} });
+    dispatchSelection({
+      type: "unselect-all-page",
+      payload: {
+        multiple: accountIds,
+      },
+    });
     return;
   };
   const isSelectAllChecked = useMemo(
@@ -69,7 +74,9 @@ const AccountTable: React.FC<AccountTableProps> = ({
               onChange={selectAll}
               checked={isSelectAllChecked}
             />
+
             {selectedText}
+            <a className="underline"></a>
           </div>
         </Table.HeadCell>
         <Table.HeadCell></Table.HeadCell>
@@ -121,5 +128,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
     </Table>
   );
 };
+
+const SelectedIdsLabel = () => {};
 
 export default AccountTable;
