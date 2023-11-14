@@ -202,7 +202,7 @@ func (ctrler * AccountController)MarkAsActive(ctx * gin.Context) {
 		return
 	}
 
-	ctx.JSON(httpresp.Success200(nil, "Accounts marked."))
+	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
 }
 
 func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
@@ -220,7 +220,7 @@ func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
 		return
 	}
 	ctrler.recordMetadataRepository.InvalidateAccount()
-	ctx.JSON(httpresp.Success200(nil, "Accounts marked."))
+	ctx.JSON(httpresp.Success200(nil, "Accounts deleted."))
 }
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{

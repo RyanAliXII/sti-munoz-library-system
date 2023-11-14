@@ -1,5 +1,5 @@
 import { Account } from "@definitions/types";
-import { Avatar, Button, Checkbox, Table } from "flowbite-react";
+import { Avatar, Checkbox, Table } from "flowbite-react";
 import React, { ChangeEvent, Dispatch, useMemo } from "react";
 import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
@@ -128,7 +128,5 @@ const AccountTable: React.FC<AccountTableProps> = ({
     </Table>
   );
 };
-
-const SelectedIdsLabel = () => {};
 
 export default AccountTable;

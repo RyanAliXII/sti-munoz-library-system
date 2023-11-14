@@ -1,11 +1,10 @@
 import Container from "@components/ui/container/Container";
 
-import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
 
 import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { BaseSyntheticEvent, useReducer, useState } from "react";
 import { TbFileImport } from "react-icons/tb";
@@ -13,7 +12,6 @@ import { TbFileImport } from "react-icons/tb";
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 
-import { useRequest } from "@hooks/useRequest";
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 
@@ -23,11 +21,16 @@ import {
   DangerConfirmDialog,
 } from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
-import { Button, Dropdown, Modal } from "flowbite-react";
+import {
+  useAccount,
+  useAccountActivation,
+  useAccountDeletion,
+} from "@hooks/data-fetching/account";
+import { Button, Dropdown } from "flowbite-react";
 import { toast } from "react-toastify";
 import { useSearchParamsState } from "react-use-search-params-state";
 import AccountTable from "./AccountTable";
-import UploadArea from "./UploadArea";
+import ImportAccountModal from "./ImportAccountModal";
 import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
 
 const AccountPage = () => {
@@ -41,30 +44,14 @@ const AccountPage = () => {
     isOpen: isImportModalOpen,
     open: openImportModal,
   } = useSwitch(false);
-  const { Get } = useRequest();
 
-  const fetchAccounts = async () => {
-    try {
-      const { data: response } = await Get("/accounts/", {
-        params: {
-          page: filterParams?.page,
-          keyword: filterParams?.keyword,
-        },
-      });
-      setTotalPages(response?.data?.metadata?.pages ?? 0);
-      return response?.data?.accounts ?? [];
-    } catch {
-      return [];
-    }
-  };
   const queryClient = useQueryClient();
-  const {
-    data: accounts,
-    isFetching,
-    isError,
-  } = useQuery<Account[]>({
-    queryFn: fetchAccounts,
-    queryKey: ["accounts", filterParams],
+  const { isFetching, isError, data } = useAccount({
+    filter: filterParams,
+
+    onSuccess: (data) => {
+      setTotalPages(data?.pages ?? 1);
+    },
   });
   const debounceSearch = useDebounce();
   const search = (q: any) => {
@@ -77,21 +64,8 @@ const AccountPage = () => {
     selectedAccountIdsReducer,
     new Set<string>([])
   );
-  const { Patch } = useRequest();
 
-  const markAsActive = useMutation({
-    mutationFn: () =>
-      Patch(
-        "/accounts/activation",
-        {
-          accountIds: Array.from(selectedAccountIds),
-        },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        }
-      ),
+  const markAsActive = useAccountActivation({
     onSuccess: () => {
       toast.success("Account/s have been activated.");
       dispatchAccountIdSelection({
@@ -104,20 +78,7 @@ const AccountPage = () => {
       closeConfirmActivateDialog();
     },
   });
-
-  const deleteAccount = useMutation({
-    mutationFn: () =>
-      Patch(
-        "/accounts/deletion",
-        {
-          accountIds: Array.from(selectedAccountIds),
-        },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        }
-      ),
+  const deleteAccount = useAccountDeletion({
     onSuccess: () => {
       toast.success("Account/s have been deleted.");
       dispatchAccountIdSelection({
@@ -151,10 +112,10 @@ const AccountPage = () => {
     openConfirmDeleteDialog();
   };
   const onConfirmDelete = () => {
-    deleteAccount.mutate();
+    deleteAccount.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const onConfirmActivate = () => {
-    markAsActive.mutate();
+    markAsActive.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const clearAllSelection = () => {
     dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
@@ -233,7 +194,7 @@ const AccountPage = () => {
             <AccountTable
               selectedAccountIds={selectedAccountIds}
               dispatchSelection={dispatchAccountIdSelection}
-              accounts={accounts ?? []}
+              accounts={data?.accounts ?? []}
             />
             <div className="py-3">
               <CustomPagination
@@ -267,16 +228,10 @@ const AccountPage = () => {
         onConfirm={onConfirmDelete}
       />
       <HasAccess requiredPermissions={["Account.Access"]}>
-        <Modal show={isImportModalOpen} onClose={closeImportModal} dismissible>
-          <Modal.Header>Import Account</Modal.Header>
-          <Modal.Body>
-            <UploadArea
-              refetch={() => {
-                queryClient.invalidateQueries(["accounts"]);
-              }}
-            ></UploadArea>
-          </Modal.Body>
-        </Modal>
+        <ImportAccountModal
+          closeModal={closeImportModal}
+          isOpen={isImportModalOpen}
+        />
       </HasAccess>
     </>
   );
