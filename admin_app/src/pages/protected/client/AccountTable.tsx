@@ -1,14 +1,11 @@
 import { Account } from "@definitions/types";
 import { Avatar, Checkbox, Table } from "flowbite-react";
 import React, { ChangeEvent, Dispatch, useMemo } from "react";
-import {
-  AccountIdsSelectionAction,
-  SelectedAccountIdsAction,
-} from "./selected-account-ids-reducer";
+import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
 type AccountTableProps = {
   accounts: Account[];
-  selectedAccountIds: string[];
+  selectedAccountIds: Set<string>;
   dispatchSelection: Dispatch<SelectedAccountIdsAction>;
 };
 const AccountTable: React.FC<AccountTableProps> = ({
@@ -29,25 +26,43 @@ const AccountTable: React.FC<AccountTableProps> = ({
     const accountId = event.target.value;
     if (isChecked) {
       dispatchSelection({
-        payload: accountId,
-        type: AccountIdsSelectionAction.Select,
+        payload: { single: accountId },
+        type: "select",
       });
       return;
     }
     dispatchSelection({
-      payload: accountId,
-      type: AccountIdsSelectionAction.Unselect,
+      payload: { single: accountId },
+      type: "unselect",
     });
   };
   const selectedText =
-    selectedAccountIds.length > 0
-      ? `${selectedAccountIds.length} selected`
-      : "";
-
+    selectedAccountIds.size > 0 ? `${selectedAccountIds.size} selected` : "";
+  const selectAll = () => {
+    const accountIds = accounts.map((account) => account.id ?? "");
+    if (selectedAccountIds.size >= accountIds.length) {
+      dispatchSelection({ type: "unselect-all", payload: {} });
+      return;
+    }
+    dispatchSelection({
+      type: "select-all-page",
+      payload: { multiple: accountIds ?? [] },
+    });
+  };
+  const isSelectAllChecked = selectedAccountIds.size >= accounts.length;
   return (
     <Table>
       <Table.Head>
-        <Table.HeadCell>{selectedText}</Table.HeadCell>
+        <Table.HeadCell>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              color="primary"
+              onChange={selectAll}
+              checked={isSelectAllChecked}
+            />
+            {selectedText}
+          </div>
+        </Table.HeadCell>
         <Table.HeadCell></Table.HeadCell>
         <Table.HeadCell>User</Table.HeadCell>
         <Table.HeadCell>Email</Table.HeadCell>

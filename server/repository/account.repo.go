@@ -29,7 +29,7 @@ type AccountRepository struct {
 }
 
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, profile_picture, surname, metadata FROM account_view   ORDER BY surname ASC LIMIT $1 OFFSET $2 `
+	query := `SELECT id, email, display_name, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -54,7 +54,7 @@ func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Ac
 			SELECT id, email, 
 			display_name,
 			given_name, surname,metadata, profile_picture
-			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery
+			FROM account_view where search_vector @@ (phraseto_tsquery('simple', $1) :: text || ':*' ) :: tsquery and account.deleted_at is null
 			ORDER BY (  ts_rank(search_vector, (phraseto_tsquery('simple',$1) :: text || ':*' ) :: tsquery ) 
 			) DESC
 			LIMIT $2

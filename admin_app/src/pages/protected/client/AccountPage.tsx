@@ -1,6 +1,4 @@
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import Container from "@components/ui/container/Container";
 
 import { Account } from "@definitions/types";
 import useDebounce from "@hooks/useDebounce";
@@ -20,20 +18,17 @@ import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 
 import CustomPagination from "@components/pagination/CustomPagination";
-import TableContainer from "@components/ui/table/TableContainer";
-import { Button, Modal } from "flowbite-react";
-import { useSearchParamsState } from "react-use-search-params-state";
-import AccountTable from "./AccountTable";
-import UploadArea from "./UploadArea";
-import {
-  AccountIdsSelectionAction,
-  selectedAccountIdsReducer,
-} from "./selected-account-ids-reducer";
 import {
   ConfirmDialog,
   DangerConfirmDialog,
 } from "@components/ui/dialog/Dialog";
+import TableContainer from "@components/ui/table/TableContainer";
+import { Button, Modal } from "flowbite-react";
 import { toast } from "react-toastify";
+import { useSearchParamsState } from "react-use-search-params-state";
+import AccountTable from "./AccountTable";
+import UploadArea from "./UploadArea";
+import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -80,7 +75,7 @@ const AccountPage = () => {
   };
   const [selectedAccountIds, dispatchAccountIdSelection] = useReducer(
     selectedAccountIdsReducer,
-    []
+    new Set<string>([])
   );
   const { Patch } = useRequest();
 
@@ -89,7 +84,7 @@ const AccountPage = () => {
       Patch(
         "/accounts/activation",
         {
-          accountIds: selectedAccountIds,
+          accountIds: Array.from(selectedAccountIds),
         },
         {
           headers: {
@@ -100,9 +95,10 @@ const AccountPage = () => {
     onSuccess: () => {
       toast.success("Account/s have been activated.");
       dispatchAccountIdSelection({
-        payload: "",
-        type: AccountIdsSelectionAction.UnselectAll,
+        payload: {},
+        type: "unselect-all",
       });
+      queryClient.invalidateQueries(["accounts"]);
     },
     onSettled: () => {
       closeConfirmActivateDialog();
@@ -114,7 +110,7 @@ const AccountPage = () => {
       Patch(
         "/accounts/deletion",
         {
-          accountIds: selectedAccountIds,
+          accountIds: Array.from(selectedAccountIds),
         },
         {
           headers: {
@@ -125,17 +121,18 @@ const AccountPage = () => {
     onSuccess: () => {
       toast.success("Account/s have been deleted.");
       dispatchAccountIdSelection({
-        payload: "",
-        type: AccountIdsSelectionAction.UnselectAll,
+        payload: {},
+        type: "unselect-all",
       });
+      queryClient.invalidateQueries(["accounts"]);
     },
     onSettled: () => {
       closeConfirmDeleteDialog();
     },
   });
 
-  const isActivateButtonDisabled = selectedAccountIds.length === 0;
-  const isDeleteButtonDisabled = selectedAccountIds.length === 0;
+  const isActivateButtonDisabled = selectedAccountIds.size === 0;
+  const isDeleteButtonDisabled = selectedAccountIds.size === 0;
   const {
     isOpen: isConfirmActivateDialogOpen,
     close: closeConfirmActivateDialog,
