@@ -6,6 +6,7 @@ import {
 } from "react-icons/hi";
 import { LighButton, PrimaryButton } from "../button/Button";
 import { Input, InputProps } from "../form/Input";
+import { MdOutlineWarning } from "react-icons/md";
 type DialogProps = {
   title?: string;
   text?: string;
@@ -32,6 +33,37 @@ export const DangerConfirmDialog = ({
           </h3>
           <div className="flex justify-center gap-4">
             <Button color="failure" onClick={onConfirm}>
+              {"Yes, I'm sure"}
+            </Button>
+            <Button color="light" onClick={close}>
+              No, cancel
+            </Button>
+          </div>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+export const WarningConfirmDialog = ({
+  title,
+  text,
+  close,
+  isOpen,
+  onConfirm,
+}: DialogProps) => {
+  if (!isOpen) return null;
+  return (
+    <Modal show={isOpen} dismissible onClose={close} size="md">
+      <Modal.Body>
+        <div className="text-center">
+          <MdOutlineWarning className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+          <h2 className="text-lg  text-gray-900 dark:text-white">{title}</h2>
+          <h3 className="mb-5 text-base font-normal text-gray-500 dark:text-gray-400">
+            {text}
+          </h3>
+          <div className="flex justify-center gap-4">
+            <Button color="warning" onClick={onConfirm}>
               {"Yes, I'm sure"}
             </Button>
             <Button color="light" onClick={close}>

@@ -61,6 +61,31 @@ export const useAccountDeletion = ({
   });
 };
 
+export const useAccountDisablement = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, ActivateAccountData, unknown>) => {
+  const { Patch } = useRequest();
+  return useMutation({
+    mutationFn: ({ accountIds }) =>
+      Patch(
+        "/accounts/disablement",
+        {
+          accountIds: accountIds,
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
+
 interface UseAccountProps extends UseQueryOptions<UseAccountData> {
   filter: any;
 }
@@ -73,7 +98,6 @@ export const useAccount = ({
   onSuccess,
   onError,
   onSettled,
-  queryKey,
 }: UseAccountProps) => {
   const { Get } = useRequest();
 

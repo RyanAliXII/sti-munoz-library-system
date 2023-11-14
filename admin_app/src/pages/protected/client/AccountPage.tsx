@@ -19,12 +19,14 @@ import CustomPagination from "@components/pagination/CustomPagination";
 import {
   ConfirmDialog,
   DangerConfirmDialog,
+  WarningConfirmDialog,
 } from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
 import {
   useAccount,
   useAccountActivation,
   useAccountDeletion,
+  useAccountDisablement,
 } from "@hooks/data-fetching/account";
 import { Button, Dropdown } from "flowbite-react";
 import { toast } from "react-toastify";
@@ -65,7 +67,7 @@ const AccountPage = () => {
     new Set<string>([])
   );
 
-  const markAsActive = useAccountActivation({
+  const activateAccounts = useAccountActivation({
     onSuccess: () => {
       toast.success("Account/s have been activated.");
       dispatchAccountIdSelection({
@@ -78,7 +80,7 @@ const AccountPage = () => {
       closeConfirmActivateDialog();
     },
   });
-  const deleteAccount = useAccountDeletion({
+  const deleteAccounts = useAccountDeletion({
     onSuccess: () => {
       toast.success("Account/s have been deleted.");
       dispatchAccountIdSelection({
@@ -91,10 +93,24 @@ const AccountPage = () => {
       closeConfirmDeleteDialog();
     },
   });
+  const disableAccounts = useAccountDisablement({
+    onSuccess: () => {
+      toast.success("Account/s have been disabled.");
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
+      queryClient.invalidateQueries(["accounts"]);
+    },
+    onSettled: () => {
+      closeConfirmDisabledDialog();
+    },
+  });
 
   const isActivateButtonDisabled = selectedAccountIds.size === 0;
   const isDeleteButtonDisabled = selectedAccountIds.size === 0;
   const isClearSelectionButtonDisabled = selectedAccountIds.size === 0;
+  const isDisableButtonDisabled = selectedAccountIds.size === 0;
   const {
     isOpen: isConfirmActivateDialogOpen,
     close: closeConfirmActivateDialog,
@@ -105,17 +121,20 @@ const AccountPage = () => {
     close: closeConfirmDeleteDialog,
     open: openConfirmDeleteDialog,
   } = useSwitch();
-  const initActivation = () => {
-    openConfirmActivateDialog();
-  };
-  const initDeletion = () => {
-    openConfirmDeleteDialog();
-  };
+  const {
+    isOpen: isConfirmDisableDialogOpen,
+    close: closeConfirmDisabledDialog,
+    open: openConfirmDisableDialog,
+  } = useSwitch();
+
   const onConfirmDelete = () => {
-    deleteAccount.mutate({ accountIds: Array.from(selectedAccountIds) });
+    deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const onConfirmActivate = () => {
-    markAsActive.mutate({ accountIds: Array.from(selectedAccountIds) });
+    activateAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+  };
+  const onConfirmDisable = () => {
+    disableAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const clearAllSelection = () => {
     dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
@@ -145,15 +164,21 @@ const AccountPage = () => {
               <Dropdown color="primary" label="Actions">
                 <Dropdown.Item
                   disabled={isDeleteButtonDisabled}
-                  onClick={initDeletion}
+                  onClick={openConfirmDeleteDialog}
                 >
                   Delete
                 </Dropdown.Item>
                 <Dropdown.Item
                   disabled={isActivateButtonDisabled}
-                  onClick={initActivation}
+                  onClick={openConfirmActivateDialog}
                 >
                   Activate
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isDisableButtonDisabled}
+                  onClick={openConfirmDisableDialog}
+                >
+                  Disabled
                 </Dropdown.Item>
                 <Dropdown.Item onClick={openImportModal}>Import</Dropdown.Item>
               </Dropdown>
@@ -162,16 +187,23 @@ const AccountPage = () => {
               <Button
                 color="failure"
                 disabled={isDeleteButtonDisabled}
-                onClick={initDeletion}
+                onClick={openConfirmDeleteDialog}
               >
                 Delete
               </Button>
               <Button
                 color="success"
                 disabled={isActivateButtonDisabled}
-                onClick={initActivation}
+                onClick={openConfirmActivateDialog}
               >
                 Activate
+              </Button>
+              <Button
+                color="warning"
+                disabled={isDisableButtonDisabled}
+                onClick={openConfirmDisableDialog}
+              >
+                Disable
               </Button>
               <Button
                 color="primary"
@@ -220,6 +252,14 @@ const AccountPage = () => {
         text="Are you want to activate selected accounts?"
         onConfirm={onConfirmActivate}
       />
+      <WarningConfirmDialog
+        close={closeConfirmDisabledDialog}
+        isOpen={isConfirmDisableDialogOpen}
+        title="Account Disablement"
+        text="Are you want to disabled selected accounts?"
+        onConfirm={onConfirmDisable}
+      />
+
       <DangerConfirmDialog
         close={closeConfirmDeleteDialog}
         isOpen={isConfirmDeleteDialogOpen}
