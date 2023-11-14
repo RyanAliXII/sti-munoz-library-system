@@ -91,9 +91,9 @@ func (repo *RecordMetadataRepository) GetAccountSearchMetadata (filter * filter.
 			count(1) as records 
 			FROM 
 			account_view 
-			where (search_vector @@ (phraseto_tsquery('simple', '$2') :: text) :: tsquery  
+			where (search_vector @@ (phraseto_tsquery('simple', $2) :: text) :: tsquery  
 			OR 
-			search_vector @@ (plainto_tsquery('simple', '$2')::text) :: tsquery
+			search_vector @@ (plainto_tsquery('simple', $2)::text) :: tsquery
 			OR
 			email ILIKE '%' || $2 || '%'
 			OR 

@@ -15,6 +15,7 @@ type Account struct {
 	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
 	AccountMetadata AccountMetadata `json:"metadata" db:"metadata"`
+	IsActive 	 bool `json:"isActive" db:"is_active"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
 }

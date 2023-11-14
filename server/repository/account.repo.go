@@ -29,7 +29,7 @@ type AccountRepository struct {
 }
 
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
-	query := `SELECT id, email, display_name, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
+	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
@@ -39,7 +39,7 @@ func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Accou
 	return accounts
 }
 func (repo *AccountRepository) GetAccountById(id string) model.Account {
-	query := `SELECT id, email, display_name, given_name, surname, profile_picture, metadata FROM account_view where id = $1 LIMIT 1`
+	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 LIMIT 1`
 	account := model.Account{}
 
 	getErr := repo.db.Get(&account, query, id)
@@ -56,12 +56,13 @@ func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Ac
 	display_name,
 	given_name, 
 	surname,
+	is_active,
 	metadata,
 	profile_picture
 	FROM account_view where 
-	(search_vector @@ (phraseto_tsquery('simple', '$1') :: text) :: tsquery  
+	(search_vector @@ (phraseto_tsquery('simple', $1) :: text) :: tsquery  
 	 OR 
-	 search_vector @@ (plainto_tsquery('simple', '$1')::text) :: tsquery
+	 search_vector @@ (plainto_tsquery('simple', $1)::text) :: tsquery
 	 OR
 	 email ILIKE '%' || $1 || '%'
 	 OR 
