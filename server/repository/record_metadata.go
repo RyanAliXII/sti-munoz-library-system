@@ -73,7 +73,7 @@ func (repo *RecordMetadataRepository) GetAccountMetadata (rowsLimit int) (Metada
 		return recordMetaDataCache.Account.Metadata, nil;
 	}
 	meta := Metadata{}
-    query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM system.account`
+    query := `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM system.account where deleted_at is null`
 	getMetaErr := repo.db.Get(&meta, query, rowsLimit)
 	if getMetaErr == nil {
 			recordMetaDataCache.Account.IsValid = true
