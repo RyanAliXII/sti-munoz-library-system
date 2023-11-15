@@ -33,8 +33,14 @@ type AccountFilter struct {
 	Deleted bool `form:"deleted"`
 	filter.Filter
 }
-func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Account, error) {
+func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Account,Metadata, error) {
 	var accounts []model.Account = make([]model.Account, 0)
+	meta := Metadata{}
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+	}
+
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(goqu.C("id"),
 		goqu.C("email"), 
@@ -45,8 +51,42 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("surname"),
 		goqu.C("metadata"),
 	 ).From(goqu.T("account_view"))
+
+
+	ds = repo.buildAccountFilters(ds, filter)
+	ds = ds.Offset(uint(filter.Offset))
+	ds = ds.Limit(uint(filter.Limit))
+	query, _, err := ds.ToSQL()
+
+	if err != nil {
+		transaction.Rollback()
+		return accounts,meta, err
+	}
+	err = transaction.Select(&accounts,query)
+	if err != nil {
 	
-	 /*
+		transaction.Rollback()
+		return accounts,meta, err
+	}
+    query, err = repo.buildMetadataQuery(filter)
+	if err != nil {
+		transaction.Rollback()	
+		return accounts, meta, err	
+	}
+	
+	err = transaction.Get(&meta, query, filter.Limit)
+
+	if err != nil {
+		transaction.Rollback()
+		return accounts,meta, err	
+	}
+	transaction.Commit()
+	return accounts,meta, nil
+}
+
+
+func (repo * AccountRepository)buildAccountFilters(ds * goqu.SelectDataset, filter * AccountFilter)(*goqu.SelectDataset){
+/*
 	 	check if active filter or disable filter is enabled
 		if both filter are selected, do nothing which fallbacks to default behavior, 
 		both active and disabled accounts will be selected.
@@ -75,27 +115,18 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 			goqu.Ex{"is_deleted": false},
 		)
 	 }
-	 //apply pagination
-	 ds = ds.Offset(uint(filter.Offset))
-	 ds = ds.Limit(uint(filter.Limit))
-	 query, _, err := ds.ToSQL()
-	 if err != nil {
-		return accounts, err
-	 }
 
-	err = repo.db.Select(&accounts,query)
-	if err != nil {
-		return accounts, err
-	}
-	return accounts, nil
+	 return ds
 }
-func (repo * AccountRepository)GetRecordMetadata(){
-	// query :=`SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, 
-	// count(1) as records FROM system.account where deleted_at is null`
-
-
-	ds := goqu.Dialect("postgres")
-	ds.Select(col.C)
+func (repo * AccountRepository)buildMetadataQuery( filter * AccountFilter)(string, error){
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("account_view"))
+	ds = repo.buildAccountFilters(ds, filter)
+	query, _, err := ds.ToSQL()
+	return query, err
 }
 func (repo *AccountRepository) GetAccount(filter * filter.Filter) []model.Account {
 	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
@@ -391,7 +422,7 @@ func NewAccountRepository() AccountRepositoryInterface {
 }
 
 type AccountRepositoryInterface interface {
-	GetAccounts(filter * AccountFilter) ([]model.Account, error)
+	GetAccounts(filter * AccountFilter) ([]model.Account,Metadata ,error)
 	SearchAccounts(* filter.Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error

@@ -29,30 +29,38 @@ type AccountController struct {
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	accountFilter := AccountFilter{}
 	accountFilter.ExtractFilter(ctx)
-	var accounts []model.Account;
-	var metadata repository.Metadata;
-	var metaErr error = nil
 	if len(accountFilter.Keyword) > 0 {
-		accounts = ctrler.accountRepository.SearchAccounts(&accountFilter.Filter)
-		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountSearchMetadata(&accountFilter.Filter)
-	}else{
-		accounts, _ = ctrler.accountRepository.GetAccounts(&repository.AccountFilter{
-			Disabled: accountFilter.Disabled,
-			Active: accountFilter.Active,
-			Deleted: accountFilter.Active,
-			Filter: accountFilter.Filter,
-		})
-		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountMetadata(accountFilter.Limit)
-	}	
-	if metaErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-        return
+		accounts := ctrler.accountRepository.SearchAccounts(&accountFilter.Filter)
+		metadata, err := ctrler.recordMetadataRepository.GetAccountSearchMetadata(&accountFilter.Filter)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("SearchAccountsError"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"accounts": accounts,
+			"metadata": metadata,
+		},
+			"Accounts Fetched.",
+		))
+		return
 	}
-
+	accounts, metadata, err  := ctrler.accountRepository.GetAccounts(&repository.AccountFilter{
+		Disabled: accountFilter.Disabled,
+		Active: accountFilter.Active,
+		Deleted: accountFilter.Active,
+		Filter: accountFilter.Filter,
+	})
+	
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAccountsError"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
 		"metadata": metadata,
-	},
+		},
 		"Accounts Fetched.",
 	))
 }
