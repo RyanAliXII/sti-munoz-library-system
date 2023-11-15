@@ -48,7 +48,7 @@ func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	accounts, metadata, err  := ctrler.accountRepository.GetAccounts(&repository.AccountFilter{
 		Disabled: accountFilter.Disabled,
 		Active: accountFilter.Active,
-		Deleted: accountFilter.Active,
+		Deleted: accountFilter.Deleted,
 		Filter: accountFilter.Filter,
 	})
 	

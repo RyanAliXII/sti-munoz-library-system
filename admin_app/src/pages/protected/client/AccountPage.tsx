@@ -141,7 +141,7 @@ const AccountPage = () => {
   const handleFilterSelection = (event: ChangeEvent<HTMLInputElement>) => {
     const name = event.target.name;
     const isChecked = event.target.checked;
-    setFilterParams({ [name]: isChecked });
+    setFilterParams({ [name]: isChecked, page: 1 });
   };
   return (
     <>

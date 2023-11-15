@@ -98,6 +98,7 @@ export type Account = {
   givenName: string;
   email: string;
   isActive: boolean;
+  isDeleted: boolean;
   metadata: {
     totalPenalty: number;
     checkedOutBooks: number;

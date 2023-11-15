@@ -123,7 +123,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
               </Table.Cell>
               <Table.Cell>{account.email}</Table.Cell>
               <Table.Cell>
-                <StatusBadge isActive={account.isActive}></StatusBadge>
+                <StatusBadge account={account}></StatusBadge>
               </Table.Cell>
             </Table.Row>
           );
@@ -133,8 +133,15 @@ const AccountTable: React.FC<AccountTableProps> = ({
   );
 };
 
-const StatusBadge = ({ isActive }: { isActive: boolean }) => {
-  if (isActive)
+const StatusBadge = ({ account }: { account: Account }) => {
+  if (account.isDeleted) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Badge color="failure">Deleted</Badge>
+      </div>
+    );
+  }
+  if (account.isActive)
     return (
       <div className="flex flex-wrap gap-2">
         <Badge color="success">Active</Badge>
