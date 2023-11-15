@@ -21,6 +21,7 @@ import {
   useAccountActivation,
   useAccountDeletion,
   useAccountDisablement,
+  useAccountRestoration,
 } from "@hooks/data-fetching/account";
 import { Button, Checkbox, Dropdown } from "flowbite-react";
 import { toast } from "react-toastify";
@@ -105,10 +106,25 @@ const AccountPage = () => {
     },
   });
 
+  const restoreAccounts = useAccountRestoration({
+    onSuccess: () => {
+      toast.success("Account/s have been disabled.");
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
+      queryClient.invalidateQueries(["accounts"]);
+    },
+    onSettled: () => {
+      closeConfirmRestoreDialog();
+    },
+  });
+
   const isActivateButtonDisabled = selectedAccountIds.size === 0;
   const isDeleteButtonDisabled = selectedAccountIds.size === 0;
   const isClearSelectionButtonDisabled = selectedAccountIds.size === 0;
   const isDisableButtonDisabled = selectedAccountIds.size === 0;
+  const isRestoreButtonDisabled = selectedAccountIds.size === 0;
   const {
     isOpen: isConfirmActivateDialogOpen,
     close: closeConfirmActivateDialog,
@@ -125,6 +141,12 @@ const AccountPage = () => {
     open: openConfirmDisableDialog,
   } = useSwitch();
 
+  const {
+    isOpen: isConfirmRestoreDialogOpen,
+    close: closeConfirmRestoreDialog,
+    open: openConfirmRestoreDialog,
+  } = useSwitch();
+
   const onConfirmDelete = () => {
     deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
@@ -133,6 +155,9 @@ const AccountPage = () => {
   };
   const onConfirmDisable = () => {
     disableAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+  };
+  const onConfirmRestore = () => {
+    restoreAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const clearAllSelection = () => {
     dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
@@ -210,12 +235,6 @@ const AccountPage = () => {
                 }
               >
                 <Dropdown.Item
-                  disabled={isDeleteButtonDisabled}
-                  onClick={openConfirmDeleteDialog}
-                >
-                  Delete
-                </Dropdown.Item>
-                <Dropdown.Item
                   disabled={isActivateButtonDisabled}
                   onClick={openConfirmActivateDialog}
                 >
@@ -226,6 +245,18 @@ const AccountPage = () => {
                   onClick={openConfirmDisableDialog}
                 >
                   Disabled
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isDeleteButtonDisabled}
+                  onClick={openConfirmDeleteDialog}
+                >
+                  Delete
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isRestoreButtonDisabled}
+                  onClick={openConfirmRestoreDialog}
+                >
+                  Restore
                 </Dropdown.Item>
               </Dropdown>
               <Button
@@ -268,29 +299,39 @@ const AccountPage = () => {
           </LoadingBoundaryV2>
         </TableContainer>
       </Container>
-      <ConfirmDialog
-        close={closeConfirmActivateDialog}
-        isOpen={isConfirmActivateDialogOpen}
-        title="Account Activation"
-        text="Are you want to activate selected accounts?"
-        onConfirm={onConfirmActivate}
-      />
-      <WarningConfirmDialog
-        close={closeConfirmDisabledDialog}
-        isOpen={isConfirmDisableDialogOpen}
-        title="Account Disablement"
-        text="Are you want to disabled selected accounts?"
-        onConfirm={onConfirmDisable}
-      />
-
-      <DangerConfirmDialog
-        close={closeConfirmDeleteDialog}
-        isOpen={isConfirmDeleteDialogOpen}
-        title="Account Deletion"
-        text="Are you want to delete selected accounts?"
-        onConfirm={onConfirmDelete}
-      />
       <HasAccess requiredPermissions={["Account.Access"]}>
+        <ConfirmDialog
+          key="activate"
+          close={closeConfirmActivateDialog}
+          isOpen={isConfirmActivateDialogOpen}
+          title="Account Activation"
+          text="Are you want to activate selected accounts?"
+          onConfirm={onConfirmActivate}
+        />
+        <ConfirmDialog
+          key="restore"
+          close={closeConfirmRestoreDialog}
+          isOpen={isConfirmRestoreDialogOpen}
+          title="Account Restoration"
+          text="Are you sure want to restore account?"
+          onConfirm={onConfirmRestore}
+        />
+        <WarningConfirmDialog
+          close={closeConfirmDisabledDialog}
+          isOpen={isConfirmDisableDialogOpen}
+          title="Account Disablement"
+          text="Are you want to disabled selected accounts?"
+          onConfirm={onConfirmDisable}
+        />
+
+        <DangerConfirmDialog
+          close={closeConfirmDeleteDialog}
+          isOpen={isConfirmDeleteDialogOpen}
+          title="Account Deletion"
+          text="Are you want to delete selected accounts?"
+          onConfirm={onConfirmDelete}
+        />
+
         <ImportAccountModal
           closeModal={closeImportModal}
           isOpen={isImportModalOpen}

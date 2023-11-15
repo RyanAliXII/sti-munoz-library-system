@@ -86,6 +86,31 @@ export const useAccountDisablement = ({
   });
 };
 
+export const useAccountRestoration = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, ActivateAccountData, unknown>) => {
+  const { Patch } = useRequest();
+  return useMutation({
+    mutationFn: ({ accountIds }) =>
+      Patch(
+        "/accounts/restoration",
+        {
+          accountIds: accountIds,
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
+
 interface UseAccountProps extends UseQueryOptions<UseAccountData> {
   filter: any;
 }
