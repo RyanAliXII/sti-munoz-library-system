@@ -199,8 +199,16 @@ const AccountPage = () => {
             </Button>
           </div>
           <HasAccess requiredPermissions={["Account.Access"]}>
-            <div className="md:hidden">
-              <Dropdown color="primary" label="Actions">
+            <div className="flex gap-2">
+              <Dropdown
+                color="secondary"
+                label="Actions"
+                disabled={
+                  isActivateButtonDisabled &&
+                  isDeleteButtonDisabled &&
+                  isDisableButtonDisabled
+                }
+              >
                 <Dropdown.Item
                   disabled={isDeleteButtonDisabled}
                   onClick={openConfirmDeleteDialog}
@@ -219,31 +227,7 @@ const AccountPage = () => {
                 >
                   Disabled
                 </Dropdown.Item>
-                <Dropdown.Item onClick={openImportModal}>Import</Dropdown.Item>
               </Dropdown>
-            </div>
-            <div className="hidden gap-2 md:flex">
-              <Button
-                color="failure"
-                disabled={isDeleteButtonDisabled}
-                onClick={openConfirmDeleteDialog}
-              >
-                Delete
-              </Button>
-              <Button
-                color="success"
-                disabled={isActivateButtonDisabled}
-                onClick={openConfirmActivateDialog}
-              >
-                Activate
-              </Button>
-              <Button
-                color="warning"
-                disabled={isDisableButtonDisabled}
-                onClick={openConfirmDisableDialog}
-              >
-                Disable
-              </Button>
               <Button
                 color="primary"
                 onClick={() => {

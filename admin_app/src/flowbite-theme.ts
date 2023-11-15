@@ -36,7 +36,7 @@ const flowbiteTheme: CustomFlowbiteTheme = {
       primary:
         "text-white bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800",
       secondary:
-        "text-white bg-yellow-300  dark:bg-yellow-300  focus:ring-yellow-200 dark:focus:ring-yellow-200 hover:bg-yellow-300 hover:bg-yellow-400",
+        "text-white bg-yellow-400  dark:bg-yellow-400 dark  focus:ring-yellow-200 dark:focus:ring-yellow-200 hover:bg-yellow-500",
       light:
         "group flex items-center justify-center p-0.5 text-center font-medium relative focus:z-10 focus:outline-none text-gray-900 bg-white border border-gray-300 enabled:hover:bg-gray-100 focus:ring-gray-300 dark:bg-transparent dark:text-white dark:border-gray-600 dark:enabled:hover:bg-gray-700 dark:enabled:hover:border-gray-700 dark:focus:ring-gray-700 rounded-lg focus:ring-2",
     },
@@ -62,6 +62,9 @@ const flowbiteTheme: CustomFlowbiteTheme = {
       base: "z-10 w-fit rounded-xl divide-y divide-gray-100 shadow",
       content: "rounded-xl text-sm text-gray-700 dark:text-gray-200",
       target: "w-fit dark:text-white",
+      item: {
+        base: "flex items-center justify-start py-2 px-4 text-sm text-gray-700 cursor-pointer w-full hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 focus:outline-none dark:hover:text-white dark:focus:bg-gray-600 dark:focus:text-white",
+      },
     },
     content: "",
   },
