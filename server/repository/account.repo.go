@@ -28,20 +28,75 @@ type AccountRepository struct {
 	objstore * minio.Client
 }
 type AccountFilter struct {
+	Disabled bool `form:"disabled"`
+	Active bool `form:"active"`
+	Deleted bool `form:"deleted"`
 	filter.Filter
-
 }
-func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
-	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
+func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Account, error) {
 	var accounts []model.Account = make([]model.Account, 0)
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(goqu.C("id"),
+		goqu.C("email"), 
+		goqu.C("display_name"), 
+		goqu.C("is_active"),
+		goqu.C("given_name"),
+		goqu.C("profile_picture"),
+		goqu.C("surname"),
+		goqu.C("metadata"),
+	 ).From(goqu.T("account_view"))
+	
+	 /*
+	 	check if active filter or disable filter is enabled
+		if both filter are selected, do nothing which fallbacks to default behavior, 
+		both active and disabled accounts will be selected.
+	 */
+	 activeExp := goqu.ExOr{}
+	 if(filter.Active && !filter.Disabled){
+		activeExp["is_active"] = true
+	 }
+	
+	 if(filter.Disabled && !filter.Active){
+		activeExp["is_active"] = false
+	 }
+	 ds = ds.Where(activeExp)
 
-	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
-	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.GetAccounts"), slimlog.Error("selectErr"))
+	 /*
+	 	check if deleted filter is selected, 
+		if selected, deleted accounts will be fetched.
+	 	By default, undeleted account will be fetched.
+	 */
+	 if (filter.Deleted){
+		ds = ds.Where(
+			goqu.Ex{"is_deleted": true},
+		)
+	 }else{
+		ds = ds.Where(
+			goqu.Ex{"is_deleted": false},
+		)
+	 }
+	 //apply pagination
+	 ds = ds.Offset(uint(filter.Offset))
+	 ds = ds.Limit(uint(filter.Limit))
+	 query, _, err := ds.ToSQL()
+	 if err != nil {
+		return accounts, err
+	 }
+
+	err = repo.db.Select(&accounts,query)
+	if err != nil {
+		return accounts, err
 	}
-	return accounts
+	return accounts, nil
 }
+func (repo * AccountRepository)GetRecordMetadata(){
+	// query :=`SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, 
+	// count(1) as records FROM system.account where deleted_at is null`
 
+
+	ds := goqu.Dialect("postgres")
+	ds.Select(col.C)
+}
 func (repo *AccountRepository) GetAccount(filter * filter.Filter) []model.Account {
 	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
@@ -336,7 +391,7 @@ func NewAccountRepository() AccountRepositoryInterface {
 }
 
 type AccountRepositoryInterface interface {
-	GetAccounts( * filter.Filter) []model.Account
+	GetAccounts(filter * AccountFilter) ([]model.Account, error)
 	SearchAccounts(* filter.Filter) []model.Account
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
