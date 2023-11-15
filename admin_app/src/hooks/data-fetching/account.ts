@@ -107,6 +107,9 @@ export const useAccount = ({
         params: {
           page: filter?.page,
           keyword: filter?.keyword,
+          active: filter?.active,
+          deleted: filter?.deleted,
+          disabled: filter?.disabled,
         },
       });
 

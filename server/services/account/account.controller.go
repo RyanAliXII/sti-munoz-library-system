@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -28,17 +27,20 @@ type AccountController struct {
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
-	filter := filter.ExtractFilter(ctx)
+	
+	accountFilter := AccountFilter{}
+	accountFilter.ExtractFilter(ctx)
+	
 	
 	var accounts []model.Account;
 	var metadata repository.Metadata;
 	var metaErr error = nil
-	if len(filter.Keyword) > 0 {
-		accounts = ctrler.accountRepository.SearchAccounts(&filter)
-		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountSearchMetadata(&filter)
+	if len(accountFilter.Keyword) > 0 {
+		accounts = ctrler.accountRepository.SearchAccounts(&accountFilter.Filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountSearchMetadata(&accountFilter.Filter)
 	}else{
-		accounts = ctrler.accountRepository.GetAccounts(&filter)
-		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountMetadata(filter.Limit)
+		accounts = ctrler.accountRepository.GetAccounts(&accountFilter.Filter)
+		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountMetadata(accountFilter.Limit)
 	}	
 	if metaErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

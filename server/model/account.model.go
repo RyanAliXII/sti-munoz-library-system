@@ -78,3 +78,5 @@ func (meta *AccountMetadata) Scan(value interface{}) error {
 func (meta AccountMetadata) Value(value interface{}) (driver.Value, error) {
 	return meta, nil
 }
+
+

@@ -27,8 +27,22 @@ type AccountRepository struct {
 	db *sqlx.DB
 	objstore * minio.Client
 }
+type AccountFilter struct {
+	filter.Filter
 
+}
 func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Account {
+	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
+	var accounts []model.Account = make([]model.Account, 0)
+
+	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
+	if selectErr != nil {
+		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.GetAccounts"), slimlog.Error("selectErr"))
+	}
+	return accounts
+}
+
+func (repo *AccountRepository) GetAccount(filter * filter.Filter) []model.Account {
 	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 

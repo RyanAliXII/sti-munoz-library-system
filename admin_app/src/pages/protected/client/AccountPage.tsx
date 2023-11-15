@@ -3,7 +3,7 @@ import useDebounce from "@hooks/useDebounce";
 import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, useReducer, useState } from "react";
+import { BaseSyntheticEvent, ChangeEvent, useReducer, useState } from "react";
 import { TbFileImport } from "react-icons/tb";
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
@@ -22,18 +22,22 @@ import {
   useAccountDeletion,
   useAccountDisablement,
 } from "@hooks/data-fetching/account";
-import { Button, Dropdown } from "flowbite-react";
+import { Button, Checkbox, Dropdown } from "flowbite-react";
 import { toast } from "react-toastify";
 import { useSearchParamsState } from "react-use-search-params-state";
 import AccountTable from "./AccountTable";
 import ImportAccountModal from "./ImportAccountModal";
 import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
+import { MdFilterList } from "react-icons/md";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
+    deleted: { type: "boolean", default: false },
+    active: { type: "boolean", default: false },
+    disabled: { type: "boolean", default: false },
   });
   const {
     close: closeImportModal,
@@ -133,11 +137,52 @@ const AccountPage = () => {
   const clearAllSelection = () => {
     dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
   };
+
+  const handleFilterSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    const name = event.target.name;
+    const isChecked = event.target.checked;
+    setFilterParams({ [name]: isChecked });
+  };
   return (
     <>
       <Container>
         <div className="flex items-center justify-between py-4">
           <div className="flex gap-2">
+            <Dropdown
+              color="light"
+              arrowIcon={false}
+              className="py-2 p-3"
+              label={<MdFilterList className="text-lg" />}
+            >
+              <div className="p-2 flex gap-2 items-center">
+                <Checkbox
+                  color="primary"
+                  name="active"
+                  checked={filterParams?.active}
+                  onChange={handleFilterSelection}
+                />
+                <div className="text-sm">Active</div>
+              </div>
+              <div className="p-2 flex gap-2 items-center">
+                <Checkbox
+                  color="primary"
+                  name="disabled"
+                  checked={filterParams?.disabled}
+                  onChange={handleFilterSelection}
+                />
+                <div className="text-sm">Disabled</div>
+              </div>
+
+              <div className="p-2 flex gap-2 items-center">
+                <Checkbox
+                  color="primary"
+                  name="deleted"
+                  checked={filterParams?.deleted}
+                  onChange={handleFilterSelection}
+                />
+                <div className="text-sm">Deleted</div>
+              </div>
+            </Dropdown>
             <CustomInput
               type="text"
               placeholder="Search accounts"
