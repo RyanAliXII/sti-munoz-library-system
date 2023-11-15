@@ -453,7 +453,7 @@ func(repo * AccountRepository)DeleteAccounts(accountIds []string) error {
 		return nil
 	}
 	ds := dialect.Update(goqu.T("account").Schema("system"))
-	ds = ds.Set(goqu.Record{"deleted_at": goqu.L("now()")})
+	ds = ds.Set(goqu.Record{"deleted_at": goqu.L("now()"), "active_since": goqu.L("null")})
 	ds = ds.Where(goqu.ExOr{
 		"id" : accountIds,
 	}).Prepared(true)
@@ -463,6 +463,24 @@ func(repo * AccountRepository)DeleteAccounts(accountIds []string) error {
 	}
 	_, err = repo.db.Exec(query, args...)
 	
+	return err
+}
+
+func(repo * AccountRepository)RestoreAccounts(accountIds []string) error {
+	dialect := goqu.Dialect("postgres")
+	if len(accountIds) == 0 {
+		return nil
+	}
+	ds := dialect.Update(goqu.T("account").Schema("system"))
+	ds = ds.Set(goqu.Record{"deleted_at": goqu.L("null")})
+	ds = ds.Where(goqu.ExOr{
+		"id" : accountIds,
+	}).Prepared(true)
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec(query, args...)
 	return err
 }
 func NewAccountRepository() AccountRepositoryInterface {
@@ -485,4 +503,5 @@ type AccountRepositoryInterface interface {
 	DeleteAccounts(accountIds []string) error 
 	DisableAccounts(accountIds []string) error
 	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
+	RestoreAccounts(accountIds []string) error
 }

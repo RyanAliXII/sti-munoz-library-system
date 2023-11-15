@@ -163,7 +163,6 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	ctrler.recordMetadataRepository.InvalidateAccount()
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
 func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
@@ -252,8 +251,25 @@ func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctrler.recordMetadataRepository.InvalidateAccount()
+	
 	ctx.JSON(httpresp.Success200(nil, "Accounts deleted."))
+}
+
+func (ctrler * AccountController)RestoreAccounts(ctx * gin.Context) {
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.RestoreAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("RestoreAccounts"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Accounts restored."))
 }
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
@@ -276,4 +292,5 @@ type AccountControllerInterface interface {
 	ActivateAccounts(ctx * gin.Context)
 	DeleteAccounts(ctx * gin.Context)
 	DisableAccounts(ctx * gin.Context)
+	RestoreAccounts(ctx * gin.Context)
 }
