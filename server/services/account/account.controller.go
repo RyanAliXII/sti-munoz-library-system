@@ -30,8 +30,12 @@ func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	accountFilter := AccountFilter{}
 	accountFilter.ExtractFilter(ctx)
 	if len(accountFilter.Keyword) > 0 {
-		accounts := ctrler.accountRepository.SearchAccounts(&accountFilter.Filter)
-		metadata, err := ctrler.recordMetadataRepository.GetAccountSearchMetadata(&accountFilter.Filter)
+		accounts, metadata, err  := ctrler.accountRepository.SearchAccounts(&repository.AccountFilter{
+			Disabled: accountFilter.Disabled,
+			Active: accountFilter.Active,
+			Deleted: accountFilter.Deleted,
+			Filter: accountFilter.Filter,
+		})
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("SearchAccountsError"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

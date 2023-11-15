@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +47,6 @@ func(filter * Filter) ExtractFilter(ctx *gin.Context){
 			filter.Page = 1
 		}
 	}
-	fmt.Println()
 	filter.Offset = (filter.Page - 1) * filter.Limit
 	filter.Keyword =  ctx.Query("keyword")
 }

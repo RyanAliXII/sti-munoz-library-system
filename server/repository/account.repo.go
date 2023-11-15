@@ -46,6 +46,7 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("email"), 
 		goqu.C("display_name"), 
 		goqu.C("is_active"),
+		goqu.C("is_deleted"),
 		goqu.C("given_name"),
 		goqu.C("profile_picture"),
 		goqu.C("surname"),
@@ -86,7 +87,7 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 
 
 func (repo * AccountRepository)buildAccountFilters(ds * goqu.SelectDataset, filter * AccountFilter)(*goqu.SelectDataset){
-/*
+	/*
 	 	check if active filter or disable filter is enabled
 		if both filter are selected, do nothing which fallbacks to default behavior, 
 		both active and disabled accounts will be selected.
@@ -99,6 +100,7 @@ func (repo * AccountRepository)buildAccountFilters(ds * goqu.SelectDataset, filt
 	 if(filter.Disabled && !filter.Active){
 		activeExp["is_active"] = false
 	 }
+	 
 	 ds = ds.Where(activeExp)
 
 	 /*
@@ -107,9 +109,13 @@ func (repo * AccountRepository)buildAccountFilters(ds * goqu.SelectDataset, filt
 	 	By default, undeleted account will be fetched.
 	 */
 	 if (filter.Deleted){
-		ds = ds.Where(
-			goqu.Ex{"is_deleted": true},
-		)
+		//only add this expression when all filters are not selected
+		if(!filter.Active && !filter.Disabled){
+			ds = ds.Where(
+				goqu.Ex{"is_deleted": true},
+			)
+		}
+		
 	 }else{
 		ds = ds.Where(
 			goqu.Ex{"is_deleted": false},
@@ -124,6 +130,30 @@ func (repo * AccountRepository)buildMetadataQuery( filter * AccountFilter)(strin
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),
 		goqu.COUNT(1).As("records"),
 	).From(goqu.T("account_view"))
+	ds = repo.buildAccountFilters(ds, filter)
+	query, _, err := ds.ToSQL()
+	return query, err
+}
+
+func (repo * AccountRepository)buildSearchMetadataQuery( filter * AccountFilter)(string, error){
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("account_view"))
+	ds = ds.Where(
+		goqu.L(`	
+	   (search_vector @@ (phraseto_tsquery('simple', $2) :: text) :: tsquery  
+		OR 
+		search_vector @@ (plainto_tsquery('simple', $2)::text) :: tsquery
+		OR
+		email ILIKE '%' || $2 || '%'
+		OR 
+		given_name ILIKE '%' || $2 || '%'
+		OR
+		surname ILIKE'%' || $2 || '%')
+	  `),
+	)
 	ds = repo.buildAccountFilters(ds, filter)
 	query, _, err := ds.ToSQL()
 	return query, err
@@ -152,38 +182,59 @@ func (repo *AccountRepository) GetAccountByIdDontIgnoreIfDeletedOrInactive(id st
 	return account, err
 }
 
-func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
+func (repo *AccountRepository) SearchAccounts(filter * AccountFilter) ([]model.Account,Metadata,error) {
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(goqu.C("id"),
+		goqu.C("email"), 
+		goqu.C("display_name"), 
+		goqu.C("is_active"),
+		goqu.C("is_deleted"),
+		goqu.C("given_name"),
+		goqu.C("profile_picture"),
+		goqu.C("surname"),
+		goqu.C("metadata"),
+	).From(goqu.T("account_view"))
 	
-	query := `
-	SELECT id, email, 
-	display_name,
-	given_name, 
-	surname,
-	is_active,
-	metadata,
-	profile_picture
-	FROM account_view where 
-	(search_vector @@ (phraseto_tsquery('simple', $1) :: text) :: tsquery  
-	 OR 
-	 search_vector @@ (plainto_tsquery('simple', $1)::text) :: tsquery
-	 OR
-	 email ILIKE '%' || $1 || '%'
-	 OR 
-	 given_name ILIKE '%' || $1 || '%'
-	 OR
-	 surname ILIKE'%' || $1 || '%'
-	) 
-	and account_view.deleted_at is null
-	LIMIT $2 OFFSET $3
-	`
+	ds = ds.Where(
+		goqu.L(`	
+	   (search_vector @@ (phraseto_tsquery('simple', $1) :: text) :: tsquery  
+		OR 
+		search_vector @@ (plainto_tsquery('simple', $1)::text) :: tsquery
+		OR
+		email ILIKE '%' || $1 || '%'
+		OR 
+		given_name ILIKE '%' || $1 || '%'
+		OR
+		surname ILIKE'%' || $1 || '%')
+	  `),
+	)
+	
+	ds = repo.buildAccountFilters(ds, filter)
 	var accounts []model.Account = make([]model.Account, 0)
+	metadata := Metadata{}
 
-	selectErr := repo.db.Select(&accounts, query, filter.Keyword, filter.Limit, filter.Offset)
-	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.SearchAccounts"), slimlog.Error("selectErr"))
+	ds = ds.Offset(uint(filter.Offset)).Limit(uint(filter.Limit))
+	query,_ , err := ds.ToSQL()
+	
+	if err != nil {	
+		return accounts, metadata, err 
+	}
+	err = repo.db.Select(&accounts, query, filter.Keyword)
+	if err != nil {
+		return accounts, metadata, err 
+	}
+
+	query, err = repo.buildSearchMetadataQuery(filter)
+	if err != nil {
+		return accounts, metadata, err 
+	}
+
+	err = repo.db.Get(&metadata, query, filter.Limit, filter.Keyword)
+	if err != nil {
+		return accounts, metadata, err
 	}
 	
-	return accounts
+	return accounts, metadata, nil
 }
 
 
@@ -422,8 +473,8 @@ func NewAccountRepository() AccountRepositoryInterface {
 }
 
 type AccountRepositoryInterface interface {
-	GetAccounts(filter * AccountFilter) ([]model.Account,Metadata ,error)
-	SearchAccounts(* filter.Filter) []model.Account
+	GetAccounts( * AccountFilter) ([]model.Account,Metadata ,error)
+	SearchAccounts(* AccountFilter) ([]model.Account, Metadata, error)
 	NewAccounts(accounts *[]model.Account) error
 	VerifyAndUpdateAccount(account model.Account) error
 	GetRoleByAccountId(accountId string) (model.Role, error)
