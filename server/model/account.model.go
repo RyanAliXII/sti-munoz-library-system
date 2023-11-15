@@ -16,6 +16,7 @@ type Account struct {
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
 	AccountMetadata AccountMetadata `json:"metadata" db:"metadata"`
 	IsActive 	 bool `json:"isActive" db:"is_active"`
+	IsDeleted 	 bool `json:"isDeleted" db:"is_deleted"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
 }

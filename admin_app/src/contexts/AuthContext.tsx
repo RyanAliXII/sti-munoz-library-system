@@ -15,6 +15,7 @@ const userInitialData: Account = {
   givenName: "",
   surname: "",
   id: " ",
+  isActive: false,
   metadata: {
     approvedBooks: 0,
     cancelledBooks: 0,
@@ -58,7 +59,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       });
 
       const user = await fetchLoggedInUserData(tokens.accessToken);
-      const accountData: Omit<Account, "metadata"> = {
+      const accountData: Omit<Account, "metadata" | "isActive"> = {
         id: user.data.id,
         displayName: user.data.displayName,
         email: user.data.mail,
@@ -84,7 +85,9 @@ export const AuthProvider = ({ children }: BaseProps) => {
 
     return response;
   };
-  const verifyAccount = async (account: Omit<Account, "metadata">) => {
+  const verifyAccount = async (
+    account: Omit<Account, "metadata" | "isActive">
+  ) => {
     const tokens = await msalClient.acquireTokenSilent({
       scopes: [apiScope("LibraryServer.Access")],
     });

@@ -157,14 +157,14 @@ func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
 	}, "Accounts with assigned role fetched."))
 }
 func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
-	id, exists := ctx.Get("requestorId")
-	parsedId,isIdStr := id.(string)
-	if!exists || !isIdStr {
-        ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-        return
-    }
-	account:= ctrler.accountRepository.GetAccountById(parsedId)
+	id := ctx.GetString("requestorId")
 
+	account, err := ctrler.accountRepository.GetAccountById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAccountByIdErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"account": account,
 	}, "Account has been fetched."))

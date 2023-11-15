@@ -38,15 +38,18 @@ func (repo *AccountRepository) GetAccounts(filter * filter.Filter) []model.Accou
 	}
 	return accounts
 }
-func (repo *AccountRepository) GetAccountById(id string) model.Account {
-	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 LIMIT 1`
+func (repo *AccountRepository) GetAccountById(id string) (model.Account, error) {
+	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 and deleted_at is null and active_since is not null LIMIT 1`
 	account := model.Account{}
+	err := repo.db.Get(&account, query, id)
+	return account, err
+}
 
-	getErr := repo.db.Get(&account, query, id)
-	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("AccountRepository.GetAccountById"), slimlog.Error("getErr"))
-	}
-	return account
+func (repo *AccountRepository) GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error) {
+	query := `SELECT id, email, display_name,is_active, is_deleted, given_name, surname, profile_picture, metadata FROM account_view where id = $1 LIMIT 1`
+	account := model.Account{}
+	err := repo.db.Get(&account, query, id)
+	return account, err
 }
 
 func (repo *AccountRepository) SearchAccounts(filter * filter.Filter) []model.Account {
@@ -325,9 +328,10 @@ type AccountRepositoryInterface interface {
 	VerifyAndUpdateAccount(account model.Account) error
 	GetRoleByAccountId(accountId string) (model.Role, error)
 	GetAccountsWithAssignedRoles() model.AccountRoles
-	GetAccountById(id string) model.Account
+	GetAccountById(id string) (model.Account, error)
 	UpdateProfilePictureById(id string, image * multipart.FileHeader) error
 	ActivateAccounts(accountIds []string) error
 	DeleteAccounts(accountIds []string) error 
 	DisableAccounts(accountIds []string) error
+	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
 }
