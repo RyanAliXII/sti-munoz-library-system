@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -144,13 +145,22 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 func(c * Scanner) LogClient (ctx * gin.Context){
 	clientId := ctx.Param("clientId")
 	scannerId := ctx.GetString("sub")
-	err := c.ClientLogRepo.NewLog(clientId, scannerId)
+	account, err := c.accountRepo.GetAccountById(clientId)
+	if err != nil {
+		if(err == sql.ErrNoRows){
+			 ctx.JSON(httpresp.Fail404(nil, "Account not found"))
+			 return
+		}
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+
+	err = c.ClientLogRepo.NewLog(clientId, scannerId)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail400(nil,"Unknown error occured."))
 		return
 	}
-	account := c.accountRepo.GetAccountById(clientId)
 	ctx.JSON(httpresp.Success200(gin.H{
 		"client": account,
 	}, "Ok") )

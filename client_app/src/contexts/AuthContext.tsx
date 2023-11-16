@@ -1,13 +1,12 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { BaseProps } from "@definitions/props.definition";
+import { EventMessage, EventType } from "@azure/msal-browser";
 import { useMsal } from "@azure/msal-react";
 import Loader from "@components/Loader";
-import axios from "axios";
-import { Account, Role } from "@definitions/types";
-import { EventType, EventMessage } from "@azure/msal-browser";
-import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
 import axiosClient from "@definitions/axios";
-
+import { MS_GRAPH_SCOPE, apiScope } from "@definitions/configs/msal/scopes";
+import { BaseProps } from "@definitions/props.definition";
+import { Account } from "@definitions/types";
+import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
 const userInitialData: Account = {
   displayName: "",
   email: "",
@@ -27,8 +26,6 @@ const userInitialData: Account = {
 
 export const AuthContext = createContext<AuthContextState>({
   user: userInitialData,
-  hasPermissions: () => false,
-  permissions: [],
   loading: true,
 });
 export const useAuthContext = () => {
@@ -37,15 +34,12 @@ export const useAuthContext = () => {
 export type AuthContextState = {
   loading?: boolean;
   user: Account;
-  permissions: string[];
-  hasPermissions: (requiredPermissions: string[]) => boolean;
 };
 
 export const AuthProvider = ({ children }: BaseProps) => {
   const { instance: msalClient } = useMsal();
   const [user, setUser] = useState<Account>(userInitialData);
   const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState<string[]>([]);
 
   const useAccount = async () => {
     try {
@@ -65,7 +59,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
         surname: user.data.surname,
       };
       await verifyAccount(accountData);
-      // await getRolePermissions();
       return true;
     } catch (error) {
       console.error(error);
@@ -84,56 +77,34 @@ export const AuthProvider = ({ children }: BaseProps) => {
   const verifyAccount = async (
     account: Omit<Account, "metadata" | "profilePicture">
   ) => {
-    const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("LibraryServer.Access")],
-    });
-    const response = await axiosClient.post(
-      "/system/accounts/verification",
-      account,
-      {
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
-        },
+    try {
+      const tokens = await msalClient.acquireTokenSilent({
+        scopes: [apiScope("LibraryServer.Access")],
+      });
+      const response = await axiosClient.post(
+        "/system/accounts/verification",
+        account,
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
+        }
+      );
+      const { data } = response.data;
+      setUser(data.account);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const today = new Date();
+        today.setSeconds(today.getSeconds() + 10);
+        const flash = {
+          message:
+            "Your account is disabled. Please contact the library administrator.",
+          expiredAt: today.toISOString(),
+        };
+        sessionStorage.setItem("flash", JSON.stringify(flash));
       }
-    );
-    const { data } = response.data;
-    setUser(data.account);
-  };
-
-  const getRolePermissions = async () => {
-    const tokens = await msalClient.acquireTokenSilent({
-      scopes: [apiScope("LibraryServer.Access")],
-    });
-
-    const { data: response } = await axiosClient.post(
-      "/system/accounts/roles",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
-        },
-      }
-    );
-    if (!response.data.role) return;
-    const role: Role = response.data.role;
-    const permissionsArr = Object.keys(role.permissions).reduce<string[]>(
-      (a, moduleName) => [...a, ...role.permissions[moduleName]],
-      []
-    );
-    setPermissions(() => permissionsArr);
-  };
-
-  const hasPermissions = (requredPermissions: string[]) => {
-    // if empty array is given, it means accessing module doesnt not require any permissions for access.
-    if (requredPermissions.length === 0) {
-      return true;
+      throw error;
     }
-    for (const p of requredPermissions) {
-      if (permissions.includes(p)) {
-        return true;
-      }
-    }
-    return false;
   };
 
   const logout = async () => {
@@ -173,8 +144,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
   return (
     <AuthContext.Provider
       value={{
-        hasPermissions,
-        permissions,
         user,
         loading,
       }}

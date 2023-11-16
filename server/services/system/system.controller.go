@@ -1,6 +1,7 @@
 package system
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -100,7 +101,21 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	acccount := ctrler.accountRepository.GetAccountById(account.Id)
+	acccount, err  := ctrler.accountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(account.Id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAccountByIdDontIgnoreIfDeletedOrInactiveErr"))
+		if(err == sql.ErrNoRows){
+			ctx.JSON(httpresp.Fail404(nil, "Account not found"))
+			return
+		}
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+
+	if (!acccount.IsActive || acccount.IsDeleted ) &&  azuread.ClientAppClientId == ctx.GetString("requestorApp") {
+		ctx.JSON(httpresp.Fail403(nil, "Account has been disabled. Please contact your library administrator."))
+		return 
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"account":acccount,
 	}, "Account verified.",))

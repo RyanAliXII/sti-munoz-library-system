@@ -1,83 +1,58 @@
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-
-import { Account } from "@definitions/types";
+import Container from "@components/ui/container/Container";
 import useDebounce from "@hooks/useDebounce";
-
-import { PrimaryButton } from "@components/ui/button/Button";
 import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Uppy from "@uppy/core";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { BaseSyntheticEvent, ChangeEvent, useReducer, useState } from "react";
 import { TbFileImport } from "react-icons/tb";
-import Modal from "react-responsive-modal";
-
-import { useMsal } from "@azure/msal-react";
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import { apiScope } from "@definitions/configs/msal/scopes";
-import { useRequest } from "@hooks/useRequest";
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
-import Dashboard from "@uppy/react/src/Dashboard";
-import XHRUpload from "@uppy/xhr-upload";
-import { toast } from "react-toastify";
-
 import CustomPagination from "@components/pagination/CustomPagination";
+import {
+  ConfirmDialog,
+  DangerConfirmDialog,
+  WarningConfirmDialog,
+} from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
-import { Avatar, Button, Table } from "flowbite-react";
+import {
+  useAccount,
+  useAccountActivation,
+  useAccountDeletion,
+  useAccountDisablement,
+  useAccountRestoration,
+} from "@hooks/data-fetching/account";
+import { Button, Checkbox, Dropdown } from "flowbite-react";
+import { toast } from "react-toastify";
 import { useSearchParamsState } from "react-use-search-params-state";
+import AccountTable from "./AccountTable";
+import ImportAccountModal from "./ImportAccountModal";
+import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
+import { MdFilterList } from "react-icons/md";
 
-const uppy = new Uppy({
-  restrictions: {
-    allowedFileTypes: [".csv", ".xlsx"],
-    maxNumberOfFiles: 1,
-  },
-}).use(XHRUpload, {
-  headers: {
-    Authorization: `Bearer`,
-  },
-
-  endpoint: `${BASE_URL_V1}/accounts/bulk`,
-});
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
+    deleted: { type: "boolean", default: false },
+    active: { type: "boolean", default: false },
+    disabled: { type: "boolean", default: false },
   });
   const {
     close: closeImportModal,
     isOpen: isImportModalOpen,
     open: openImportModal,
   } = useSwitch(false);
-  const { Get } = useRequest();
 
-  const fetchAccounts = async () => {
-    try {
-      const { data: response } = await Get("/accounts/", {
-        params: {
-          page: filterParams?.page,
-          keyword: filterParams?.keyword,
-        },
-      });
-      setTotalPages(response?.data?.metadata?.pages ?? 0);
-      return response?.data?.accounts ?? [];
-    } catch {
-      return [];
-    }
-  };
   const queryClient = useQueryClient();
-  const {
-    data: accounts,
-    isFetching,
-    isError,
-  } = useQuery<Account[]>({
-    queryFn: fetchAccounts,
-    queryKey: ["accounts", filterParams],
+  const { isFetching, isError, data } = useAccount({
+    filter: filterParams,
+
+    onSuccess: (data) => {
+      setTotalPages(data?.pages ?? 1);
+    },
   });
   const debounceSearch = useDebounce();
   const search = (q: any) => {
@@ -86,27 +61,214 @@ const AccountPage = () => {
   const handleSearch = (event: BaseSyntheticEvent) => {
     debounceSearch(search, event.target.value, 500);
   };
+  const [selectedAccountIds, dispatchAccountIdSelection] = useReducer(
+    selectedAccountIdsReducer,
+    new Set<string>([])
+  );
 
+  const activateAccounts = useAccountActivation({
+    onSuccess: () => {
+      toast.success("Account/s have been activated.");
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
+      queryClient.invalidateQueries(["accounts"]);
+    },
+    onSettled: () => {
+      closeConfirmActivateDialog();
+    },
+  });
+  const deleteAccounts = useAccountDeletion({
+    onSuccess: () => {
+      toast.success("Account/s have been deleted.");
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
+      queryClient.invalidateQueries(["accounts"]);
+    },
+    onSettled: () => {
+      closeConfirmDeleteDialog();
+    },
+  });
+  const disableAccounts = useAccountDisablement({
+    onSuccess: () => {
+      toast.success("Account/s have been disabled.");
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
+      queryClient.invalidateQueries(["accounts"]);
+    },
+    onSettled: () => {
+      closeConfirmDisabledDialog();
+    },
+  });
+
+  const restoreAccounts = useAccountRestoration({
+    onSuccess: () => {
+      toast.success("Account/s have been disabled.");
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
+      queryClient.invalidateQueries(["accounts"]);
+    },
+    onSettled: () => {
+      closeConfirmRestoreDialog();
+    },
+  });
+
+  const isActivateButtonDisabled = selectedAccountIds.size === 0;
+  const isDeleteButtonDisabled = selectedAccountIds.size === 0;
+  const isClearSelectionButtonDisabled = selectedAccountIds.size === 0;
+  const isDisableButtonDisabled = selectedAccountIds.size === 0;
+  const isRestoreButtonDisabled = selectedAccountIds.size === 0;
+  const {
+    isOpen: isConfirmActivateDialogOpen,
+    close: closeConfirmActivateDialog,
+    open: openConfirmActivateDialog,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmDeleteDialogOpen,
+    close: closeConfirmDeleteDialog,
+    open: openConfirmDeleteDialog,
+  } = useSwitch();
+  const {
+    isOpen: isConfirmDisableDialogOpen,
+    close: closeConfirmDisabledDialog,
+    open: openConfirmDisableDialog,
+  } = useSwitch();
+
+  const {
+    isOpen: isConfirmRestoreDialogOpen,
+    close: closeConfirmRestoreDialog,
+    open: openConfirmRestoreDialog,
+  } = useSwitch();
+
+  const onConfirmDelete = () => {
+    deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+  };
+  const onConfirmActivate = () => {
+    activateAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+  };
+  const onConfirmDisable = () => {
+    disableAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+  };
+  const onConfirmRestore = () => {
+    restoreAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+  };
+  const clearAllSelection = () => {
+    dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
+  };
+
+  const handleFilterSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    const name = event.target.name;
+    const isChecked = event.target.checked;
+    setFilterParams({ [name]: isChecked, page: 1 });
+  };
   return (
     <>
       <Container>
         <div className="flex items-center justify-between py-4">
-          <CustomInput
-            type="text"
-            placeholder="Search accounts"
-            onChange={handleSearch}
-            defaultValue={filterParams?.keyword}
-          ></CustomInput>
-          <HasAccess requiredPermissions={["Account.Access"]}>
-            <Button
-              color="primary"
-              onClick={() => {
-                openImportModal();
-              }}
+          <div className="flex gap-2">
+            <Dropdown
+              color="light"
+              arrowIcon={false}
+              className="py-2 p-3"
+              label={<MdFilterList className="text-lg" />}
             >
-              <TbFileImport className="text-lg" />
-              Import
+              <div className="p-2 flex gap-2 items-center">
+                <Checkbox
+                  color="primary"
+                  name="active"
+                  checked={filterParams?.active}
+                  onChange={handleFilterSelection}
+                />
+                <div className="text-sm">Active</div>
+              </div>
+              <div className="p-2 flex gap-2 items-center">
+                <Checkbox
+                  color="primary"
+                  name="disabled"
+                  checked={filterParams?.disabled}
+                  onChange={handleFilterSelection}
+                />
+                <div className="text-sm">Disabled</div>
+              </div>
+
+              <div className="p-2 flex gap-2 items-center">
+                <Checkbox
+                  color="primary"
+                  name="deleted"
+                  checked={filterParams?.deleted}
+                  onChange={handleFilterSelection}
+                />
+                <div className="text-sm">Deleted</div>
+              </div>
+            </Dropdown>
+            <CustomInput
+              type="text"
+              placeholder="Search accounts"
+              onChange={handleSearch}
+              defaultValue={filterParams?.keyword}
+            />
+            <Button
+              outline
+              color="light"
+              disabled={isClearSelectionButtonDisabled}
+              onClick={clearAllSelection}
+            >
+              Clear all selection
             </Button>
+          </div>
+          <HasAccess requiredPermissions={["Account.Access"]}>
+            <div className="flex gap-2">
+              <Dropdown
+                color="secondary"
+                label="Actions"
+                disabled={
+                  isActivateButtonDisabled &&
+                  isDeleteButtonDisabled &&
+                  isDisableButtonDisabled
+                }
+              >
+                <Dropdown.Item
+                  disabled={isActivateButtonDisabled}
+                  onClick={openConfirmActivateDialog}
+                >
+                  Activate
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isDisableButtonDisabled}
+                  onClick={openConfirmDisableDialog}
+                >
+                  Disabled
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isDeleteButtonDisabled}
+                  onClick={openConfirmDeleteDialog}
+                >
+                  Delete
+                </Dropdown.Item>
+                <Dropdown.Item
+                  disabled={isRestoreButtonDisabled}
+                  onClick={openConfirmRestoreDialog}
+                >
+                  Restore
+                </Dropdown.Item>
+              </Dropdown>
+              <Button
+                color="primary"
+                onClick={() => {
+                  openImportModal();
+                }}
+              >
+                <TbFileImport className="text-lg" />
+                Import
+              </Button>
+            </div>
           </HasAccess>
         </div>
         <TableContainer>
@@ -115,45 +277,11 @@ const AccountPage = () => {
             isError={isError}
             contentLoadDelay={150}
           >
-            <Table>
-              <Table.Head>
-                <Table.HeadCell></Table.HeadCell>
-                <Table.HeadCell>User</Table.HeadCell>
-                <Table.HeadCell>Email</Table.HeadCell>
-              </Table.Head>
-              <Table.Body className="divide-y dark:divide-gray-700">
-                {accounts?.map((account) => {
-                  const url = new URL(
-                    "https://ui-avatars.com/api/&background=2563EB&color=fff"
-                  );
-                  url.searchParams.set(
-                    "name",
-                    `${account.givenName} ${account.surname}`
-                  );
-                  return (
-                    <Table.Row key={account.id}>
-                      <Table.Cell>
-                        <div className="h-10">
-                          <Avatar img={url.toString()} rounded></Avatar>
-                        </div>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="text-base font-semibold text-gray-900 dark:text-white">
-                          {account.givenName.length + account.surname.length ===
-                          0
-                            ? "Unnamed"
-                            : `${account.givenName} ${account.surname}`}
-                        </div>
-                        <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                          {account.displayName}
-                        </div>
-                      </Table.Cell>
-                      <Table.Cell>{account.email}</Table.Cell>
-                    </Table.Row>
-                  );
-                })}
-              </Table.Body>
-            </Table>
+            <AccountTable
+              selectedAccountIds={selectedAccountIds}
+              dispatchSelection={dispatchAccountIdSelection}
+              accounts={data?.accounts ?? []}
+            />
             <div className="py-3">
               <CustomPagination
                 nextLabel="Next"
@@ -171,121 +299,46 @@ const AccountPage = () => {
           </LoadingBoundaryV2>
         </TableContainer>
       </Container>
-      <ContainerNoBackground></ContainerNoBackground>
-
       <HasAccess requiredPermissions={["Account.Access"]}>
-        {isImportModalOpen && (
-          <Modal
-            open={isImportModalOpen}
-            onClose={closeImportModal}
-            center
-            closeOnEsc
-            showCloseIcon={false}
-            classNames={{
-              modal: "w-9/12 lg:w-6/12",
-            }}
-          >
-            <UploadArea
-              refetch={() => {
-                queryClient.invalidateQueries(["accounts"]);
-              }}
-            ></UploadArea>
-          </Modal>
-        )}
+        <ConfirmDialog
+          key="activate"
+          close={closeConfirmActivateDialog}
+          isOpen={isConfirmActivateDialogOpen}
+          title="Account Activation"
+          text="Are you want to activate selected accounts?"
+          onConfirm={onConfirmActivate}
+        />
+        <ConfirmDialog
+          key="restore"
+          close={closeConfirmRestoreDialog}
+          isOpen={isConfirmRestoreDialogOpen}
+          title="Account Restoration"
+          text="Are you sure want to restore account?"
+          onConfirm={onConfirmRestore}
+        />
+        <WarningConfirmDialog
+          close={closeConfirmDisabledDialog}
+          isOpen={isConfirmDisableDialogOpen}
+          title="Account Disablement"
+          text="Are you want to disabled selected accounts?"
+          onConfirm={onConfirmDisable}
+        />
+
+        <DangerConfirmDialog
+          close={closeConfirmDeleteDialog}
+          isOpen={isConfirmDeleteDialogOpen}
+          title="Account Deletion"
+          text="Are you want to delete selected accounts?"
+          onConfirm={onConfirmDelete}
+        />
+
+        <ImportAccountModal
+          closeModal={closeImportModal}
+          isOpen={isImportModalOpen}
+        />
       </HasAccess>
     </>
   );
 };
-type UploadAreaProps = {
-  refetch: () => void;
-};
-const UploadArea = ({ refetch }: UploadAreaProps) => {
-  const { instance: msalInstance } = useMsal();
-  const [numberOfUploadedFiles, setNumberOfUploadedFiles] = useState(0);
-  const [error, setError] = useState<undefined | string>(undefined);
-  useEffect(() => {
-    const onSuccessUpload = () => {
-      toast.success("Accounts have been imported.");
-      refetch();
-    };
-    const addFile = () => {
-      setNumberOfUploadedFiles((prev) => prev + 1);
-    };
-    const removeFile = () => {
-      setNumberOfUploadedFiles((prev) => prev - 1);
-    };
-    const onErrorUpload = () => {};
-    uppy.on("file-added", addFile);
-    uppy.on("file-removed", removeFile);
 
-    uppy.on("upload-success", onSuccessUpload);
-    uppy.on("upload-error", (file, err, response) => {
-      const { data } = response?.body;
-      if (data?.error) {
-        setError(data?.error);
-      }
-    });
-    return () => {
-      uppy.off("upload-success", onSuccessUpload);
-      uppy.off("file-added", addFile);
-      uppy.off("file-removed", removeFile);
-      uppy.off("upload-error", onErrorUpload);
-      uppy.cancelAll();
-    };
-  }, []);
-  const importAccounts = async () => {
-    setError(undefined);
-    const tokens = await msalInstance.acquireTokenSilent({
-      scopes: [apiScope("LibraryServer.Access")],
-    });
-    uppy.getPlugin("XHRUpload")?.setOptions({
-      headers: {
-        Authorization: `Bearer ${tokens.accessToken}`,
-      },
-    });
-    uppy.upload().finally(() => {
-      uppy.cancelAll();
-    });
-  };
-
-  return (
-    <div>
-      {error && (
-        <div
-          className="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50  dark:text-red-400 "
-          role="alert"
-        >
-          <svg
-            className="flex-shrink-0 inline w-4 h-4 mr-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-          </svg>
-          <span className="sr-only">Info</span>
-          <div>{error}</div>
-        </div>
-      )}
-      <Dashboard
-        uppy={uppy}
-        hideUploadButton={true}
-        hideRetryButton={true}
-        locale={{
-          strings: {
-            browseFiles: " browse",
-            dropPasteFiles: "Drop a .csv or xlsx, click to %{browse}",
-          },
-        }}
-      ></Dashboard>
-
-      {numberOfUploadedFiles ? (
-        <PrimaryButton className="mt-6" onClick={importAccounts}>
-          Import accounts
-        </PrimaryButton>
-      ) : null}
-    </div>
-  );
-};
 export default AccountPage;
