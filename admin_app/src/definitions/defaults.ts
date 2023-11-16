@@ -64,7 +64,6 @@ export const BorrowedCopyInitialValue: BorrowedCopy = {
   remarks: "",
   penalty: 0,
   client: AccountInitialValue,
-
   isAvailable: false,
 };
 
@@ -75,6 +74,8 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
     givenName: "",
     surname: "",
     id: "",
+    isActive: false,
+    isDeleted: false,
     metadata: {
       approvedBooks: 0,
       cancelledBooks: 0,
