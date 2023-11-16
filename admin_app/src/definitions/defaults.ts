@@ -39,6 +39,8 @@ export const AccountInitialValue: Account = {
   givenName: "",
   surname: "",
   id: "",
+  isActive: false,
+  isDeleted: false,
   metadata: {
     approvedBooks: 0,
     cancelledBooks: 0,
