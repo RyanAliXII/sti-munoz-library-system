@@ -36,6 +36,9 @@ func ExtractFilter(ctx * gin.Context ) Filter {
 }
 
 func(filter * Filter) ExtractFilter(ctx *gin.Context){
+    filter.Offset = defaultFilter.Offset
+	filter.Page = defaultFilter.Page
+	filter.Limit = defaultFilter.Limit
 	page := ctx.Query("page")
 	parsedPage, parsePageErr := strconv.Atoi(page)
 	if parsePageErr == nil {

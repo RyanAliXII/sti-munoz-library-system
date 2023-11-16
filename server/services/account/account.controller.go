@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/gocarina/gocsv"
@@ -27,27 +27,44 @@ type AccountController struct {
 }
 
 func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
-	filter := filter.ExtractFilter(ctx)
-	
-	var accounts []model.Account;
-	var metadata repository.Metadata;
-	var metaErr error = nil
-	if len(filter.Keyword) > 0 {
-		accounts = ctrler.accountRepository.SearchAccounts(&filter)
-		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountSearchMetadata(&filter)
-	}else{
-		accounts = ctrler.accountRepository.GetAccounts(&filter)
-		metadata, metaErr = ctrler.recordMetadataRepository.GetAccountMetadata(filter.Limit)
-	}	
-	if metaErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-        return
+	accountFilter := AccountFilter{}
+	accountFilter.ExtractFilter(ctx)
+	if len(accountFilter.Keyword) > 0 {
+		accounts, metadata, err  := ctrler.accountRepository.SearchAccounts(&repository.AccountFilter{
+			Disabled: accountFilter.Disabled,
+			Active: accountFilter.Active,
+			Deleted: accountFilter.Deleted,
+			Filter: accountFilter.Filter,
+		})
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("SearchAccountsError"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"accounts": accounts,
+			"metadata": metadata,
+		},
+			"Accounts Fetched.",
+		))
+		return
 	}
-
+	accounts, metadata, err  := ctrler.accountRepository.GetAccounts(&repository.AccountFilter{
+		Disabled: accountFilter.Disabled,
+		Active: accountFilter.Active,
+		Deleted: accountFilter.Deleted,
+		Filter: accountFilter.Filter,
+	})
+	
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAccountsError"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts,
 		"metadata": metadata,
-	},
+		},
 		"Accounts Fetched.",
 	))
 }
@@ -146,7 +163,6 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	ctrler.recordMetadataRepository.InvalidateAccount()
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
 func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
@@ -156,14 +172,14 @@ func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
 	}, "Accounts with assigned role fetched."))
 }
 func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
-	id, exists := ctx.Get("requestorId")
-	parsedId,isIdStr := id.(string)
-	if!exists || !isIdStr {
-        ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-        return
-    }
-	account:= ctrler.accountRepository.GetAccountById(parsedId)
+	id := ctx.GetString("requestorId")
 
+	account, err := ctrler.accountRepository.GetAccountById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAccountByIdErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"account": account,
 	}, "Account has been fetched."))
@@ -186,6 +202,75 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 		}
 		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
+func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.ActivateAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAccountsAsActive"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+
+	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
+}
+
+func (ctrler * AccountController)DisableAccounts(ctx * gin.Context) {
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.DisableAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DisableAccounts"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
+}
+
+func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.DeleteAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteAccounts"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	
+	ctx.JSON(httpresp.Success200(nil, "Accounts deleted."))
+}
+
+func (ctrler * AccountController)RestoreAccounts(ctx * gin.Context) {
+	body := SelectedAccountIdsBody{}
+	err := ctx.Bind(&body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.RestoreAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("RestoreAccounts"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Accounts restored."))
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -204,4 +289,8 @@ type AccountControllerInterface interface {
 	GetAccountRoles(ctx * gin.Context)
 	GetAccountById(ctx * gin.Context)
 	UpdateProfilePicture(ctx * gin.Context)
+	ActivateAccounts(ctx * gin.Context)
+	DeleteAccounts(ctx * gin.Context)
+	DisableAccounts(ctx * gin.Context)
+	RestoreAccounts(ctx * gin.Context)
 }

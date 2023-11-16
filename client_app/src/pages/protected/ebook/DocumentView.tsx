@@ -1,4 +1,6 @@
-import { Document, Page, pdfjs } from "react-pdf";
+import Document from "react-pdf/dist/cjs/Document";
+import Page from "react-pdf/dist/cjs/Page";
+import pdfjs from "react-pdf/dist/cjs/pdfjs";
 import { useEffect, useLayoutEffect, useState } from "react";
 
 import "react-pdf/dist/esm/Page/TextLayer.css";

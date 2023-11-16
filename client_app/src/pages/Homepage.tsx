@@ -8,6 +8,8 @@ import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "@definitions/configs/msal/msal.config";
 import IsAuth from "@components/auth/IsAuth";
 import ProfileDropdown from "@components/ProfileDropdown";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 const Homepage = () => {
   const { instance } = useMsal();
   const signIn = async () => {
@@ -17,7 +19,16 @@ const Homepage = () => {
       console.log(err);
     }
   };
-
+  useEffect(() => {
+    const flash = sessionStorage.getItem("flash");
+    sessionStorage.removeItem("flash");
+    if (!flash) return;
+    const flashBody = JSON.parse(flash);
+    const expiry = new Date(flashBody?.expiredAt);
+    const now = new Date();
+    if (expiry < now) return;
+    toast.error(flashBody?.message, { delay: 1000 });
+  }, []);
   return (
     <>
       <header className="h-16 border-b w-100 flex justify-between font-INTER">

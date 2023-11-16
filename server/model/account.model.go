@@ -15,6 +15,8 @@ type Account struct {
 	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
 	AccountMetadata AccountMetadata `json:"metadata" db:"metadata"`
+	IsActive 	 bool `json:"isActive" db:"is_active"`
+	IsDeleted 	 bool `json:"isDeleted" db:"is_deleted"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
 }
@@ -76,3 +78,5 @@ func (meta *AccountMetadata) Scan(value interface{}) error {
 func (meta AccountMetadata) Value(value interface{}) (driver.Value, error) {
 	return meta, nil
 }
+
+
