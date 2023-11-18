@@ -36,6 +36,25 @@ func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {
 		transaction.Rollback()
 		return fmt.Errorf("client is already on queue")
 	}
+
+	hasAvailableCopy := true
+	err = transaction.Get(&hasAvailableCopy,`SELECT EXISTS( SELECT 
+		FROM catalog.accession
+		INNER JOIN book_view as book on accession.book_id = book.id 
+		LEFT JOIN borrowing.borrowed_book
+		as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3)
+		where weeded_at is null and (CASE WHEN bb.accession_id is not null then false else true END) = true and book_id = $1)`, queue.BookId)
+	
+
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if(hasAvailableCopy) {
+		transaction.Rollback()
+		return fmt.Errorf("book has available copy, no need to queue")
+	}
+
 	
 	_, err = transaction.Exec("INSERT INTO borrowing.queue (book_id, account_id) VALUES($1, $2)", queue.BookId, queue.AccountId)
 	if err != nil {
