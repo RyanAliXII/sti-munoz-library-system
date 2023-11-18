@@ -54,6 +54,7 @@ const ScannerAccountPage = lazy(
 const ClientLogPage = lazy(
   () => import("./protected/system/client-log/ClientLogPage")
 );
+const QueuePage = lazy(() => import("./protected/borrowing-queue/QueuePage"));
 
 const pages = createRoutesFromChildren(
   <>
@@ -257,6 +258,23 @@ const pages = createRoutesFromChildren(
               ]}
             >
               <CheckoutPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/borrowing/queues"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={[
+                "Borrowing.Access",
+                "Book.Access",
+                "Account.Access",
+              ]}
+            >
+              <QueuePage />
             </PermissionGate>
           </Suspense>
         }

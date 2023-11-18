@@ -1,21 +1,16 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { CustomInput, Input } from "@components/ui/form/Input";
-
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-
-import { DetailedAccession } from "@definitions/types";
-import { useQuery } from "@tanstack/react-query";
-import { useRequest } from "@hooks/useRequest";
+import { CustomInput } from "@components/ui/form/Input";
+import Container from "@components/ui/container/Container";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-import ReactPaginate from "react-paginate";
-import { ChangeEvent, useState } from "react";
-import useDebounce from "@hooks/useDebounce";
-import { useSearchParamsState } from "react-use-search-params-state";
-import { Table } from "flowbite-react";
-import TableContainer from "@components/ui/table/TableContainer";
 import CustomPagination from "@components/pagination/CustomPagination";
+import TableContainer from "@components/ui/table/TableContainer";
+import { DetailedAccession } from "@definitions/types";
+import useDebounce from "@hooks/useDebounce";
+import { useRequest } from "@hooks/useRequest";
+import { useQuery } from "@tanstack/react-query";
+import { Table } from "flowbite-react";
+import { ChangeEvent, useState } from "react";
+import { useSearchParamsState } from "react-use-search-params-state";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
