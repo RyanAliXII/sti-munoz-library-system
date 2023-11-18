@@ -5,7 +5,7 @@ const QueuePage = () => {
   return (
     <Container>
       <Tabs.Group color="primary" style="underline">
-        <Tabs.Item title="Active Queues">
+        <Tabs.Item title="Ongoing Queue">
           <ActiveQueuesTable />
         </Tabs.Item>
         <Tabs.Item title="Queue History">test</Tabs.Item>
