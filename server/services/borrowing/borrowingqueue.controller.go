@@ -61,8 +61,26 @@ func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {
 		ctrler.handleGetClientActiveQueues(ctx)
 		return
 	}
+
+	if(app == azuread.AdminAppClientId){
+		ctrler.getActiveQueuesGroupByBook(ctx)
+		return
+	}
 	ctx.AbortWithStatus(http.StatusUnauthorized)
 }
+func(ctrler * BorrowingQueue)getActiveQueuesGroupByBook(ctx * gin.Context) {
+	queues, err := ctrler.queueRepo.GetActiveQueuesGroupByBook()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"queues": queues,
+	}, "Active queues fetched."))
+}
+
+
 
 func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 	accountId := ctx.GetString("requestorId")

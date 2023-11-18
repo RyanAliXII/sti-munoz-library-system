@@ -14,6 +14,7 @@ type BorrowingQueue struct {
 type BorrowingQueueRepository interface {
 	Queue(model.BorrowingQueue) error
 	GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error)
+	GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error)
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -86,6 +87,23 @@ func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.Bor
 	}
 	return queues, err
 }
+
+
+func (repo * BorrowingQueue)GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error) {
+	queues := make([]model.BorrowingQueue, 0)
+	query := `
+	SELECT queue.id, queue.book_id, account_id, json_format as book
+	from borrowing.queue
+	INNER JOIN book_view on queue.book_id = book_view.id
+	GROUP BY queue.book_id
+	`
+	err := repo.db.Select(&queues, query, )
+	if err != nil {
+		return queues, err 
+	}
+	return queues, err
+}
+
 
 
 
