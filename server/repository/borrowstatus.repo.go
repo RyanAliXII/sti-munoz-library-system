@@ -287,6 +287,12 @@ func (repo * Borrowing)GetBookStatusBasedOnClient(bookId string, accountId strin
 		 where accession.book_id = $1 and bag.account_id = $2
 	  ) 
 	) as is_already_in_bag,
+	(
+		SELECT exists(
+			SELECT 1 from borrowing.queue
+		   where queue.book_id = $1 and queue.account_id = $2
+		) 
+	) as is_in_queue,
 	bool_or((case when bb.id is not null then false else true end))
 	as is_available from catalog.accession 
 	LEFT JOIN borrowing.borrowed_book

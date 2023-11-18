@@ -1,6 +1,5 @@
 import { buildS3Url } from "@definitions/s3";
 import { useBookView } from "@hooks/data-fetching/book";
-import { useBorrowingQueue } from "@hooks/data-fetching/borrowing-queue";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AiFillCalendar } from "react-icons/ai";
@@ -10,15 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const CatalogBookView = () => {
-  const { Get, Post } = useRequest();
+  const { Post } = useRequest();
   const navigate = useNavigate();
 
   const { data: bookView } = useBookView({
-    onSuccess: () => {},
+    onError: () => {
+      navigate("/404");
+    },
   });
-
   const authors = bookView?.book?.authors.map((author) => author.name);
-
   const queryClient = useQueryClient();
   const addItemToBag = useMutation({
     mutationFn: (item: { accessionId?: string; bookId?: string }) =>
@@ -31,7 +30,7 @@ const CatalogBookView = () => {
       toast.error("Unknown error occurred. Please try again later.");
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["bagItems"]);
+      queryClient.invalidateQueries(["book"]);
     },
   });
 
@@ -39,7 +38,10 @@ const CatalogBookView = () => {
     !bookView?.status.isAvailable ||
     bookView?.status.isAlreadyBorrowed ||
     bookView.status.isAlreadyInBag;
-
+  const isPlaceHoldDisable =
+    bookView?.status.isAlreadyBorrowed ||
+    bookView?.status.isInQueue ||
+    bookView?.status.isAvailable;
   const initializeItem = () => {
     const availableAccession = bookView?.book.accessions.find(
       (accession) => accession.isAvailable
@@ -60,7 +62,7 @@ const CatalogBookView = () => {
       ),
     onSuccess: () => {
       toast.success("Book has been placed on hold.");
-      queryClient.invalidateQueries(["queues"]);
+      queryClient.invalidateQueries(["book"]);
     },
     onError: () => {
       toast.error("Unknown error occured");
@@ -111,7 +113,11 @@ const CatalogBookView = () => {
             >
               Add to Bag
             </button>
-            <button className="mt-2 btn btn-outline  w-full" onClick={initHold}>
+            <button
+              className="mt-2 btn btn-outline  w-full"
+              onClick={initHold}
+              disabled={isPlaceHoldDisable}
+            >
               Place Hold
             </button>
           </div>

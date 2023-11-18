@@ -72,6 +72,7 @@ export type BookStatus = {
   isAvailable: boolean;
   isAlreadyBorrowed: boolean;
   isAlreadyInBag: boolean;
+  isInQueue: boolean;
 };
 export type Audit = {
   id?: string;
