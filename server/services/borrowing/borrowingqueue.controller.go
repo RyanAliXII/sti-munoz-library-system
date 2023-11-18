@@ -52,3 +52,33 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 	ctx.JSON(httpresp.Success200(nil, "Added to queue successfully."))
 }
 
+
+
+func (ctrler * BorrowingQueue) GetActiveQueues(ctx * gin.Context) {
+	queueBody := model.BorrowingQueue{}
+	app := ctx.GetString("requestorApp")
+	err := ctx.ShouldBindBodyWith(&queueBody, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
+		return
+	}
+	if app == azuread.ClientAppClientId{
+		ctrler.handleGetClientActiveQueues(ctx)
+		return
+	}
+	ctx.AbortWithStatus(http.StatusUnauthorized)
+}
+
+func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
+	accountId := ctx.GetString("requestorId")
+	queues, err := ctrler.queueRepo.GetClientActiveQueues(accountId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetClientActiveQueues"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"queues" : queues,
+	}, "Active Queues fetch"))
+}	
