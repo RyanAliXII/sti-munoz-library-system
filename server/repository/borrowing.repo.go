@@ -21,6 +21,7 @@ type BorrowingRepository interface {
 	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
 	UpdateRemarks(id string, remarks string) error 
 	CancelByIdAndAccountId(id string, accountId string) error
+	GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error)
 }
 type Borrowing struct{
 	db * sqlx.DB

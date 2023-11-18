@@ -270,3 +270,32 @@ func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error 
 	transaction.Commit()
 	return nil
 }
+
+func (repo * Borrowing)GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error) {
+	status := model.BookStatus{}
+	query := `
+	SELECT 
+	(SELECT exists(
+		SELECT 1 from borrowed_book_view as bbv 
+		where bbv.book_id = $1 and bbv.account_id =  $2
+		AND (bbv.status_id = 1 OR bbv.status_id = 2 OR bbv.status_id = 3) 
+		)  
+	) as is_already_borrowed,
+	(
+	  SELECT exists(
+		  SELECT 1 from circulation.bag INNER JOIN catalog.accession on bag.accession_id = accession.id
+		 where accession.book_id = $1 and bag.account_id = $2
+	  ) 
+	) as is_already_in_bag,
+	bool_or((case when bb.id is not null then false else true end))
+	as is_available from catalog.accession 
+	LEFT JOIN borrowing.borrowed_book
+	as bb on accession.id = bb.accession_id AND 
+	(status_id = 1 OR status_id = 2 OR status_id = 3)
+	where weeded_at is null and accession.book_id = $1
+	GROUP BY book_id
+	LIMIT 1
+	`
+	err := repo.db.Get(&status, query, bookId, accountId)
+	return status, err
+}

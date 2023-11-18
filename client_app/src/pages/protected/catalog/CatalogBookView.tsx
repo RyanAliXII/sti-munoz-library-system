@@ -76,7 +76,8 @@ const CatalogBookView = () => {
   const isBookCopiesAlreadyOnTheBag = book?.accessions.every((a) =>
     bagItemsIds.includes(a.id ?? "")
   );
-  const isPlaceholdButtonDisable = queueItemIds?.includes(book?.id);
+  const isPlaceholdButtonDisable =
+    queueItemIds?.includes(book?.id) || isBookAvailable;
   const initializeItem = () => {
     const availableAccession = book?.accessions.find(
       (accession) => accession.isAvailable
