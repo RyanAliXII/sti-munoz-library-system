@@ -25,3 +25,8 @@ type UpdateBorrowStatusCheckout struct {
 	DueDate db.NullableDate `json:"dueDate"`
 	IsEbook bool `json:"isEbook"`
 }
+
+type QueueBody struct {
+	BookId string `json:"bookId" binding:"required,uuid"`
+	AccountId string `json:"accountId"`
+}

@@ -73,31 +73,24 @@ const CatalogBookView = () => {
   );
 
   const initializeItem = () => {
-    console.log(book);
-
     const availableAccession = book?.accessions.find(
       (accession) => accession.isAvailable
     );
     if (!availableAccession) return;
     addItemToBag.mutate({ accessionId: availableAccession.id });
-    // if (
-    //   ((book?.accessions?.length ?? 1) > 1 &&
-    //     isBookAvailable &&
-    //     !isBookCopiesAlreadyOnTheBag) ||
-    //   (book?.ebook ?? "").length > 0
-    // ) {
-    // } else {
-    //   console.log(book);
-    //   if (
-    //     !bagItemsIds.includes(accession?.id ?? "") &&
-    //     isBookAvailable &&
-    //     !isBookCopiesAlreadyOnTheBag
-    //   ) {
-    //     addItemToBag.mutate({ accessionId: accession?.id ?? "" });
-    //   } else {
-    //     toast.info("Item already is already on your bag.");
-    //   }
-    // }
+  };
+
+  const placeHold = useMutation({
+    mutationFn: () => Post("/borrowing/queue", { bookId: book?.id ?? "" }),
+    onSuccess: () => {
+      toast.success("Book has been placed on hold.");
+    },
+    onError: () => {
+      toast.error("Unknown error occured");
+    },
+  });
+  const initHold = () => {
+    placeHold.mutate();
   };
   if (!book) return null;
   let bookCover = "";
@@ -143,7 +136,9 @@ const CatalogBookView = () => {
             >
               Add to Bag
             </button>
-            <button className="mt-2 btn btn-outline  w-full">Place Hold</button>
+            <button className="mt-2 btn btn-outline  w-full" onClick={initHold}>
+              Place Hold
+            </button>
           </div>
           <div className="mt-5">
             <h2 className="text-lg font-bold">Overview</h2>
