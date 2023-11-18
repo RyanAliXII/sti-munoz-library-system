@@ -1,16 +1,14 @@
 import { BookInitialValue } from "@definitions/defaults";
 import { buildS3Url } from "@definitions/s3";
-import { BagItem, Book, DetailedAccession } from "@definitions/types";
+import { BagItem, Book } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { AiFillCalendar } from "react-icons/ai";
 import { MdPublish } from "react-icons/md";
 import { RiPagesLine } from "react-icons/ri";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSwitch } from "@hooks/useToggle";
-import { useMemo } from "react";
 import { toast } from "react-toastify";
-import { access } from "fs";
 
 const CatalogBookView = () => {
   const { id } = useParams();
@@ -81,7 +79,16 @@ const CatalogBookView = () => {
   };
 
   const placeHold = useMutation({
-    mutationFn: () => Post("/borrowing/queue", { bookId: book?.id ?? "" }),
+    mutationFn: () =>
+      Post(
+        "/borrowing/queue",
+        { bookId: book?.id ?? "" },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
     onSuccess: () => {
       toast.success("Book has been placed on hold.");
     },
