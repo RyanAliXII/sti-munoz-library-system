@@ -13,6 +13,7 @@ type BorrowingQueue struct {
 }
 type BorrowingQueueRepository interface {
 	Queue(model.BorrowingQueue) error
+	GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error)
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -54,8 +55,6 @@ func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {
 		transaction.Rollback()
 		return fmt.Errorf("book has available copy, no need to queue")
 	}
-
-	
 	_, err = transaction.Exec("INSERT INTO borrowing.queue (book_id, account_id) VALUES($1, $2)", queue.BookId, queue.AccountId)
 	if err != nil {
 		transaction.Rollback()
@@ -63,6 +62,29 @@ func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {
 	}	
 	transaction.Commit()
 	return nil
+}
+
+
+func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error) {
+	queues := make([]model.BorrowingQueue, 0)
+	query := `
+	SELECT queue.id, queue.book_id, account_id, json_format as book, 
+	json_build_object('id', account.id, 
+		'givenName', account.given_name,
+		 'surname', account.surname, 
+		'displayName',account.display_name,
+		 'email', account.email,
+		 'profilePicture', account.profile_picture
+	) as account from borrowing.queue
+	INNER JOIN book_view on queue.book_id = book_view.id
+	INNER JOIN system.account on queue.account_id = account.id
+	where queue.account_id = $1
+	`
+	err := repo.db.Select(&queues, query, accountId)
+	if err != nil {
+		return queues, err 
+	}
+	return queues, err
 }
 
 

@@ -104,8 +104,6 @@ func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
 	return err 	
 }
 
-
-
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
 		db: db.Connect(),
