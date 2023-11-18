@@ -1,10 +1,15 @@
 import Container from "@components/ui/container/Container";
-import React from "react";
-
+import { Tabs } from "flowbite-react";
+import ActiveQueuesTable from "./ActiveQueuesTable";
 const QueuePage = () => {
   return (
     <Container>
-      <div></div>
+      <Tabs.Group color="primary" style="underline">
+        <Tabs.Item title="Active Queues">
+          <ActiveQueuesTable />
+        </Tabs.Item>
+        <Tabs.Item title="Queue History">test</Tabs.Item>
+      </Tabs.Group>
     </Container>
   );
 };
