@@ -1,11 +1,13 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -119,6 +121,35 @@ Please settle the fee in the cashier. Thank you.`,borrowedDate, borrowedBook.Boo
 	}
 	return nil
 }
+
+func (repo * Borrowing)handleQueue(transaction * sqlx.Tx, bookId string, accesionId string) error{
+	queue := model.BorrowingQueue{}
+	err := transaction.Get(&queue, "SELECT id, account_id from borrowing.queue where book_id = $1 and dequeued_at is null ORDER BY created_at LIMIT 1", bookId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err == sql.ErrNoRows{
+		return nil
+	}
+	settings := model.Settings{}
+
+	penaltyOnPastDue :=  settings.Value.DuePenalty.Value
+	query := `SELECT value from system.settings limit 1`;
+	err = transaction.Get(&settings, query)
+	if err!= nil {
+		return err
+	}
+	groupId := uuid.New()
+	_, err = transaction.Exec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id,  penalty_on_past_due ) VALUES($1, $2, $3, $4, $5)", accesionId, groupId.String(), queue.AccountId, status.BorrowStatusPending, penaltyOnPastDue)
+	if err != nil {
+			return err
+	}
+	_, err = transaction.Exec("UPDATE borrowing.queue set dequeued_at = now() where id = $1", queue.Id)
+	if err != nil {
+		return  err
+	}
+	return nil
+}
 func (repo * Borrowing) MarkAsReturned(id string, remarks string) error {
 	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
 	transaction, err := repo.db.Beginx()
@@ -222,12 +253,12 @@ func (repo * Borrowing) MarkAsCheckedOut(id string, remarks string, dueDate db.N
 }
 func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 	//Mark the book as checked out if the book status is approved,pending or checkedout. The status id for approved is 2, pending is 1 and checked out is 3.
-	isEbook := false 
-	err := repo.db.Get(&isEbook, "SELECT is_ebook as isEbook from borrowed_book_all_view where id = $1  LIMIT 1", id)
+	borrowedBook := model.BorrowedBook{}
+	err := repo.db.Get(&borrowedBook, "SELECT book, is_ebook, accession_id from borrowed_book_all_view where id = $1  LIMIT 1", id)
 	if err != nil {
 		return err
 	}
-	if isEbook {
+	if borrowedBook.IsEbook {
 		query := "UPDATE borrowing.borrowed_ebook SET status_id = $1 where id = $2 and (status_id = $3 or status_id = $4 or status_id = $5 )"
 		_, err = repo.db.Exec(query, status.BorrowStatusCancelled, id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
 		if err != nil {
@@ -235,9 +266,25 @@ func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 		}
 		return nil
 	}
+
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and (status_id = $4 or status_id = $5 or status_id = $6 ) "
-	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks , id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
-	return err 
+	_, err = transaction.Exec(query, status.BorrowStatusCancelled, remarks , id, status.BorrowStatusApproved, status.BorrowStatusPending, status.BorrowStatusCheckedOut)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	err  = repo.handleQueue(transaction, borrowedBook.Book.Id, borrowedBook.AccessionId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return nil
 }
 
 func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
@@ -268,10 +315,6 @@ func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error 
 	query := "UPDATE borrowing.borrowed_book SET status_id = $1 , remarks = $2 where id = $3 and account_id = $4 and (status_id = $5 OR status_id = $6)"
 	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks, id, accountId, status.BorrowStatusPending, status.BorrowStatusApproved)
 	return err 	
-}
-func (repo * Borrowing)handleQueue(transaction * sqlx.Tx){
-
-
 }
 
 func NewBorrowingRepository ()  BorrowingRepository {
