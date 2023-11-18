@@ -1,6 +1,6 @@
 import { Label } from "flowbite-react";
 import DatePicker, { ReactDatePickerProps } from "react-datepicker";
-
+import "react-datepicker/dist/react-datepicker.css";
 interface CustomDatePickerProps extends ReactDatePickerProps {
   label?: string;
   error?: any;

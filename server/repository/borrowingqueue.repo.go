@@ -19,7 +19,6 @@ func NewBorrowingQueue () BorrowingQueueRepository {
 		db: db.Connect(),
 	}
 }
-
 func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {
 	transaction, err := repo.db.Beginx()
 	if err != nil {
