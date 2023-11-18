@@ -75,7 +75,7 @@ func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.Bor
 		'displayName',account.display_name,
 		 'email', account.email,
 		 'profilePicture', account.profile_picture
-	) as account from borrowing.queue
+	) as client from borrowing.queue
 	INNER JOIN book_view on queue.book_id = book_view.id
 	INNER JOIN system.account on queue.account_id = account.id
 	where queue.account_id = $1

@@ -17,6 +17,7 @@ type BorrowingQueue struct {
 }
 type BorrowingQueueController interface {
 	Queue( * gin.Context)
+	GetActiveQueues(* gin.Context) 
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
@@ -54,15 +55,8 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 
 
 
-func (ctrler * BorrowingQueue) GetActiveQueues(ctx * gin.Context) {
-	queueBody := model.BorrowingQueue{}
+func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {
 	app := ctx.GetString("requestorApp")
-	err := ctx.ShouldBindBodyWith(&queueBody, binding.JSON)
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
-		return
-	}
 	if app == azuread.ClientAppClientId{
 		ctrler.handleGetClientActiveQueues(ctx)
 		return
@@ -80,5 +74,5 @@ func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"queues" : queues,
-	}, "Active Queues fetch"))
+	}, "Active queues fetch"))
 }	

@@ -1,6 +1,7 @@
 import { BookInitialValue } from "@definitions/defaults";
 import { buildS3Url } from "@definitions/s3";
 import { BagItem, Book } from "@definitions/types";
+import { useBorrowingQueue } from "@hooks/data-fetching/borrowing-queue";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -55,6 +56,11 @@ const CatalogBookView = () => {
       return [];
     }
   };
+  const { data } = useBorrowingQueue({});
+  const queueItemIds = useMemo(
+    () => data?.queues?.map((queue) => queue.book.id),
+    [data?.queues]
+  );
 
   const { data: bagItems } = useQuery<BagItem[]>({
     queryFn: fetchBagItems,
@@ -65,11 +71,12 @@ const CatalogBookView = () => {
     () => bagItems?.map((item) => item.accessionId ?? "") ?? [],
     [bagItems]
   );
+
   const isBookAvailable = book?.accessions.some((a) => a.isAvailable === true);
   const isBookCopiesAlreadyOnTheBag = book?.accessions.every((a) =>
     bagItemsIds.includes(a.id ?? "")
   );
-
+  const isPlaceholdButtonDisable = queueItemIds?.includes(book?.id);
   const initializeItem = () => {
     const availableAccession = book?.accessions.find(
       (accession) => accession.isAvailable
@@ -81,7 +88,7 @@ const CatalogBookView = () => {
   const placeHold = useMutation({
     mutationFn: () =>
       Post(
-        "/borrowing/queue",
+        "/borrowing/queues",
         { bookId: book?.id ?? "" },
         {
           headers: {
@@ -91,6 +98,7 @@ const CatalogBookView = () => {
       ),
     onSuccess: () => {
       toast.success("Book has been placed on hold.");
+      queryClient.invalidateQueries(["queues"]);
     },
     onError: () => {
       toast.error("Unknown error occured");
@@ -99,11 +107,13 @@ const CatalogBookView = () => {
   const initHold = () => {
     placeHold.mutate();
   };
+
   if (!book) return null;
   let bookCover = "";
   if ((book.covers.length ?? 0) > 0) {
     bookCover = buildS3Url(book.covers[0]);
   }
+
   return (
     <>
       <div className="min-h-screen mt-3">
@@ -143,7 +153,11 @@ const CatalogBookView = () => {
             >
               Add to Bag
             </button>
-            <button className="mt-2 btn btn-outline  w-full" onClick={initHold}>
+            <button
+              className="mt-2 btn btn-outline  w-full"
+              onClick={initHold}
+              disabled={isPlaceholdButtonDisable}
+            >
               Place Hold
             </button>
           </div>

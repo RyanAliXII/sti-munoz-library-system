@@ -90,6 +90,14 @@ export type Account = {
   };
 };
 
+export type BorrowingQueue = {
+  accountId: string;
+  id?: string;
+  bookId: string;
+  book: Book;
+  account: Account;
+};
+
 export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {
   returnedAt: string; //iso-time-string
   isReturned: boolean;
