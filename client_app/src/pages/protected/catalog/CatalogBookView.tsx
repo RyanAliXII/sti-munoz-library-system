@@ -1,35 +1,23 @@
-import { BookInitialValue } from "@definitions/defaults";
 import { buildS3Url } from "@definitions/s3";
-import { BagItem, Book } from "@definitions/types";
+import { useBookView } from "@hooks/data-fetching/book";
 import { useBorrowingQueue } from "@hooks/data-fetching/borrowing-queue";
 import { useRequest } from "@hooks/useRequest";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AiFillCalendar } from "react-icons/ai";
 import { MdPublish } from "react-icons/md";
 import { RiPagesLine } from "react-icons/ri";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const CatalogBookView = () => {
-  const { id } = useParams();
   const { Get, Post } = useRequest();
-
-  const fetchBookById = async () => {
-    const { data: response } = await Get(`/books/${id}`, {});
-    return response?.data?.book ?? BookInitialValue;
-  };
   const navigate = useNavigate();
-  const { data: book } = useQuery<Book>({
-    queryFn: fetchBookById,
-    queryKey: ["book"],
-    retry: false,
-    onError: () => {
-      navigate("/404");
-    },
+
+  const { data: bookView } = useBookView({
+    onSuccess: () => {},
   });
 
-  const authors = book?.authors.map((author) => author.name);
+  const authors = bookView?.book?.authors.map((author) => author.name);
 
   const queryClient = useQueryClient();
   const addItemToBag = useMutation({
@@ -47,50 +35,23 @@ const CatalogBookView = () => {
     },
   });
 
-  const fetchBagItems = async () => {
-    try {
-      const response = await Get("/bag/", {});
-      const { data } = response.data;
-      return data?.bag ?? [];
-    } catch (error) {
-      return [];
-    }
-  };
-  const { data } = useBorrowingQueue({});
-  const queueItemIds = useMemo(
-    () => data?.queues?.map((queue) => queue.book.id),
-    [data?.queues]
-  );
+  const isAddToBagDisable =
+    !bookView?.status.isAvailable ||
+    bookView?.status.isAlreadyBorrowed ||
+    bookView.status.isAlreadyInBag;
 
-  const { data: bagItems } = useQuery<BagItem[]>({
-    queryFn: fetchBagItems,
-    queryKey: ["bagItems"],
-    refetchOnWindowFocus: false,
-  });
-  const bagItemsIds = useMemo(
-    () => bagItems?.map((item) => item.accessionId ?? "") ?? [],
-    [bagItems]
-  );
-
-  const isBookAvailable = book?.accessions.some((a) => a.isAvailable === true);
-  const isBookCopiesAlreadyOnTheBag = book?.accessions.every((a) =>
-    bagItemsIds.includes(a.id ?? "")
-  );
-  const isPlaceholdButtonDisable =
-    queueItemIds?.includes(book?.id) || isBookAvailable;
   const initializeItem = () => {
-    const availableAccession = book?.accessions.find(
+    const availableAccession = bookView?.book.accessions.find(
       (accession) => accession.isAvailable
     );
     if (!availableAccession) return;
     addItemToBag.mutate({ accessionId: availableAccession.id });
   };
-
   const placeHold = useMutation({
     mutationFn: () =>
       Post(
         "/borrowing/queues",
-        { bookId: book?.id ?? "" },
+        { bookId: bookView?.book?.id ?? "" },
         {
           headers: {
             "content-type": "application/json",
@@ -109,10 +70,10 @@ const CatalogBookView = () => {
     placeHold.mutate();
   };
 
-  if (!book) return null;
+  if (!bookView?.book) return null;
   let bookCover = "";
-  if ((book.covers.length ?? 0) > 0) {
-    bookCover = buildS3Url(book.covers[0]);
+  if ((bookView?.book.covers.length ?? 0) > 0) {
+    bookCover = buildS3Url(bookView?.book.covers[0]);
   }
 
   return (
@@ -125,7 +86,7 @@ const CatalogBookView = () => {
                 src={bookCover}
                 className="w-44 object-scale-down"
                 style={{ maxHeight: "269px", maxWidth: "220px" }}
-                alt="book-image"
+                alt="bookView?.book-image"
               ></img>
             ) : (
               <div
@@ -137,7 +98,7 @@ const CatalogBookView = () => {
             )}
           </div>
           <div className="mt-5">
-            <h1 className="font-bold text-3xl">{book?.title}</h1>
+            <h1 className="font-bold text-3xl">{bookView?.book?.title}</h1>
             {(authors?.length ?? 0) > 0 && (
               <span>By {authors?.join(",")} </span>
             )}
@@ -145,20 +106,12 @@ const CatalogBookView = () => {
           <div className="w-full mt-2">
             <button
               className="btn btn-primary  w-full"
-              disabled={
-                !isBookAvailable ||
-                isBookCopiesAlreadyOnTheBag ||
-                addItemToBag.isLoading
-              }
+              disabled={addItemToBag.isLoading || isAddToBagDisable}
               onClick={initializeItem}
             >
               Add to Bag
             </button>
-            <button
-              className="mt-2 btn btn-outline  w-full"
-              onClick={initHold}
-              disabled={isPlaceholdButtonDisable}
-            >
+            <button className="mt-2 btn btn-outline  w-full" onClick={initHold}>
               Place Hold
             </button>
           </div>
@@ -169,7 +122,7 @@ const CatalogBookView = () => {
                 <RiPagesLine className="text-4xl" />
               </div>
               <div>
-                <span className="block">{book?.pages}</span>
+                <span className="block">{bookView?.book?.pages}</span>
                 <small>Pages</small>
               </div>
             </div>
@@ -178,7 +131,7 @@ const CatalogBookView = () => {
                 <MdPublish className="text-4xl" />
               </div>
               <div>
-                <span className="block">{book?.publisher.name}</span>
+                <span className="block">{bookView?.book?.publisher.name}</span>
                 <small>Publisher</small>
               </div>
             </div>
@@ -187,36 +140,40 @@ const CatalogBookView = () => {
                 <AiFillCalendar className="text-4xl" />
               </div>
               <div>
-                <span className="block">{book?.yearPublished}</span>
+                <span className="block">{bookView?.book?.yearPublished}</span>
                 <small>Publish Date</small>
               </div>
             </div>
           </div>
-          <p dangerouslySetInnerHTML={{ __html: book?.description ?? "" }}></p>
+          <p
+            dangerouslySetInnerHTML={{
+              __html: bookView?.book?.description ?? "",
+            }}
+          ></p>
           <div className="mt-5">
             <h2 className="text-lg font-bold">Book Details</h2>
             <div className="p-2 flex flex-col gap-3">
-              {book?.isbn.length > 0 && (
+              {bookView?.book?.isbn.length > 0 && (
                 <div className="grid grid-cols-2">
                   <div>ISBN</div>
-                  <div>{book?.isbn}</div>
+                  <div>{bookView?.book?.isbn}</div>
                 </div>
               )}
-              {book?.isbn.length > 0 && (
+              {bookView?.book?.isbn.length > 0 && (
                 <div className="grid grid-cols-2">
                   <div>DDC</div>
-                  <div>{book?.ddc}</div>
+                  <div>{bookView?.book?.ddc}</div>
                 </div>
               )}
-              {book?.authorNumber.length > 0 && (
+              {bookView?.book?.authorNumber.length > 0 && (
                 <div className="grid grid-cols-2">
                   <div>Author Number</div>
-                  <div>{book?.authorNumber}</div>
+                  <div>{bookView?.book?.authorNumber}</div>
                 </div>
               )}
               <div className="grid grid-cols-2">
                 <div>Section</div>
-                <div>{book?.section.name}</div>
+                <div>{bookView?.book?.section.name}</div>
               </div>
             </div>
           </div>

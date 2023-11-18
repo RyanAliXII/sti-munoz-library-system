@@ -68,7 +68,11 @@ export interface DetailedAccession extends Accession {
   isCheckedOut: boolean;
   book: Book;
 }
-
+export type BookStatus = {
+  isAvailable: boolean;
+  isAlreadyBorrowed: boolean;
+  isAlreadyInBag: boolean;
+};
 export type Audit = {
   id?: string;
   name: string;

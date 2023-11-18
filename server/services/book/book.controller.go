@@ -294,6 +294,8 @@ func (ctrler *BookController) getBookByIdOnClientView(ctx *gin.Context) {
 	bookStatus, err  := ctrler.borrowingRepo.GetBookStatusBasedOnClient(id, accountId )
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBookStatusBasedOnClient"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+		return
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"book": book,
