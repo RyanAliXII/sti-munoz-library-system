@@ -1,19 +1,16 @@
 import { BookInitialValue } from "@definitions/defaults";
 import { buildS3Url } from "@definitions/s3";
-
 import { BagItem, Book, DetailedAccession } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { AiFillCalendar } from "react-icons/ai";
 import { MdPublish } from "react-icons/md";
 import { RiPagesLine } from "react-icons/ri";
 import { useNavigate, useParams } from "react-router-dom";
-
-import BookCopySelectionModal from "./BookCopySelectionModal";
 import { useSwitch } from "@hooks/useToggle";
-import { toast } from "react-toastify";
 import { useMemo } from "react";
+import { toast } from "react-toastify";
+import { access } from "fs";
 
 const CatalogBookView = () => {
   const { id } = useParams();
@@ -33,12 +30,6 @@ const CatalogBookView = () => {
     },
   });
 
-  const {
-    close: closeCopySelection,
-    isOpen: isCopySelectionOpen,
-    open: openCopySelection,
-  } = useSwitch();
-
   const authors = book?.authors.map((author) => author.name);
 
   const queryClient = useQueryClient();
@@ -53,7 +44,7 @@ const CatalogBookView = () => {
       toast.error("Unknown error occurred. Please try again later.");
     },
     onSettled: () => {
-      closeCopySelection();
+      queryClient.invalidateQueries(["bagItems"]);
     },
   });
 
@@ -67,13 +58,6 @@ const CatalogBookView = () => {
     }
   };
 
-  const onSelectCopy = (value: DetailedAccession | string) => {
-    if (typeof value === "string") {
-      addItemToBag.mutate({ bookId: value });
-      return;
-    }
-    addItemToBag.mutate({ accessionId: value.id ?? "" });
-  };
   const { data: bagItems } = useQuery<BagItem[]>({
     queryFn: fetchBagItems,
     queryKey: ["bagItems"],
@@ -87,26 +71,33 @@ const CatalogBookView = () => {
   const isBookCopiesAlreadyOnTheBag = book?.accessions.every((a) =>
     bagItemsIds.includes(a.id ?? "")
   );
+
   const initializeItem = () => {
-    if (
-      ((book?.accessions?.length ?? 1) > 1 &&
-        isBookAvailable &&
-        !isBookCopiesAlreadyOnTheBag) ||
-      (book?.ebook ?? "").length > 0
-    ) {
-      openCopySelection();
-    } else {
-      const accession = book?.accessions[0];
-      if (
-        !bagItemsIds.includes(accession?.id ?? "") &&
-        isBookAvailable &&
-        !isBookCopiesAlreadyOnTheBag
-      ) {
-        addItemToBag.mutate({ accessionId: accession?.id ?? "" });
-      } else {
-        toast.info("Item already is already on your bag.");
-      }
-    }
+    console.log(book);
+
+    const availableAccession = book?.accessions.find(
+      (accession) => accession.isAvailable
+    );
+    if (!availableAccession) return;
+    addItemToBag.mutate({ accessionId: availableAccession.id });
+    // if (
+    //   ((book?.accessions?.length ?? 1) > 1 &&
+    //     isBookAvailable &&
+    //     !isBookCopiesAlreadyOnTheBag) ||
+    //   (book?.ebook ?? "").length > 0
+    // ) {
+    // } else {
+    //   console.log(book);
+    //   if (
+    //     !bagItemsIds.includes(accession?.id ?? "") &&
+    //     isBookAvailable &&
+    //     !isBookCopiesAlreadyOnTheBag
+    //   ) {
+    //     addItemToBag.mutate({ accessionId: accession?.id ?? "" });
+    //   } else {
+    //     toast.info("Item already is already on your bag.");
+    //   }
+    // }
   };
   if (!book) return null;
   let bookCover = "";
@@ -144,13 +135,15 @@ const CatalogBookView = () => {
             <button
               className="btn btn-primary  w-full"
               disabled={
-                (!isBookAvailable || isBookCopiesAlreadyOnTheBag) &&
-                book.ebook.length === 0
+                !isBookAvailable ||
+                isBookCopiesAlreadyOnTheBag ||
+                addItemToBag.isLoading
               }
               onClick={initializeItem}
             >
               Add to Bag
             </button>
+            <button className="mt-2 btn btn-outline  w-full">Place Hold</button>
           </div>
           <div className="mt-5">
             <h2 className="text-lg font-bold">Overview</h2>
@@ -212,13 +205,6 @@ const CatalogBookView = () => {
           </div>
         </div>
       </div>
-      <BookCopySelectionModal
-        book={book ?? BookInitialValue}
-        isOpen={isCopySelectionOpen}
-        closeModal={closeCopySelection}
-        bagItemIds={bagItemsIds}
-        onSelectCopy={onSelectCopy}
-      />
     </>
   );
 };
