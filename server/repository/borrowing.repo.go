@@ -177,6 +177,7 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 	transaction.Commit()
 	return err
 }
+
 func(repo * Borrowing) MarkAsApproved(id string, remarks string) error {
 		//Mark the book as approved if the book status is pending. The status id for pending is 1.
 		isEbook := false 
@@ -268,7 +269,10 @@ func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error 
 	_, err = repo.db.Exec(query, status.BorrowStatusCancelled, remarks, id, accountId, status.BorrowStatusPending, status.BorrowStatusApproved)
 	return err 	
 }
+func (repo * Borrowing)handleQueue(transaction * sqlx.Tx){
 
+
+}
 
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
