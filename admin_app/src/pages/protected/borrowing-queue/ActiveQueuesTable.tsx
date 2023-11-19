@@ -58,7 +58,7 @@ const ActiveQueuesTable = () => {
                     <div className="flex gap-2">
                       <Button
                         color="primary"
-                        to={"/borrowing/queues/bookId"}
+                        to={`/borrowing/queues/${queue.book.id}`}
                         as={Link}
                       >
                         View

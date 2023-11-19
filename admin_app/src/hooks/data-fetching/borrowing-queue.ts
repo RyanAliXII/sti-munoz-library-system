@@ -1,13 +1,14 @@
 import {
   MutationOptions,
+  QueryFunction,
   UseQueryOptions,
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
-import { BorrowingQueue } from "@definitions/types";
-interface UseBorrowingQueueProps
-  extends UseQueryOptions<UseBorrowingQueueData> {}
+import { BorrowingQueue, BorrowingQueueItem } from "@definitions/types";
+// interface UseBorrowingQueueProps
+//   extends UseQueryOptions<UseBorrowingQueueData> {}
 type UseBorrowingQueueData = {
   queues: BorrowingQueue[];
 };
@@ -16,7 +17,7 @@ export const useActiveQueues = ({
   onSuccess,
   onError,
   onSettled,
-}: UseBorrowingQueueProps) => {
+}: UseQueryOptions) => {
   const { Get } = useRequest();
 
   const fetchQueues = async () => {
@@ -61,5 +62,43 @@ export const useDequeueActive = ({
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,
+  });
+};
+
+type QueueItemsData = {
+  items: BorrowingQueueItem[];
+};
+type QueueItemFnData = {
+  bookId: string;
+};
+export const useQueueItems = ({
+  onSuccess,
+  onError,
+  onSettled,
+  queryKey,
+}: UseQueryOptions) => {
+  const { Get } = useRequest();
+
+  const fetchQueueItems: QueryFunction<QueueItemsData> = async ({
+    queryKey,
+  }) => {
+    try {
+      const bookId = queryKey?.[1] ?? "";
+      const { data: response } = await Get(`/borrowing/queues/${bookId}`, {});
+      return {
+        items: response?.data?.items ?? [],
+      } as QueueItemsData;
+    } catch {
+      return {
+        items: [],
+      } as QueueItemsData;
+    }
+  };
+  return useQuery<QueueItemsData>({
+    queryFn: fetchQueueItems,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: queryKey,
+    onSettled,
   });
 };

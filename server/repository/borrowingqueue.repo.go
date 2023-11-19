@@ -124,9 +124,10 @@ func (repo * BorrowingQueue )GetQueueItemsByBookId(bookId string) ([]model.Borro
 	) as client from borrowing.queue
 	INNER JOIN book_view on queue.book_id = book_view.id
 	INNER JOIN system.account on queue.account_id = account.id
-	where queue.book_id = $1`
+	where queue.book_id = $1 ORDER BY queue.queued_at`
 
-	err := repo.db.Select(&items, query)
+	err := repo.db.Select(&items, query, bookId)
+
 	return items, err
 }
 
