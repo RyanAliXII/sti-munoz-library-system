@@ -1,6 +1,9 @@
 import Container from "@components/ui/container/Container";
 import { BorrowingQueueItem } from "@definitions/types";
-import { useQueueItems } from "@hooks/data-fetching/borrowing-queue";
+import {
+  useQueueItems,
+  useQueueItemsUpdate,
+} from "@hooks/data-fetching/borrowing-queue";
 import { Button } from "flowbite-react";
 import { useReducer } from "react";
 import { FaSave } from "react-icons/fa";
@@ -11,7 +14,7 @@ import ActiveQueueItemsTable from "./ActiveQueueItemsTable";
 const ActiveQueueItems = () => {
   const [items, dispatch] = useReducer(queueItemReducer, []);
   const { bookId } = useParams();
-  const { data } = useQueueItems({
+  const {} = useQueueItems({
     queryKey: ["queueItems", bookId],
     onSuccess: (data) => {
       dispatch({
@@ -22,6 +25,8 @@ const ActiveQueueItems = () => {
       });
     },
   });
+
+  const updateQueueItems = useQueueItemsUpdate({});
   const moveUp = (currentPosition: number, item: BorrowingQueueItem) => {
     dispatch({
       payload: {
@@ -44,10 +49,14 @@ const ActiveQueueItems = () => {
       type: "move-down",
     });
   };
+
+  const save = () => {
+    updateQueueItems.mutate({ bookId: bookId ?? "", items });
+  };
   return (
     <Container>
       <div className="py-5">
-        <Button color="primary">
+        <Button color="primary" onClick={save}>
           <div className="flex  items-center gap-1">
             <FaSave />
             <span> Save</span>

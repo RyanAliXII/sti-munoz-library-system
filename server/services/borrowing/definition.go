@@ -30,3 +30,9 @@ type QueueBody struct {
 	BookId string `json:"bookId" binding:"required,uuid"`
 	AccountId string `json:"accountId"`
 }
+type BorrowingQueueItem struct {
+	Id string `json:"id" db:"id" binding:"required,uuid"`
+}
+type UpdateQueueItemsBody struct {
+	Items []BorrowingQueueItem `json:"items" db:"items" binding:"required,dive"`
+}

@@ -99,3 +99,32 @@ export const useQueueItems = ({
     onSettled,
   });
 };
+
+type QueueItemUpdateData = {
+  bookId: string;
+  items: BorrowingQueueItem[];
+};
+export const useQueueItemsUpdate = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, QueueItemUpdateData, unknown>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: ({ items, bookId }) =>
+      Put(
+        `/borrowing/queues/${bookId}`,
+        {
+          items,
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};

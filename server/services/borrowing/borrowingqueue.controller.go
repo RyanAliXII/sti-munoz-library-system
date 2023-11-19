@@ -1,6 +1,7 @@
 package borrowing
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -20,6 +21,7 @@ type BorrowingQueueController interface {
 	GetActiveQueues(* gin.Context) 
 	DequeueByBookId(ctx * gin.Context)
 	GetQueueItemsByBookId(ctx * gin.Context)
+	UpdateQueueItems(ctx * gin.Context)
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
@@ -118,4 +120,14 @@ func (ctrler * BorrowingQueue)GetQueueItemsByBookId(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{
 		"items": items,
 	}, "Queue items fetched."))
+}
+
+
+func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
+	items := UpdateQueueItemsBody{}
+	err := ctx.ShouldBindWith(&items, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+	}
+	fmt.Println(items)
 }
