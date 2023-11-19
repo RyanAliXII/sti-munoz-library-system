@@ -24,8 +24,28 @@ const ActiveQueueItems = () => {
       });
     },
   });
-  const moveUp = (currentPosition: number, item: BorrowingQueueItem) => {};
-  const moveDown = (currentPosition: number, item: BorrowingQueueItem) => {};
+  const moveUp = (currentPosition: number, item: BorrowingQueueItem) => {
+    dispatch({
+      payload: {
+        move: {
+          item,
+          currentPosition,
+        },
+      },
+      type: "move-up",
+    });
+  };
+  const moveDown = (currentPosition: number, item: BorrowingQueueItem) => {
+    dispatch({
+      payload: {
+        move: {
+          item,
+          currentPosition,
+        },
+      },
+      type: "move-down",
+    });
+  };
   return (
     <Container>
       <div className="py-5">
@@ -70,12 +90,24 @@ const ActiveQueueItems = () => {
                   <Table.Cell>
                     <div className="flex gap-2">
                       <Tippy content="Move Up">
-                        <Button color="primary" outline>
+                        <Button
+                          color="primary"
+                          outline
+                          onClick={() => {
+                            moveUp(idx, item);
+                          }}
+                        >
                           <FaArrowUp />
                         </Button>
                       </Tippy>
                       <Tippy content="Move Down">
-                        <Button color="primary" outline>
+                        <Button
+                          color="primary"
+                          outline
+                          onClick={() => {
+                            moveDown(idx, item);
+                          }}
+                        >
                           <FaArrowDown />
                         </Button>
                       </Tippy>
