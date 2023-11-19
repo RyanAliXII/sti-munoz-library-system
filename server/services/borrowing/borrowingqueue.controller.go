@@ -1,7 +1,6 @@
 package borrowing
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -122,12 +121,17 @@ func (ctrler * BorrowingQueue)GetQueueItemsByBookId(ctx * gin.Context) {
 	}, "Queue items fetched."))
 }
 
-
 func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
-	items := UpdateQueueItemsBody{}
-	err := ctx.ShouldBindWith(&items, binding.JSON)
+	body :=  UpdateQueueItemsModel{}
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 	}
-	fmt.Println(items)
+	err = ctrler.queueRepo.UpdateQueueItems(body.Items)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateQueueItemsErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Queue items updated."))
 }

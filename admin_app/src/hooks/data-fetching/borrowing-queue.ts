@@ -115,7 +115,10 @@ export const useQueueItemsUpdate = ({
       Put(
         `/borrowing/queues/${bookId}`,
         {
-          items,
+          items: items.map((item) => ({
+            id: item.id,
+            bookId: item.bookId,
+          })),
         },
         {
           headers: {

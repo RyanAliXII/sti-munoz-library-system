@@ -17,6 +17,7 @@ type BorrowingQueueRepository interface {
 	GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error)
 	DequeueByBookId(bookId string)(error)
 	GetQueueItemsByBookId(bookId string) ([]model.BorrowingQueueItem, error)
+	UpdateQueueItems(items []model.BorrowingQueueItem) error
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -124,12 +125,34 @@ func (repo * BorrowingQueue )GetQueueItemsByBookId(bookId string) ([]model.Borro
 	) as client from borrowing.queue
 	INNER JOIN book_view on queue.book_id = book_view.id
 	INNER JOIN system.account on queue.account_id = account.id
-	where queue.book_id = $1 ORDER BY queue.queued_at`
+	where queue.book_id = $1 and queue.dequeued_at is null ORDER BY queue.queued_at`
 
 	err := repo.db.Select(&items, query, bookId)
 
 	return items, err
 }
+func (repo * BorrowingQueue)UpdateQueueItems(items []model.BorrowingQueueItem) error {
+	if len(items) == 0 {
+		return nil
+	}
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	for idx, item := range items {
+		query := fmt.Sprintf("UPDATE borrowing.queue set queued_at = now() + interval '%d seconds' where id = $1", idx + 1)
+		_, err := transaction.Exec(query, item.Id)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+	}
+	transaction.Commit()
+	return nil
+}
+
+
 
 
 

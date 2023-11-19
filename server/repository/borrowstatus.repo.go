@@ -53,7 +53,7 @@ func (repo * Borrowing)handleQueue(transaction * sqlx.Tx, bookId string, accessi
 		}
 		return nil
 	}
-	err = transaction.Get(&queue, "SELECT id, account_id from borrowing.queue where book_id = $1 and dequeued_at is null ORDER BY created_at LIMIT 1", bookId)
+	err = transaction.Get(&queue, "SELECT id, account_id from borrowing.queue where book_id = $1 and dequeued_at is null ORDER BY queued_at asc LIMIT 1", bookId)
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}

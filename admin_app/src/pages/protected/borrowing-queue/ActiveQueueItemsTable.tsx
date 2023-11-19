@@ -34,8 +34,11 @@ const ActiveQueueItemsTable: FC<QueueItemsTableProps> = ({
             return (
               <Table.Row key={item.id}>
                 <Table.Cell>
-                  <div className="font-semibold text-gray-900 dark:text-white">
+                  <div className="text-base font-semibold text-gray-900 dark:text-white">
                     {item.book.title}
+                  </div>
+                  <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                    {item.book.section.name}
                   </div>
                 </Table.Cell>
                 <Table.Cell>
