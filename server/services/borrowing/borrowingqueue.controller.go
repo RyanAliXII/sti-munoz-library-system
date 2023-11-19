@@ -18,6 +18,7 @@ type BorrowingQueue struct {
 type BorrowingQueueController interface {
 	Queue( * gin.Context)
 	GetActiveQueues(* gin.Context) 
+	DequeueByBookId(ctx * gin.Context)
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
@@ -78,6 +79,17 @@ func(ctrler * BorrowingQueue)getActiveQueuesGroupByBook(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{
 		"queues": queues,
 	}, "Active queues fetched."))
+}
+
+func(ctrler * BorrowingQueue)DequeueByBookId(ctx * gin.Context) {
+	id := ctx.Param("id")
+	err := ctrler.queueRepo.DequeueByBookId(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DequeueByBookId"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Dequeued."))
 }
 
 

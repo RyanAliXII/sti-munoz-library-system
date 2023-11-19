@@ -15,6 +15,7 @@ type BorrowingQueueRepository interface {
 	Queue(model.BorrowingQueue) error
 	GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error)
 	GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error)
+	DequeueByBookId(bookId string)(error)
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -104,7 +105,11 @@ func (repo * BorrowingQueue)GetActiveQueuesGroupByBook()([]model.BorrowingQueue,
 	}
 	return queues, err
 }
-
+func (repo * BorrowingQueue)DequeueByBookId(bookId string)(error) {
+	query := `UPDATE borrowing.queue SET dequeued_at = now() where book_id = $1`
+	_, err := repo.db.Exec(query, bookId)
+	return err
+}
 
 
 

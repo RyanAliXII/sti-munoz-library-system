@@ -33,4 +33,5 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	r.PATCH("/borrowed-books/:id/cancellation", ctrler.HandleCancellationByIdAndAccountId)
 	r.POST("/queues", middlewares.ValidateBody[QueueBody], queueCtrler.Queue)
 	r.GET("/queues", queueCtrler.GetActiveQueues)
+	r.DELETE("/queues/:id",middlewares.BlockRequestFromClientApp,queueCtrler.DequeueByBookId)
 }

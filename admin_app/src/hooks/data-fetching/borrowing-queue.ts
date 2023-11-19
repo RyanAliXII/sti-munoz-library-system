@@ -1,4 +1,9 @@
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 import { useRequest } from "@hooks/useRequest";
 import { BorrowingQueue } from "@definitions/types";
 interface UseBorrowingQueueProps
@@ -33,5 +38,28 @@ export const useActiveQueues = ({
     onError: onError,
     queryKey: ["queues"],
     onSettled,
+  });
+};
+
+type QueueDeletionData = {
+  bookId: string;
+};
+
+export const useDequeueActive = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, QueueDeletionData, unknown>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: ({ bookId }) =>
+      Delete(`/borrowing/queues/${bookId}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
   });
 };

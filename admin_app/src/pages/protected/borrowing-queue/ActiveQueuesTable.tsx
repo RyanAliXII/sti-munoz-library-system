@@ -1,9 +1,44 @@
 import TableContainer from "@components/ui/table/TableContainer";
 import { Button, Table } from "flowbite-react";
-import { useActiveQueues } from "@hooks/data-fetching/borrowing-queue";
+import {
+  useActiveQueues,
+  useDequeueActive,
+} from "@hooks/data-fetching/borrowing-queue";
 import { Link } from "react-router-dom";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useSwitch } from "@hooks/useToggle";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "react-toastify";
 const ActiveQueuesTable = () => {
   const { data } = useActiveQueues({});
+  const [bookId, setBookId] = useState("");
+  const {
+    close: closeDequeueConfirmDialog,
+    isOpen: isDequeueConfirmOpen,
+    open: openDequeueConfirm,
+  } = useSwitch();
+  const queryClient = useQueryClient();
+  const dequeue = useDequeueActive({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["queues"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occurred.");
+    },
+    onSettled: () => {
+      closeDequeueConfirmDialog();
+    },
+  });
+
+  const onConfirmDequeue = () => {
+    dequeue.mutate({ bookId });
+  };
+  const initDequeue = (bookId: string) => {
+    setBookId(bookId);
+    openDequeueConfirm();
+  };
+
   return (
     <div>
       <TableContainer>
@@ -14,9 +49,9 @@ const ActiveQueuesTable = () => {
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body>
-            {data?.queues.map((queue) => {
+            {data?.queues.map((queue, idx) => {
               return (
-                <Table.Row>
+                <Table.Row key={queue.book.title + idx}>
                   <Table.Cell>{queue.book.title}</Table.Cell>
                   <Table.Cell>{queue.items}</Table.Cell>
                   <Table.Cell>
@@ -28,7 +63,15 @@ const ActiveQueuesTable = () => {
                       >
                         View
                       </Button>
-                      <Button color="failure">Remove</Button>
+                      <Button
+                        disabled={dequeue.isLoading}
+                        color="failure"
+                        onClick={() => {
+                          initDequeue(queue.book.id ?? "");
+                        }}
+                      >
+                        Remove
+                      </Button>
                     </div>
                   </Table.Cell>
                 </Table.Row>
@@ -37,6 +80,13 @@ const ActiveQueuesTable = () => {
           </Table.Body>
         </Table>
       </TableContainer>
+      <DangerConfirmDialog
+        title="Remove Queue"
+        text="Are you sure you want to remove this queue? This action is irreversible."
+        onConfirm={onConfirmDequeue}
+        close={closeDequeueConfirmDialog}
+        isOpen={isDequeueConfirmOpen}
+      />
     </div>
   );
 };
