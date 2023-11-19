@@ -18,6 +18,7 @@ type BorrowingQueueRepository interface {
 	DequeueByBookId(bookId string)(error)
 	GetQueueItemsByBookId(bookId string) ([]model.BorrowingQueueItem, error)
 	UpdateQueueItems(items []model.BorrowingQueueItem) error
+	DequeueItem(itemId string) error
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -151,6 +152,12 @@ func (repo * BorrowingQueue)UpdateQueueItems(items []model.BorrowingQueueItem) e
 	transaction.Commit()
 	return nil
 }
+
+func (repo * BorrowingQueue)DequeueItem(itemId string) error {
+	_, err := repo.db.Exec("UPDATE borrowing.dequeued_at = now() where id = $1", itemId)
+	return err
+}
+
 
 
 

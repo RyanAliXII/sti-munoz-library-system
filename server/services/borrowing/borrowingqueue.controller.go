@@ -21,6 +21,7 @@ type BorrowingQueueController interface {
 	DequeueByBookId(ctx * gin.Context)
 	GetQueueItemsByBookId(ctx * gin.Context)
 	UpdateQueueItems(ctx * gin.Context)
+	DequeueItem(ctx * gin.Context) 
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
@@ -109,7 +110,6 @@ func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 
 func (ctrler * BorrowingQueue)GetQueueItemsByBookId(ctx * gin.Context) {
 	id := ctx.Param("id")
-
 	items, err := ctrler.queueRepo.GetQueueItemsByBookId(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetQueueItemsByBookIdErr"))
@@ -134,4 +134,14 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Queue items updated."))
+}
+
+func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
+	id := ctx.Param("id")
+	err := ctrler.queueRepo.DequeueItem(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	}
+	ctx.JSON(httpresp.Success200(nil, "Item dequeued."))
 }

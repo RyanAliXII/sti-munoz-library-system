@@ -34,6 +34,7 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	r.POST("/queues", middlewares.ValidateBody[QueueBody], queueCtrler.Queue)
 	r.GET("/queues", queueCtrler.GetActiveQueues)
 	r.DELETE("/queues/:id",middlewares.BlockRequestFromClientApp,queueCtrler.DequeueByBookId)
+	r.DELETE("/queues/item/:id",middlewares.BlockRequestFromClientApp,queueCtrler.DequeueItem)
 	r.GET("/queues/:id",middlewares.BlockRequestFromClientApp,queueCtrler.GetQueueItemsByBookId)
 	r.PUT("/queues/:id",middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[UpdateQueueItemsBody], queueCtrler.UpdateQueueItems)
 }
