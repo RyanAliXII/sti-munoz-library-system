@@ -55,7 +55,9 @@ const ClientLogPage = lazy(
   () => import("./protected/system/client-log/ClientLogPage")
 );
 const QueuePage = lazy(() => import("./protected/borrowing-queue/QueuePage"));
-
+const QueueItemsPage = lazy(
+  () => import("./protected/borrowing-queue/ActiveQueueItems")
+);
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -275,6 +277,22 @@ const pages = createRoutesFromChildren(
               ]}
             >
               <QueuePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/borrowing/queues/:bookId"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate
+              requiredPermissions={[
+                "Borrowing.Access",
+                "Book.Access",
+                "Account.Access",
+              ]}
+            >
+              <QueueItemsPage />
             </PermissionGate>
           </Suspense>
         }
