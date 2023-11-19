@@ -290,7 +290,7 @@ func (repo * Borrowing)GetBookStatusBasedOnClient(bookId string, accountId strin
 	(
 		SELECT exists(
 			SELECT 1 from borrowing.queue
-		   where queue.book_id = $1 and queue.account_id = $2
+		   where queue.book_id = $1 and queue.account_id = $2 and dequeued_at is null
 		) 
 	) as is_in_queue,
 	bool_or((case when bb.id is not null then false else true end))

@@ -92,10 +92,11 @@ func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.Bor
 func (repo * BorrowingQueue)GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error) {
 	queues := make([]model.BorrowingQueue, 0)
 	query := `
-	SELECT queue.id, queue.book_id, account_id, json_format as book
-	from borrowing.queue
-	INNER JOIN book_view on queue.book_id = book_view.id
-	GROUP BY queue.book_id
+	SELECT book, COUNT(1) as items FROM (SELECT queue.id, queue.book_id, account_id, json_format as book
+		from borrowing.queue
+		INNER JOIN book_view on queue.book_id = book_view.id 
+		where dequeued_at is null) as queue	
+		GROUP BY queue.book_id, book
 	`
 	err := repo.db.Select(&queues, query, )
 	if err != nil {
