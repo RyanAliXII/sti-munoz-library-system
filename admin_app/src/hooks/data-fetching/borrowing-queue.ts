@@ -68,15 +68,12 @@ export const useDequeueActive = ({
 type QueueItemsData = {
   items: BorrowingQueueItem[];
 };
-type QueueItemFnData = {
-  bookId: string;
-};
 export const useQueueItems = ({
   onSuccess,
   onError,
   onSettled,
   queryKey,
-}: UseQueryOptions) => {
+}: UseQueryOptions<QueueItemsData, unknown, QueueItemsData>) => {
   const { Get } = useRequest();
 
   const fetchQueueItems: QueryFunction<QueueItemsData> = async ({
