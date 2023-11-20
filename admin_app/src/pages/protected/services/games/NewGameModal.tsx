@@ -23,7 +23,11 @@ const NewGameModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       resetForm();
     }
   });
-  const newGame = useNewGame({});
+  const newGame = useNewGame({
+    onSuccess: () => {
+      closeModal();
+    },
+  });
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault();

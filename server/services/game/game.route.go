@@ -9,5 +9,6 @@ import (
 
 func GameRoutes(router * gin.RouterGroup) {
 	ctrler := NewGameController()
-	router.POST("",middlewares.ValidateBody[GameBody], ctrler.NewGame)
+	router.GET("", middlewares.BlockRequestFromClientApp, ctrler.GetGames)
+	router.POST("",middlewares.ValidateBody[GameBody], middlewares.BlockRequestFromClientApp, ctrler.NewGame)
 }
