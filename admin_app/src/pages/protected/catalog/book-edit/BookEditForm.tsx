@@ -203,8 +203,7 @@ const BookEditForm = () => {
         receivedAt = new Date();
       }
       let strReceivedAt = format(receivedAt, "yyyy-MM-dd");
-      setForm({ ...data, receivedAt: strReceivedAt });
-
+      setForm((prev) => ({ ...prev, ...data, receivedAt: strReceivedAt }));
       for (const cover of data.covers) {
         try {
           const response = await fetch(buildS3Url(cover));
@@ -574,6 +573,7 @@ const BookEditForm = () => {
             <Button
               type="submit"
               color="primary"
+              className="mt-2"
               isProcessing={mutation.isLoading}
             >
               Save
