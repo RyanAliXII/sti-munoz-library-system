@@ -1,6 +1,7 @@
 package model
 
 type Game struct{
-	Name string `json:"name"`
-	Description string `json:"description"`
+	Id string `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
 }

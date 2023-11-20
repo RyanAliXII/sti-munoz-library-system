@@ -3,6 +3,7 @@ import TableContainer from "@components/ui/table/TableContainer";
 import { useSwitch } from "@hooks/useToggle";
 import { Button, Table } from "flowbite-react";
 import NewGameModal from "./NewGameModal";
+import { useGame } from "@hooks/data-fetching/game";
 
 const GamesPage = () => {
   const {
@@ -10,7 +11,7 @@ const GamesPage = () => {
     isOpen: isNewGameModalOpen,
     open: openNewGameModal,
   } = useSwitch();
-
+  const { data: games } = useGame({});
   return (
     <Container>
       <div className="py-2">
@@ -24,6 +25,19 @@ const GamesPage = () => {
             <Table.HeadCell>Name</Table.HeadCell>
             <Table.HeadCell>Description</Table.HeadCell>
           </Table.Head>
+
+          <Table.Body>
+            {games?.map((game) => {
+              return (
+                <Table.Row>
+                  <Table.Cell>
+                    <div className="font-semibold">{game.name}</div>
+                  </Table.Cell>
+                  <Table.Cell>{game.description}</Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
         </Table>
       </TableContainer>
       <NewGameModal

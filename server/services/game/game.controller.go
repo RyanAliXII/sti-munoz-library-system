@@ -48,5 +48,5 @@ func (ctrler * Game)GetGames(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"games": games,
-	}, "Game added."))
+	}, "Game fetched."))
 }

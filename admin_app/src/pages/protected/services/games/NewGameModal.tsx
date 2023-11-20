@@ -7,6 +7,8 @@ import { FaSave } from "react-icons/fa";
 import { NewGameValidation } from "../schema";
 import { useNewGame } from "@hooks/data-fetching/game";
 import useModalToggleListener from "@hooks/useModalToggleListener";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const NewGameModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
   const { handleFormInput, form, validate, errors, resetForm } = useForm<
@@ -23,9 +25,15 @@ const NewGameModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       resetForm();
     }
   });
+  const queryClient = useQueryClient();
   const newGame = useNewGame({
     onSuccess: () => {
       closeModal();
+      toast.success("Game has been added.");
+      queryClient.invalidateQueries(["games"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
     },
   });
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {

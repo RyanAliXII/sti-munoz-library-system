@@ -1,6 +1,11 @@
 import { Game } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { MutationOptions, useMutation } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useNewGame = ({
   onSuccess,
@@ -18,5 +23,33 @@ export const useNewGame = ({
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,
+  });
+};
+
+export const useGame = ({
+  onSuccess,
+  onError,
+  onSettled,
+}: UseQueryOptions<Game[]>) => {
+  const { Get } = useRequest();
+
+  const fetchAccounts = async () => {
+    try {
+      const { data: response } = await Get("/games", {
+        params: {},
+      });
+
+      const { data } = response;
+      return data?.games ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<Game[]>({
+    queryFn: fetchAccounts,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["games"],
+    onSettled,
   });
 };
