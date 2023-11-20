@@ -5,7 +5,7 @@ import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { NewGameValidation } from "../schema";
-import { useNewGame } from "@hooks/data-fetching/game";
+import { useEditGame, useNewGame } from "@hooks/data-fetching/game";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -33,7 +33,7 @@ const EditGameModal: FC<EditModalProps<Game>> = ({
     setForm(formData);
   });
   const queryClient = useQueryClient();
-  const newGame = useNewGame({
+  const editGame = useEditGame({
     onSuccess: () => {
       closeModal();
       toast.success("Game has been updated.");
@@ -48,7 +48,7 @@ const EditGameModal: FC<EditModalProps<Game>> = ({
       event.preventDefault();
       const game = await validate();
       if (!game) return;
-      newGame.mutate(game);
+      editGame.mutate(game);
     } catch (error) {
       console.error(error);
     }
@@ -81,7 +81,7 @@ const EditGameModal: FC<EditModalProps<Game>> = ({
             type="submit"
             color="primary"
             className="mt-2"
-            isProcessing={newGame.isLoading}
+            isProcessing={editGame.isLoading}
           >
             <div className="flex gap-2 items-center">
               <FaSave />

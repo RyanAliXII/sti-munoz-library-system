@@ -11,4 +11,6 @@ func GameRoutes(router * gin.RouterGroup) {
 	ctrler := NewGameController()
 	router.GET("", middlewares.BlockRequestFromClientApp, ctrler.GetGames)
 	router.POST("",middlewares.ValidateBody[GameBody], middlewares.BlockRequestFromClientApp, ctrler.NewGame)
+	router.PUT("/:id", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[GameBody], ctrler.UpdateGame)
+	router.DELETE("/:id", middlewares.BlockRequestFromClientApp, ctrler.DeleteGame)
 }

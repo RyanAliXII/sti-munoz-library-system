@@ -50,21 +50,21 @@ const GamesPage = () => {
           <Table.Body>
             {games?.map((game) => {
               return (
-                <Table.Row>
+                <Table.Row key={game.id}>
                   <Table.Cell>
                     <div className="font-semibold">{game.name}</div>
                   </Table.Cell>
                   <Table.Cell>{game.description}</Table.Cell>
                   <Table.Cell>
-                    <Button color="secondary">
-                      <Tippy content="Edit Game">
+                    <Tippy content="Edit Game">
+                      <Button color="secondary">
                         <AiOutlineEdit
                           onClick={() => {
                             initEdit(game);
                           }}
                         />
-                      </Tippy>
-                    </Button>
+                      </Button>
+                    </Tippy>
                   </Table.Cell>
                 </Table.Row>
               );

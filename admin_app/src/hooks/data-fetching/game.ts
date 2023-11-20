@@ -53,3 +53,22 @@ export const useGame = ({
     onSettled,
   });
 };
+
+export const useEditGame = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, Game, unknown>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Put(`/games/${form.id}`, form, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
