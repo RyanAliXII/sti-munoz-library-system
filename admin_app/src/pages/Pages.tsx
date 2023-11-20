@@ -60,6 +60,9 @@ const QueueItemsPage = lazy(
 );
 
 const GamePage = lazy(() => import("./protected/services/games/GamesPage"));
+const GameLogPage = lazy(
+  () => import("./protected/services/games/logs/GameLogPage")
+);
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -338,6 +341,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <GamePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/games/logs"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <GameLogPage />
             </PermissionGate>
           </Suspense>
         }
