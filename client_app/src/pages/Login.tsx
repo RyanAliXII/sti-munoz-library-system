@@ -1,16 +1,4 @@
-// import { loginRequest } from "../definitions/configs/authConfig";
-import { useMsal } from "@azure/msal-react";
-
 const Login = () => {
-  // const { instance: msalClient } = useMsal();
-  // const handleLogin = async () => {
-  //   try {
-  //     await msalClient.loginRedirect(loginRequest);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-
   return (
     <div className="relative py-16 bg-gradient-to-br from-sky-50 to-gray-200">
       <div className="relative container m-auto px-6 text-gray-500 md:px-12 xl:px-40">

@@ -105,7 +105,7 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 		return getErr
 	}
 	// check if book is already audited
-	query = `SELECT EXISTS(SELECT 1 FROM inventory.	audited_book where audit_id = $1  AND book_id = $2 )`
+	query = `SELECT EXISTS(SELECT 1 FROM inventory.audited_book where audit_id = $1  AND book_id = $2 )`
 	exists := true
 	checkBookisAuditedErr := transaction.Get(&exists, query, auditId, accession.BookId)
 

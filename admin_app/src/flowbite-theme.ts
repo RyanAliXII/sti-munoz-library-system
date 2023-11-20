@@ -43,7 +43,7 @@ const flowbiteTheme: CustomFlowbiteTheme = {
     outline: {
       color: {
         primary:
-          "text-primary-500 bg-transparent dark:bg-transparent border border-primary-500 focus:ring-primary-300  dark:focus:ring-primary-300 hover:bg-transparent hover:ring-2 hover:ring-primary-400",
+          "text-primary-500 bg-transparent dark:bg-transparent border border-primary-500 focus:ring-primary-300  dark:focus:ring-primary-300 hover:bg-transparent hover:ring-2 hover:ring-primary-400 dark:hover:text-gray-50",
         secondary:
           "text-yellow-400 bg-transparent dark:bg-transparent border  border-yellow-400 focus:ring-yellow-200 dark:focus:ring-yellow-200 hover:bg-transparent hover:ring-2 hover:ring-yellow-300",
       },
