@@ -104,6 +104,12 @@ export type BorrowingQueueItem = {
   client: Account;
 };
 
+export type Game = {
+  id: string;
+  name: string;
+  description: string;
+};
+
 export type Account = {
   id?: string;
   displayName: string;
