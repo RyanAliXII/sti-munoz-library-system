@@ -1,8 +1,8 @@
 import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
+import { useSwitch } from "@hooks/useToggle";
 import { Button, Table } from "flowbite-react";
 import NewGameModal from "./NewGameModal";
-import { useSwitch } from "@hooks/useToggle";
 
 const GamesPage = () => {
   const {
@@ -10,6 +10,7 @@ const GamesPage = () => {
     isOpen: isNewGameModalOpen,
     open: openNewGameModal,
   } = useSwitch();
+
   return (
     <Container>
       <div className="py-2">

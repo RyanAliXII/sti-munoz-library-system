@@ -1,6 +1,5 @@
-import React, { ButtonHTMLAttributes } from "react";
 import { Checkbox, CheckboxProps, Label, TextInput } from "flowbite-react";
-import { error } from "console";
+import React from "react";
 interface HTMLInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 export interface InputProps extends HTMLInputProps {
   label?: string;
