@@ -1,15 +1,15 @@
 import { CustomInput } from "@components/ui/form/Input";
-import { Game, ModalProps } from "@definitions/types";
+import { Game } from "@definitions/types";
+import { useEditGame } from "@hooks/data-fetching/game";
 import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
+import { EditModalProps } from "@pages/protected/system/access-control/EditRoleModal";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
-import { NewGameValidation } from "../schema";
-import { useEditGame, useNewGame } from "@hooks/data-fetching/game";
-import useModalToggleListener from "@hooks/useModalToggleListener";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { EditModalProps } from "@pages/protected/system/access-control/EditRoleModal";
+import { NewGameValidation } from "../schema";
 
 const EditGameModal: FC<EditModalProps<Game>> = ({
   closeModal,

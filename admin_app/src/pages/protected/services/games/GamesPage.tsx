@@ -1,14 +1,18 @@
 import Container from "@components/ui/container/Container";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
-import { useSwitch } from "@hooks/useToggle";
-import { Button, Table } from "flowbite-react";
-import NewGameModal from "./NewGameModal";
-import { useGame } from "@hooks/data-fetching/game";
-import Tippy from "@tippyjs/react";
-import { AiOutlineEdit } from "react-icons/ai";
-import { useState } from "react";
 import { Game } from "@definitions/types";
+import { useDeleteGame, useGame } from "@hooks/data-fetching/game";
+import { useSwitch } from "@hooks/useToggle";
+import { useQueryClient } from "@tanstack/react-query";
+import Tippy from "@tippyjs/react";
+import { Button, Table } from "flowbite-react";
+import { useState } from "react";
+import { AiOutlineEdit } from "react-icons/ai";
+import { FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
 import EditGameModal from "./EditGameModal";
+import NewGameModal from "./NewGameModal";
 
 const GamesPage = () => {
   const {
@@ -21,17 +25,41 @@ const GamesPage = () => {
     isOpen: isEditGameModalOpen,
     open: openEditGameModal,
   } = useSwitch();
+  const {
+    close: closeDeleteConfirm,
+    isOpen: isConfirmDeleteOpen,
+    open: openConfirmDelete,
+  } = useSwitch();
   const { data: games } = useGame({});
+  const queryClient = useQueryClient();
+  const deleteGame = useDeleteGame({
+    onSuccess: () => {
+      toast.success("Game has been deleted.");
+      queryClient.invalidateQueries(["games"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured");
+    },
+  });
   const [game, setGame] = useState<Game>({
     description: "",
     id: "",
     name: "",
   });
-
   const initEdit = (game: Game) => {
     setGame(game);
     openEditGameModal();
   };
+
+  const initDelete = (game: Game) => {
+    setGame(game);
+    openConfirmDelete();
+  };
+  const onConfirmDelete = () => {
+    closeDeleteConfirm();
+    deleteGame.mutate(game.id);
+  };
+
   return (
     <Container>
       <div className="py-2">
@@ -56,15 +84,27 @@ const GamesPage = () => {
                   </Table.Cell>
                   <Table.Cell>{game.description}</Table.Cell>
                   <Table.Cell>
-                    <Tippy content="Edit Game">
-                      <Button color="secondary">
-                        <AiOutlineEdit
+                    <div className="flex gap-2">
+                      <Tippy content="Edit Game">
+                        <Button color="secondary">
+                          <AiOutlineEdit
+                            onClick={() => {
+                              initEdit(game);
+                            }}
+                          />
+                        </Button>
+                      </Tippy>
+                      <Tippy content="Delete Game">
+                        <Button
+                          color="failure"
                           onClick={() => {
-                            initEdit(game);
+                            initDelete(game);
                           }}
-                        />
-                      </Button>
-                    </Tippy>
+                        >
+                          <FaTrash />
+                        </Button>
+                      </Tippy>
+                    </div>
                   </Table.Cell>
                 </Table.Row>
               );
@@ -81,6 +121,13 @@ const GamesPage = () => {
         closeModal={closeEditGameModal}
         formData={game}
         isOpen={isEditGameModalOpen}
+      />
+      <DangerConfirmDialog
+        close={closeDeleteConfirm}
+        isOpen={isConfirmDeleteOpen}
+        text="Are you sure you want to delete this game? This action is irreversible."
+        title="Delete Game"
+        onConfirm={onConfirmDelete}
       />
     </Container>
   );

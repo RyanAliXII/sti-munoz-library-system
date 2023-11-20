@@ -72,3 +72,22 @@ export const useEditGame = ({
     onSettled: onSettled,
   });
 };
+
+export const useDeleteGame = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: (id) =>
+      Delete(`/games/${id}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
