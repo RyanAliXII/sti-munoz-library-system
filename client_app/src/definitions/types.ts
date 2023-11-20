@@ -34,6 +34,7 @@ export type Section = {
 export interface Book {
   id?: string;
   title: string;
+  subject: string;
   isbn: string;
   copies: number;
   edition: number;

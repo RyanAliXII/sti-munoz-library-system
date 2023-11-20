@@ -1,6 +1,7 @@
 package borrowing
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -138,10 +139,12 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 	id := ctx.Param("id")
+	fmt.Println(id)
 	err := ctrler.queueRepo.DequeueItem(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Item dequeued."))
 }

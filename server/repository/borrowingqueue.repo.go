@@ -154,7 +154,7 @@ func (repo * BorrowingQueue)UpdateQueueItems(items []model.BorrowingQueueItem) e
 }
 
 func (repo * BorrowingQueue)DequeueItem(itemId string) error {
-	_, err := repo.db.Exec("UPDATE borrowing.dequeued_at = now() where id = $1", itemId)
+	_, err := repo.db.Exec("UPDATE borrowing.queue SET dequeued_at = now() where id = $1", itemId)
 	return err
 }
 

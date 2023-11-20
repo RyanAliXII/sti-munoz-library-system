@@ -1,10 +1,15 @@
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
 import { BorrowingQueueItem } from "@definitions/types";
+import { useDequeueItem } from "@hooks/data-fetching/borrowing-queue";
+import { useSwitch } from "@hooks/useToggle";
+import { useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import ordinal from "ordinal";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { toast } from "react-toastify";
 type QueueItemsTableProps = {
   items: BorrowingQueueItem[];
   moveUp: (currentPosition: number, item: BorrowingQueueItem) => void;
@@ -15,6 +20,32 @@ const ActiveQueueItemsTable: FC<QueueItemsTableProps> = ({
   moveDown,
   moveUp,
 }) => {
+  const queryClient = useQueryClient();
+  const dequeueItem = useDequeueItem({
+    onSuccess: () => {
+      toast.success("Item has been removed.");
+      queryClient.invalidateQueries(["queueItems"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+    onSettled: () => {
+      closeDequeueConfirmDialog();
+    },
+  });
+  const [itemId, setItemId] = useState("");
+  const {
+    close: closeDequeueConfirmDialog,
+    isOpen: isDequeueConfirmOpen,
+    open: openDequeueConfirm,
+  } = useSwitch();
+  const initDequeue = (id: string) => {
+    setItemId(id);
+    openDequeueConfirm();
+  };
+  const onConfirmDequeue = () => {
+    dequeueItem.mutate({ id: itemId });
+  };
   return (
     <TableContainer>
       <Table>
@@ -74,7 +105,14 @@ const ActiveQueueItemsTable: FC<QueueItemsTableProps> = ({
                         <FaArrowDown />
                       </Button>
                     </Tippy>
-                    <Button color="failure">Remove</Button>
+                    <Button
+                      color="failure"
+                      onClick={() => {
+                        initDequeue(item.id ?? "");
+                      }}
+                    >
+                      Remove
+                    </Button>
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -82,6 +120,14 @@ const ActiveQueueItemsTable: FC<QueueItemsTableProps> = ({
           })}
         </Table.Body>
       </Table>
+
+      <DangerConfirmDialog
+        title="Remove Queue"
+        text="Are you sure you want to remove this queue? This action is irreversible."
+        onConfirm={onConfirmDequeue}
+        close={closeDequeueConfirmDialog}
+        isOpen={isDequeueConfirmOpen}
+      />
     </TableContainer>
   );
 };
