@@ -8,10 +8,10 @@ import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { TimeSlotProfileValidation } from "../schema";
-import { Form } from "react-router-dom";
+import useModalToggleListener from "@hooks/useModalToggleListener";
 
 const NewTimeSlotProfileModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
-  const { handleFormInput, validate, errors } = useForm<
+  const { handleFormInput, validate, errors, resetForm } = useForm<
     Omit<TimeSlotProfile, "id">
   >({
     initialFormData: {
@@ -22,9 +22,9 @@ const NewTimeSlotProfileModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
   const queryClient = useQueryClient();
   const newProfile = useNewTimeSlotProfile({
     onSuccess: () => {
+      closeModal();
       toast.success("Time slot profile added.");
       queryClient.invalidateQueries(["profiles"]);
-      closeModal();
     },
     onError: () => {
       toast.error("Unknown error occured.");
@@ -40,6 +40,9 @@ const NewTimeSlotProfileModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       console.error(error);
     }
   };
+  useModalToggleListener(isOpen, () => {
+    if (!isOpen) resetForm();
+  });
   return (
     <Modal show={isOpen} dismissible onClose={closeModal} size={"lg"}>
       <Modal.Header>New Profile</Modal.Header>

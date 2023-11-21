@@ -45,5 +45,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	clientlog.ClientLogRoutes(grp.Group("/client-logs"))
 	game.GameRoutes(grp.Group("/games"))
 	device.DeviceRoutes(grp.Group("/devices"))
-	timeslot.TimeSlotRoutes(grp.Group("/time-slot"))
+	timeslot.TimeSlotRoutes(grp.Group("/time-slots"))
 }

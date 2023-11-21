@@ -8,5 +8,6 @@ import (
 
 func TimeSlotRoutes(router * gin.RouterGroup){
 	ctrler := NewTimeSlotProfileController()
-	router.POST("/profile", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
+	router.POST("/profiles", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
+	router.GET("/profiles", middlewares.BlockRequestFromClientApp, ctrler.GetProfiles)
 }

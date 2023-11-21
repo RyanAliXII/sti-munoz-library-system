@@ -1,16 +1,15 @@
+import FieldError from "@components/ui/form/FieldError";
 import { CustomInput } from "@components/ui/form/Input";
-import { Device, ModalProps } from "@definitions/types";
-import { useEditDevice, useNewDevice } from "@hooks/data-fetching/device";
+import { Device, EditModalProps } from "@definitions/types";
+import { useEditDevice } from "@hooks/data-fetching/device";
 import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
-import { DeviceValidation } from "../schema";
-import FieldError from "@components/ui/form/FieldError";
 import { toast } from "react-toastify";
-import { useQueryClient } from "@tanstack/react-query";
-import useModalToggleListener from "@hooks/useModalToggleListener";
-import { EditModalProps } from "@pages/protected/system/access-control/EditRoleModal";
+import { DeviceValidation } from "../schema";
 
 const EditDeviceModal: FC<EditModalProps<Device>> = ({
   closeModal,

@@ -279,3 +279,7 @@ export type ClientLog = {
   scanner: ScannerAccount;
   createdAt: string;
 };
+
+export interface EditModalProps<T> extends ModalProps {
+  formData: T;
+}
