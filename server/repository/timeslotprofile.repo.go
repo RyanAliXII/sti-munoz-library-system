@@ -32,7 +32,8 @@ func(repo * TimeSlotProfile)GetProfiles()([]model.TimeSlotProfile, error) {
 	return profiles, err
 }
 func(repo * TimeSlotProfile)UpdateProfile(profile model.TimeSlotProfile) error {
-	return nil
+	_, err := repo.db.Exec("UPDATE services.time_slot_profile set name = $1 where deleted_at is null and id = $2", profile.Name, profile.Id)
+	return err
 }
 func(repo * TimeSlotProfile)DeleteProfile(id string) error {
 	return nil

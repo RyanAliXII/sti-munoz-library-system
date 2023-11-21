@@ -3,16 +3,34 @@ import { useTimeSlotProfiles } from "@hooks/data-fetching/time-slot-profile";
 import { useSwitch } from "@hooks/useToggle";
 import { Button, Table } from "flowbite-react";
 import NewTimeSlotProfileModal from "./NewTimeSlotProfileModal";
+import EditTimeSlotProfileModal from "./EditTimeSlotProfileModal";
+import { useState } from "react";
+import { TimeSlotProfile } from "@definitions/types";
+import Tippy from "@tippyjs/react";
+import { AiOutlineEdit } from "react-icons/ai";
 
-const TimeSlotProfile = () => {
+const TimeSlotProfilePage = () => {
   const {
     close: closeNewProfileModal,
     open: openNewProfileModal,
     isOpen: isNewProfileModalOpen,
   } = useSwitch();
+  const {
+    close: closeEditProfileModal,
+    open: openEditProfileModal,
+    isOpen: isEditProfileModalOpen,
+  } = useSwitch();
+  const [profile, setProfile] = useState<TimeSlotProfile>({
+    id: "",
+    name: "",
+  });
   const { data: profiles } = useTimeSlotProfiles({
     queryKey: ["profiles"],
   });
+  const initEdit = (profile: TimeSlotProfile) => {
+    setProfile(profile);
+    openEditProfileModal();
+  };
   return (
     <Container>
       <div className="py-2">
@@ -30,6 +48,20 @@ const TimeSlotProfile = () => {
             return (
               <Table.Row key={profile.id}>
                 <Table.Cell> {profile.name}</Table.Cell>
+                <Table.Cell>
+                  <div>
+                    <Tippy content="Edit Profile">
+                      <Button
+                        color="secondary"
+                        onClick={() => {
+                          initEdit(profile);
+                        }}
+                      >
+                        <AiOutlineEdit />
+                      </Button>
+                    </Tippy>
+                  </div>
+                </Table.Cell>
               </Table.Row>
             );
           })}
@@ -39,8 +71,13 @@ const TimeSlotProfile = () => {
         closeModal={closeNewProfileModal}
         isOpen={isNewProfileModalOpen}
       />
+      <EditTimeSlotProfileModal
+        formData={profile}
+        closeModal={closeEditProfileModal}
+        isOpen={isEditProfileModalOpen}
+      />
     </Container>
   );
 };
 
-export default TimeSlotProfile;
+export default TimeSlotProfilePage;

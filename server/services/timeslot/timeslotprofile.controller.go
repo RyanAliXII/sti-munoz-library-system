@@ -42,7 +42,23 @@ func(ctrler * TimeSlotProfile)NewProfile(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Profile created successfully."))
 }
 func(ctrler * TimeSlotProfile)UpdateProfile(ctx * gin.Context){
+	id := ctx.Param("id")
+	profile := model.TimeSlotProfile{}
 
+	err := ctx.ShouldBindBodyWith(&profile, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	profile.Id = id
+	err = ctrler.timeSlotProfileRepo.UpdateProfile(profile)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateProfileErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Profile updated successfully."))
 }
 func(ctrler * TimeSlotProfile)DeleteProfile(ctx * gin.Context){
 

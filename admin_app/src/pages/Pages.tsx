@@ -66,8 +66,8 @@ const GameLogPage = lazy(
 const DevicePage = lazy(
   () => import("./protected/services/devices/DevicePage")
 );
-const TimeSlotProfile = lazy(
-  () => import("./protected/services/time-slot/TimeSlotProfile")
+const TimeSlotProfilePage = lazy(
+  () => import("./protected/services/time-slot/TimeSlotProfilePage")
 );
 const pages = createRoutesFromChildren(
   <>
@@ -376,7 +376,7 @@ const pages = createRoutesFromChildren(
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate>
-              <TimeSlotProfile />
+              <TimeSlotProfilePage />
             </PermissionGate>
           </Suspense>
         }
