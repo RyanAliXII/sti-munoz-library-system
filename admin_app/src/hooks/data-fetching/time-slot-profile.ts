@@ -6,6 +6,7 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 export const useNewTimeSlotProfile = ({
   onSuccess,
@@ -86,6 +87,39 @@ export const useTimeSlotProfiles = ({
     onSuccess: onSuccess,
     onError: onError,
     queryKey: ["profiles"],
+    onSettled,
+  });
+};
+
+export const useTimeSlotProfile = ({
+  onSuccess,
+  onError,
+  onSettled,
+}: UseQueryOptions<TimeSlotProfile>) => {
+  const { Get } = useRequest();
+  const { id } = useParams();
+  const fetchGames = async () => {
+    try {
+      const { data: response } = await Get(`/time-slots/profiles/${id}`, {
+        params: {},
+      });
+      const { data } = response;
+      return (
+        data?.profile ??
+        ({
+          id: "",
+          name: "",
+        } as TimeSlotProfile)
+      );
+    } catch {
+      return { id: "", name: "" } as TimeSlotProfile;
+    }
+  };
+  return useQuery<TimeSlotProfile>({
+    queryFn: fetchGames,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["profile"],
     onSettled,
   });
 };

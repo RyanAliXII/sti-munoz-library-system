@@ -24,6 +24,7 @@ type TimeSlotProfileController interface {
 	UpdateProfile(ctx * gin.Context)
 	DeleteProfile(ctx * gin.Context)
 	GetProfiles(ctx * gin.Context)
+	GetProfileById(ctx * gin.Context)
 }
 func(ctrler * TimeSlotProfile)NewProfile(ctx * gin.Context){
 	body := model.TimeSlotProfile{}
@@ -78,4 +79,16 @@ func(ctrler * TimeSlotProfile)GetProfiles(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(gin.H{
 		"profiles": profiles,
 	}, "Profiles fetched"))
+}
+func(ctrler * TimeSlotProfile)GetProfileById(ctx * gin.Context){
+	id := ctx.Param("id")
+	profile, err := ctrler.timeSlotProfileRepo.GetProfileById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail404(nil, "Not found."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"profile": profile,
+	}, "Profile fetched."))
 }

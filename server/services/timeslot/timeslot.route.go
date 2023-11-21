@@ -12,4 +12,5 @@ func TimeSlotRoutes(router * gin.RouterGroup){
 	router.GET("/profiles", middlewares.BlockRequestFromClientApp, ctrler.GetProfiles)
 	router.PUT("/profiles/:id", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[TimeSlotProfileBody], ctrler.UpdateProfile)
 	router.DELETE("/profiles/:id", middlewares.BlockRequestFromClientApp, ctrler.DeleteProfile)
+	router.GET("/profiles/:id", middlewares.BlockRequestFromClientApp, ctrler.GetProfileById)
 }

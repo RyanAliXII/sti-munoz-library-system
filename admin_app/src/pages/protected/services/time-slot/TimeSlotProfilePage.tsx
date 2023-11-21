@@ -10,12 +10,13 @@ import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-import { FaTrash } from "react-icons/fa";
+import { FaEye, FaTrash } from "react-icons/fa";
 import EditTimeSlotProfileModal from "./EditTimeSlotProfileModal";
 import NewTimeSlotProfileModal from "./NewTimeSlotProfileModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import TableContainer from "@components/ui/table/TableContainer";
+import { Link } from "react-router-dom";
 
 const TimeSlotProfilePage = () => {
   const {
@@ -82,6 +83,15 @@ const TimeSlotProfilePage = () => {
                   <Table.Cell> {profile.name}</Table.Cell>
                   <Table.Cell>
                     <div className="flex items-center gap-2">
+                      <Tippy content="View Profile">
+                        <Button
+                          color="primary"
+                          to={`/services/time-slot-profile/${profile.id}`}
+                          as={Link}
+                        >
+                          <FaEye />
+                        </Button>
+                      </Tippy>
                       <Tippy content="Edit Profile">
                         <Button
                           color="secondary"

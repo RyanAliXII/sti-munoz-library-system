@@ -20,6 +20,7 @@ type TimeSlotProfileRepository interface{
 	GetProfiles ()([]model.TimeSlotProfile, error)
 	UpdateProfile (model.TimeSlotProfile)error
 	DeleteProfile(id string) error
+	GetProfileById(id string)(model.TimeSlotProfile, error)
 }
 func(repo * TimeSlotProfile)NewProfile(profile model.TimeSlotProfile) error {
 	_, err := repo.db.Exec("INSERT INTO services.time_slot_profile(name) VALUES($1)", profile.Name)
@@ -38,4 +39,9 @@ func(repo * TimeSlotProfile)UpdateProfile(profile model.TimeSlotProfile) error {
 func(repo * TimeSlotProfile)DeleteProfile(id string) error {
 	_, err := repo.db.Exec("UPDATE services.time_slot_profile set deleted_at = now() where id = $1 and deleted_at is null", id)
 	return err
+}
+func(repo *TimeSlotProfile)GetProfileById(id string)(model.TimeSlotProfile, error){
+	profile := model.TimeSlotProfile{}
+	err := repo.db.Get(&profile, "SELECT id, name from services.time_slot_profile where deleted_at is null and id = $1 LIMIT 1", id)
+	return profile,err
 }

@@ -1,11 +1,16 @@
 import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
-import { Table } from "flowbite-react";
-import React from "react";
+import { useTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
+import { Button, Table } from "flowbite-react";
 
 const TimeSlotPage = () => {
+  const {} = useTimeSlotProfile({});
   return (
     <Container>
+      <div className="py-3">
+        <Button color="primary">New Slot</Button>
+      </div>
+
       <TableContainer>
         <Table>
           <Table.Head>

@@ -69,6 +69,9 @@ const DevicePage = lazy(
 const TimeSlotProfilePage = lazy(
   () => import("./protected/services/time-slot/TimeSlotProfilePage")
 );
+const TimeSlotPage = lazy(
+  () => import("./protected/services/time-slot/id/TimeSlotPage")
+);
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -377,6 +380,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <TimeSlotProfilePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/time-slot-profile/:id"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <TimeSlotPage />
             </PermissionGate>
           </Suspense>
         }
