@@ -12,6 +12,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/timeslot"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
@@ -44,4 +45,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	clientlog.ClientLogRoutes(grp.Group("/client-logs"))
 	game.GameRoutes(grp.Group("/games"))
 	device.DeviceRoutes(grp.Group("/devices"))
+	timeslot.TimeSlotRoutes(grp.Group("/time-slot"))
 }
