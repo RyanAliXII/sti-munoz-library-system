@@ -22,7 +22,8 @@ type TimeSlotProfileRepository interface{
 	DeleteProfile(id string) error
 }
 func(repo * TimeSlotProfile)NewProfile(profile model.TimeSlotProfile) error {
-	return nil
+	_, err := repo.db.Exec("INSERT INTO services.time_slot_profile(name) VALUES($1)", profile.Name)
+	return err
 }
 func(repo * TimeSlotProfile)GetProfiles()([]model.TimeSlotProfile, error) {
 	profiles := make([]model.TimeSlotProfile, 0)
