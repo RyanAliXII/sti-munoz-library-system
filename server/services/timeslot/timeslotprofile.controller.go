@@ -48,5 +48,11 @@ func(ctrler * TimeSlotProfile)DeleteProfile(ctx * gin.Context){
 
 }
 func(ctrler * TimeSlotProfile)GetProfiles(ctx * gin.Context){
-	
+	profiles, err := ctrler.timeSlotProfileRepo.GetProfiles()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetProfilesErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"profiles": profiles,
+	}, "Profiles fetched"))
 }

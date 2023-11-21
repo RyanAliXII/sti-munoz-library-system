@@ -27,7 +27,9 @@ func(repo * TimeSlotProfile)NewProfile(profile model.TimeSlotProfile) error {
 }
 func(repo * TimeSlotProfile)GetProfiles()([]model.TimeSlotProfile, error) {
 	profiles := make([]model.TimeSlotProfile, 0)
-	return profiles, nil
+	query := `SELECT id, name FROM services.time_slot_profile where deleted_at is null ORDER BY created_at DESC`
+	err := repo.db.Select(&profiles, query)
+	return profiles, err
 }
 func(repo * TimeSlotProfile)UpdateProfile(profile model.TimeSlotProfile) error {
 	return nil
