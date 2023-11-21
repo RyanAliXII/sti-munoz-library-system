@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 const Page404 = () => {
@@ -160,7 +159,7 @@ const Page404 = () => {
         <p className="text-3xl md:text-4xl lg:text-5xl text-gray-800 mt-12">
           Page Not Found
         </p>
-        <p className="md:text-lg lg:text-xl text-gray-600 mt-8">
+        <p className="md:text-lg lg:text-xl text-gray-600 mt-8 text-center p-2">
           Sorry, the page you are looking for could not be found.
         </p>
         <Link

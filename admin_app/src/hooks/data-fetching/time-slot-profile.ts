@@ -111,14 +111,15 @@ export const useTimeSlotProfile = ({
           name: "",
         } as TimeSlotProfile)
       );
-    } catch {
-      return { id: "", name: "" } as TimeSlotProfile;
+    } catch (err) {
+      throw err;
     }
   };
   return useQuery<TimeSlotProfile>({
     queryFn: fetchGames,
     onSuccess: onSuccess,
     onError: onError,
+    retry: false,
     queryKey: ["profile"],
     onSettled,
   });

@@ -2,9 +2,15 @@ import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
 import { useTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
 import { Button, Table } from "flowbite-react";
+import { useNavigate } from "react-router-dom";
 
 const TimeSlotPage = () => {
-  const {} = useTimeSlotProfile({});
+  const navigate = useNavigate();
+  const {} = useTimeSlotProfile({
+    onError: () => {
+      navigate("/404");
+    },
+  });
   return (
     <Container>
       <div className="py-3">
