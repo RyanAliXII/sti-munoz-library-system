@@ -34,7 +34,7 @@ export const useGame = ({
 }: UseQueryOptions<Game[]>) => {
   const { Get } = useRequest();
 
-  const fetchAccounts = async () => {
+  const fetchGames = async () => {
     try {
       const { data: response } = await Get("/games", {
         params: {},
@@ -47,7 +47,7 @@ export const useGame = ({
     }
   };
   return useQuery<Game[]>({
-    queryFn: fetchAccounts,
+    queryFn: fetchGames,
     onSuccess: onSuccess,
     onError: onError,
     queryKey: ["games"],

@@ -21,6 +21,7 @@ func NewDeviceController() DeviceController{
 }
 type DeviceController interface{
 	NewDevice(ctx * gin.Context)
+	GetDevices(ctx * gin.Context)
 }
 func(ctrler * Device) NewDevice (ctx * gin.Context){
   device := model.Device{}
@@ -39,4 +40,13 @@ func(ctrler * Device) NewDevice (ctx * gin.Context){
 	return
   }
   ctx.JSON(httpresp.Success200(nil, "Device added."))
+}
+func(ctrler * Device)GetDevices(ctx * gin.Context){
+	devices, err := ctrler.deviceRepo.GetDevices()
+	if err != nil {
+		logger.Error(err.Error() , slimlog.Error("GetDevicesErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"devices": devices,
+	}, "Fetched devices"))
 }

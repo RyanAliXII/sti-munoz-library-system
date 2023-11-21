@@ -1,6 +1,11 @@
 import { Device } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { MutationOptions, useMutation } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useNewDevice = ({
   onSuccess,
@@ -18,5 +23,33 @@ export const useNewDevice = ({
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,
+  });
+};
+
+export const useDevices = ({
+  onSuccess,
+  onError,
+  onSettled,
+}: UseQueryOptions<Device[]>) => {
+  const { Get } = useRequest();
+
+  const fetchDevices = async () => {
+    try {
+      const { data: response } = await Get("/devices", {
+        params: {},
+      });
+
+      const { data } = response;
+      return data?.devices ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<Device[]>({
+    queryFn: fetchDevices,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["devices"],
+    onSettled,
   });
 };

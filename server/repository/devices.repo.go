@@ -12,6 +12,7 @@ type Device struct {
 
 type DeviceRepository interface {
 	NewDevice(model.Device)(error)
+	GetDevices()([]model.Device, error)
 }
 func NewDevice()DeviceRepository{
 	return &Device{
@@ -23,6 +24,12 @@ func(repo * Device)NewDevice(device model.Device) (error){
 	(name, description, available)VALUES($1, $2, $3)`, device.Name, device.Description, device.Available)
 	return err
 }
+func(repo * Device)GetDevices()([]model.Device, error){
+	devices := make([]model.Device, 0)
+	err := repo.db.Select(&devices, "SELECT id, name, description, available from services.device ORDER BY created_at desc")
+	return devices, err
+}
+
 
 
 
