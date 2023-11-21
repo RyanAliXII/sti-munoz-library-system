@@ -33,3 +33,8 @@ func (repo * Game)GetLogs()([]model.GameLog, error) {
 	err := repo.db.Select(&logs, query)
 	return logs, err
 }
+
+func (repo * Game)DeleteLog(id string)(error){
+	_, err := repo.db.Exec("UPDATE services.game_log set deleted_at = now() where id = $1 and deleted_at is null", id)
+	return err
+}

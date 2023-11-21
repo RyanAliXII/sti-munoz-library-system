@@ -74,7 +74,6 @@ const GamesPage = () => {
             <Table.HeadCell>Description</Table.HeadCell>
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
-
           <Table.Body className="divide-y dark:divide-gray-700">
             {games?.map((game) => {
               return (

@@ -6,6 +6,7 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { string } from "yup";
 
 export const useNewGame = ({
   onSuccess,
@@ -141,5 +142,24 @@ export const useGameLogs = ({
     onError: onError,
     queryKey: ["gameLogs"],
     onSettled,
+  });
+};
+
+export const useDeleteGameLog = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: (logId) =>
+      Delete(`/games/logs/${logId}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
   });
 };
