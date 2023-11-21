@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import Loader from "@components/Loader";
 import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
+import ReservableDevicePage from "./protected/services/devices/ReservableDevicePage";
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
 const BookAddPage = lazy(
@@ -351,6 +352,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <GameLogPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/devices"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <ReservableDevicePage />
             </PermissionGate>
           </Suspense>
         }
