@@ -25,6 +25,6 @@ export const DeviceValidation = object({
     .max(255, "Description should not exceed 255 characters"),
   available: number()
     .required("Available devices is required.")
-    .min(1, "Available devices is required.")
+    .min(1, "Available devices cannot be 0 or less than 1")
     .typeError("Available devices is required."),
 });

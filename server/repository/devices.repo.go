@@ -13,13 +13,14 @@ type Device struct {
 type DeviceRepository interface {
 	NewDevice(model.Device)(error)
 	GetDevices()([]model.Device, error)
+	UpdateDevice(device model.Device) error
 }
 func NewDevice()DeviceRepository{
 	return &Device{
 		db: db.Connect(),
 	}
 }
-func(repo * Device)NewDevice(device model.Device) (error){
+func(repo * Device)NewDevice(device model.Device)(error){
 	_, err := repo.db.Exec(`INSERT INTO services.device 
 	(name, description, available)VALUES($1, $2, $3)`, device.Name, device.Description, device.Available)
 	return err
@@ -30,6 +31,12 @@ func(repo * Device)GetDevices()([]model.Device, error){
 	return devices, err
 }
 
-
+func (repo * Device)UpdateDevice(device model.Device)error{
+	_, err := repo.db.Exec(`
+	UPDATE services.device
+	 SET name = $1, description = $2, available = $3 
+	 WHERE id = $4 and deleted_at is null`, device.Name, device.Description, device.Available, device.Id)
+	 return err
+}
 
 

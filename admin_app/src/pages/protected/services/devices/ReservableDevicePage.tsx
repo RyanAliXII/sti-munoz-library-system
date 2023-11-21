@@ -4,14 +4,35 @@ import NewDeviceModal from "./NewDeviceModal";
 import { useSwitch } from "@hooks/useToggle";
 import { useDevices } from "@hooks/data-fetching/device";
 import TableContainer from "@components/ui/table/TableContainer";
+import EditDeviceModal from "./EditDeviceModal";
+import { useState } from "react";
+import { Device } from "@definitions/types";
+import Tippy from "@tippyjs/react";
+import { AiOutlineEdit } from "react-icons/ai";
+import { FaTrash } from "react-icons/fa";
 
 const ReservableDevicePage = () => {
   const {
-    isOpen: isNewDeviceModelOpen,
+    isOpen: isNewDeviceModalOpen,
     close: closeNewDeviceModal,
     open: openNewDeviceModal,
   } = useSwitch();
+  const {
+    isOpen: isEditDeviceModalOpen,
+    close: closeEditDeviceModal,
+    open: openEditDeviceModal,
+  } = useSwitch();
   const { data: devices } = useDevices({});
+  const [device, setDevice] = useState<Device>({
+    available: 0,
+    description: "",
+    id: "",
+    name: "",
+  });
+  const initEdit = (device: Device) => {
+    setDevice(device);
+    openEditDeviceModal();
+  };
   return (
     <Container>
       <div className="py-3">
@@ -37,7 +58,30 @@ const ReservableDevicePage = () => {
                   </Table.Cell>
                   <Table.Cell>{device.description}</Table.Cell>
                   <Table.Cell>{device.available}</Table.Cell>
-                  <Table.Cell></Table.Cell>
+                  <Table.Cell>
+                    <div className="flex gap-2">
+                      <Tippy content="Edit Game">
+                        <Button
+                          color="secondary"
+                          onClick={() => {
+                            initEdit(device);
+                          }}
+                        >
+                          <AiOutlineEdit />
+                        </Button>
+                      </Tippy>
+                      <Tippy content="Delete Game">
+                        <Button
+                          color="failure"
+                          onClick={() => {
+                            //initDelete(game);
+                          }}
+                        >
+                          <FaTrash />
+                        </Button>
+                      </Tippy>
+                    </div>
+                  </Table.Cell>
                 </Table.Row>
               );
             })}
@@ -46,7 +90,12 @@ const ReservableDevicePage = () => {
       </TableContainer>
       <NewDeviceModal
         closeModal={closeNewDeviceModal}
-        isOpen={isNewDeviceModelOpen}
+        isOpen={isNewDeviceModalOpen}
+      />
+      <EditDeviceModal
+        isOpen={isEditDeviceModalOpen}
+        closeModal={closeEditDeviceModal}
+        formData={device}
       />
     </Container>
   );

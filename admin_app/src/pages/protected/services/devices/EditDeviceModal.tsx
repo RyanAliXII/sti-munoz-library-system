@@ -1,6 +1,6 @@
 import { CustomInput } from "@components/ui/form/Input";
 import { Device, ModalProps } from "@definitions/types";
-import { useNewDevice } from "@hooks/data-fetching/device";
+import { useEditDevice, useNewDevice } from "@hooks/data-fetching/device";
 import { useForm } from "@hooks/useForm";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { FC, FormEvent } from "react";
@@ -10,12 +10,17 @@ import FieldError from "@components/ui/form/FieldError";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import useModalToggleListener from "@hooks/useModalToggleListener";
+import { EditModalProps } from "@pages/protected/system/access-control/EditRoleModal";
 
-const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
+const EditDeviceModal: FC<EditModalProps<Device>> = ({
+  closeModal,
+  isOpen,
+  formData,
+}) => {
   const queryClient = useQueryClient();
-  const newDevice = useNewDevice({
+  const updateDevice = useEditDevice({
     onSuccess: () => {
-      toast.success("New device has been added.");
+      toast.success("Device has been updated.");
       queryClient.invalidateQueries(["devices"]);
       closeModal();
     },
@@ -23,10 +28,9 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       toast.error("Unknown error occured.");
     },
   });
-  const { handleFormInput, validate, errors, resetForm } = useForm<
-    Omit<Device, "id">
-  >({
+  const { handleFormInput, validate, errors, setForm, form } = useForm<Device>({
     initialFormData: {
+      id: "",
       description: "",
       name: "",
       available: 0,
@@ -38,22 +42,24 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       event.preventDefault();
       const device = await validate();
       if (!device) return;
-      newDevice.mutate(device);
+      updateDevice.mutate(device);
     } catch (err) {
       console.error(err);
     }
   };
   useModalToggleListener(isOpen, () => {
-    if (!isOpen) resetForm();
+    if (!isOpen) return;
+    setForm(formData);
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="xl">
-      <Modal.Header>New Device</Modal.Header>
+      <Modal.Header>Edit Device</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div className="py-2">
             <CustomInput
               label="Name"
+              value={form.name}
               error={errors?.name}
               name="name"
               onChange={handleFormInput}
@@ -62,6 +68,7 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
           <div className="py-2">
             <Label>Description</Label>
             <Textarea
+              value={form.description}
               onChange={handleFormInput}
               name="description"
               className="resize-none"
@@ -70,6 +77,7 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
           </div>
           <div className="py-2">
             <CustomInput
+              value={form.available}
               label="Available Devices"
               error={errors?.available}
               type="number"
@@ -80,7 +88,7 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
           <Button
             color="primary"
             type="submit"
-            isProcessing={newDevice.isLoading}
+            isProcessing={updateDevice.isLoading}
           >
             <div className="flex gap-2 items-center">
               <FaSave />
@@ -93,4 +101,4 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
   );
 };
 
-export default NewDeviceModal;
+export default EditDeviceModal;

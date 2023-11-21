@@ -22,6 +22,7 @@ func NewDeviceController() DeviceController{
 type DeviceController interface{
 	NewDevice(ctx * gin.Context)
 	GetDevices(ctx * gin.Context)
+	UpdateDevice(ctx * gin.Context)
 }
 func(ctrler * Device) NewDevice (ctx * gin.Context){
   device := model.Device{}
@@ -48,5 +49,24 @@ func(ctrler * Device)GetDevices(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"devices": devices,
-	}, "Fetched devices"))
+	}, "Fetched devices."))
+}
+
+func(ctrler * Device)UpdateDevice(ctx * gin.Context){
+	id := ctx.Param("id")
+	device := model.Device{}
+	err := ctx.ShouldBindBodyWith(&device, binding.JSON)
+	if err != nil {
+	  logger.Error(err.Error(), slimlog.Error("BindErr"))
+	  ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
+	  return 
+	}
+	device.Id = id
+	err = ctrler.deviceRepo.UpdateDevice(device)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateDeviceErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
+		return
+	  }
+	ctx.JSON(httpresp.Success200(nil, "Device updated."))
 }

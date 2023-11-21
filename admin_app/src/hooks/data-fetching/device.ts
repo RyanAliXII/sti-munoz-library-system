@@ -53,3 +53,22 @@ export const useDevices = ({
     onSettled,
   });
 };
+
+export const useEditDevice = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, Device, unknown>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Put(`/devices/${form.id}`, form, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
