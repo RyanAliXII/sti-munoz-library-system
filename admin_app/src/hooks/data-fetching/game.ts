@@ -163,3 +163,27 @@ export const useDeleteGameLog = ({
     onSettled: onSettled,
   });
 };
+
+export const useEditGameLog = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<
+  any,
+  unknown,
+  Omit<GameLog, "client" | "game" | "createdAt">,
+  unknown
+>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Put(`/games/logs/${form.id}`, form, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};

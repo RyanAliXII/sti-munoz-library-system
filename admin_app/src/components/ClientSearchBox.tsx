@@ -12,13 +12,13 @@ import { Label } from "flowbite-react";
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
   className?: string;
-  value?: string;
+  initialValue?: Account;
 };
 const HIGHLIGHTED_CLASS = "bg-gray-100 dark:bg-gray-600";
 const ClientSearchBox = ({
   setClient,
   className,
-  value,
+  initialValue,
 }: ClientSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
@@ -50,8 +50,10 @@ const ClientSearchBox = ({
   return (
     <>
       <Downshift
+        initialSelectedItem={initialValue}
         itemToString={(account) => (account ? account.displayName : "")}
         onChange={(account) => {
+          if (!account) return;
           setClient(account);
         }}
       >
@@ -69,7 +71,6 @@ const ClientSearchBox = ({
           >
             <Label>Search client</Label>
             <input
-              value={value}
               {...getInputProps({
                 placeholder: "Enter client's surname, given name or email",
                 onChange: handleSearchBoxChange,

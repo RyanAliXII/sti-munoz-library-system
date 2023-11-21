@@ -20,6 +20,7 @@ type GameController interface{
 	LogGame(ctx * gin.Context)
 	GetGameLogs(ctx * gin.Context)
 	DeleteGameLog(ctx * gin.Context)
+	UpdateGameLog(ctx * gin.Context)
 }
 
 func NewGameController () GameController{
@@ -83,23 +84,5 @@ func (ctrler * Game)GetGames(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(gin.H{
 		"games": games,
 	}, "Game fetched."))
-}
-func (ctrler * Game)GetGameLogs(ctx * gin.Context){
-	logs, err := ctrler.gameRepo.GetLogs()
-	if err != nil {
-	   logger.Error(err.Error(), slimlog.Error("GetLogsErr"))
-	}
-	ctx.JSON(httpresp.Success200(gin.H{
-		"gameLogs": logs,
-	}, "Logs fetched."))
-}
-func(ctrler * Game) DeleteGameLog(ctx * gin.Context){
-	id :=  ctx.Param("id")
-	err := ctrler.gameRepo.DeleteLog(id)
-	if err != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
-	ctx.JSON(httpresp.Success200(nil, "Log deleted."))
 }
 
