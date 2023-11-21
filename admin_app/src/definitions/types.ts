@@ -118,6 +118,12 @@ export type GameLog = {
   game: Game;
   createdAt: string;
 };
+export type Device = {
+  id: string;
+  name: string;
+  description: string;
+  available: number;
+};
 
 export type Account = {
   id?: string;
