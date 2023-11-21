@@ -80,3 +80,7 @@
 .small-scroll::-webkit-scrollbar-thumb {
   @apply bg-gray-300 dark:bg-gray-700;
 }
+
+.react-select-input input {
+  @apply focus:shadow-none focus:ring-0;
+}

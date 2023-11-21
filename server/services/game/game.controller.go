@@ -17,6 +17,8 @@ type GameController interface{
 	GetGames(ctx * gin.Context)
 	UpdateGame(ctx * gin.Context)
 	DeleteGame(ctx * gin.Context)
+	LogGame(ctx * gin.Context)
+	GetGameLogs(ctx * gin.Context)
 }
 
 func NewGameController () GameController{
@@ -81,5 +83,15 @@ func (ctrler * Game)GetGames(ctx * gin.Context){
 		"games": games,
 	}, "Game fetched."))
 }
+func (ctrler * Game)GetGameLogs(ctx * gin.Context){
+	logs, err := ctrler.gameRepo.GetLogs()
+	if err != nil {
 
+		logger.Error(err.Error(), slimlog.Error("GetLogsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"gameLogs": logs,
+	}, "Logs fetched."))
+
+}
 

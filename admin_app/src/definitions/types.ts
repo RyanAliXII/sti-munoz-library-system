@@ -110,6 +110,14 @@ export type Game = {
   description: string;
 };
 
+export type GameLog = {
+  id: string;
+  gameId: string;
+  accountId: string;
+  client: Account;
+  game: Game;
+};
+
 export type Account = {
   id?: string;
   displayName: string;

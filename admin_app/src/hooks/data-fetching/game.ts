@@ -1,4 +1,4 @@
-import { Game } from "@definitions/types";
+import { Game, GameLog } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
@@ -82,6 +82,30 @@ export const useDeleteGame = ({
   return useMutation({
     mutationFn: (id) =>
       Delete(`/games/${id}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
+
+export const useGameLog = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<
+  any,
+  unknown,
+  Omit<GameLog, "id" | "client" | "game">,
+  unknown
+>) => {
+  const { Post } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Post(`/games/logs`, form, {
         headers: {
           "content-type": "application/json",
         },

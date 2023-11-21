@@ -13,4 +13,6 @@ func GameRoutes(router * gin.RouterGroup) {
 	router.POST("",middlewares.ValidateBody[GameBody], middlewares.BlockRequestFromClientApp, ctrler.NewGame)
 	router.PUT("/:id", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[GameBody], ctrler.UpdateGame)
 	router.DELETE("/:id", middlewares.BlockRequestFromClientApp, ctrler.DeleteGame)
+	router.POST("/logs", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[GameLogBody],  ctrler.LogGame)
+	router.GET("/logs", middlewares.BlockRequestFromClientApp, ctrler.GetGameLogs)
 }
