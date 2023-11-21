@@ -1,26 +1,63 @@
 import { CustomInput } from "@components/ui/form/Input";
 import { ModalProps, TimeSlotProfile } from "@definitions/types";
+import { useNewTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
 import { useForm } from "@hooks/useForm";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "flowbite-react";
-import { FC } from "react";
+import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { TimeSlotProfileValidation } from "../schema";
+import { Form } from "react-router-dom";
 
 const NewTimeSlotProfileModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
-  const { handleFormInput } = useForm<TimeSlotProfile>({
+  const { handleFormInput, validate, errors } = useForm<
+    Omit<TimeSlotProfile, "id">
+  >({
     initialFormData: {
-      id: "",
       name: "",
     },
+    schema: TimeSlotProfileValidation,
   });
+  const queryClient = useQueryClient();
+  const newProfile = useNewTimeSlotProfile({
+    onSuccess: () => {
+      toast.success("Time slot profile added.");
+      queryClient.invalidateQueries(["profiles"]);
+      closeModal();
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    try {
+      event.preventDefault();
+      const profile = await validate();
+      if (!profile) return;
+      newProfile.mutate(profile);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <Modal show={isOpen} dismissible onClose={closeModal} size={"lg"}>
       <Modal.Header>New Profile</Modal.Header>
       <Modal.Body>
-        <form>
+        <form onSubmit={onSubmit}>
           <div className="py-2">
-            <CustomInput name="name" label="Name" onChange={handleFormInput} />
+            <CustomInput
+              name="name"
+              label="Name"
+              onChange={handleFormInput}
+              error={errors?.name}
+            />
           </div>
-          <Button type="submit" color="primary">
+          <Button
+            type="submit"
+            color="primary"
+            isProcessing={newProfile.isLoading}
+          >
             <div className="flex gap-2 items-center">
               <FaSave />
               Save

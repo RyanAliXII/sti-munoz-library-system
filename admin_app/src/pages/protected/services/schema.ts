@@ -28,3 +28,9 @@ export const DeviceValidation = object({
     .min(1, "Available devices cannot be 0 or less than 1")
     .typeError("Available devices is required."),
 });
+
+export const TimeSlotProfileValidation = object({
+  name: string()
+    .required("Name is required.")
+    .max(100, "Name should not exceed 100 characters"),
+});

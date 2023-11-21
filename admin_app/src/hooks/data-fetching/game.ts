@@ -6,7 +6,6 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
-import { string } from "yup";
 
 export const useNewGame = ({
   onSuccess,
