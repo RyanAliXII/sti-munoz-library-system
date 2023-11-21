@@ -19,7 +19,9 @@ func NewDevice()DeviceRepository{
 	}
 }
 func(repo * Device)NewDevice(device model.Device) (error){
-	return nil
+	_, err := repo.db.Exec(`INSERT INTO services.device 
+	(name, description, available)VALUES($1, $2, $3)`, device.Name, device.Description, device.Available)
+	return err
 }
 
 

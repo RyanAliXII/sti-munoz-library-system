@@ -10,6 +10,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
 	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
@@ -42,4 +43,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"))
 	clientlog.ClientLogRoutes(grp.Group("/client-logs"))
 	game.GameRoutes(grp.Group("/games"))
+	device.DeviceRoutes(grp.Group("/devices"))
 }

@@ -1,4 +1,4 @@
-import { object, string } from "yup";
+import { number, object, string } from "yup";
 
 export const NewGameValidation = object({
   name: string()
@@ -14,4 +14,17 @@ export const LogGameValidation = object({
     .required("Client is required.")
     .uuid("Client is required."),
   gameId: string().required("Game is required.").uuid("Game is required."),
+});
+
+export const DeviceValidation = object({
+  name: string()
+    .required("Name is required.")
+    .max(100, "Name should not exceed 100 characters"),
+  description: string()
+    .required("Description is required.")
+    .max(255, "Description should not exceed 255 characters"),
+  available: number()
+    .required("Available devices is required.")
+    .min(1, "Available devices is required.")
+    .typeError("Available devices is required."),
 });
