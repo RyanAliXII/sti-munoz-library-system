@@ -86,12 +86,13 @@ const GamesPage = () => {
                   <Table.Cell>
                     <div className="flex gap-2">
                       <Tippy content="Edit Game">
-                        <Button color="secondary">
-                          <AiOutlineEdit
-                            onClick={() => {
-                              initEdit(game);
-                            }}
-                          />
+                        <Button
+                          color="secondary"
+                          onClick={() => {
+                            initEdit(game);
+                          }}
+                        >
+                          <AiOutlineEdit />
                         </Button>
                       </Tippy>
                       <Tippy content="Delete Game">
