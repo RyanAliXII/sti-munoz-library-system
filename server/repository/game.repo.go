@@ -34,7 +34,7 @@ func (repo *Game) UpdateGame(game model.Game) error {
 }
 func (repo *Game) GetGames() ([]model.Game, error) {
 	games := make([]model.Game, 0)
-	err := repo.db.Select(&games, "SELECT id, name, description FROM services.game where deleted_at is null")
+	err := repo.db.Select(&games, "SELECT id, name, description FROM services.game where deleted_at is null ORDER BY created_at desc")
 	return games, err 
 }
 func (repo * Game)DeleteGame(id string) error {

@@ -7,7 +7,7 @@ func(repo * Game)Log(log model.GameLog) error{
 	return err
 }
 
-func (repo * Game)GetLogs() ([]model.GameLog, error) {
+func (repo * Game)GetLogs()([]model.GameLog, error) {
 	logs := make([]model.GameLog, 0)
 
 	query := `SELECT game_log.id, game_id, 
@@ -22,11 +22,14 @@ func (repo * Game)GetLogs() ([]model.GameLog, error) {
 	json_build_object('id',
 	game.id, 'name', 
 	game.name, 
-	'description', game.description)
+	'description', game.description) as game,
+	game_log.created_at
 	from services.game_log 
 	INNER JOIN system.account on game_log.account_id = account.id
 	INNER JOIN services.game on game_id = game.id
-	where game_log.deleted_at is null`
+	where game_log.deleted_at is null
+	ORDER BY game_log.created_at DESC
+	`
 	err := repo.db.Select(&logs, query)
 	return logs, err
 }

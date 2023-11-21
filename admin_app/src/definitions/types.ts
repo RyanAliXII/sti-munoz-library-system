@@ -116,6 +116,7 @@ export type GameLog = {
   accountId: string;
   client: Account;
   game: Game;
+  createdAt: string;
 };
 
 export type Account = {

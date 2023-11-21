@@ -99,7 +99,7 @@ export const useGameLog = ({
 }: MutationOptions<
   any,
   unknown,
-  Omit<GameLog, "id" | "client" | "game">,
+  Omit<GameLog, "id" | "client" | "game" | "createdAt">,
   unknown
 >) => {
   const { Post } = useRequest();
@@ -113,5 +113,33 @@ export const useGameLog = ({
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,
+  });
+};
+
+export const useGameLogs = ({
+  onSuccess,
+  onError,
+  onSettled,
+}: UseQueryOptions<GameLog[]>) => {
+  const { Get } = useRequest();
+
+  const fetchLogs = async () => {
+    try {
+      const { data: response } = await Get("/games/logs", {
+        params: {},
+      });
+
+      const { data } = response;
+      return data?.gameLogs ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<GameLog[]>({
+    queryFn: fetchLogs,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["gameLogs"],
+    onSettled,
   });
 };
