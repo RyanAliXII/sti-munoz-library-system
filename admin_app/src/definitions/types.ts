@@ -279,7 +279,12 @@ export type ClientLog = {
   scanner: ScannerAccount;
   createdAt: string;
 };
-
+export type TimeSlot = {
+  id: string;
+  startTime: string;
+  endTime: string;
+  profileId: string;
+};
 export interface EditModalProps<T> extends ModalProps {
   formData: T;
 }
