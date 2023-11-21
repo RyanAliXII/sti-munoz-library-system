@@ -124,7 +124,10 @@ export type Device = {
   description: string;
   available: number;
 };
-
+export type TimeSlotProfile = {
+  id: string;
+  name: string;
+};
 export type Account = {
   id?: string;
   displayName: string;
