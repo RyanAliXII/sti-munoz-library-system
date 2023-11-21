@@ -2,7 +2,7 @@ import Container from "@components/ui/container/Container";
 import { Button, Table } from "flowbite-react";
 import NewDeviceModal from "./NewDeviceModal";
 import { useSwitch } from "@hooks/useToggle";
-import { useDevices } from "@hooks/data-fetching/device";
+import { useDeleteDevice, useDevices } from "@hooks/data-fetching/device";
 import TableContainer from "@components/ui/table/TableContainer";
 import EditDeviceModal from "./EditDeviceModal";
 import { useState } from "react";
@@ -10,6 +10,9 @@ import { Device } from "@definitions/types";
 import Tippy from "@tippyjs/react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { FaTrash } from "react-icons/fa";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ReservableDevicePage = () => {
   const {
@@ -22,6 +25,11 @@ const ReservableDevicePage = () => {
     close: closeEditDeviceModal,
     open: openEditDeviceModal,
   } = useSwitch();
+  const {
+    isOpen: isConfirmDeleteOpen,
+    close: closeConfirmDelete,
+    open: openConfirmDelete,
+  } = useSwitch();
   const { data: devices } = useDevices({});
   const [device, setDevice] = useState<Device>({
     available: 0,
@@ -29,9 +37,27 @@ const ReservableDevicePage = () => {
     id: "",
     name: "",
   });
+  const queryClient = useQueryClient();
   const initEdit = (device: Device) => {
     setDevice(device);
     openEditDeviceModal();
+  };
+  const initDelete = (device: Device) => {
+    setDevice(device);
+    openConfirmDelete();
+  };
+  const deleteDevice = useDeleteDevice({
+    onSuccess: () => {
+      toast.success("Device deleted.");
+      queryClient.invalidateQueries(["devices"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
+  const onConfirmDelete = () => {
+    closeConfirmDelete();
+    deleteDevice.mutate(device.id);
   };
   return (
     <Container>
@@ -74,7 +100,7 @@ const ReservableDevicePage = () => {
                         <Button
                           color="failure"
                           onClick={() => {
-                            //initDelete(game);
+                            initDelete(device);
                           }}
                         >
                           <FaTrash />
@@ -96,6 +122,13 @@ const ReservableDevicePage = () => {
         isOpen={isEditDeviceModalOpen}
         closeModal={closeEditDeviceModal}
         formData={device}
+      />
+      <DangerConfirmDialog
+        title="Delete Device"
+        text="Are you sure you want to delete device?"
+        close={closeConfirmDelete}
+        onConfirm={onConfirmDelete}
+        isOpen={isConfirmDeleteOpen}
       />
     </Container>
   );

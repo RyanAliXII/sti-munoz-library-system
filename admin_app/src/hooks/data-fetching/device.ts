@@ -72,3 +72,21 @@ export const useEditDevice = ({
     onSettled: onSettled,
   });
 };
+export const useDeleteDevice = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: (bookId) =>
+      Delete(`/devices/${bookId}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};

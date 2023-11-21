@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 import Loader from "@components/Loader";
 import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
-import ReservableDevicePage from "./protected/services/devices/ReservableDevicePage";
+
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
 const BookAddPage = lazy(
@@ -59,10 +59,12 @@ const QueuePage = lazy(() => import("./protected/borrowing-queue/QueuePage"));
 const QueueItemsPage = lazy(
   () => import("./protected/borrowing-queue/ActiveQueueItems")
 );
-
 const GamePage = lazy(() => import("./protected/services/games/GamesPage"));
 const GameLogPage = lazy(
   () => import("./protected/services/games/logs/GameLogPage")
+);
+const DevicePage = lazy(
+  () => import("./protected/services/devices/DevicePage")
 );
 const pages = createRoutesFromChildren(
   <>
@@ -361,7 +363,7 @@ const pages = createRoutesFromChildren(
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate>
-              <ReservableDevicePage />
+              <DevicePage />
             </PermissionGate>
           </Suspense>
         }

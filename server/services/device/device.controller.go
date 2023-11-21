@@ -23,6 +23,7 @@ type DeviceController interface{
 	NewDevice(ctx * gin.Context)
 	GetDevices(ctx * gin.Context)
 	UpdateDevice(ctx * gin.Context)
+	DeleteDevice(ctx * gin.Context)
 }
 func(ctrler * Device) NewDevice (ctx * gin.Context){
   device := model.Device{}
@@ -67,6 +68,17 @@ func(ctrler * Device)UpdateDevice(ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("UpdateDeviceErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
-	  }
+	}
 	ctx.JSON(httpresp.Success200(nil, "Device updated."))
+}
+
+func(ctrler * Device)DeleteDevice(ctx * gin.Context){
+	id := ctx.Param("id")
+	err := ctrler.deviceRepo.DeleteDevice(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteDeviceErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Device deleted."))
 }
