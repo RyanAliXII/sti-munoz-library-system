@@ -17,7 +17,16 @@ func NewTimeSlotRepository()TimeSlotRepository{
 }
 type TimeSlotRepository interface {
 	NewSlot(model.TimeSlot) error
+	GetSlots()([]model.TimeSlot, error)
 }
 func (repo * TimeSlot)NewSlot(slot model.TimeSlot) error {
-	return nil
+	_, err := repo.db.Exec("INSERT INTO services.time_slot(start_time, end_time, profile_id)VALUES($1, $2, $3)",
+	slot.StartTime, slot.EndTime, slot.ProfileId)
+	return err
+}
+
+func (repo * TimeSlot)GetSlots()([]model.TimeSlot, error) {
+	slots := make([]model.TimeSlot, 0)
+	err := repo.db.Select(&slots, "SELECT id, start_time, end_time, profile_id from services.time_slot")
+	return  slots, err
 }

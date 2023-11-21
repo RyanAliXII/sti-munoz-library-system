@@ -10,7 +10,7 @@ export const useNewTimeSlot = ({
   const { Post } = useRequest();
   return useMutation({
     mutationFn: (form) =>
-      Post(`/time-slots/profiles/${form.profileId}/slot`, form, {
+      Post(`/time-slots/profiles/${form.profileId}/slots`, form, {
         headers: {
           "content-type": "application/json",
         },
