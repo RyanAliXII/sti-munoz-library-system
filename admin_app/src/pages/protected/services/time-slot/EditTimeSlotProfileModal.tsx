@@ -18,14 +18,14 @@ const EditTimeSlotProfileModal: FC<EditModalProps<TimeSlotProfile>> = ({
   isOpen,
   formData,
 }) => {
-  const { handleFormInput, validate, errors, setForm, form } = useForm<
-    Omit<TimeSlotProfile, "id">
-  >({
-    initialFormData: {
-      name: "",
-    },
-    schema: TimeSlotProfileValidation,
-  });
+  const { handleFormInput, validate, errors, setForm, form } =
+    useForm<TimeSlotProfile>({
+      initialFormData: {
+        id: "",
+        name: "",
+      },
+      schema: TimeSlotProfileValidation,
+    });
   const queryClient = useQueryClient();
   const updateProfile = useEditTimeSlotProfile({
     onSuccess: () => {

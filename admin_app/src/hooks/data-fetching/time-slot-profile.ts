@@ -44,6 +44,25 @@ export const useEditTimeSlotProfile = ({
     onSettled: onSettled,
   });
 };
+
+export const useDeleteTimeSlotProfile = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: (profileId) =>
+      Delete(`/time-slots/profiles/${profileId}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
 export const useTimeSlotProfiles = ({
   onSuccess,
   onError,

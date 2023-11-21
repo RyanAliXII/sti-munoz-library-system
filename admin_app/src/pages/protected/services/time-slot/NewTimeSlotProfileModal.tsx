@@ -2,13 +2,13 @@ import { CustomInput } from "@components/ui/form/Input";
 import { ModalProps, TimeSlotProfile } from "@definitions/types";
 import { useNewTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
 import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "flowbite-react";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { TimeSlotProfileValidation } from "../schema";
-import useModalToggleListener from "@hooks/useModalToggleListener";
 
 const NewTimeSlotProfileModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
   const { handleFormInput, validate, errors, resetForm } = useForm<
