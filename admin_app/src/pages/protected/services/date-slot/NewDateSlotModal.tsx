@@ -1,10 +1,12 @@
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import { ModalProps } from "@definitions/types";
+import { useNewDateSlots } from "@hooks/data-fetching/date-slot";
 import { useForm } from "@hooks/useForm";
 import { format } from "date-fns";
 import { Button, Modal } from "flowbite-react";
-import { FC } from "react";
+import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 type DateSlotForm = {
   from: string;
@@ -29,11 +31,27 @@ const NewDateSlotModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     removeFieldError("to7");
     setForm((prev) => ({ ...prev, to: dateStr }));
   };
+  const newSlots = useNewDateSlots({
+    onSuccess: () => {
+      toast.success("New slots have been added.");
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    try {
+      event.preventDefault();
+      newSlots.mutate(form);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
       <Modal.Header>New Slots</Modal.Header>
       <Modal.Body>
-        <form>
+        <form onSubmit={onSubmit}>
           <div className="py-2">
             <CustomDatePicker
               selected={new Date(form.from)}
