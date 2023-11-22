@@ -47,7 +47,14 @@ func (ctrler * DateSlot)NewSlot(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "New Slot Created"))
 }
 func (ctrler * DateSlot)DeleteSlot(ctx * gin.Context) {
-
+	id := ctx.Param("id")
+	err := ctrler.dateSlotRepo.DeleteSlot(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteSlotErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Slot deleted."))
 }
 func (ctrler * DateSlot)GetSlots(ctx * gin.Context){
 	slots, err := ctrler.dateSlotRepo.GetSlots()

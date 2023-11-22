@@ -31,6 +31,25 @@ export const useNewDateSlots = ({
   });
 };
 
+export const useDeleteDateSlots = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, AxiosError<any, any>, string>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: (slotId) =>
+      Delete(`/date-slots/${slotId}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
+
 export const useDateSlots = ({
   onSuccess,
   onError,

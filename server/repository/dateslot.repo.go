@@ -66,5 +66,6 @@ func (repo * DateSlot)GetSlots()([]model.DateSlot, error){
 	return slots, err
 }
 func (repo * DateSlot)DeleteSlot(id string)error{
-	return nil
+	_, err := repo.db.Exec("UPDATE services.date_slot set deleted_at = now() where id = $1", id)
+	return err
 }

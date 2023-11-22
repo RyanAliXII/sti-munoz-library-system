@@ -9,4 +9,5 @@ func DateSlotRoutes(router * gin.RouterGroup){
 	ctrler := NewDateSlotController()
 	router.POST("", middlewares.ValidateBody[NewSlotBody], ctrler.NewSlot)
 	router.GET("", ctrler.GetSlots)
+	router.DELETE("/:id", ctrler.DeleteSlot)
 }
