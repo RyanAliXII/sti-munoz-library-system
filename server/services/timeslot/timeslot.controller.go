@@ -16,6 +16,7 @@ type TimeSlot struct{
 
 type TimeSlotController interface{
 	NewTimeSlot(ctx * gin.Context)
+	UpdateTimeSlot(ctx * gin.Context)
 }
 func NewTimeSlotController () TimeSlotController{
 	return &TimeSlot{
@@ -52,6 +53,40 @@ func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Slot created successfully."))
 }
+
+func(ctrler * TimeSlot)UpdateTimeSlot(ctx * gin.Context){
+	profileId := ctx.Param("id")
+	slotId := ctx.Param("slotId")
+	slot := model.TimeSlot{}
+	err := ctx.ShouldBindBodyWith(&slot, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("BindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	slot.ProfileId = profileId
+	slot.Id = slotId
+	fields, err := slot.ValidateUpdate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ValidationErr"))
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors": fields,
+		}, "Validation err"))
+		return
+	}
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ValidateTime"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	err = ctrler.timeSlotRepo.UpdateSlot(slot)
+	if err != nil{
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Slot Updated successfully."))
+}
+
 
 func (ctrler * TimeSlot)GetSlots( ctx * gin.Context) {
 	_, err  := ctrler.timeSlotRepo.GetSlots()
