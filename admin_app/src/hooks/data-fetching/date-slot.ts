@@ -10,7 +10,7 @@ export const useNewDateSlots = ({
   onSuccess,
   onSettled,
   onError,
-}: MutationOptions<any, AxiosError<any, any>, NewDateSlotBody) => {
+}: MutationOptions<any, AxiosError<any, any>, NewDateSlotBody>) => {
   const { Post } = useRequest();
   return useMutation({
     mutationFn: (form) =>

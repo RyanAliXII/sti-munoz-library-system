@@ -1,6 +1,8 @@
 package dateslot
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
@@ -32,6 +34,8 @@ func (ctrler * DateSlot)NewSlot(ctx * gin.Context){
 		 }, "Validation error."))
 		 return
 	}
+	dateSlots := body.ToModel()
+	fmt.Println(dateSlots)
 	ctx.JSON(httpresp.Success200(nil, "New Slot Created"))
 }
 func (ctrler * DateSlot)DeleteSlot(ctx * gin.Context) {

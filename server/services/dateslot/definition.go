@@ -3,16 +3,18 @@ package dateslot
 import (
 	"fmt"
 	"time"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 )
 
 
 type NewSlotBody struct {
-	From string `json:"name" binding:"required"`
-	To string `json:"description" binding:"required"`
+	From string `json:"from" binding:"required"`
+	To string `json:"to" binding:"required"`
 	
 }
 func (body NewSlotBody)Validate()(map[string]string, error){
-	to, from, fieldErrs, err := body.ToTime()
+	from, to, fieldErrs, err := body.ToTime()
 	if err != nil{
 		return fieldErrs, err
 	}
@@ -34,5 +36,18 @@ func (body NewSlotBody)ToTime()(time.Time, time.Time, map[string]string, error) 
 		fields["from"] = "To field is required."
 		return time.Time{}, time.Time{}, fields, err
 	}
-	return to, from, fields, nil
+	return from, to, fields, nil
+}
+func (body NewSlotBody)ToModel()([]model.DateSlot) {
+	slots := make([]model.DateSlot, 0)
+	from, to, _, _ := body.ToTime()
+	duration := to.Sub(from)
+	days := int(duration.Hours() / 24)
+	for i := 0; i <= days; i++ {
+		currentDate := from.Add(time.Duration(i) * 24 * time.Hour)
+		slots = append(slots, model.DateSlot{
+			Date: currentDate.Format(time.DateOnly),
+		})
+	}
+	return slots
 }
