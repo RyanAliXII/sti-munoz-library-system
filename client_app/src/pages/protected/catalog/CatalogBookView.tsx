@@ -7,11 +7,12 @@ import { MdPublish } from "react-icons/md";
 import { RiPagesLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import BookTypeSelectionModal from "./BookTypeSelectionModal";
+import { useSwitch } from "@hooks/useToggle";
 
 const CatalogBookView = () => {
   const { Post } = useRequest();
   const navigate = useNavigate();
-
   const { data: bookView } = useBookView({
     onError: () => {
       navigate("/404");
@@ -33,7 +34,7 @@ const CatalogBookView = () => {
       queryClient.invalidateQueries(["book"]);
     },
   });
-
+  const isEbook = (bookView?.book.ebook.length ?? 0) > 0;
   const isAddToBagDisable =
     !bookView?.status.isAvailable ||
     bookView?.status.isAlreadyBorrowed ||
@@ -43,11 +44,30 @@ const CatalogBookView = () => {
     bookView?.status.isInQueue ||
     bookView?.status.isAvailable;
   const initializeItem = () => {
+    console.log(isEbook);
+    if (isEbook) {
+      openTypeSelection();
+      return;
+    }
+    addPhysicalBookToBag();
+  };
+
+  const addPhysicalBookToBag = () => {
     const availableAccession = bookView?.book.accessions.find(
       (accession) => accession.isAvailable
     );
     if (!availableAccession) return;
     addItemToBag.mutate({ accessionId: availableAccession.id });
+  };
+
+  const onSelectType = (selectedType: "physical" | "ebook") => {
+    if (selectedType === "ebook") {
+      addItemToBag.mutate({ bookId: bookView?.book.id });
+      return;
+    }
+    if (selectedType === "physical") {
+      addPhysicalBookToBag();
+    }
   };
   const placeHold = useMutation({
     mutationFn: () =>
@@ -71,13 +91,17 @@ const CatalogBookView = () => {
   const initHold = () => {
     placeHold.mutate();
   };
+  const {
+    close: closeTypeSelection,
+    isOpen: isTypeSelectionOpen,
+    open: openTypeSelection,
+  } = useSwitch();
 
   if (!bookView?.book) return null;
   let bookCover = "";
   if ((bookView?.book.covers.length ?? 0) > 0) {
     bookCover = buildS3Url(bookView?.book.covers[0]);
   }
-
   return (
     <>
       <div className="min-h-screen p-5">
@@ -193,6 +217,11 @@ const CatalogBookView = () => {
           </div>
         </div>
       </div>
+      <BookTypeSelectionModal
+        onSelect={onSelectType}
+        onClose={closeTypeSelection}
+        open={isTypeSelectionOpen}
+      />
     </>
   );
 };

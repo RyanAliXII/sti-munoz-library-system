@@ -46,7 +46,7 @@ func (ctrler * Bag) AddBagItem (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	 }
-	ctx.JSON(httpresp.Success200(nil, "Bag item has been fetched."))
+	ctx.JSON(httpresp.Success200(nil, "Bag item has been added."))
 }
 func(ctrler  * Bag) GetBagItems (ctx * gin.Context){
 	accountId, hasAccountId := ctx.Get("requestorId")

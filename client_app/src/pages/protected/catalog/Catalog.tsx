@@ -94,7 +94,7 @@ const Catalog = () => {
             if (book.covers.length > 0) {
               bookCover = buildS3Url(book.covers[0]);
             }
-
+            const isEbook = book.ebook.length > 0;
             const authors = book.authors.map((author) => author.name);
             const isBookAvailable = book.accessions.some(
               (a) => a.isAvailable === true
@@ -149,12 +149,28 @@ const Catalog = () => {
                     {book.authorNumber.length > 0 && `- ${book.authorNumber}`}
                   </p>
                   {(isBookAvailable || book.ebook.length > 0) && (
-                    <p className="text-xs md:text-sm text-success">Available</p>
+                    <div>
+                      <p className="text-xs md:text-sm text-success font-semibold">
+                        Available
+                      </p>
+                      {isEbook && (
+                        <span className="badge text-xs bg-primary border-none">
+                          Ebook
+                        </span>
+                      )}
+                    </div>
                   )}
                   {!isBookAvailable && book.ebook.length == 0 && (
-                    <p className="text-xs md:text-sm text-warning">
-                      Unavailable
-                    </p>
+                    <div>
+                      <p className="font-semibold text-xs md:text-sm text-warning">
+                        Unavailable
+                      </p>
+                      {isEbook && (
+                        <span className="badge text-xs bg-primary border-none">
+                          Ebook
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
