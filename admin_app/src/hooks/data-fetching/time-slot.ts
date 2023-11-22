@@ -1,7 +1,7 @@
 import { TimeSlot } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { MutationOptions, useMutation } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 
 export const useNewTimeSlot = ({
   onSuccess,

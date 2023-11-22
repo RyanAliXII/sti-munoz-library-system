@@ -50,5 +50,11 @@ func (ctrler * DateSlot)DeleteSlot(ctx * gin.Context) {
 
 }
 func (ctrler * DateSlot)GetSlots(ctx * gin.Context){
-
+	slots, err := ctrler.dateSlotRepo.GetSlots()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("getSlotsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"slots" : slots,
+	}, "Slots fetched."))
 }

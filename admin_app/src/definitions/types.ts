@@ -113,6 +113,7 @@ export type DateSlot = {
   id: string;
   date: string;
   profileId: string;
+  timeSlotProfile: TimeSlotProfile;
 };
 export type GameLog = {
   id: string;

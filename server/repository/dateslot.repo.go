@@ -48,7 +48,17 @@ func (repo * DateSlot)NewSlots(dateSlots []model.DateSlot) error {
 }
 func (repo * DateSlot)GetSlots()([]model.DateSlot, error){
 	slots := make([]model.DateSlot, 0)
-	return slots, nil
+	query := `
+		SELECT ds.id, 
+		ds.date,
+		ds.profile_id,
+		JSON_BUILD_OBJECT('id', tsp.id, 'name', tsp.name) as time_slot_profile
+		FROM services.date_slot as ds
+		INNER JOIN services.time_slot_profile as tsp on ds.profile_id = tsp.id
+		where ds.deleted_at is null ORDER BY ds.date asc
+	`
+	err := repo.db.Select(&slots, query)
+	return slots, err
 }
 func (repo * DateSlot)DeleteSlot(id string)error{
 	return nil

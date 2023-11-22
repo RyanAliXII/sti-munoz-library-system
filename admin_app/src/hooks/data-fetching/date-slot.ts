@@ -1,5 +1,11 @@
+import { DateSlot } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { MutationOptions, useMutation } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
 type NewDateSlotBody = {
@@ -22,5 +28,32 @@ export const useNewDateSlots = ({
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,
+  });
+};
+
+export const useDateSlots = ({
+  onSuccess,
+  onError,
+  onSettled,
+}: UseQueryOptions<DateSlot[]>) => {
+  const { Get } = useRequest();
+
+  const fetchSlots = async () => {
+    try {
+      const { data: response } = await Get("/date-slots", {
+        params: {},
+      });
+      const { data } = response;
+      return data?.slots ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<DateSlot[]>({
+    queryFn: fetchSlots,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["dateSlots"],
+    onSettled,
   });
 };
