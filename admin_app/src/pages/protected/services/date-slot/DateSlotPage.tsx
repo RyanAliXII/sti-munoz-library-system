@@ -30,7 +30,7 @@ const DateSlotPage = () => {
           <Table.HeadCell>Date</Table.HeadCell>
           <Table.HeadCell>Time Slot Profile</Table.HeadCell>
         </Table.Head>
-        <Table.Body>
+        <Table.Body className="divide-y dark:divide-gray-700">
           {slots?.map((slot) => {
             return (
               <Table.Row key={slot.id}>

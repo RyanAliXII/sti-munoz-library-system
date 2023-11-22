@@ -6,6 +6,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -34,7 +35,11 @@ func (repo * DateSlot)NewSlots(dateSlots []model.DateSlot) error {
 		})
 	}
 	dialect := goqu.Dialect("postgres")
-	ds := dialect.Insert(goqu.T("date_slot").Schema("services")).Rows(records).Prepared(true)
+	ds := dialect.Insert(goqu.T("date_slot").Schema("services")).Rows(records).Prepared(true).OnConflict(
+		exp.NewDoUpdateConflictExpression("date", goqu.Record{
+			"date": goqu.L("EXCLUDED.date"),
+			"profile_id": goqu.L("EXCLUDED.profile_id"),
+			"deleted_at": goqu.L("null"),}))
 	query, args, err := ds.ToSQL()
 	fmt.Println(query)
 	if err != nil {

@@ -5,6 +5,7 @@ import { useNewDateSlots } from "@hooks/data-fetching/date-slot";
 import { useTimeSlotProfiles } from "@hooks/data-fetching/time-slot-profile";
 
 import { useForm } from "@hooks/useForm";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Button, Modal } from "flowbite-react";
 import { FC, FormEvent } from "react";
@@ -52,10 +53,12 @@ const NewDateSlotModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     removeFieldError("profileId");
     setForm((prev) => ({ ...prev, profileId: profile.id }));
   };
+  const queryClient = useQueryClient();
   const newSlots = useNewDateSlots({
     onSuccess: () => {
       closeModal();
       toast.success("New slots have been added.");
+      queryClient.invalidateQueries(["dateSlots"]);
     },
     onError: (error) => {
       if (error.response?.status === 400) {
