@@ -109,7 +109,11 @@ export type Game = {
   name: string;
   description: string;
 };
-
+export type DateSlot = {
+  id: string;
+  date: string;
+  profileId: string;
+};
 export type GameLog = {
   id: string;
   gameId: string;
