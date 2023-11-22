@@ -32,7 +32,14 @@ func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
 		return
 	}
 	slot.ProfileId = profileId
-	err = slot.Validate()
+	fields, err := slot.Validate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ValidationErr"))
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors": fields,
+		}, "Validation err"))
+		return
+	}
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ValidateTime"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))

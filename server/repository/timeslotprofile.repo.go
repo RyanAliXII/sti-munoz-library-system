@@ -28,7 +28,18 @@ func(repo * TimeSlotProfile)NewProfile(profile model.TimeSlotProfile) error {
 }
 func(repo * TimeSlotProfile)GetProfiles()([]model.TimeSlotProfile, error) {
 	profiles := make([]model.TimeSlotProfile, 0)
-	query := `SELECT id, name FROM services.time_slot_profile where deleted_at is null ORDER BY created_at DESC`
+	query := `SELECT tsp.id, 
+	tsp.name,
+	COALESCE(
+	JSON_AGG(JSON_BUILD_OBJECT(
+	'id', ts.id, 
+	'startTime', ts.start_time,
+	'profileId', ts.profile_id,
+	'endTime', ts.end_time)), '[]') as time_slots
+	from services.time_slot_profile as tsp 
+	LEFT JOIN services.time_slot as ts on tsp.id = ts.profile_id and ts.deleted_at is null
+	where tsp.deleted_at is null
+	GROUP BY tsp.id ORDER BY tsp. created_at DESC`
 	err := repo.db.Select(&profiles, query)
 	return profiles, err
 }
@@ -42,6 +53,17 @@ func(repo * TimeSlotProfile)DeleteProfile(id string) error {
 }
 func(repo *TimeSlotProfile)GetProfileById(id string)(model.TimeSlotProfile, error){
 	profile := model.TimeSlotProfile{}
-	err := repo.db.Get(&profile, "SELECT id, name from services.time_slot_profile where deleted_at is null and id = $1 LIMIT 1", id)
+	err := repo.db.Get(&profile, `SELECT tsp.id, 
+	tsp.name,
+	COALESCE(
+	JSON_AGG(JSON_BUILD_OBJECT(
+	'id', ts.id, 
+	'startTime', ts.start_time,
+	'profileId', ts.profile_id,
+	'endTime', ts.end_time)), '[]') as time_slots
+	from services.time_slot_profile as tsp 
+	LEFT JOIN services.time_slot as ts on tsp.id = ts.profile_id and ts.deleted_at is null
+	where tsp.deleted_at is null and tsp.id = $1
+	GROUP BY tsp.id ORDER BY tsp. created_at DESC LIMIT 1`, id)
 	return profile,err
 }

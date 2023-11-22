@@ -1,12 +1,13 @@
 import { TimeSlot } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { MutationOptions, useMutation } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
 
 export const useNewTimeSlot = ({
   onSuccess,
   onSettled,
   onError,
-}: MutationOptions<any, unknown, Omit<TimeSlot, "id">, unknown>) => {
+}: MutationOptions<any, AxiosError<any, any>, Omit<TimeSlot, "id">>) => {
   const { Post } = useRequest();
   return useMutation({
     mutationFn: (form) =>
