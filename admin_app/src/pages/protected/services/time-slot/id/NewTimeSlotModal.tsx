@@ -36,7 +36,7 @@ const NewTimeSlotModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
     onSuccess: () => {
       toast.success("New time slot has been created.");
       closeModal();
-      queryClient.invalidateQueries(["timeSlots"]);
+      queryClient.invalidateQueries(["profile"]);
     },
     onError: (error) => {
       if (error.response?.status === 400) {

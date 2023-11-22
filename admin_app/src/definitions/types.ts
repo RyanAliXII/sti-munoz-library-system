@@ -127,6 +127,7 @@ export type Device = {
 export type TimeSlotProfile = {
   id: string;
   name: string;
+  timeSlots?: TimeSlot[];
 };
 export type Account = {
   id?: string;

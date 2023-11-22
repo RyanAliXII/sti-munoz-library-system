@@ -8,7 +8,7 @@ import { useSwitch } from "@hooks/useToggle";
 
 const TimeSlotPage = () => {
   const navigate = useNavigate();
-  const {} = useTimeSlotProfile({
+  const { data: profile } = useTimeSlotProfile({
     onError: () => {
       navigate("/404");
     },
@@ -18,6 +18,20 @@ const TimeSlotPage = () => {
     open: openNewSlotModal,
     isOpen: isNewSlotModalOpen,
   } = useSwitch();
+  const formatTime = (time: string) => {
+    try {
+      const dateString = "1970-01-01 " + time;
+      const date = new Date(dateString);
+      const formattedTime = date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      return formattedTime;
+    } catch (error) {
+      return "";
+    }
+  };
   return (
     <Container>
       <div className="py-3">
@@ -29,10 +43,27 @@ const TimeSlotPage = () => {
       <TableContainer>
         <Table>
           <Table.Head>
-            <Table.HeadCell>From</Table.HeadCell>
-            <Table.HeadCell>To</Table.HeadCell>
+            <Table.HeadCell>Start Time</Table.HeadCell>
+            <Table.HeadCell>End Time</Table.HeadCell>
           </Table.Head>
-          <Table.Body></Table.Body>
+          <Table.Body>
+            {profile?.timeSlots?.map((timeSlot) => {
+              return (
+                <Table.Row key={timeSlot.id}>
+                  <Table.Cell>
+                    <div className="font-semibold">
+                      {formatTime(timeSlot.startTime)}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="font-semibold">
+                      {formatTime(timeSlot.endTime)}
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
         </Table>
       </TableContainer>
       <NewTimeSlotModal
