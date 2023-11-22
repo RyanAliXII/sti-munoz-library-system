@@ -91,6 +91,19 @@ export type DDC = {
   name: string;
   number: string;
 };
+export type BorrowingQueue = {
+  book: Book;
+  items: number;
+};
+
+export type BorrowingQueueItem = {
+  accountId: string;
+  id?: string;
+  bookId: string;
+  book: Book;
+  client: Account;
+};
+
 export type Account = {
   id?: string;
   displayName: string;

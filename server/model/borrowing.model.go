@@ -52,3 +52,10 @@ type BorrowingRequest struct {
 	TotalUnreturned int `json:"totalUnreturned" db:"total_unreturned"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
 }
+
+type BookStatus struct {
+	IsAvailable bool `json:"isAvailable" db:"is_available"`
+	IsAlreadyBorrowed bool `json:"isAlreadyBorrowed" db:"is_already_borrowed"`;
+	IsAlreadyInBag bool `json:"isAlreadyInBag" db:"is_already_in_bag"`	
+	IsInQueue bool `json:"isInQueue" db:"is_in_queue"`
+}

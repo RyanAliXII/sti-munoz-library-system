@@ -1,14 +1,14 @@
 import HeaderIcon from "@assets/images/library-icon.svg";
+import { AiFillCalendar } from "react-icons/ai";
 import { Link } from "react-router-dom";
-import { AiFillCalendar, AiOutlineSearch } from "react-icons/ai";
 
-import { SiBookstack } from "react-icons/si";
-import { RiFileList2Fill } from "react-icons/ri";
 import { useMsal } from "@azure/msal-react";
-import { loginRequest } from "@definitions/configs/msal/msal.config";
-import IsAuth from "@components/auth/IsAuth";
 import ProfileDropdown from "@components/ProfileDropdown";
+import IsAuth from "@components/auth/IsAuth";
+import { loginRequest } from "@definitions/configs/msal/msal.config";
 import { useEffect } from "react";
+import { RiFileList2Fill } from "react-icons/ri";
+import { SiBookstack } from "react-icons/si";
 import { toast } from "react-toastify";
 const Homepage = () => {
   const { instance } = useMsal();
@@ -36,7 +36,7 @@ const Homepage = () => {
           src={HeaderIcon}
           alt="library-logo"
           className="w-12 lg:w-14 ml-3"
-        ></img>
+        />
         <nav className="h-full justify-self-end hidden md:block">
           <ul className="list-none flex gap-2 h-full items-center ">
             {/* <li>

@@ -1,6 +1,9 @@
 package borrowing
 
-import "github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+)
 
 type CheckoutBody struct {
 	ClientId   string               `json:"clientId" binding:"required,uuid"`
@@ -24,4 +27,20 @@ type UpdateBorrowStatusCheckout struct {
 	Remarks string `json:"remarks"`
 	DueDate db.NullableDate `json:"dueDate"`
 	IsEbook bool `json:"isEbook"`
+}
+
+type QueueBody struct {
+	BookId string `json:"bookId" binding:"required,uuid"`
+	AccountId string `json:"accountId"`
+}
+type BorrowingQueueItem struct {
+	Id string `json:"id"  binding:"required,uuid"`
+	BookId string `json:"bookId"  binding:"required,uuid"`
+}
+type UpdateQueueItemsBody struct {
+	Items []BorrowingQueueItem `json:"items" binding:"required,dive"`
+}
+
+type UpdateQueueItemsModel struct {
+	Items []model.BorrowingQueueItem `json:"items"`
 }

@@ -14,6 +14,8 @@ import "tippy.js/dist/tippy.css";
 import "react-toastify/dist/ReactToastify.min.css";
 import { useThemeMode } from "flowbite-react";
 const queryClient = new QueryClient();
+import "@uppy/core/dist/style.min.css";
+import "@uppy/dashboard/dist/style.min.css";
 
 const App = () => {
   const msalInstance = new PublicClientApplication(msalConfig);

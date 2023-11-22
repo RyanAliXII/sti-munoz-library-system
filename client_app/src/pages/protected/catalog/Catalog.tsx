@@ -6,10 +6,10 @@ import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import { ChangeEvent, KeyboardEvent, useLayoutEffect, useState } from "react";
 
-import { RiFilter3Fill } from "react-icons/ri";
 import ReactPaginate from "react-paginate";
 import { Link } from "react-router-dom";
 import { useSearchParamsState } from "react-use-search-params-state";
+import NoResult from "./NoResult";
 
 const Catalog = () => {
   const { Get } = useRequest();
@@ -78,68 +78,23 @@ const Catalog = () => {
   return (
     <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
       <div>
-        <div className="w-full  flex flex-col items-center mt-5 gap-3">
-          <div
-            className=" flex flex-col w-11/12 sm:flex-row md:w-7/12 lg:w-6/12 gap-2"
-            style={{
-              maxWidth: "800px",
-            }}
-          >
-            <input
-              type="text"
-              className="input input-bordered width flex-1 py-2"
-              onChange={handleSearch}
-              onKeyDown={handleKeydown}
-              placeholder="Search books"
-              defaultValue={filterParams?.keyword}
-            ></input>
-            <button
-              type="button"
-              onClick={search}
-              className="bg-primary text-sm px-3 lg:px-5 rounded text-base-100 py-2 sm:py-1 "
-            >
-              Search
-            </button>
-          </div>
-          <div
-            className="hidden w-11/12 md:w-7/12 lg:w-6/12 md:flex gap-2"
-            style={{
-              maxWidth: "800px",
-            }}
-          >
-            <span
-              className="py-2 px-5 border rounded-full text-xs md:text-sm cursor-pointer flex gap-1 items-center text-gray-500"
-              onClick={alertDev}
-            >
-              <RiFilter3Fill />
-              Filter
-            </span>
-            <span
-              className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer  text-blue-500 bg-blue-100"
-              onClick={alertDev}
-            >
-              Thesis
-            </span>
-            <span
-              className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer   text-blue-500 border-blue-100 border"
-              onClick={alertDev}
-            >
-              Filipiniana
-            </span>
-            <span
-              className="py-2 px-5 rounded-full text-xs md:text-sm cursor-pointer  text-blue-500 border-blue-100 border hidden md:block"
-              onClick={alertDev}
-            >
-              Reference
-            </span>
-          </div>
-
+        <div className="w-full  pt-5 px-5 lg:px-10">
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            onChange={handleSearch}
+            onKeyDown={handleKeydown}
+            placeholder="Search books"
+            defaultValue={filterParams?.keyword}
+          ></input>
+        </div>
+        <div className="w-full grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 p-5 lg:p-10 ">
           {books?.map((book) => {
             let bookCover = "";
             if (book.covers.length > 0) {
               bookCover = buildS3Url(book.covers[0]);
             }
-
+            const isEbook = book.ebook.length > 0;
             const authors = book.authors.map((author) => author.name);
             const isBookAvailable = book.accessions.some(
               (a) => a.isAvailable === true
@@ -147,7 +102,7 @@ const Catalog = () => {
 
             return (
               <div
-                className="w-11/12 md:w-7/12 lg:w-6/12 h-44 rounded shadow  md:h-60 lg:h-64 border border-gray-100 p-4 flex gap-5"
+                className="flex  p-5"
                 style={{
                   maxWidth: "800px",
                 }}
@@ -171,9 +126,7 @@ const Catalog = () => {
                         maxWidth: "120px",
                         maxHeight: "150px",
                       }}
-                    >
-                      <small className="font-bold text-xs">NO COVER</small>
-                    </div>
+                    ></div>
                   )}
                 </div>
                 <div className="flex flex-col justify-center p-2  ">
@@ -196,18 +149,36 @@ const Catalog = () => {
                     {book.authorNumber.length > 0 && `- ${book.authorNumber}`}
                   </p>
                   {(isBookAvailable || book.ebook.length > 0) && (
-                    <p className="text-xs md:text-sm text-success">Available</p>
+                    <div>
+                      <p className="text-xs md:text-sm text-success font-semibold">
+                        Available
+                      </p>
+                      {isEbook && (
+                        <span className="badge text-xs bg-primary border-none">
+                          Ebook
+                        </span>
+                      )}
+                    </div>
                   )}
                   {!isBookAvailable && book.ebook.length == 0 && (
-                    <p className="text-xs md:text-sm text-warning">
-                      Unavailable
-                    </p>
+                    <div>
+                      <p className="font-semibold text-xs md:text-sm text-warning">
+                        Unavailable
+                      </p>
+                      {isEbook && (
+                        <span className="badge text-xs bg-primary border-none">
+                          Ebook
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
             );
           })}
         </div>
+
+        <NoResult show={books?.length === 0}></NoResult>
         <div className="w-full p-10 flex justify-center">
           <ReactPaginate
             nextLabel="Next"

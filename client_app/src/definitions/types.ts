@@ -34,6 +34,7 @@ export type Section = {
 export interface Book {
   id?: string;
   title: string;
+  subject: string;
   isbn: string;
   copies: number;
   edition: number;
@@ -68,7 +69,12 @@ export interface DetailedAccession extends Accession {
   isCheckedOut: boolean;
   book: Book;
 }
-
+export type BookStatus = {
+  isAvailable: boolean;
+  isAlreadyBorrowed: boolean;
+  isAlreadyInBag: boolean;
+  isInQueue: boolean;
+};
 export type Audit = {
   id?: string;
   name: string;
@@ -88,6 +94,14 @@ export type Account = {
     approvedBooks: number;
     cancelledBooks: number;
   };
+};
+
+export type BorrowingQueue = {
+  accountId: string;
+  id?: string;
+  bookId: string;
+  book: Book;
+  account: Account;
 };
 
 export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {

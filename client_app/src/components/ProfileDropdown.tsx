@@ -16,7 +16,7 @@ const ProfileDropdown = () => {
       : avatarUrl;
   return (
     <div className="flex items-center relative text-left">
-      <div className="flex items-center">
+      <button className="flex items-center" onClick={toggle}>
         <img
           className="rounded-full w-10 h-10"
           onError={({ currentTarget }) => {
@@ -26,9 +26,9 @@ const ProfileDropdown = () => {
           src={profilePicUrl}
           alt="profile-image"
         ></img>
-      </div>
+      </button>
       <div>
-        <button
+        {/* <button
           type="button"
           onClick={() => {
             toggle();
@@ -51,7 +51,7 @@ const ProfileDropdown = () => {
               clipRule="evenodd"
             />
           </svg>
-        </button>
+        </button> */}
       </div>
       <div
         className={
@@ -66,10 +66,10 @@ const ProfileDropdown = () => {
       >
         <div className="py-1" role="none">
           <div className="flex flex-col px-4 py-2 gap-1 overflow-hidden">
-            <small className="font-medium text-xs">
+            <small className="font-medium text-xs text-gray-800">
               {user.givenName + " " + user.surname}
             </small>
-            <small className="text-xs">{user.email}</small>
+            <small className="text-xs text-gray-800">{user.email}</small>
           </div>
           <Link to="/profile" className="text-gray-700 block px-4 py-2 text-sm">
             Profile

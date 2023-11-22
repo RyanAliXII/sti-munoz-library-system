@@ -17,7 +17,7 @@ const Header = ({ children }: BaseProps) => {
       ? buildS3Url(user.profilePicture)
       : avatarUrl;
   return (
-    <header className="bg-white">
+    <header>
       <div className="container mx-auto px-4 py-8 flex items-center">
         <div className="w-full h-full flex justify-end gap-1">
           <div className="flex items-center">

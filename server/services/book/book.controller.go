@@ -28,6 +28,7 @@ import (
 type BookController struct {
 	bookRepository repository.BookRepositoryInterface
 	accessionRepo repository.AccessionRepository
+	borrowingRepo repository.BorrowingRepository
 	recordMetadataRepo repository.RecordMetadataRepository
 }
 
@@ -279,7 +280,7 @@ func (ctrler *BookController) getBookById(ctx *gin.Context) {
 }
 func (ctrler *BookController) getBookByIdOnClientView(ctx *gin.Context) {
 	id := ctx.Param("id")
-
+	accountId := ctx.GetString("requestorId")
 	_, parseErr := uuid.Parse(id)
 	if parseErr != nil {
 		ctx.JSON(httpresp.Fail404(nil, "Invalid id param."))
@@ -290,8 +291,15 @@ func (ctrler *BookController) getBookByIdOnClientView(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail404(nil, "Book not found."))
 		return
 	}
+	bookStatus, err  := ctrler.borrowingRepo.GetBookStatusBasedOnClient(id, accountId )
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetBookStatusBasedOnClient"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+		return
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"book": book,
+		"status": bookStatus,
 	}, "Book fetched."))
 }
 func (ctrler *BookController) GetAccession(ctx *gin.Context) {
@@ -563,6 +571,7 @@ func NewBookController() BookControllerInterface {
 		recordMetadataRepo: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
 			CacheExpiration: time.Minute * 5,
 		}),
+		borrowingRepo: repository.NewBorrowingRepository(),
 	}
 }
 

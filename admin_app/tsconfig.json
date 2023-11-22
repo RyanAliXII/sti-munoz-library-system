@@ -17,16 +17,16 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-       "@components/*":["./src/components/*"],
-       "@contexts/*":["./src/contexts/*"],
-       "@assets/*":["./src/assets/*"],
-       "@pages/*":["./src/pages/*"],
-       "@hooks/*":["./src/hooks/*"],
-       "@layouts/*":["./src/layouts/*"],
-       "@definitions/*":["./src/definitions/*"],
-       "@internal/*":["./src/internal/*"],
+      "@components/*": ["./src/components/*"],
+      "@contexts/*": ["./src/contexts/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@layouts/*": ["./src/layouts/*"],
+      "@definitions/*": ["./src/definitions/*"],
+      "@internal/*": ["./src/internal/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "**/*.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

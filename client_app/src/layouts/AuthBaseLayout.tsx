@@ -4,14 +4,22 @@ import { NavLink } from "react-router-dom";
 import { ImBooks } from "react-icons/im";
 import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
 import { GiLightBackpack } from "react-icons/gi";
-
 import { AiOutlineSearch } from "react-icons/ai";
 import ProfileDropdown from "@components/ProfileDropdown";
+import HeaderIcon from "@assets/images/library-icon.svg";
+
 const AuthBaseLayout = ({ children }: BaseProps) => {
   return (
     <div className="font-INTER min-h-screen">
-      <header className="w-full h-16 border-b border hidden md:flex justify-end">
-        <nav className="h-full mr-10">
+      <header className="w-full  flex justify-between items-center py-3 bg-blue-800 text-white">
+        <div>
+          <img
+            src={HeaderIcon}
+            alt="library-logo"
+            className="w-12 lg:w-14 ml-5"
+          />
+        </div>
+        <nav className="h-full mr-10 hidden md:block">
           <ul className="h-full flex items-center gap-7 mr-5">
             <li>
               <NavLink to="/search" className={isHeaderNavActive}>
@@ -30,7 +38,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
             </li>
             <li>
               <NavLink to="/borrowed-books" className={isHeaderNavActive}>
-                Borrowed Books
+                Books
               </NavLink>
             </li>
           </ul>
