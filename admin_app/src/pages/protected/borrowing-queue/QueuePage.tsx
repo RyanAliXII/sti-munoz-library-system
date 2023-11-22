@@ -8,7 +8,11 @@ const QueuePage = () => {
         <Tabs.Item title="Ongoing Queue">
           <ActiveQueuesTable />
         </Tabs.Item>
-        <Tabs.Item title="Queue History">test</Tabs.Item>
+        <Tabs.Item title="Queue History">
+          <Container>
+            <h1 className="dark:text-white">Still in development</h1>
+          </Container>
+        </Tabs.Item>
       </Tabs.Group>
     </Container>
   );

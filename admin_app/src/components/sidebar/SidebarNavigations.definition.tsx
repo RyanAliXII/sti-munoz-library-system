@@ -8,9 +8,7 @@ import {
 import { TfiWrite } from "react-icons/tfi";
 import { SiBookstack } from "react-icons/si";
 import { AiOutlineDashboard } from "react-icons/ai";
-
 import { FC, SVGProps } from "react";
-
 import { FiBookOpen, FiSettings } from "react-icons/fi";
 import { Bs123 } from "react-icons/bs";
 import { GiBookshelf } from "react-icons/gi";
@@ -119,6 +117,16 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Borrow Book",
         to: "/borrowing/checkout",
+        requiredPermissions: [
+          "Borrowing.Access",
+          "Book.Access",
+          "Account.Access",
+        ],
+        items: [],
+      },
+      {
+        text: "Queues",
+        to: "/borrowing/queues",
         requiredPermissions: [
           "Borrowing.Access",
           "Book.Access",
