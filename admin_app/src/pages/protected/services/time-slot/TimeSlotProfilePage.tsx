@@ -86,7 +86,7 @@ const TimeSlotProfilePage = () => {
                       <Tippy content="View Profile">
                         <Button
                           color="primary"
-                          to={`/services/time-slot-profile/${profile.id}`}
+                          to={`/services/time-slot-profiles/${profile.id}`}
                           as={Link}
                         >
                           <FaEye />
