@@ -21,3 +21,22 @@ export const useNewTimeSlot = ({
     onSettled: onSettled,
   });
 };
+
+export const useEditTimeSlot = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, AxiosError<any, any>, TimeSlot>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Put(`/time-slots/profiles/${form.profileId}/slots/${form.id}`, form, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};

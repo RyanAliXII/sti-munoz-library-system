@@ -57,10 +57,9 @@ func(repo *TimeSlotProfile)GetProfileById(id string)(model.TimeSlotProfile, erro
 	tsp.name,
 	COALESCE(
 	JSON_AGG(JSON_BUILD_OBJECT(
-	'id', ts.id, 
-	'startTime', ts.start_time,
-	'profileId', ts.profile_id,
-	'endTime', ts.end_time)), '[]') as time_slots
+	'id', ts.id, 'startTime', 
+	ts.start_time, 
+	'endTime', ts.end_time))FILTER (where ts.id is not null), '[]') as time_slots
 	from services.time_slot_profile as tsp 
 	LEFT JOIN services.time_slot as ts on tsp.id = ts.profile_id and ts.deleted_at is null
 	where tsp.deleted_at is null and tsp.id = $1
