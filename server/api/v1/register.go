@@ -9,6 +9,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
 	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/dateslot"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
@@ -46,4 +47,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	game.GameRoutes(grp.Group("/games"))
 	device.DeviceRoutes(grp.Group("/devices"))
 	timeslot.TimeSlotRoutes(grp.Group("/time-slots"))
+	dateslot.DateSlotRoutes(grp.Group("/date-slots"))
 }
