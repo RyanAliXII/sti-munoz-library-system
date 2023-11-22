@@ -54,6 +54,7 @@ const NewDateSlotModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
   };
   const newSlots = useNewDateSlots({
     onSuccess: () => {
+      closeModal();
       toast.success("New slots have been added.");
     },
     onError: (error) => {

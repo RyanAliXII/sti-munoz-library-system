@@ -11,6 +11,7 @@ import (
 type NewSlotBody struct {
 	From string `json:"from" binding:"required"`
 	To string `json:"to" binding:"required"`
+	ProfileId  string `json:"profileId" binding:"required"`
 	
 }
 func (body NewSlotBody)Validate()(map[string]string, error){
@@ -47,6 +48,7 @@ func (body NewSlotBody)ToModel()([]model.DateSlot) {
 		currentDate := from.Add(time.Duration(i) * 24 * time.Hour)
 		slots = append(slots, model.DateSlot{
 			Date: currentDate.Format(time.DateOnly),
+			ProfileId: body.ProfileId,
 		})
 	}
 	return slots
