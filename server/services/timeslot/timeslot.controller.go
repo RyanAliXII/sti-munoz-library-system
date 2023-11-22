@@ -17,6 +17,7 @@ type TimeSlot struct{
 type TimeSlotController interface{
 	NewTimeSlot(ctx * gin.Context)
 	UpdateTimeSlot(ctx * gin.Context)
+	DeleteTimeSlot(ctx * gin.Context)
 }
 func NewTimeSlotController () TimeSlotController{
 	return &TimeSlot{
@@ -48,10 +49,11 @@ func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
 	}
 	err = ctrler.timeSlotRepo.NewSlot(slot)
 	if err != nil{
+		logger.Error(err.Error(), slimlog.Error("NewSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Slot created successfully."))
+	ctx.JSON(httpresp.Success200(nil, "Slot created."))
 }
 
 func(ctrler * TimeSlot)UpdateTimeSlot(ctx * gin.Context){
@@ -81,10 +83,26 @@ func(ctrler * TimeSlot)UpdateTimeSlot(ctx * gin.Context){
 	}
 	err = ctrler.timeSlotRepo.UpdateSlot(slot)
 	if err != nil{
+		logger.Error(err.Error(), slimlog.Error("UpdateSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	ctx.JSON(httpresp.Success200(nil, "Slot Updated successfully."))
+	ctx.JSON(httpresp.Success200(nil, "Slot updated."))
+}
+
+func(ctrler * TimeSlot)DeleteTimeSlot(ctx * gin.Context){
+	profileId := ctx.Param("id")
+	slotId := ctx.Param("slotId")
+	slot := model.TimeSlot{}
+	slot.ProfileId = profileId
+	slot.Id = slotId
+	err := ctrler.timeSlotRepo.DeleteSlot(slot)
+	if err != nil{
+		logger.Error(err.Error(), slimlog.Error("DeleteSlotErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Slot deleted."))
 }
 
 

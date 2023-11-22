@@ -11,6 +11,10 @@ import { TimeSlot } from "@definitions/types";
 import Tippy from "@tippyjs/react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { FaTrash } from "react-icons/fa";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useDeleteTimeSlot } from "@hooks/data-fetching/time-slot";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 const TimeSlotPage = () => {
   const navigate = useNavigate();
@@ -29,6 +33,11 @@ const TimeSlotPage = () => {
     open: openEditSlotModal,
     isOpen: isEditSlotModalOpen,
   } = useSwitch();
+  const {
+    close: closeDeleteConfirm,
+    open: openDeleteConfirm,
+    isOpen: isDeleteConfirmOpen,
+  } = useSwitch();
   const formatTime = (time: string) => {
     try {
       const dateString = "1970-01-01 " + time;
@@ -43,6 +52,16 @@ const TimeSlotPage = () => {
       return "";
     }
   };
+  const queryClient = useQueryClient();
+  const deleteSlot = useDeleteTimeSlot({
+    onSuccess: () => {
+      toast.success("Time slot deleted.");
+      queryClient.invalidateQueries(["profile"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
   const [timeSlot, setTimeSlot] = useState<TimeSlot>({
     endTime: "",
     id: "",
@@ -52,6 +71,15 @@ const TimeSlotPage = () => {
   const initEdit = (timeSlot: TimeSlot) => {
     setTimeSlot(timeSlot);
     openEditSlotModal();
+  };
+  const initDelete = (timeSlot: TimeSlot) => {
+    setTimeSlot(timeSlot);
+    console.log(timeSlot);
+    openDeleteConfirm();
+  };
+  const onConfirmDelete = () => {
+    closeDeleteConfirm();
+    deleteSlot.mutate(timeSlot);
   };
   return (
     <Container>
@@ -94,7 +122,12 @@ const TimeSlotPage = () => {
                         </Button>
                       </Tippy>
                       <Tippy content="Delete Profile">
-                        <Button color="failure">
+                        <Button
+                          color="failure"
+                          onClick={() => {
+                            initDelete(timeSlot);
+                          }}
+                        >
                           <FaTrash />
                         </Button>
                       </Tippy>
@@ -114,6 +147,13 @@ const TimeSlotPage = () => {
         closeModal={closeEditSlotModal}
         formData={timeSlot}
         isOpen={isEditSlotModalOpen}
+      />
+      <DangerConfirmDialog
+        close={closeDeleteConfirm}
+        isOpen={isDeleteConfirmOpen}
+        title="Delete Time Slot"
+        text="Are you sure you want to delete time slot?"
+        onConfirm={onConfirmDelete}
       />
     </Container>
   );

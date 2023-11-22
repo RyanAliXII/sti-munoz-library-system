@@ -16,5 +16,6 @@ func TimeSlotRoutes(router * gin.RouterGroup){
 	router.DELETE("/profiles/:id",  ctrler.DeleteProfile)
 	router.GET("/profiles/:id",ctrler.GetProfileById)
 	router.POST("/profiles/:id/slots",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.NewTimeSlot)
-	router.PUT("/profiles/:id/slots/:slotId",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot )
+	router.PUT("/profiles/:id/slots/:slotId",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot)
+	router.DELETE("/profiles/:id/slots/:slotId", timeSlotCtrler.DeleteTimeSlot)
 }
