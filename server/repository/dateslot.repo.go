@@ -22,6 +22,7 @@ type DateSlotRepository interface{
 	NewSlots([]model.DateSlot) error
 	GetSlots()([]model.DateSlot, error)
 	DeleteSlot(id string) error 
+	GetSlotsByRange(startDateStr string, endDateStr string)([]model.DateSlot, error)
 }
 func (repo * DateSlot)NewSlots(dateSlots []model.DateSlot) error {
 	if(len(dateSlots) == 0){
@@ -63,6 +64,21 @@ func (repo * DateSlot)GetSlots()([]model.DateSlot, error){
 		where ds.deleted_at is null ORDER BY ds.date asc
 	`
 	err := repo.db.Select(&slots, query)
+	return slots, err
+}
+
+func (repo * DateSlot)GetSlotsByRange(startDateStr string, endDateStr string)([]model.DateSlot, error){
+	slots := make([]model.DateSlot, 0)
+	query := `
+		SELECT ds.id, 
+		ds.date :: date,
+		ds.profile_id,
+		JSON_BUILD_OBJECT('id', tsp.id, 'name', tsp.name) as time_slot_profile
+		FROM services.date_slot as ds
+		INNER JOIN services.time_slot_profile as tsp on ds.profile_id = tsp.id
+		where ds.deleted_at is null  and date between $1 and $2  ORDER BY ds.date asc
+	`
+	err := repo.db.Select(&slots, query, startDateStr, endDateStr)
 	return slots, err
 }
 func (repo * DateSlot)DeleteSlot(id string)error{

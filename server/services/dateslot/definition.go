@@ -53,3 +53,20 @@ func (body NewSlotBody)ToModel()([]model.DateSlot) {
 	}
 	return slots
 }
+
+type DateSlotRange struct{
+	Start  string `json:"start" form:"start"`
+	End string `json:"end" form:"end"`
+}
+func(body DateSlotRange)Validate() error {
+	_, err := time.Parse(time.DateOnly, body.Start)
+	if err != nil {
+		return err
+	}
+	_, err = time.Parse(time.DateOnly,  body.End)
+	if err != nil {
+
+		return err
+	}
+	return nil
+}

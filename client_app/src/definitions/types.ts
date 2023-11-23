@@ -19,7 +19,23 @@ export type Author = {
   id?: string;
   name: string;
 };
-
+export type DateSlot = {
+  id: string;
+  date: string;
+  profileId: string;
+  timeSlotProfile: TimeSlotProfile;
+};
+export type TimeSlot = {
+  id: string;
+  startTime: string;
+  endTime: string;
+  profileId: string;
+};
+export type TimeSlotProfile = {
+  id: string;
+  name: string;
+  timeSlots?: TimeSlot[];
+};
 export type Publisher = {
   id?: number;
   name: string;
