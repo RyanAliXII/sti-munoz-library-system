@@ -1,7 +1,7 @@
 package reservation
 
 type ReservationBody struct {
-	TimeSlotId string `json:"timeSlotId" binding:"required"`
-	DateSlotId	string `json:"dateSlotId" binding:"required"`
-	DeviceId string `json:"deviceId" binding:"required"`
+	TimeSlotId string `json:"timeSlotId" binding:"required,uuid"`
+	DateSlotId	string `json:"dateSlotId" binding:"required,uuid"`
+	DeviceId string `json:"deviceId" binding:"required,uuid"`
 }

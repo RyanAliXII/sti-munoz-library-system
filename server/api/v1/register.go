@@ -13,6 +13,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reservation"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/timeslot"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
@@ -48,4 +49,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	device.DeviceRoutes(grp.Group("/devices"))
 	timeslot.TimeSlotRoutes(grp.Group("/time-slots"))
 	dateslot.DateSlotRoutes(grp.Group("/date-slots"))
+	reservation.ReservationRoutes(grp.Group("/reservations"))
 }
