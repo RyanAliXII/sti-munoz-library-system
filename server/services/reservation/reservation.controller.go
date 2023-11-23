@@ -22,6 +22,7 @@ func NewReservationController () ReservationController {
 }
 type ReservationController interface {
 	NewReservation(ctx * gin.Context)
+	GetReservations(ctx * gin.Context)
 }
 func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 	reservation := model.Reservation{}
@@ -39,4 +40,13 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Reservation created."))
+}
+func (ctrler * Reservation)GetReservations(ctx * gin.Context){
+	reservations, err := ctrler.reservationRepo.GetReservations()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetReservationsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"reservations": reservations,
+	}, "Reservations fetched."))
 }
