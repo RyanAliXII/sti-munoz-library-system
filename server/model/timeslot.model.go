@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -98,4 +99,25 @@ func(m TimeSlot)ValidateUpdate() (map[string]string, error) {
 		return fields, fmt.Errorf("timeslot overlaps")
 	}
 	return fields, err
+}
+
+
+type TimeSlotJSON struct{
+	TimeSlot
+}
+func (instance *TimeSlotJSON) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+	INITIAL_DATA_ON_ERROR := TimeSlotJSON{
+		TimeSlot: TimeSlot{},
+	}
+	if valid {
+		unmarshalErr := json.Unmarshal(val, instance)
+		if unmarshalErr != nil {
+			*instance = INITIAL_DATA_ON_ERROR
+		}
+	} else {
+		*instance = INITIAL_DATA_ON_ERROR
+	}
+	return nil
+
 }
