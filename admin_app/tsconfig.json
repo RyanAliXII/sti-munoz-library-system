@@ -24,7 +24,8 @@
       "@hooks/*": ["./src/hooks/*"],
       "@layouts/*": ["./src/layouts/*"],
       "@definitions/*": ["./src/definitions/*"],
-      "@internal/*": ["./src/internal/*"]
+      "@internal/*": ["./src/internal/*"],
+      "@helpers/*": ["./src/helpers/*"]
     }
   },
   "include": ["src", "**/*.ts"],

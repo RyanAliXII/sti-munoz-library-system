@@ -123,6 +123,18 @@ export type GameLog = {
   game: Game;
   createdAt: string;
 };
+export type Reservation = {
+  id: string;
+  deviceId: string;
+  timeSlotId: string;
+  dateSlotId: string;
+  accountId: string;
+  timeSlot: TimeSlot;
+  dateSlot: DateSlot;
+  client: Account;
+  device: Device;
+  createdAt: string;
+};
 export type Device = {
   id: string;
   name: string;

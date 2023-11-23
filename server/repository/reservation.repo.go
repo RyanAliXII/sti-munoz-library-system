@@ -84,7 +84,14 @@ func (repo * Reservation)GetReservations()([]model.Reservation, error){
 	SELECT reservation.id, reservation.date_slot_id, 
 	reservation.time_slot_id, reservation.device_id, 
 	reservation.account_id, 
-	remarks, 
+	remarks,
+	JSON_BUILD_OBJECT('id', account.id, 
+	'givenName', account.given_name,
+	'surname', account.surname, 
+	'displayName',account.display_name,
+	'email', account.email,
+	'profilePicture', account.profile_picture
+	) as client, 
 	JSON_BUILD_OBJECT(
 	'id', date_slot.id ,
 	'date', date_slot.date
@@ -106,6 +113,7 @@ func (repo * Reservation)GetReservations()([]model.Reservation, error){
 	INNER JOIN services.date_slot on date_slot_id = date_slot.id
 	INNER JOIN services.time_slot on time_slot_id = time_slot.id
 	INNER JOIN services.device on device_id = device.id
+	INNER JOIN system.account on reservation.account_id = account.id
 	ORDER BY created_at desc
 	`
 	err := repo.db.Select(&reservations, query)

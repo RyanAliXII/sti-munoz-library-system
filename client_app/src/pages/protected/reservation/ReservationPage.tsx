@@ -1,15 +1,15 @@
+import { DateSlot } from "@definitions/types";
+import { EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
-import { useSearchParamsState } from "react-use-search-params-state";
 import { useDateSlotsThisMonth } from "@hooks/data-fetching/date-slots";
-import { format } from "date-fns";
-import ReserveModal from "./ReserveModal";
-import { useSwitch } from "@hooks/useToggle";
-import { EventClickArg } from "@fullcalendar/core";
 import { useDevices } from "@hooks/data-fetching/device";
 import { useTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
+import { useSwitch } from "@hooks/useToggle";
+import { format } from "date-fns";
 import { useState } from "react";
-import { DateSlot, TimeSlotProfile } from "@definitions/types";
+import { useSearchParamsState } from "react-use-search-params-state";
+import ReserveModal from "./ReserveModal";
 
 const ReservationPage = () => {
   const [dateSlot, setDateSlot] = useState<DateSlot>({
