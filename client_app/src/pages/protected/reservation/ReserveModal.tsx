@@ -1,18 +1,29 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { Device, ModalProps, TimeSlot } from "@definitions/types";
-import { tr } from "date-fns/locale";
-import { FC } from "react";
+import {
+  DateSlot,
+  Device,
+  ModalProps,
+  Reservation,
+  TimeSlot,
+  TimeSlotProfile,
+} from "@definitions/types";
+import { useForm } from "@hooks/useForm";
+import { FC, FormEvent, useEffect } from "react";
 import Modal from "react-responsive-modal";
+import { SingleValue } from "react-select";
+import { ReservationValidation } from "./schema";
 
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];
+  dateSlot: DateSlot;
 }
 const ReserveModal: FC<ReserveModalProps> = ({
   closeModal,
   isOpen,
   devices,
   timeSlots,
+  dateSlot,
 }) => {
   const formatTime = (time: string) => {
     try {
@@ -28,7 +39,45 @@ const ReserveModal: FC<ReserveModalProps> = ({
       return "";
     }
   };
-  const handleDeviceSelection = () => {};
+
+  const {
+    removeErrors,
+    removeFieldError,
+    resetForm,
+    setForm,
+    errors,
+    validate,
+  } = useForm<Omit<Reservation, "id" | "accountId">>({
+    initialFormData: {
+      deviceId: "",
+      dateSlotId: "",
+      timeSlotId: "",
+    },
+    schema: ReservationValidation,
+  });
+  const handleDeviceSelection = (device: SingleValue<Device>) => {
+    if (!device) return;
+    removeFieldError("deviceId");
+    setForm((prev) => ({ ...prev, deviceId: device?.id }));
+  };
+  const handleTimeSlotSelection = (timeSlot: SingleValue<TimeSlot>) => {
+    if (!timeSlot) return;
+    removeFieldError("timeSlotId");
+    setForm((prev) => ({ ...prev, timeSlotId: timeSlot.id }));
+  };
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, dateSlotId: dateSlot.id }));
+  }, [dateSlot]);
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    try {
+      removeErrors();
+      event.preventDefault();
+      const reservation = await validate();
+      console.log(reservation);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   if (!isOpen) return null;
   return (
     <Modal
@@ -50,9 +99,10 @@ const ReserveModal: FC<ReserveModalProps> = ({
         <div className="py-3">
           <h1 className="text-lg font-semibold">Select Device and Time</h1>
         </div>
-        <form>
+        <form onSubmit={onSubmit}>
           <div className="pb-2">
             <CustomSelect
+              error={errors?.deviceId}
               label="Device"
               onChange={handleDeviceSelection}
               options={devices}
@@ -63,6 +113,7 @@ const ReserveModal: FC<ReserveModalProps> = ({
           <div className="pb-2">
             <CustomSelect
               label="Time"
+              error={errors?.timeSlotId}
               options={timeSlots}
               getOptionLabel={(option) =>
                 `${formatTime(option.startTime)} - ${formatTime(
@@ -70,9 +121,12 @@ const ReserveModal: FC<ReserveModalProps> = ({
                 )}`.toString()
               }
               getOptionValue={(option) => option.id}
-              onChange={handleDeviceSelection}
+              onChange={handleTimeSlotSelection}
             />
           </div>
+          <button type="submit" className="btn btn-primary btn-sm">
+            Submit
+          </button>
         </form>
       </div>
     </Modal>

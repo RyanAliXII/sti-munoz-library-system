@@ -37,6 +37,13 @@ export type Device = {
   description: string;
   available: number;
 };
+export type Reservation = {
+  id: string;
+  deviceId: string;
+  timeSlotId: string;
+  dateSlotId: string;
+  accountId: string;
+};
 export type TimeSlotProfile = {
   id: string;
   name: string;

@@ -9,13 +9,17 @@ import { EventClickArg } from "@fullcalendar/core";
 import { useDevices } from "@hooks/data-fetching/device";
 import { useTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
 import { useState } from "react";
-import { TimeSlotProfile } from "@definitions/types";
+import { DateSlot, TimeSlotProfile } from "@definitions/types";
 
 const ReservationPage = () => {
-  const [timeSlotProfile, setTimeSlotProfile] = useState<TimeSlotProfile>({
+  const [dateSlot, setDateSlot] = useState<DateSlot>({
     id: "",
-    name: "",
-    timeSlots: [],
+    date: "",
+    profileId: "",
+    timeSlotProfile: {
+      id: "",
+      name: "",
+    },
   });
   const [filterParams, setFilterParams] = useSearchParamsState({
     start: { type: "string", default: "" },
@@ -25,7 +29,7 @@ const ReservationPage = () => {
     queryKey: ["dateSlots", filterParams],
   });
   const { data: profile } = useTimeSlotProfile({
-    queryKey: ["timeSlotProfile", timeSlotProfile],
+    queryKey: ["timeSlotProfile", dateSlot.timeSlotProfile],
   });
   const {
     close: closeReserveModal,
@@ -35,9 +39,9 @@ const ReservationPage = () => {
 
   const onEventClick = (arg: EventClickArg) => {
     console.log();
-    const profile = arg.event.extendedProps?.timeSlotProfile;
-    if (!arg.event.extendedProps?.timeSlotProfile) return;
-    setTimeSlotProfile(profile);
+    const dateSlot = arg.event.extendedProps;
+    if (!arg?.event?.extendedProps) return;
+    setDateSlot(dateSlot as DateSlot);
     openReserveModal();
   };
 
@@ -67,6 +71,7 @@ const ReservationPage = () => {
       <ReserveModal
         timeSlots={profile?.timeSlots ?? []}
         devices={devices ?? []}
+        dateSlot={dateSlot}
         closeModal={closeReserveModal}
         isOpen={isReserveModalOpen}
       />
