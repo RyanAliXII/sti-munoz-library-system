@@ -19,3 +19,9 @@
 .react-datepicker-wrapper {
   display: block;
 }
+
+@media screen and (max-width: 767px) {
+  .fc-toolbar.fc-header-toolbar {
+    font-size: 60%;
+  }
+}

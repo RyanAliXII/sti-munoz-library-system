@@ -37,7 +37,12 @@ func(m TimeSlot)Validate() (map[string]string, error) {
 	}
 	
     isExistOrOverlap := true
-	query := `SELECT EXISTS (SELECT 1 FROM services.time_slot where start_time >= $1 and end_time <= $2 and profile_id = $3 and deleted_at is null)`
+	query := `SELECT EXISTS 
+	(SELECT 1 
+		FROM 
+		services.time_slot 
+		where ((start_time > $1 and start_time < $2) or (end_time > $1 and end_time < $2)) 
+		and profile_id = $3 and deleted_at is null)`
 	db := db.Connect()
 	err = db.Get(&isExistOrOverlap, query,m.StartTime, m.EndTime, m.ProfileId)
 	if err != nil{
@@ -76,7 +81,10 @@ func(m TimeSlot)ValidateUpdate() (map[string]string, error) {
 	}
 	
     isExistOrOverlap := true
-	query := `SELECT EXISTS (SELECT 1 FROM services.time_slot where start_time >= $1 and end_time <= $2 and profile_id = $3 and deleted_at is null and id != $4)`
+	query := `SELECT EXISTS 
+	(SELECT 1 FROM services.time_slot where 
+		((start_time > $1 and start_time < $2) or (end_time > $1 and end_time < $2)) 
+		and profile_id = $3 and deleted_at is null and id != $4)`
 	db := db.Connect()
 	err = db.Get(&isExistOrOverlap, query,m.StartTime, m.EndTime, m.ProfileId, m.Id)
 	if err != nil{

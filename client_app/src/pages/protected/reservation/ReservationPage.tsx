@@ -47,7 +47,7 @@ const ReservationPage = () => {
 
   const { data: devices } = useDevices({});
   return (
-    <div className="p-2">
+    <div className="py-4 w-11/12 mx-auto lg:w-9/12">
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"

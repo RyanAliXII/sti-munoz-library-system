@@ -62,7 +62,7 @@ func(repo *TimeSlotProfile)GetProfileById(id string)(model.TimeSlotProfile, erro
 	'startTime', ts.start_time,
 	'endTime', ts.end_time))FILTER (where ts.id is not null), '[]') as time_slots
 	from services.time_slot_profile as tsp 
-	LEFT JOIN services.time_slot as ts on tsp.id = ts.profile_id and ts.deleted_at is null
+	LEFT JOIN  ( SELECT * FROM services.time_slot ORDER BY start_time) as ts on tsp.id = ts.profile_id and ts.deleted_at is null
 	where tsp.deleted_at is null and tsp.id = $1
 	GROUP BY tsp.id ORDER BY tsp. created_at DESC LIMIT 1`, id)
 	return profile,err
