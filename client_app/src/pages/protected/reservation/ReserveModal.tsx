@@ -14,6 +14,20 @@ const ReserveModal: FC<ReserveModalProps> = ({
   devices,
   timeSlots,
 }) => {
+  const formatTime = (time: string) => {
+    try {
+      const dateString = "1970-01-01 " + time;
+      const date = new Date(dateString);
+      const formattedTime = date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      return formattedTime;
+    } catch (error) {
+      return "";
+    }
+  };
   const handleDeviceSelection = () => {};
   if (!isOpen) return null;
   return (
@@ -51,7 +65,9 @@ const ReserveModal: FC<ReserveModalProps> = ({
               label="Time"
               options={timeSlots}
               getOptionLabel={(option) =>
-                `${option.startTime} - ${option.endTime}`
+                `${formatTime(option.startTime)} - ${formatTime(
+                  option.endTime
+                )}`.toString()
               }
               getOptionValue={(option) => option.id}
               onChange={handleDeviceSelection}
