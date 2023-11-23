@@ -1,16 +1,18 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { Device, ModalProps } from "@definitions/types";
+import { Device, ModalProps, TimeSlot } from "@definitions/types";
 import { tr } from "date-fns/locale";
 import { FC } from "react";
 import Modal from "react-responsive-modal";
 
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
+  timeSlots: TimeSlot[];
 }
 const ReserveModal: FC<ReserveModalProps> = ({
   closeModal,
   isOpen,
   devices,
+  timeSlots,
 }) => {
   const handleDeviceSelection = () => {};
   if (!isOpen) return null;
@@ -45,7 +47,15 @@ const ReserveModal: FC<ReserveModalProps> = ({
             />
           </div>
           <div className="pb-2">
-            <CustomSelect label="Time" onChange={handleDeviceSelection} />
+            <CustomSelect
+              label="Time"
+              options={timeSlots}
+              getOptionLabel={(option) =>
+                `${option.startTime} - ${option.endTime}`
+              }
+              getOptionValue={(option) => option.id}
+              onChange={handleDeviceSelection}
+            />
           </div>
         </form>
       </div>

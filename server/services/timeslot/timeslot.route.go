@@ -6,16 +6,17 @@ import (
 )
 
 
-func TimeSlotRoutes(router * gin.RouterGroup){
+func TimeSlotRoutes(router* gin.RouterGroup){
 	ctrler := NewTimeSlotProfileController()
 	timeSlotCtrler := NewTimeSlotController()
-	router.Use(middlewares.BlockRequestFromClientApp)
-	router.POST("/profiles",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
-	router.GET("/profiles", ctrler.GetProfiles)
-	router.PUT("/profiles/:id",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.UpdateProfile)
-	router.DELETE("/profiles/:id",  ctrler.DeleteProfile)
 	router.GET("/profiles/:id",ctrler.GetProfileById)
-	router.POST("/profiles/:id/slots",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.NewTimeSlot)
-	router.PUT("/profiles/:id/slots/:slotId",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot)
-	router.DELETE("/profiles/:id/slots/:slotId", timeSlotCtrler.DeleteTimeSlot)
+	privateRouter := router.Group("")
+	privateRouter.Use(middlewares.BlockRequestFromClientApp)
+	privateRouter.POST("/profiles",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
+	privateRouter.GET("/profiles", ctrler.GetProfiles)
+	privateRouter.PUT("/profiles/:id",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.UpdateProfile)
+	privateRouter.DELETE("/profiles/:id",  ctrler.DeleteProfile)
+	privateRouter.POST("/profiles/:id/slots",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.NewTimeSlot)
+	privateRouter.PUT("/profiles/:id/slots/:slotId",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot)
+	privateRouter.DELETE("/profiles/:id/slots/:slotId", timeSlotCtrler.DeleteTimeSlot)
 }
