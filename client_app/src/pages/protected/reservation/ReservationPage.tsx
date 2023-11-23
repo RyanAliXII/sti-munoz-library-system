@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import ReserveModal from "./ReserveModal";
 import { useSwitch } from "@hooks/useToggle";
 import { EventClickArg } from "@fullcalendar/core";
+import { useDevices } from "@hooks/data-fetching/device";
 
 const ReservationPage = () => {
   const [filterParams, setFilterParams] = useSearchParamsState({
@@ -22,9 +23,12 @@ const ReservationPage = () => {
   } = useSwitch();
 
   const onEventClick = (arg: EventClickArg) => {
-    console.log(arg);
+    console.log(arg.event.extendedProps);
+
     openReserveModal();
   };
+
+  const { data: devices } = useDevices({});
   return (
     <div className="p-2">
       <FullCalendar
@@ -38,16 +42,17 @@ const ReservationPage = () => {
         }}
         eventClick={onEventClick}
         events={dateSlots?.map((slot) => {
-          console.log(slot.date);
           return {
             className: "p-2 bg-green-500 cursor-pointer text-white",
             start: slot.date,
             allDay: true,
             title: "Open for Reservation",
+            extendedProps: slot,
           };
         })}
       />
       <ReserveModal
+        devices={devices ?? []}
         closeModal={closeReserveModal}
         isOpen={isReserveModalOpen}
       />

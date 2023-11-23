@@ -10,7 +10,7 @@ import (
 func DeviceRoutes(router * gin.RouterGroup){
 	ctrler := NewDeviceController()
 	router.POST("", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[DeviceBody], ctrler.NewDevice )
-	router.GET("", middlewares.BlockRequestFromClientApp, ctrler.GetDevices)
+	router.GET("", ctrler.GetDevices)
 	router.PUT("/:id", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[DeviceBody], ctrler.UpdateDevice)
 	router.DELETE("/:id", middlewares.BlockRequestFromClientApp, ctrler.DeleteDevice)
 }

@@ -31,6 +31,12 @@ export type TimeSlot = {
   endTime: string;
   profileId: string;
 };
+export type Device = {
+  id: string;
+  name: string;
+  description: string;
+  available: number;
+};
 export type TimeSlotProfile = {
   id: string;
   name: string;

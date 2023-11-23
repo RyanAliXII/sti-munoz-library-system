@@ -1,10 +1,17 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { ModalProps } from "@definitions/types";
+import { Device, ModalProps } from "@definitions/types";
 import { tr } from "date-fns/locale";
 import { FC } from "react";
 import Modal from "react-responsive-modal";
 
-const ReserveModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
+interface ReserveModalProps extends ModalProps {
+  devices: Device[];
+}
+const ReserveModal: FC<ReserveModalProps> = ({
+  closeModal,
+  isOpen,
+  devices,
+}) => {
   const handleDeviceSelection = () => {};
   if (!isOpen) return null;
   return (
@@ -20,7 +27,7 @@ const ReserveModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       }}
       closeOnOverlayClick={true}
       classNames={{
-        modal: "w-11/12 md:w-7/12 lg:w-3/12 rounded",
+        modal: "w-11/12 md:w-7/12 lg:w-3/12 rounded h-62",
       }}
     >
       <div>
@@ -29,7 +36,13 @@ const ReserveModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
         </div>
         <form>
           <div className="pb-2">
-            <CustomSelect label="Device" onChange={handleDeviceSelection} />
+            <CustomSelect
+              label="Device"
+              onChange={handleDeviceSelection}
+              options={devices}
+              getOptionLabel={(option) => option.name}
+              getOptionValue={(option) => option.id}
+            />
           </div>
           <div className="pb-2">
             <CustomSelect label="Time" onChange={handleDeviceSelection} />
