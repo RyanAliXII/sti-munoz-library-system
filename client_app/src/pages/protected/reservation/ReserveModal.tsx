@@ -12,6 +12,9 @@ import { FC, FormEvent, useEffect } from "react";
 import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { ReservationValidation } from "./schema";
+import { useNewReservation } from "@hooks/data-fetching/reservation";
+import { toast } from "react-toastify";
+import { error } from "console";
 
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
@@ -39,7 +42,17 @@ const ReserveModal: FC<ReserveModalProps> = ({
       return "";
     }
   };
-
+  const newReservation = useNewReservation({
+    onSuccess: () => {
+      toast.success("Reservation has been successful.");
+      closeModal();
+      resetForm();
+    },
+    onError: (error) => {
+      toast.error("Unknown error occured.");
+      console.error(error);
+    },
+  });
   const {
     removeErrors,
     removeFieldError,
@@ -73,7 +86,9 @@ const ReserveModal: FC<ReserveModalProps> = ({
       removeErrors();
       event.preventDefault();
       const reservation = await validate();
-      console.log(reservation);
+      if (!reservation) return;
+
+      newReservation.mutate(reservation);
     } catch (error) {
       console.error(error);
     }
