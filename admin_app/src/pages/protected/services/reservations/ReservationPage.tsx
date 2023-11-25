@@ -18,7 +18,6 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import ReservationTableRow from "./ReservationTableRow";
 import EditRemarksModal from "./EditRemarksModal";
-
 export type UndetailedReservation = Omit<
   Reservation,
   "client" | "dateSlot" | "timeSlot" | "device" | "createdAt"

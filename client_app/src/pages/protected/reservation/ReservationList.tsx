@@ -1,11 +1,18 @@
+import RemarksModal from "@components/ui/dialog/RemarksModal";
 import { to12HR, toReadableDate } from "@helpers/datetime";
 import { useReservations } from "@hooks/data-fetching/reservation";
+import { useSwitch } from "@hooks/useToggle";
 import { ReservationStatus } from "@internal/reservation-status";
-import { FC } from "react";
 import { FaTimes } from "react-icons/fa";
+import StatusBadge from "./StatusBadge";
 
 const ReservationList = () => {
   const { data: reservations } = useReservations({});
+  const remarksModal = useSwitch();
+
+  const initCancellation = () => {
+    remarksModal.open();
+  };
   return (
     <div className="overflow-x-auto">
       <table className="table w-full">
@@ -48,7 +55,10 @@ const ReservationList = () => {
                 <td>{reservation.remarks}</td>
                 <td>
                   {reservation.statusId === ReservationStatus.Pending && (
-                    <button className="btn btn-outline btn-error btn-sm">
+                    <button
+                      className="btn btn-outline btn-error btn-sm"
+                      onClick={initCancellation}
+                    >
                       <FaTimes />
                     </button>
                   )}
@@ -58,32 +68,13 @@ const ReservationList = () => {
           })}
         </tbody>
       </table>
+
+      <RemarksModal
+        closeModal={remarksModal.close}
+        isOpen={remarksModal.isOpen}
+        title="Cancellation Reason"
+      />
     </div>
   );
 };
-
-type StatusBadgeProps = {
-  status: string;
-  statusId: number;
-};
-const StatusBadge: FC<StatusBadgeProps> = ({ status, statusId }) => {
-  let badgeClass = "";
-
-  switch (statusId) {
-    case ReservationStatus.Attended:
-      badgeClass = "badge badge-success font-semibold";
-      break;
-    case ReservationStatus.Missed:
-      badgeClass = "badge badge-warning font-semibold";
-      break;
-    case ReservationStatus.Cancelled:
-      badgeClass = "badge badge-error font-semibold";
-      break;
-    default:
-      badgeClass = "badge badge-primary font-semibold";
-  }
-
-  return <div className={badgeClass}>{status}</div>;
-};
-
 export default ReservationList;
