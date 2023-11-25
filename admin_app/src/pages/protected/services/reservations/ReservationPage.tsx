@@ -4,11 +4,34 @@ import { useReservations } from "@hooks/data-fetching/reservation";
 import { Badge, Button, Table } from "flowbite-react";
 import { to12HR, toReadableDate, toReadableDatetime } from "@helpers/datetime";
 import { Reservation } from "@definitions/types";
-import { FC } from "react";
+import React, { FC, useState } from "react";
 import { ReservationStatus } from "@internal/reservation-status";
+import {
+  ConfirmDialog,
+  DangerConfirmDialog,
+  PromptTextAreaDialog,
+  WarningConfirmDialog,
+} from "@components/ui/dialog/Dialog";
+import { UseSwitchFunc, useSwitch } from "@hooks/useToggle";
 
+type UndetailedReservation = Omit<
+  Reservation,
+  "client" | "dateSlot" | "timeSlot" | "device" | "createdAt"
+>;
 const ReservationPage = () => {
   const { data: reservations } = useReservations({});
+  const cancelConfirm = useSwitch();
+  const missedConfirm = useSwitch();
+  const attendedConfirm = useSwitch();
+  const [reservation, setReservation] = useState<UndetailedReservation>({
+    accountId: "",
+    dateSlotId: "",
+    deviceId: "",
+    id: "",
+    status: "",
+    statusId: 0,
+    timeSlotId: "",
+  });
   return (
     <Container>
       <TableContainer>
@@ -23,29 +46,76 @@ const ReservationPage = () => {
           </Table.Head>
           <Table.Body>
             {reservations?.map((reservation) => {
-              return <ReservationTableRow reservation={reservation} />;
+              return (
+                <ReservationTableRow
+                  setReservation={setReservation}
+                  reservation={reservation}
+                  attendedConfrm={attendedConfirm}
+                  missedConfirm={missedConfirm}
+                  cancelConfirm={cancelConfirm}
+                />
+              );
             })}
           </Table.Body>
         </Table>
       </TableContainer>
+      {/* <DangerConfirmDialog
+        title="Cancel Reservation"
+        text="Are you sure you want to cancel reservation?"
+        close={cancelConfirm.close}
+        isOpen={cancelConfirm.isOpen}
+      /> */}
+      <PromptTextAreaDialog
+        close={cancelConfirm.close}
+        isOpen={cancelConfirm.isOpen}
+        label="Cancellation remarks"
+        placeholder="it can be cancellations reasons."
+        proceedBtnText="Save"
+        title="Cancel Reservation"
+        submitButtonsProps={{
+          color: "failure",
+        }}
+      />
+      <WarningConfirmDialog
+        title="Mark as missed"
+        text="Are you sure you want to mark reservation as missed?"
+        close={missedConfirm.close}
+        isOpen={missedConfirm.isOpen}
+      />
+      <ConfirmDialog
+        title="Mark as attended"
+        text="Are you sure you want to mark reservation as attended?"
+        close={attendedConfirm.close}
+        isOpen={attendedConfirm.isOpen}
+      />
     </Container>
   );
 };
 
 type ReservationTableRowProps = {
   reservation: Reservation;
+  cancelConfirm: UseSwitchFunc;
+  missedConfirm: UseSwitchFunc;
+  attendedConfrm: UseSwitchFunc;
+  setReservation: React.Dispatch<UndetailedReservation>;
 };
-const ReservationTableRow: FC<ReservationTableRowProps> = ({ reservation }) => {
+const ReservationTableRow: FC<ReservationTableRowProps> = ({
+  reservation,
+  cancelConfirm,
+  attendedConfrm,
+  missedConfirm,
+  setReservation,
+}) => {
   let badgeColor = "";
 
   switch (reservation.statusId) {
     case ReservationStatus.Pending:
       badgeColor = "primary";
       break;
-    case ReservationStatus.Fulfilled:
+    case ReservationStatus.Attended:
       badgeColor = "success";
       break;
-    case ReservationStatus.Unfulfilled:
+    case ReservationStatus.Missed:
       badgeColor = "warning";
       break;
     case ReservationStatus.Cancelled:
@@ -90,19 +160,49 @@ const ReservationTableRow: FC<ReservationTableRowProps> = ({ reservation }) => {
         </div>
       </Table.Cell>
       <Table.Cell>
-        <ReservationActions reservation={reservation} />
+        <ReservationActions
+          setReservation={setReservation}
+          attendedConfrm={attendedConfrm}
+          missedConfirm={missedConfirm}
+          reservation={reservation}
+          cancelConfirm={cancelConfirm}
+        />
       </Table.Cell>
     </Table.Row>
   );
 };
 
-const ReservationActions: FC<ReservationTableRowProps> = ({ reservation }) => {
+const ReservationActions: FC<ReservationTableRowProps> = ({
+  reservation,
+  setReservation,
+  attendedConfrm,
+  cancelConfirm,
+  missedConfirm,
+}) => {
+  const initAttended = () => {
+    setReservation(reservation);
+    attendedConfrm.open();
+  };
+  const initCancellation = () => {
+    setReservation(reservation);
+    cancelConfirm.open();
+  };
+  const initMissed = () => {
+    setReservation(reservation);
+    missedConfirm.open();
+  };
   if (reservation.statusId === ReservationStatus.Pending) {
     return (
       <div className="flex gap-2">
-        <Button color="success">Fulfilled</Button>
-        <Button color="warning">Unfulfilled</Button>
-        <Button color="failure">Cancelled</Button>
+        <Button color="success" onClick={initAttended}>
+          Attended
+        </Button>
+        <Button color="warning" onClick={initMissed}>
+          Missed
+        </Button>
+        <Button color="failure" onClick={initCancellation}>
+          Cancel
+        </Button>
       </div>
     );
   }

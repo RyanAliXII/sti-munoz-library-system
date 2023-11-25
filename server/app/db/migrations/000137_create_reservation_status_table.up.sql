@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS services.reservation_status (
 INSERT INTO services.reservation_status
 (id, description) VALUES 
 (1, 'Pending'), 
-(2, 'Fulfilled'), 
-(3, 'Unfulfilled'),
+(2, 'Attended'), 
+(3, 'Missed'),
 (4, 'Cancelled');

@@ -1,6 +1,6 @@
 export enum ReservationStatus {
   Pending = 1,
-  Fulfilled = 2,
-  Unfulfilled = 3,
+  Attended = 2,
+  Missed = 3,
   Cancelled = 4,
 }

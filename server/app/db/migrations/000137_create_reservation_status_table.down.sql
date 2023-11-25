@@ -1,1 +1,1 @@
-DROP TABLE IF EXIST services.reservation_status;
+DROP TABLE IF EXISTS services.reservation_status;
