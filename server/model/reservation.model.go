@@ -12,6 +12,8 @@ type Reservation struct {
 	Client AccountJSON `json:"client" db:"client"`
 	DateSlot DateSlotJSON `json:"dateSlot" db:"date_slot"`
 	TimeSlot TimeSlotJSON `json:"timeSlot" db:"time_slot"`
+	StatusId int `json:"statusId" db:"status_id"`
+	Status string `json:"status" db:"status"`
 	Device DeviceJSON `json:"device" db:"device"`
 	Remarks string `json:"remarks" db:"remarks"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`

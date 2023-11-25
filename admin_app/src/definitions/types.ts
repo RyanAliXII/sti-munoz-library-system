@@ -133,6 +133,8 @@ export type Reservation = {
   dateSlot: DateSlot;
   client: Account;
   device: Device;
+  status: string;
+  statusId: number;
   createdAt: string;
 };
 export type Device = {
