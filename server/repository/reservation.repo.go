@@ -22,6 +22,7 @@ type ReservationRepository interface{
 	CancelReservation(id string, remarks string) error
 	GetReservationsByClientId(accountId string)([]model.Reservation, error)
 	CancelReservationByClientAndId(id string, clientId string, remarks string) error
+	GetReservationByClientAndDateSlot(clientId string, dateSlotId string) ([]model.Reservation, error)
 }
 func NewReservationRepository() ReservationRepository{
 	return &Reservation{
@@ -152,4 +153,29 @@ func(repo * Reservation)CancelReservationByClientAndId(id string, clientId strin
 	_, err := repo.db.Exec(`UPDATE services.reservation 
 	set status_id = $1, remarks = $2  where id = $3 and (status_id = 1) and account_id = $4`, status.ReservationStatusCancelled, remarks, id, clientId)
 	return err
+}
+func(repo * Reservation)GetReservationByClientAndDateSlot(clientId string, dateSlotId string) ([]model.Reservation, error) {
+	reservations := make([]model.Reservation, 0)
+	query := `
+	SELECT id, date_slot_id, 
+	time_slot_id, device_id, 
+	account_id, 
+	remarks,
+	status_id,
+     status,
+	 client, 
+	 date_slot,	
+	 time_slot, 
+	 device, 
+	 created_at 
+	 from reservation_view
+	where account_id = $1 and date_slot_id = $2 and status_id = 1
+	ORDER BY created_at desc
+	`
+	err := repo.db.Select(&reservations, query, clientId, dateSlotId )
+	if err != nil {
+		return reservations, err
+	}
+	return reservations, nil
+	
 }

@@ -1,4 +1,4 @@
-import { TimeSlot } from "@definitions/types";
+import { Reservation, TimeSlot } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   QueryFunction,
@@ -6,21 +6,25 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
+type UseTimeSlotsBasedOnDateAndDeviceData = {
+  timeSlots: TimeSlot[];
+  reservations: Reservation[];
+};
 export const useTimeSlotsBasedOnDateAndDevice = ({
   onSuccess,
   onError,
   onSettled,
   queryKey,
 }: UseQueryOptions<
+  UseTimeSlotsBasedOnDateAndDeviceData,
   unknown,
-  unknown,
-  TimeSlot[],
+  UseTimeSlotsBasedOnDateAndDeviceData,
   [string, string, string, string]
 >) => {
   const { Get } = useRequest();
 
   const fetchTimeSlots: QueryFunction<
-    TimeSlot[],
+    UseTimeSlotsBasedOnDateAndDeviceData,
     [string, string, string, string]
   > = async ({ queryKey }) => {
     try {
@@ -40,18 +44,26 @@ export const useTimeSlotsBasedOnDateAndDevice = ({
         {}
       );
       const { data } = response;
-      return (data?.timeSlots ?? []) as TimeSlot[];
+      return (
+        data ??
+        ({
+          reservations: [],
+          timeSlots: [],
+        } as UseTimeSlotsBasedOnDateAndDeviceData)
+      );
     } catch (err) {
-      return [] as TimeSlot[];
+      return {
+        reservations: [],
+        timeSlots: [],
+      };
     }
   };
   return useQuery<
-    TimeSlot[],
+    UseTimeSlotsBasedOnDateAndDeviceData,
     unknown,
-    TimeSlot[],
+    UseTimeSlotsBasedOnDateAndDeviceData,
     [string, string, string, string]
   >({
-    retry: false,
     refetchOnMount: false,
     queryKey: queryKey,
     queryFn: fetchTimeSlots,

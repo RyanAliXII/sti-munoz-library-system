@@ -12,6 +12,7 @@ import (
 
 type TimeSlot struct{
 	timeSlotRepo repository.TimeSlotRepository
+	reservationRepo repository.ReservationRepository
 }
 
 type TimeSlotController interface{
@@ -23,6 +24,7 @@ type TimeSlotController interface{
 func NewTimeSlotController () TimeSlotController{
 	return &TimeSlot{
 		timeSlotRepo: repository.NewTimeSlotRepository(),
+		reservationRepo: repository.NewReservationRepository(),
 	}
 }
 func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
@@ -118,11 +120,17 @@ func (ctrler * TimeSlot)GetTimeSlotBasedOnDateAndDevice(ctx * gin.Context){
 	profileId := ctx.Param("id")
 	dateSlotId := ctx.Param("dateSlotId")
 	deviceId := ctx.Param("deviceId")
+	accountId := ctx.GetString("requestorId")
 	slots, err := ctrler.timeSlotRepo.GetTimeSlotBasedOnDateAndDevice(profileId, dateSlotId, deviceId)
     if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetTimeSlotBasedOnDateAndDevice"))
 	}
+	reservations, err := ctrler.reservationRepo.GetReservationByClientAndDateSlot(accountId, dateSlotId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetReservationErr") )
+	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"timeSlots": slots,
+		"reservations": reservations,
 	}, "Slots fetched."))
 }

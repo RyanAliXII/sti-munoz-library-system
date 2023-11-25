@@ -24,6 +24,7 @@ type DeviceController interface{
 	GetDevices(ctx * gin.Context)
 	UpdateDevice(ctx * gin.Context)
 	DeleteDevice(ctx * gin.Context)
+	GetDeviceById(ctx * gin.Context)
 }
 func(ctrler * Device) NewDevice (ctx * gin.Context){
   device := model.Device{}
@@ -81,4 +82,17 @@ func(ctrler * Device)DeleteDevice(ctx * gin.Context){
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Device deleted."))
+}
+
+func(ctrler * Device)GetDeviceById(ctx * gin.Context){
+	id := ctx.Param("id")
+	device, err := ctrler.deviceRepo.GetDeviceById(id)
+	if err != nil {
+		logger.Error(err.Error() , slimlog.Error("GetDevicesErr"))
+		ctx.JSON(httpresp.Fail404(nil, "Device not found."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"device": device,
+	}, "Device fetched."))
 }

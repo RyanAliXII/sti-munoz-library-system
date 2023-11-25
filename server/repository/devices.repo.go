@@ -15,6 +15,7 @@ type DeviceRepository interface {
 	GetDevices()([]model.Device, error)
 	UpdateDevice(device model.Device) error
 	DeleteDevice(id string )error
+	GetDeviceById(id string) (model.Device, error)
 }
 func NewDevice()DeviceRepository{
 	return &Device{
@@ -46,6 +47,11 @@ func (repo * Device)DeleteDevice(id string )error{
 	 SET deleted_at = now()
 	 WHERE id = $1 and deleted_at is null`, id)
 	 return err
+}
+func (repo * Device)GetDeviceById(id string) (model.Device, error){
+	device := model.Device{}
+	err := repo.db.Get(&device,"SELECT id, name, description, available from services.device where deleted_at is null and id = $1 LIMIT 1", id)
+	return device, err
 }
 
 

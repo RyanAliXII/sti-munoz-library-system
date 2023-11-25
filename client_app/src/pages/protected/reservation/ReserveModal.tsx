@@ -1,5 +1,13 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { DateSlot, Device, ModalProps, TimeSlot } from "@definitions/types";
+import {
+  DateSlot,
+  Device,
+  ModalProps,
+  Reservation,
+  TimeSlot,
+} from "@definitions/types";
+import { to12HR } from "@helpers/datetime";
+import { useDevice } from "@hooks/data-fetching/device";
 import {
   ReserveForm,
   useNewReservation,
@@ -7,12 +15,13 @@ import {
 import { useTimeSlotsBasedOnDateAndDevice } from "@hooks/data-fetching/time-slot";
 import { useForm } from "@hooks/useForm";
 import { useQueryClient } from "@tanstack/react-query";
-import { FC, FormEvent, useEffect } from "react";
+import { FC, FormEvent, useEffect, useMemo } from "react";
 import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { ReservationValidation } from "./schema";
-import { get12HRTimeFromDate, to12HR } from "@helpers/datetime";
+import { MdRemoveDone } from "react-icons/md";
+import { time } from "console";
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];
@@ -55,9 +64,22 @@ const ReserveModal: FC<ReserveModalProps> = ({
     },
     schema: ReservationValidation,
   });
-  const { data: timeSlots } = useTimeSlotsBasedOnDateAndDevice({
-    queryKey: ["timeSlots", dateSlot.profileId, dateSlot.id, form.deviceId],
+
+  const { data: device, isFetching: isFetchingDevice } = useDevice({
+    queryKey: ["device", form.deviceId],
   });
+  const { data: dateAndDevice, isFetching: isFetchingTimeSlots } =
+    useTimeSlotsBasedOnDateAndDevice({
+      queryKey: ["timeSlots", dateSlot.profileId, dateSlot.id, form.deviceId],
+    });
+  const currentDateReservations = useMemo(
+    () =>
+      dateAndDevice?.reservations?.reduce((a, reservation) => {
+        a.set(reservation.timeSlotId, reservation);
+        return a;
+      }, new Map<string, Reservation>()),
+    [dateAndDevice]
+  );
   const handleDeviceSelection = (device: SingleValue<Device>) => {
     if (!device) return;
     removeFieldError("deviceId");
@@ -71,13 +93,13 @@ const ReserveModal: FC<ReserveModalProps> = ({
   useEffect(() => {
     setForm((prev) => ({ ...prev, dateSlotId: dateSlot.id }));
   }, [dateSlot]);
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       removeErrors();
       event.preventDefault();
       const reservation = await validate();
       if (!reservation) return;
-
       newReservation.mutate(reservation);
     } catch (error) {
       console.error(error);
@@ -86,6 +108,7 @@ const ReserveModal: FC<ReserveModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       resetForm();
+      removeErrors();
     }
   }, [isOpen]);
   if (!isOpen) return null;
@@ -122,20 +145,42 @@ const ReserveModal: FC<ReserveModalProps> = ({
           </div>
           <div className="pb-2">
             <CustomSelect
-              isDisabled={form.deviceId.length === 0}
+              isDisabled={form.deviceId.length === 0 || isFetchingDevice}
               label="Time"
               error={errors?.timeSlotId}
-              options={timeSlots}
-              getOptionLabel={(option) =>
-                `${to12HR(option.startTime)} - ${to12HR(
+              options={dateAndDevice?.timeSlots ?? []}
+              isOptionDisabled={(option: TimeSlot) => {
+                if (currentDateReservations?.has(option.id)) {
+                  return true;
+                }
+                if (!option.booked || !device?.available) return false;
+                return option.booked >= device?.available;
+              }}
+              getOptionLabel={(option) => {
+                if (currentDateReservations?.has(option.id)) {
+                  return `${to12HR(option.startTime)} - ${to12HR(
+                    option.endTime
+                  )} | Already booked.`.toString();
+                }
+                let isAvailableText = "Available";
+                if (option.booked && device?.available) {
+                  if (option.booked >= device?.available) {
+                    isAvailableText = "Fully Booked";
+                  }
+                }
+                return `${to12HR(option.startTime)} - ${to12HR(
                   option.endTime
-                )}`.toString()
-              }
+                )} | ${isAvailableText}`.toString();
+              }}
               getOptionValue={(option) => option.id}
               onChange={handleTimeSlotSelection}
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-sm">
+          <button
+            type="submit"
+            className="btn btn-primary btn-sm"
+            disabled={isFetchingDevice || isFetchingTimeSlots}
+          >
             Submit
           </button>
         </form>
