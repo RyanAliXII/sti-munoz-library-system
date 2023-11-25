@@ -9,6 +9,7 @@ const ReservationActions: FC<ReservationTableRowProps> = ({
   attendedConfrm,
   cancelConfirm,
   missedConfirm,
+  editRemarksModal,
 }) => {
   const initAttended = () => {
     setReservation(reservation);
@@ -21,6 +22,10 @@ const ReservationActions: FC<ReservationTableRowProps> = ({
   const initMissed = () => {
     setReservation(reservation);
     missedConfirm.open();
+  };
+  const initEditRemarks = () => {
+    setReservation(reservation);
+    editRemarksModal.open();
   };
   if (reservation.statusId === ReservationStatus.Pending) {
     return (
@@ -56,6 +61,12 @@ const ReservationActions: FC<ReservationTableRowProps> = ({
       </div>
     );
   }
-  return null;
+  return (
+    <div className="flex gap-2">
+      <Button color="primary" onClick={initEditRemarks}>
+        Edit Remarks
+      </Button>
+    </div>
+  );
 };
 export default ReservationActions;

@@ -17,6 +17,7 @@ import { Table } from "flowbite-react";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import ReservationTableRow from "./ReservationTableRow";
+import EditRemarksModal from "./EditRemarksModal";
 
 export type UndetailedReservation = Omit<
   Reservation,
@@ -28,6 +29,7 @@ export type ReservationTableRowProps = {
   cancelConfirm: UseSwitchFunc;
   missedConfirm: UseSwitchFunc;
   attendedConfrm: UseSwitchFunc;
+  editRemarksModal: UseSwitchFunc;
   setReservation: React.Dispatch<UndetailedReservation>;
 };
 const ReservationPage = () => {
@@ -35,6 +37,7 @@ const ReservationPage = () => {
   const cancelConfirm = useSwitch();
   const missedConfirm = useSwitch();
   const attendedConfirm = useSwitch();
+  const editRemarksModal = useSwitch();
   const [reservation, setReservation] = useState<UndetailedReservation>({
     accountId: "",
     dateSlotId: "",
@@ -78,6 +81,14 @@ const ReservationPage = () => {
       statusId: ReservationStatus.Cancelled,
     });
   };
+  const onEditRemarks = (remarks: string) => {
+    editRemarksModal.close();
+    updateStatus.mutate({
+      id: reservation.id,
+      remarks,
+      statusId: ReservationStatus.Cancelled,
+    });
+  };
 
   return (
     <Container>
@@ -96,6 +107,8 @@ const ReservationPage = () => {
             {reservations?.map((reservation) => {
               return (
                 <ReservationTableRow
+                  key={reservation.id}
+                  editRemarksModal={editRemarksModal}
                   setReservation={setReservation}
                   reservation={reservation}
                   attendedConfrm={attendedConfirm}
@@ -132,6 +145,12 @@ const ReservationPage = () => {
         close={attendedConfirm.close}
         isOpen={attendedConfirm.isOpen}
         onConfirm={onConfirmAttended}
+      />
+      <EditRemarksModal
+        isOpen={editRemarksModal.isOpen}
+        closeModal={editRemarksModal.close}
+        remarks={reservation.remarks}
+        onProceed={onEditRemarks}
       />
     </Container>
   );

@@ -10,6 +10,7 @@ const ReservationTableRow: FC<ReservationTableRowProps> = ({
   cancelConfirm,
   attendedConfrm,
   missedConfirm,
+  editRemarksModal,
   setReservation,
 }) => {
   let badgeColor = "";
@@ -30,7 +31,7 @@ const ReservationTableRow: FC<ReservationTableRowProps> = ({
   }
 
   return (
-    <Table.Row key={reservation.id}>
+    <Table.Row>
       <Table.Cell>{toReadableDatetime(reservation.createdAt)}</Table.Cell>
       <Table.Cell>
         <div className="text-base font-semibold text-gray-900 dark:text-white">
@@ -70,6 +71,7 @@ const ReservationTableRow: FC<ReservationTableRowProps> = ({
       </Table.Cell>
       <Table.Cell>
         <ReservationActions
+          editRemarksModal={editRemarksModal}
           setReservation={setReservation}
           attendedConfrm={attendedConfrm}
           missedConfirm={missedConfirm}
