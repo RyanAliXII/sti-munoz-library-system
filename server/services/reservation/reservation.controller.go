@@ -64,8 +64,11 @@ func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
 	}
 	switch(statusId){
 		case status.ReservationStatusAttended:
-		ctrler.handleMarkAsAttended(ctx, id)
-		return
+			ctrler.handleMarkAsAttended(ctx, id)
+			return
+		case status.ReservationStatusMissed:
+			ctrler.handleMarkAsMissed(ctx, id)
+			return
 	}	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid action."))
 }
@@ -77,4 +80,13 @@ func (ctrler * Reservation)handleMarkAsAttended(ctx * gin.Context, id string){
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Reservation mark as attended."))
+}
+func (ctrler * Reservation)handleMarkAsMissed(ctx * gin.Context, id string){
+	err := ctrler.reservationRepo.MarkAsMissed(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsMissedErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Reservation mark as missed."))
 }

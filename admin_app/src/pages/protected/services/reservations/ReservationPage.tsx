@@ -55,6 +55,13 @@ const ReservationPage = () => {
       statusId: ReservationStatus.Attended,
     });
   };
+  const onConfirmMissed = () => {
+    missedConfirm.close();
+    updateStatus.mutate({
+      id: reservation.id,
+      statusId: ReservationStatus.Missed,
+    });
+  };
 
   return (
     <Container>
@@ -99,6 +106,7 @@ const ReservationPage = () => {
         text="Are you sure you want to mark reservation as missed?"
         close={missedConfirm.close}
         isOpen={missedConfirm.isOpen}
+        onConfirm={onConfirmMissed}
       />
       <ConfirmDialog
         title="Mark as attended"
