@@ -1,6 +1,9 @@
 import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
-import { useReservations } from "@hooks/data-fetching/reservation";
+import {
+  useReservations,
+  useUpdateStatus,
+} from "@hooks/data-fetching/reservation";
 import { Badge, Button, Table } from "flowbite-react";
 import { to12HR, toReadableDate, toReadableDatetime } from "@helpers/datetime";
 import { Reservation } from "@definitions/types";
@@ -13,6 +16,8 @@ import {
   WarningConfirmDialog,
 } from "@components/ui/dialog/Dialog";
 import { UseSwitchFunc, useSwitch } from "@hooks/useToggle";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 type UndetailedReservation = Omit<
   Reservation,
@@ -32,6 +37,25 @@ const ReservationPage = () => {
     statusId: 0,
     timeSlotId: "",
   });
+  const queryClient = useQueryClient();
+  const updateStatus = useUpdateStatus({
+    onSuccess: () => {
+      toast.success("Reservation status updated.");
+      queryClient.invalidateQueries(["reservations"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
+
+  const onConfirmAttended = () => {
+    attendedConfirm.close();
+    updateStatus.mutate({
+      id: reservation.id,
+      statusId: ReservationStatus.Attended,
+    });
+  };
+
   return (
     <Container>
       <TableContainer>
@@ -59,12 +83,6 @@ const ReservationPage = () => {
           </Table.Body>
         </Table>
       </TableContainer>
-      {/* <DangerConfirmDialog
-        title="Cancel Reservation"
-        text="Are you sure you want to cancel reservation?"
-        close={cancelConfirm.close}
-        isOpen={cancelConfirm.isOpen}
-      /> */}
       <PromptTextAreaDialog
         close={cancelConfirm.close}
         isOpen={cancelConfirm.isOpen}
@@ -87,6 +105,7 @@ const ReservationPage = () => {
         text="Are you sure you want to mark reservation as attended?"
         close={attendedConfirm.close}
         isOpen={attendedConfirm.isOpen}
+        onConfirm={onConfirmAttended}
       />
     </Container>
   );

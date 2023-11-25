@@ -55,7 +55,7 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 	}, "Reservations fetched."))
 }
 func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
-	id := ctx.GetString("id")
+	id := ctx.Param("id")
 	statusId, err  := strconv.Atoi(ctx.Query("statusId"))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("convErr"))
