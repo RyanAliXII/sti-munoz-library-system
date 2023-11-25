@@ -12,6 +12,19 @@ export const to12HR = (time: string) => {
     return "";
   }
 };
+export const get12HRTimeFromDate = (datetimeStr: string) => {
+  try {
+    const date = new Date(datetimeStr);
+    const formattedTime = date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return formattedTime;
+  } catch (error) {
+    return "";
+  }
+};
 
 export const toReadableDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString(undefined, {

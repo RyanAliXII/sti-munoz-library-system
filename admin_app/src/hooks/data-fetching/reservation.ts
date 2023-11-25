@@ -1,4 +1,4 @@
-import { Device, Reservation } from "@definitions/types";
+import { Reservation } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
@@ -6,7 +6,6 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
-import { number, string } from "yup";
 
 export const useReservations = ({
   onSuccess,

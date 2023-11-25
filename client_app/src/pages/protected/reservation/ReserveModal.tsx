@@ -1,25 +1,18 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
-import {
-  DateSlot,
-  Device,
-  ModalProps,
-  Reservation,
-  TimeSlot,
-  TimeSlotProfile,
-} from "@definitions/types";
-import { useForm } from "@hooks/useForm";
-import { FC, FormEvent, useEffect } from "react";
-import Modal from "react-responsive-modal";
-import { SingleValue } from "react-select";
-import { ReservationValidation } from "./schema";
+import { DateSlot, Device, ModalProps, TimeSlot } from "@definitions/types";
 import {
   ReserveForm,
   useNewReservation,
 } from "@hooks/data-fetching/reservation";
-import { toast } from "react-toastify";
-import { error } from "console";
+import { useTimeSlotsBasedOnDateAndDevice } from "@hooks/data-fetching/time-slot";
+import { useForm } from "@hooks/useForm";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { FC, FormEvent, useEffect } from "react";
+import Modal from "react-responsive-modal";
+import { SingleValue } from "react-select";
+import { toast } from "react-toastify";
+import { ReservationValidation } from "./schema";
+import { get12HRTimeFromDate } from "@helpers/datetime";
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];
@@ -29,24 +22,11 @@ const ReserveModal: FC<ReserveModalProps> = ({
   closeModal,
   isOpen,
   devices,
-  timeSlots,
+
   dateSlot,
 }) => {
-  const formatTime = (time: string) => {
-    try {
-      const dateString = "1970-01-01 " + time;
-      const date = new Date(dateString);
-      const formattedTime = date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-      return formattedTime;
-    } catch (error) {
-      return "";
-    }
-  };
   const queryClient = useQueryClient();
+
   const newReservation = useNewReservation({
     onSuccess: () => {
       toast.success("Reservation has been successful.");
@@ -64,6 +44,7 @@ const ReserveModal: FC<ReserveModalProps> = ({
     removeFieldError,
     resetForm,
     setForm,
+    form,
     errors,
     validate,
   } = useForm<ReserveForm>({
@@ -73,6 +54,9 @@ const ReserveModal: FC<ReserveModalProps> = ({
       timeSlotId: "",
     },
     schema: ReservationValidation,
+  });
+  const { data: timeSlots } = useTimeSlotsBasedOnDateAndDevice({
+    queryKey: ["timeSlots", dateSlot.profileId, dateSlot.id, form.deviceId],
   });
   const handleDeviceSelection = (device: SingleValue<Device>) => {
     if (!device) return;
@@ -137,9 +121,9 @@ const ReserveModal: FC<ReserveModalProps> = ({
               error={errors?.timeSlotId}
               options={timeSlots}
               getOptionLabel={(option) =>
-                `${formatTime(option.startTime)} - ${formatTime(
-                  option.endTime
-                )}`.toString()
+                `${get12HRTimeFromDate(
+                  option.startTime
+                )} - ${get12HRTimeFromDate(option.endTime)}`.toString()
               }
               getOptionValue={(option) => option.id}
               onChange={handleTimeSlotSelection}
