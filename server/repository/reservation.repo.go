@@ -38,12 +38,12 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 	err = transaction.Get(&hasExistingReservation, `
 	  SELECT
 	  EXISTS 
-	 (SELECT 1 from services.reservation 
+	 (SELECT 1 from reservation_view
 	  where 
 	  date_slot_id = $1 
 	  and time_slot_id = $2 
 	  and account_id = $3 
-	  and device_id = $4 )`, 
+	  and device_id = $4  and status_id = 1)`, 
 	reservation.DateSlotId, reservation.TimeSlotId, reservation.AccountId, reservation.DeviceId)
 	if err != nil {
 		transaction.Rollback()
@@ -57,11 +57,11 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 	err = transaction.Get(&hasExistingReservationWithDifferentDevice, `
 	  SELECT
 	  EXISTS 
-	 (SELECT 1 from services.reservation 
+	 (SELECT 1 from reservation_view
 	  where 
 	  date_slot_id = $1 
 	  and time_slot_id = $2 
-	  and account_id = $3)`,
+	  and account_id = $3  and status_id = 1)`,
 	reservation.DateSlotId, reservation.TimeSlotId, reservation.AccountId)
 
 	if err != nil {
@@ -86,43 +86,19 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 func (repo * Reservation)GetReservations()([]model.Reservation, error){
 	reservations := make([]model.Reservation, 0)
 	query := `
-	SELECT reservation.id, reservation.date_slot_id, 
-	reservation.time_slot_id, reservation.device_id, 
-	reservation.account_id, 
+	SELECT id, date_slot_id, 
+	time_slot_id, device_id, 
+	account_id, 
 	remarks,
 	status_id,
-	(reservation_status.description) as status,
-	JSON_BUILD_OBJECT('id', account.id, 
-	'givenName', account.given_name,
-	'surname', account.surname, 
-	'displayName',account.display_name,
-	'email', account.email,
-	'profilePicture', account.profile_picture
-	) as client, 
-	JSON_BUILD_OBJECT(
-	'id', date_slot.id ,
-	'date', date_slot.date
-	) as date_slot,
-	JSON_BUILD_OBJECT(
-	'id', time_slot.id, 
-	'startTime', time_slot.start_time,
-	'endTime', time_slot.end_time,
-	'profileId', time_slot.profile_id
-	) as time_slot, 
-	JSON_BUILD_OBJECT(
-	'id', device.id, 
-	'name', device.name,
-	'description', device.description,
-	'available', device.available
-	) as device, 
-	reservation.created_at 
-	from services.reservation
-	INNER JOIN services.date_slot on date_slot_id = date_slot.id
-	INNER JOIN services.time_slot on time_slot_id = time_slot.id
-	INNER JOIN services.device on device_id = device.id
-	INNER JOIN system.account on reservation.account_id = account.id
-	INNER JOIN services.reservation_status on status_id = reservation_status.id
-	ORDER BY created_at desc
+     status,
+	 client, 
+	 date_slot,
+	 time_slot, 
+	 device, 
+	 created_at 
+	 from reservation_view
+	 ORDER BY created_at desc
 	`
 	err := repo.db.Select(&reservations, query)
 	if err != nil {
@@ -134,43 +110,19 @@ func (repo * Reservation)GetReservations()([]model.Reservation, error){
 func (repo * Reservation)GetReservationsByClientId(accountId string)([]model.Reservation, error){
 	reservations := make([]model.Reservation, 0)
 	query := `
-	SELECT reservation.id, reservation.date_slot_id, 
-	reservation.time_slot_id, reservation.device_id, 
-	reservation.account_id, 
+	SELECT id, date_slot_id, 
+	time_slot_id, device_id, 
+	account_id, 
 	remarks,
 	status_id,
-	(reservation_status.description) as status,
-	JSON_BUILD_OBJECT('id', account.id, 
-	'givenName', account.given_name,
-	'surname', account.surname, 
-	'displayName',account.display_name,
-	'email', account.email,
-	'profilePicture', account.profile_picture
-	) as client, 
-	JSON_BUILD_OBJECT(
-	'id', date_slot.id ,
-	'date', date_slot.date
-	) as date_slot,
-	JSON_BUILD_OBJECT(
-	'id', time_slot.id, 
-	'startTime', time_slot.start_time,
-	'endTime', time_slot.end_time,
-	'profileId', time_slot.profile_id
-	) as time_slot, 
-	JSON_BUILD_OBJECT(
-	'id', device.id, 
-	'name', device.name,
-	'description', device.description,
-	'available', device.available
-	) as device, 
-	reservation.created_at 
-	from services.reservation
-	INNER JOIN services.date_slot on date_slot_id = date_slot.id
-	INNER JOIN services.time_slot on time_slot_id = time_slot.id
-	INNER JOIN services.device on device_id = device.id
-	INNER JOIN system.account on reservation.account_id = account.id
-	INNER JOIN services.reservation_status on status_id = reservation_status.id
-	where reservation.account_id = $1
+     status,
+	 client, 
+	 date_slot,
+	 time_slot, 
+	 device, 
+	 created_at 
+	 from reservation_view
+	where account_id = $1
 	ORDER BY created_at desc
 	`
 	err := repo.db.Select(&reservations, query, accountId)

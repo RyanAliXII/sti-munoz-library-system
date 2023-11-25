@@ -18,6 +18,7 @@ import {
 } from "@hooks/data-fetching/reservation";
 import { toast } from "react-toastify";
 import { error } from "console";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
@@ -45,9 +46,11 @@ const ReserveModal: FC<ReserveModalProps> = ({
       return "";
     }
   };
+  const queryClient = useQueryClient();
   const newReservation = useNewReservation({
     onSuccess: () => {
       toast.success("Reservation has been successful.");
+      queryClient.invalidateQueries(["reservations"]);
       closeModal();
       resetForm();
     },

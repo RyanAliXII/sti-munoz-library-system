@@ -2,6 +2,7 @@ import { to12HR, toReadableDate } from "@helpers/datetime";
 import { useReservations } from "@hooks/data-fetching/reservation";
 import { ReservationStatus } from "@internal/reservation-status";
 import { FC } from "react";
+import { FaTimes } from "react-icons/fa";
 
 const ReservationList = () => {
   const { data: reservations } = useReservations({});
@@ -45,6 +46,13 @@ const ReservationList = () => {
                   />
                 </td>
                 <td>{reservation.remarks}</td>
+                <td>
+                  {reservation.statusId === ReservationStatus.Pending && (
+                    <button className="btn btn-outline btn-error btn-sm">
+                      <FaTimes />
+                    </button>
+                  )}
+                </td>
               </tr>
             );
           })}
