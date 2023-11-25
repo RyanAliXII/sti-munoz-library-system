@@ -9,4 +9,5 @@ func ReservationRoutes (router * gin.RouterGroup) {
 	ctrler := NewReservationController()
 	router.POST("", middlewares.ValidateBody[ReservationBody], ctrler.NewReservation)
 	router.GET("", ctrler.GetReservations)
+	router.PATCH("/:id/status", ctrler.UpdateStatus)
 }
