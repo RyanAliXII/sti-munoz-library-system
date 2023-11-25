@@ -27,6 +27,14 @@ export const useTimeSlotsBasedOnDateAndDevice = ({
       const profileId = queryKey[1];
       const dateSlotId = queryKey[2];
       const deviceId = queryKey[3];
+
+      if (
+        profileId.length === 0 ||
+        dateSlotId.length === 0 ||
+        deviceId.length === 0
+      )
+        return [];
+
       const { data: response } = await Get(
         `/time-slots/profiles/${profileId}/date-slots/${dateSlotId}/devices/${deviceId}`,
         {}

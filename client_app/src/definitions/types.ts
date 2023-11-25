@@ -30,6 +30,7 @@ export type TimeSlot = {
   startTime: string;
   endTime: string;
   profileId: string;
+  booked?: number;
 };
 export type Device = {
   id: string;

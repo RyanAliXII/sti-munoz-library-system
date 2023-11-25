@@ -12,7 +12,7 @@ import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { ReservationValidation } from "./schema";
-import { get12HRTimeFromDate } from "@helpers/datetime";
+import { get12HRTimeFromDate, to12HR } from "@helpers/datetime";
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];
@@ -83,6 +83,11 @@ const ReserveModal: FC<ReserveModalProps> = ({
       console.error(error);
     }
   };
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
   if (!isOpen) return null;
   return (
     <Modal
@@ -117,13 +122,14 @@ const ReserveModal: FC<ReserveModalProps> = ({
           </div>
           <div className="pb-2">
             <CustomSelect
+              isDisabled={form.deviceId.length === 0}
               label="Time"
               error={errors?.timeSlotId}
               options={timeSlots}
               getOptionLabel={(option) =>
-                `${get12HRTimeFromDate(
-                  option.startTime
-                )} - ${get12HRTimeFromDate(option.endTime)}`.toString()
+                `${to12HR(option.startTime)} - ${to12HR(
+                  option.endTime
+                )}`.toString()
               }
               getOptionValue={(option) => option.id}
               onChange={handleTimeSlotSelection}

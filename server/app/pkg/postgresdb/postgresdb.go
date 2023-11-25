@@ -34,7 +34,7 @@ func createConnection() *sqlx.DB {
 
 		tempConnection, connectErr := sqlx.Connect(DRIVER, CONNECTION_STRING)
 		if connectErr != nil {
-			logger.Warn(connectErr.Error(), zap.String("nextAction", "Will Attemp to reconnect to Postgres Database."))
+			logger.Warn(connectErr.Error(), zap.String("nextAction", "Will Attempt to reconnect to Postgres Database."))
 			lastErr = connectErr
 			time.Sleep(time.Second * 2)
 			continue

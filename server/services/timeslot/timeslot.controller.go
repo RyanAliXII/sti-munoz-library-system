@@ -120,7 +120,7 @@ func (ctrler * TimeSlot)GetTimeSlotBasedOnDateAndDevice(ctx * gin.Context){
 	deviceId := ctx.Param("deviceId")
 	slots, err := ctrler.timeSlotRepo.GetTimeSlotBasedOnDateAndDevice(profileId, dateSlotId, deviceId)
     if err != nil {
-		logger.Error(err.Error())
+		logger.Error(err.Error(), slimlog.Error("GetTimeSlotBasedOnDateAndDevice"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"timeSlots": slots,

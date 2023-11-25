@@ -1,6 +1,7 @@
 import { Book, BorrowedCopy, BorrowingTransaction } from "./types";
 
 export const BookInitialValue: Book = {
+  subject: "",
   title: "",
   ebook: "",
   isbn: "",
