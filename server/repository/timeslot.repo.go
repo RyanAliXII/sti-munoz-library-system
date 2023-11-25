@@ -20,6 +20,7 @@ type TimeSlotRepository interface {
 	GetSlots()([]model.TimeSlot, error)
 	UpdateSlot(timeSlot model.TimeSlot)(error)
 	DeleteSlot(timeSlot model.TimeSlot)(error)
+	GetTimeSlotBasedOnDateAndDevice(profileId string, dateSlotId string, deviceId string)([]model.TimeSlot, error)
 }
 func (repo * TimeSlot)NewSlot(slot model.TimeSlot) error {
 	_, err := repo.db.Exec("INSERT INTO services.time_slot(start_time, end_time, profile_id)VALUES($1, $2, $3)",
@@ -42,4 +43,17 @@ func (repo * TimeSlot)DeleteSlot(timeSlot model.TimeSlot)(error){
 	SET deleted_at = NOW()
 	WHERE id = $1 AND profile_id = $2 AND deleted_at IS NULL`,  timeSlot.Id, timeSlot.ProfileId)
 	return err
+}
+func(repo * TimeSlot)GetTimeSlotBasedOnDateAndDevice(profileId string, dateSlotId string, deviceId string)([]model.TimeSlot, error){
+	slots := make([]model.TimeSlot, 0)
+	repo.db.Select(&slots, `
+	SELECT time_slot.id, start_time, end_time, COUNT(rv.id) as booked FROM services.time_slot 
+	LEFT JOIN 
+	reservation_view as rv on time_slot.id = rv.time_slot_id 
+	and rv.status_id = 1 and device_id = $1 and date_slot_id = $2 
+	where 
+	profile_id = $3 and deleted_at is null
+	GROUP BY time_slot.id
+	`,deviceId, dateSlotId, profileId)
+	return slots, nil
 }

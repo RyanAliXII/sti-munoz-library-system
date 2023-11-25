@@ -13,6 +13,7 @@ type TimeSlot struct {
 	StartTime string `json:"startTime" db:"start_time"`
 	EndTime string `json:"endTime" db:"end_time"`
 	ProfileId string `json:"profileId" db:"profile_id"`
+	Booked int `json:"booked" db:"booked"`
 }
 func(m TimeSlot)Validate() (map[string]string, error) {
 	fields := make(map[string]string, 0)

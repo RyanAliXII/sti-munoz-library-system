@@ -10,6 +10,7 @@ func TimeSlotRoutes(router* gin.RouterGroup){
 	ctrler := NewTimeSlotProfileController()
 	timeSlotCtrler := NewTimeSlotController()
 	router.GET("/profiles/:id",ctrler.GetProfileById)
+	router.GET("/profiles/:id/date-slots/:dateSlotId/devices/:deviceId", timeSlotCtrler.GetTimeSlotBasedOnDateAndDevice)
 	privateRouter := router.Group("")
 	privateRouter.Use(middlewares.BlockRequestFromClientApp)
 	privateRouter.POST("/profiles",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)

@@ -18,6 +18,7 @@ type TimeSlotController interface{
 	NewTimeSlot(ctx * gin.Context)
 	UpdateTimeSlot(ctx * gin.Context)
 	DeleteTimeSlot(ctx * gin.Context)
+	GetTimeSlotBasedOnDateAndDevice(ctx * gin.Context)
 }
 func NewTimeSlotController () TimeSlotController{
 	return &TimeSlot{
@@ -106,10 +107,22 @@ func(ctrler * TimeSlot)DeleteTimeSlot(ctx * gin.Context){
 }
 
 
-func (ctrler * TimeSlot)GetSlots( ctx * gin.Context) {
-	_, err  := ctrler.timeSlotRepo.GetSlots()
-	if err != nil {
+// func (ctrler * TimeSlot)GetSlots( ctx * gin.Context) {
+// 	_, err  := ctrler.timeSlotRepo.GetSlots()
+// 	if err != nil {
 
-		logger.Error("")
+// 		logger.Error("")
+// 	}
+// }
+func (ctrler * TimeSlot)GetTimeSlotBasedOnDateAndDevice(ctx * gin.Context){
+	profileId := ctx.Param("id")
+	dateSlotId := ctx.Param("dateSlotId")
+	deviceId := ctx.Param("deviceId")
+	slots, err := ctrler.timeSlotRepo.GetTimeSlotBasedOnDateAndDevice(profileId, dateSlotId, deviceId)
+    if err != nil {
+		logger.Error(err.Error())
 	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"timeSlots": slots,
+	}, "Slots fetched."))
 }

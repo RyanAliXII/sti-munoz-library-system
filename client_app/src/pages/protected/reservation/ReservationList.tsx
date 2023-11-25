@@ -41,6 +41,7 @@ const ReservationList = () => {
     },
   });
   const onConfirm = (text: string) => {
+    remarksModal.close();
     updateStatus.mutate({ ...reservation, remarks: text });
   };
   return (
@@ -82,7 +83,9 @@ const ReservationList = () => {
                     statusId={reservation.statusId}
                   />
                 </td>
-                <td>{reservation.remarks}</td>
+                <td>
+                  {reservation.remarks.length > 0 ? reservation.remarks : "N/A"}
+                </td>
                 <td>
                   {reservation.statusId === ReservationStatus.Pending && (
                     <button

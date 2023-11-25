@@ -76,6 +76,12 @@ func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
+
+	requestorApp := ctx.GetString("requestorApp")
+	if requestorApp == azuread.ClientAppClientId{
+		ctrler.handleUpdateStatusRequestFromClient(ctx, id)
+		return
+	}
 	switch(statusId){
 		case status.ReservationStatusAttended:
 			ctrler.handleMarkAsAttended(ctx, id)
@@ -88,6 +94,28 @@ func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
 			return
 	}	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid action."))
+}
+func(ctrler * Reservation)handleUpdateStatusRequestFromClient(ctx * gin.Context, id string) {
+	body := CancellationBody{}
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("CancellationErr"))
+		ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
+		return
+	}
+	err = body.Validate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("validateErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+	}
+	accountId := ctx.GetString("requestorId")
+	err = ctrler.reservationRepo.CancelReservationByClientAndId(id, accountId, body.Remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("CancelErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Reservation cancelled."))
 }
 func (ctrler * Reservation)handleMarkAsAttended(ctx * gin.Context, id string){
 	err := ctrler.reservationRepo.MarkAsAttended(id)
