@@ -69,6 +69,9 @@ func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
 		case status.ReservationStatusMissed:
 			ctrler.handleMarkAsMissed(ctx, id)
 			return
+		case status.ReservationStatusCancelled:
+			ctrler.handleCancellation(ctx, id)
+			return
 	}	
 	 ctx.JSON(httpresp.Fail400(nil, "Invalid action."))
 }
@@ -89,4 +92,20 @@ func (ctrler * Reservation)handleMarkAsMissed(ctx * gin.Context, id string){
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Reservation mark as missed."))
+}
+func (ctrler * Reservation)handleCancellation(ctx * gin.Context, id string){
+		body := CancellationBody{}
+		err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("CancellationErr"))
+			ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
+			return
+		}
+		err = ctrler.reservationRepo.CancelReservation(id, body.Remarks)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("CancelErr"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(nil, "Reservation cancelled."))
 }

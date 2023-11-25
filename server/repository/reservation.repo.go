@@ -19,6 +19,7 @@ type ReservationRepository interface{
 	GetReservations()([]model.Reservation, error)
 	MarkAsAttended(id string) error
 	MarkAsMissed(id string) error
+	CancelReservation(id string, remarks string) error
 }
 func NewReservationRepository() ReservationRepository{
 	return &Reservation{
@@ -137,5 +138,10 @@ func (repo * Reservation)MarkAsAttended(id string) error {
 func (repo * Reservation)MarkAsMissed(id string) error {
 	_, err := repo.db.Exec(`UPDATE services.reservation 
 	set status_id = $1 where id = $2 and (status_id = 1 OR status_id = 2)`, status.ReservationStatusMissed, id)
+	return err
+}
+func (repo * Reservation)CancelReservation(id string, remarks string) error {
+	_, err := repo.db.Exec(`UPDATE services.reservation 
+	set status_id = $1, remarks = $2  where id = $3 and (status_id = 1 OR status_id = 2)`, status.ReservationStatusCancelled, remarks, id)
 	return err
 }

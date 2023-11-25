@@ -134,6 +134,7 @@ export type Reservation = {
   client: Account;
   device: Device;
   status: string;
+  remarks: string;
   statusId: number;
   createdAt: string;
 };

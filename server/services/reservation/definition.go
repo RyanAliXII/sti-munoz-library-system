@@ -5,3 +5,6 @@ type ReservationBody struct {
 	DateSlotId	string `json:"dateSlotId" binding:"required,uuid"`
 	DeviceId string `json:"deviceId" binding:"required,uuid"`
 }
+type CancellationBody struct {
+	Remarks string `json:"remarks"`
+}
