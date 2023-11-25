@@ -12,7 +12,10 @@ import { FC, FormEvent, useEffect } from "react";
 import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { ReservationValidation } from "./schema";
-import { useNewReservation } from "@hooks/data-fetching/reservation";
+import {
+  ReserveForm,
+  useNewReservation,
+} from "@hooks/data-fetching/reservation";
 import { toast } from "react-toastify";
 import { error } from "console";
 
@@ -60,7 +63,7 @@ const ReserveModal: FC<ReserveModalProps> = ({
     setForm,
     errors,
     validate,
-  } = useForm<Omit<Reservation, "id" | "accountId">>({
+  } = useForm<ReserveForm>({
     initialFormData: {
       deviceId: "",
       dateSlotId: "",

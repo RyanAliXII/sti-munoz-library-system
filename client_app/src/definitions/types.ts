@@ -43,6 +43,14 @@ export type Reservation = {
   timeSlotId: string;
   dateSlotId: string;
   accountId: string;
+  timeSlot: TimeSlot;
+  dateSlot: DateSlot;
+  client: Account;
+  device: Device;
+  status: string;
+  remarks: string;
+  statusId: number;
+  createdAt: string;
 };
 export type TimeSlotProfile = {
   id: string;

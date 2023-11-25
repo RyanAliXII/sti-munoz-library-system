@@ -20,6 +20,7 @@ type ReservationRepository interface{
 	MarkAsAttended(id string) error
 	MarkAsMissed(id string) error
 	CancelReservation(id string, remarks string) error
+	GetReservationsByClientId(accountId string)([]model.Reservation, error)
 }
 func NewReservationRepository() ReservationRepository{
 	return &Reservation{
@@ -124,6 +125,55 @@ func (repo * Reservation)GetReservations()([]model.Reservation, error){
 	ORDER BY created_at desc
 	`
 	err := repo.db.Select(&reservations, query)
+	if err != nil {
+		return reservations, err
+	}
+	return reservations, nil
+}
+
+func (repo * Reservation)GetReservationsByClientId(accountId string)([]model.Reservation, error){
+	reservations := make([]model.Reservation, 0)
+	query := `
+	SELECT reservation.id, reservation.date_slot_id, 
+	reservation.time_slot_id, reservation.device_id, 
+	reservation.account_id, 
+	remarks,
+	status_id,
+	(reservation_status.description) as status,
+	JSON_BUILD_OBJECT('id', account.id, 
+	'givenName', account.given_name,
+	'surname', account.surname, 
+	'displayName',account.display_name,
+	'email', account.email,
+	'profilePicture', account.profile_picture
+	) as client, 
+	JSON_BUILD_OBJECT(
+	'id', date_slot.id ,
+	'date', date_slot.date
+	) as date_slot,
+	JSON_BUILD_OBJECT(
+	'id', time_slot.id, 
+	'startTime', time_slot.start_time,
+	'endTime', time_slot.end_time,
+	'profileId', time_slot.profile_id
+	) as time_slot, 
+	JSON_BUILD_OBJECT(
+	'id', device.id, 
+	'name', device.name,
+	'description', device.description,
+	'available', device.available
+	) as device, 
+	reservation.created_at 
+	from services.reservation
+	INNER JOIN services.date_slot on date_slot_id = date_slot.id
+	INNER JOIN services.time_slot on time_slot_id = time_slot.id
+	INNER JOIN services.device on device_id = device.id
+	INNER JOIN system.account on reservation.account_id = account.id
+	INNER JOIN services.reservation_status on status_id = reservation_status.id
+	where reservation.account_id = $1
+	ORDER BY created_at desc
+	`
+	err := repo.db.Select(&reservations, query, accountId)
 	if err != nil {
 		return reservations, err
 	}

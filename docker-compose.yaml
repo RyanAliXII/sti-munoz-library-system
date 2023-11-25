@@ -70,6 +70,8 @@ services:
       - "5202:5202"
     volumes:
       - ./client_app/src:/node/dev/client/src
+      - ./client_app/vite.config.ts:/node/dev/client/vite.config.ts
+      - ./client_app/tailwind.config.cjs:/node/dev/client/tailwind.config.cjs
     depends_on:
       - server
     environment:
