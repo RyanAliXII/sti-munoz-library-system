@@ -1,17 +1,47 @@
 import RemarksModal from "@components/ui/dialog/RemarksModal";
 import { to12HR, toReadableDate } from "@helpers/datetime";
-import { useReservations } from "@hooks/data-fetching/reservation";
+import {
+  UpdateStatusForm,
+  useReservations,
+  useUpdateStatus,
+} from "@hooks/data-fetching/reservation";
 import { useSwitch } from "@hooks/useToggle";
 import { ReservationStatus } from "@internal/reservation-status";
 import { FaTimes } from "react-icons/fa";
 import StatusBadge from "./StatusBadge";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { useState } from "react";
+import { Reservation } from "@definitions/types";
 
 const ReservationList = () => {
   const { data: reservations } = useReservations({});
   const remarksModal = useSwitch();
-
-  const initCancellation = () => {
+  const [reservation, setReservation] = useState<UpdateStatusForm>({
+    id: "",
+    statusId: ReservationStatus.Pending,
+    remarks: "",
+  });
+  const initCancellation = (r: Reservation) => {
+    setReservation({
+      id: r.id,
+      statusId: ReservationStatus.Cancelled,
+      remarks: "",
+    });
     remarksModal.open();
+  };
+  const queryClient = useQueryClient();
+  const updateStatus = useUpdateStatus({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["reservations"]);
+      toast.success("Reservation status updated.");
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
+  const onConfirm = (text: string) => {
+    updateStatus.mutate({ ...reservation, remarks: text });
   };
   return (
     <div className="overflow-x-auto">
@@ -57,7 +87,9 @@ const ReservationList = () => {
                   {reservation.statusId === ReservationStatus.Pending && (
                     <button
                       className="btn btn-outline btn-error btn-sm"
-                      onClick={initCancellation}
+                      onClick={() => {
+                        initCancellation(reservation);
+                      }}
                     >
                       <FaTimes />
                     </button>
@@ -73,6 +105,7 @@ const ReservationList = () => {
         closeModal={remarksModal.close}
         isOpen={remarksModal.isOpen}
         title="Cancellation Reason"
+        onProceed={onConfirm}
       />
     </div>
   );

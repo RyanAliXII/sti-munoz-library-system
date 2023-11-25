@@ -73,10 +73,18 @@ const RemarksModal: FC<RemarksModalProps> = ({
             ></textarea>
             <div className="text-error text-sm pt-1">{errors?.text}</div>
           </div>
-
-          <button type="submit" className="btn btn-error btn-sm">
-            Submit
-          </button>
+          <div className="flex gap-1">
+            <button type="submit" className="btn btn-error btn-sm">
+              Submit
+            </button>
+            <button
+              type="button"
+              className="btn btn-group btn-outline btn-sm"
+              onClick={closeModal}
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </Modal>

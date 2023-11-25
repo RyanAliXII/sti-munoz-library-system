@@ -65,3 +65,36 @@ export const useReservations = ({
     onSettled,
   });
 };
+
+export type UpdateStatusForm = {
+  id: string;
+  statusId: number;
+  remarks?: string;
+};
+export const useUpdateStatus = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, UpdateStatusForm, UpdateStatusForm>) => {
+  const { Patch } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Patch(
+        `/reservations/${form.id}/status`,
+        {
+          remarks: form?.remarks ?? "",
+        },
+        {
+          params: {
+            statusId: form.statusId,
+          },
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
