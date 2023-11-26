@@ -1,6 +1,7 @@
 import {
   MdAccountCircle,
   MdManageAccounts,
+  MdOutlineGames,
   MdOutlineInventory,
   MdOutlinePublish,
   MdRotate90DegreesCcw,
@@ -130,6 +131,45 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Penalties",
         to: "/borrowing/penalties",
         requiredPermissions: ["Penalty.Access", "Account.Access"],
+        items: [],
+      },
+    ],
+  },
+
+  {
+    text: "Services",
+    to: "/services",
+    icon: MdOutlineGames,
+    isCollapse: true,
+    items: [
+      {
+        text: "Games",
+        to: "/services/games",
+        items: [],
+      },
+      {
+        text: "Game Logs",
+        to: "services/games/logs",
+        items: [],
+      },
+      {
+        text: "Device",
+        to: "services/devices",
+        items: [],
+      },
+      {
+        text: "Date Slot",
+        to: "/services/date-slots",
+        items: [],
+      },
+      {
+        text: "Time Slots",
+        to: "/services/time-slot-profiles",
+        items: [],
+      },
+      {
+        text: "Reservation",
+        to: "/services/reservations",
         items: [],
       },
     ],

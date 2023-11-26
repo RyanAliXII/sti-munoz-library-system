@@ -20,7 +20,7 @@ const SidebarNav: FC = function () {
     >
       <div className="flex h-full flex-col justify-between py-2">
         <div>
-          <form className="pb-3">
+          {/* <form className="pb-3">
             <TextInput
               icon={HiSearch}
               type="search"
@@ -28,7 +28,7 @@ const SidebarNav: FC = function () {
               required
               size={32}
             />
-          </form>
+          </form> */}
           <SiderbarItems></SiderbarItems>
         </div>
       </div>
