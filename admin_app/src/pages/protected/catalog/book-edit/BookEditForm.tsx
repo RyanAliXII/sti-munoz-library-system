@@ -1,9 +1,7 @@
 import { CustomInput } from "@components/ui/form/Input";
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
-
 import { Book, Publisher, Section } from "@definitions/types";
-
 import { useMsal } from "@azure/msal-react";
 import Container from "@components/ui/container/Container";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
