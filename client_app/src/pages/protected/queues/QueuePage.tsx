@@ -1,7 +1,7 @@
-import { toReadableDatetime } from "@helpers/datetime";
 import { useActiveQueues } from "@hooks/data-fetching/borrowing-queue";
-import React, { useState } from "react";
-import OngoingQueueTable from "./OngoingQueue";
+import { useState } from "react";
+import OngoingQueueTable from "./OngoingQueueTable";
+import QueueHistoryTable from "./QueueHistoryTable";
 
 const QueuePage = () => {
   const { data } = useActiveQueues({});
@@ -9,6 +9,7 @@ const QueuePage = () => {
   const changeTab = (tab: 1 | 2) => {
     setTab(tab);
   };
+
   return (
     <div className="py-4 w-11/12 mx-auto lg:w-9/12">
       <div className="tabs">
@@ -31,6 +32,9 @@ const QueuePage = () => {
       </div>
       <section className={`${tab == 1 ? "" : "hidden"}`}>
         <OngoingQueueTable queues={data?.queues ?? []} />
+      </section>
+      <section className={`${tab == 2 ? "" : "hidden"}`}>
+        <QueueHistoryTable />
       </section>
     </div>
   );

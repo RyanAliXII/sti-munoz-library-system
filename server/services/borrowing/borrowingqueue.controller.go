@@ -149,9 +149,26 @@ func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 }
 
 func (ctrler * BorrowingQueue)GetInactiveQueueItems(ctx * gin.Context){
+	app := ctx.GetString("requestorApp")
+	if app == azuread.ClientAppClientId{
+		ctrler.handleGetClientInactiveQueues(ctx)
+		return
+	}
+
 	items, err := ctrler.queueRepo.GetInactiveQueues()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetInactiveItemsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"inactiveItems": items,
+	}, "Item fetched."))
+}
+
+func (ctrler * BorrowingQueue)handleGetClientInactiveQueues(ctx * gin.Context) {
+	accountId := ctx.GetString("requestorId")
+	items, err := ctrler.queueRepo.GetClientInactiveQueues(accountId)
+	if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetClientInactiveQueuesErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"inactiveItems": items,
