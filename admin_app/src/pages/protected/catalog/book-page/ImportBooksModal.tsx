@@ -133,7 +133,8 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
         )}
         <form onSubmit={handleSubmit}>
           <div className="mt-5">
-            <Select name="id" onChange={handleFormInput}>
+            <Select name="id" onChange={handleFormInput} value={form.id}>
+              <option value="0">Select Section</option>
               {sections?.map((section) => {
                 return (
                   <option key={section.id} value={section.id}>

@@ -11,7 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+
 func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int) error{
+
+	duplicates := repo.validateDuplicateFromFile(books)
+	if len(duplicates) > 0{
+		fmt.Println(duplicates)
+		return fmt.Errorf("duplicates accession number exists in file")
+	}
 	var bookTitleId string;
 	var lastBookTitleId string;
 	var lastBookId string
@@ -196,4 +203,19 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 
    	transaction.Commit()
 	return nil
+}
+
+func (repo * BookRepository)validateDuplicateFromFile(books []model.BookImport)[]model.BookImport {
+	withDuplicates := make([]model.BookImport, 0)
+	bookCache := make(map[int]struct{}, 0)
+	for _, book := range books {
+			_, isAlreadyExists := bookCache[book.AccessionNumber]
+			if isAlreadyExists {
+				withDuplicates = append(withDuplicates, book )
+			}
+			bookCache[book.AccessionNumber] = struct{}{}
+
+
+	}
+	return withDuplicates
 }
