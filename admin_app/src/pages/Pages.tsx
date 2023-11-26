@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import Loader from "@components/Loader";
 import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
+
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
 const BookAddPage = lazy(
@@ -57,6 +58,25 @@ const ClientLogPage = lazy(
 const QueuePage = lazy(() => import("./protected/borrowing-queue/QueuePage"));
 const QueueItemsPage = lazy(
   () => import("./protected/borrowing-queue/ActiveQueueItems")
+);
+const GamePage = lazy(() => import("./protected/services/games/GamesPage"));
+const GameLogPage = lazy(
+  () => import("./protected/services/games/logs/GameLogPage")
+);
+const DevicePage = lazy(
+  () => import("./protected/services/devices/DevicePage")
+);
+const TimeSlotProfilePage = lazy(
+  () => import("./protected/services/time-slot/TimeSlotProfilePage")
+);
+const TimeSlotPage = lazy(
+  () => import("./protected/services/time-slot/id/TimeSlotPage")
+);
+const DateSlotPage = lazy(
+  () => import("./protected/services/date-slot/DateSlotPage")
+);
+const ReservationPage = lazy(
+  () => import("./protected/services/reservations/ReservationPage")
 );
 const pages = createRoutesFromChildren(
   <>
@@ -325,6 +345,77 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["ClientLog.Access"]}>
               <ClientLogPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/services/games"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <GamePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/games/logs"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <GameLogPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/devices"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <DevicePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/time-slot-profiles"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <TimeSlotProfilePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/time-slot-profiles/:id"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <TimeSlotPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/date-slots"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <DateSlotPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/services/reservations"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <ReservationPage />
             </PermissionGate>
           </Suspense>
         }

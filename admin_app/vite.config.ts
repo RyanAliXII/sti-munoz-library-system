@@ -28,6 +28,7 @@ export default defineConfig({
       "@definitions": path.resolve(__dirname, "./src/definitions"),
       "@internal": path.resolve(__dirname, "./src/internal"),
       "@contexts": path.resolve(__dirname, "./src/contexts"),
+      "@helpers": path.resolve(__dirname, "./src/helpers"),
     },
   },
 

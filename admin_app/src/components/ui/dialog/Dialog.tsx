@@ -1,4 +1,4 @@
-import { Button, Modal, Textarea } from "flowbite-react";
+import { Button, ButtonProps, Modal, Textarea } from "flowbite-react";
 import { useState } from "react";
 import {
   HiOutlineExclamationCircle,
@@ -115,6 +115,7 @@ type PromptDialogProps = {
   proceedBtnText?: string;
   close: () => void;
   onProceed?: (text: string) => void;
+  submitButtonsProps?: ButtonProps;
 };
 export const PromptTextAreaDialog = ({
   title,
@@ -123,6 +124,7 @@ export const PromptTextAreaDialog = ({
   onProceed,
   placeholder,
   proceedBtnText,
+  submitButtonsProps,
 }: PromptDialogProps) => {
   const [text, setText] = useState<string>("");
 
@@ -148,6 +150,7 @@ export const PromptTextAreaDialog = ({
             onClick={() => {
               onProceed?.(text);
             }}
+            {...submitButtonsProps}
           >
             {proceedBtnText}
           </Button>

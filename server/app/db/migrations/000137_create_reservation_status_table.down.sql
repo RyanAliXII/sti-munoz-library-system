@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS services.reservation_status;
