@@ -11,7 +11,7 @@ import Dashboard from "@uppy/react/src/Dashboard";
 import { AxiosError } from "axios";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Button, Modal, Select } from "flowbite-react";
+import { Button, Label, Modal, Select, Textarea } from "flowbite-react";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
 

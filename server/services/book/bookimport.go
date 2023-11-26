@@ -12,6 +12,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
 )
@@ -126,6 +127,18 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 	}
 	err = ctrler.bookRepository.ImportBooks(booksImports, parsedSectionId)
 	if err != nil {
+		_, isDuplicateErr := err.(*repository.DuplicateError)
+		if isDuplicateErr {
+			ctx.JSON(httpresp.Fail400(gin.H{
+				"errors": gin.H{
+					"row": 0,
+					"column":0,
+					"message": err.Error(),
+				},
+				
+			}, "Duplicate error"))
+			return 
+		}
 		logger.Error(err.Error(), slimlog.Error("ImportBooksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return

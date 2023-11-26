@@ -22,13 +22,11 @@ func (e * DuplicateError) Error() string {
 	return e.Err.Error()
 }
 func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int) error{
-
 	err := repo.validateDuplicateFromFile(books)
 	if err != nil {
 		return err
 	}
 	err = repo.validateDuplicateFromDb(books, sectionId)
-	fmt.Println(err)
 	if err != nil {
 		return err	
 	}
@@ -227,14 +225,12 @@ func (repo * BookRepository)validateDuplicateFromFile(books []model.BookImport)e
 			withDuplicates = append(withDuplicates, book )
 		}
 		bookCache[book.AccessionNumber] = struct{}{}
-
-
 	}
 	if len(withDuplicates) > 0 {
 		return &DuplicateError{
 			Books: withDuplicates,
 			From: "file",
-			Err: errors.New("duplicate accession number from file"),
+			Err: errors.New("duplicate accession number exists from file"),
 		}
 	}
 	return nil
@@ -290,7 +286,7 @@ func (repo * BookRepository)validateDuplicateFromDb(book []model.BookImport, sec
 		return &DuplicateError{
 				Books: books,
 				From: "db",
-				Err: errors.New("duplicate accession number from db"),
+				Err: errors.New("accession number already exists in the collection"),
 		}
 	}
 	transaction.Rollback()
