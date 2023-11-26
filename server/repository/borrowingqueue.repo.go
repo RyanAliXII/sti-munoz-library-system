@@ -19,6 +19,7 @@ type BorrowingQueueRepository interface {
 	GetQueueItemsByBookId(bookId string) ([]model.BorrowingQueueItem, error)
 	UpdateQueueItems(items []model.BorrowingQueueItem) error
 	DequeueItem(itemId string) error
+	GetInactiveQueues() ([]model.BorrowingQueueItem, error)
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -156,6 +157,24 @@ func (repo * BorrowingQueue)UpdateQueueItems(items []model.BorrowingQueueItem) e
 func (repo * BorrowingQueue)DequeueItem(itemId string) error {
 	_, err := repo.db.Exec("UPDATE borrowing.queue SET dequeued_at = now() where id = $1", itemId)
 	return err
+}
+func (repo * BorrowingQueue)GetInactiveQueues() ([]model.BorrowingQueueItem, error) {
+	items := make([]model.BorrowingQueueItem, 0)
+	query := `
+	SELECT queue.id, queue.book_id, account_id, json_format as book, 
+	json_build_object('id', account.id, 
+		'givenName', account.given_name,
+		 'surname', account.surname, 
+		'displayName',account.display_name,
+		 'email', account.email,
+		 'profilePicture', account.profile_picture
+	) as client from borrowing.queue
+	INNER JOIN book_view on queue.book_id = book_view.id
+	INNER JOIN system.account on queue.account_id = account.id
+	queue.dequeued_at is not null ORDER BY queue.queued_at
+	`
+	err := repo.db.Select(&items, query)
+	return items, err
 }
 
 

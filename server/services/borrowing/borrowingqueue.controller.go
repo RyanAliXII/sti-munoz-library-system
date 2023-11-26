@@ -1,7 +1,6 @@
 package borrowing
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -23,6 +22,7 @@ type BorrowingQueueController interface {
 	GetQueueItemsByBookId(ctx * gin.Context)
 	UpdateQueueItems(ctx * gin.Context)
 	DequeueItem(ctx * gin.Context) 
+	GetInactiveQueueItems(ctx * gin.Context)
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
@@ -139,7 +139,6 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 	id := ctx.Param("id")
-	fmt.Println(id)
 	err := ctrler.queueRepo.DequeueItem(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
@@ -147,4 +146,14 @@ func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Item dequeued."))
+}
+
+func (ctrler * BorrowingQueue)GetInactiveQueueItems(ctx * gin.Context){
+	items, err := ctrler.queueRepo.GetInactiveQueues()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetInactiveItemsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"inactiveItems": items,
+	}, "Item fetched."))
 }
