@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
@@ -12,12 +13,24 @@ import (
 )
 
 
+type DuplicateError struct {
+	Books []model.BookImport
+	From string 
+	Err error
+}
+func (e * DuplicateError) Error() string {
+	return e.Err.Error()
+}
 func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int) error{
 
-	duplicates := repo.validateDuplicateFromFile(books)
-	if len(duplicates) > 0{
-		fmt.Println(duplicates)
-		return fmt.Errorf("duplicates accession number exists in file")
+	err := repo.validateDuplicateFromFile(books)
+	if err != nil {
+		return err
+	}
+	err = repo.validateDuplicateFromDb(books, sectionId)
+	fmt.Println(err)
+	if err != nil {
+		return err	
 	}
 	var bookTitleId string;
 	var lastBookTitleId string;
@@ -205,17 +218,83 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 	return nil
 }
 
-func (repo * BookRepository)validateDuplicateFromFile(books []model.BookImport)[]model.BookImport {
+func (repo * BookRepository)validateDuplicateFromFile(books []model.BookImport)error{
 	withDuplicates := make([]model.BookImport, 0)
 	bookCache := make(map[int]struct{}, 0)
 	for _, book := range books {
-			_, isAlreadyExists := bookCache[book.AccessionNumber]
-			if isAlreadyExists {
-				withDuplicates = append(withDuplicates, book )
-			}
-			bookCache[book.AccessionNumber] = struct{}{}
+		_, isAlreadyExists := bookCache[book.AccessionNumber]
+		if isAlreadyExists {
+			withDuplicates = append(withDuplicates, book )
+		}
+		bookCache[book.AccessionNumber] = struct{}{}
 
 
 	}
-	return withDuplicates
+	if len(withDuplicates) > 0 {
+		return &DuplicateError{
+			Books: withDuplicates,
+			From: "file",
+			Err: errors.New("duplicate accession number from file"),
+		}
+	}
+	return nil
 }
+
+func (repo * BookRepository)validateDuplicateFromDb(book []model.BookImport, sectionId int) error {
+
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	dialect := goqu.Dialect("postgres")
+	accessionTable := ""
+	err = transaction.Get(&accessionTable, "SELECT accession_table from catalog.section where id = $1", sectionId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	records := make([]goqu.Record,0)
+	for _,book := range book {
+		records = append(records, goqu.Record{
+			"accession_number": book.AccessionNumber,
+			"accession_table":  accessionTable,
+		})
+	}
+	ds := dialect.Insert(goqu.T("temp_book").Schema("catalog")).Rows(records).Prepared(true)
+	query, args, err := ds.ToSQL()
+
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec(query, args...)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	books := make([]model.BookImport, 0)
+	query = `SELECT accession_number as accession FROM catalog.temp_book INNER JOIN (
+		SELECT number, section.accession_table FROM catalog.accession
+		INNER JOIN catalog.section on accession.section_id = section.id
+	) as accession on temp_book.accession_number = accession.number AND temp_book.accession_table =  accession.accession_table`
+
+	err = transaction.Select(&books, query)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	
+	if len(books) > 0 {
+		transaction.Rollback()
+		return &DuplicateError{
+				Books: books,
+				From: "db",
+				Err: errors.New("duplicate accession number from db"),
+		}
+	}
+	transaction.Rollback()
+	return nil
+}
+
+
