@@ -35,6 +35,7 @@ export type Section = {
   id?: number;
   name: string;
   prefix: string;
+  lastValue?: number;
   hasOwnAccession: boolean;
 };
 

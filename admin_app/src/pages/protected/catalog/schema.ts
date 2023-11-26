@@ -9,6 +9,15 @@ export const SectionSchema = object().shape({
   name: string().required("Name is required field"),
   prefix: string().required("Prefix is required field"),
 });
+export const EditSectionSchema = object().shape({
+  name: string().required("Name is required field"),
+  prefix: string().required("Prefix is required field"),
+  lastValue: number()
+    .integer("Counter value should be integer.")
+    .required("Counter value is required field")
+    .min(0, "Counter value should be equal or greater than zero.")
+    .typeError("Counter value should be numeric."),
+});
 //
 export const PublisherSchema = object().shape({
   name: string()

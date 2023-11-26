@@ -12,8 +12,16 @@ import TableContainer from "@components/ui/table/TableContainer";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import AddSectionModal from "./AddSectionModal";
+import EditSectionModal from "./EditSectionModal";
+import { useState } from "react";
 
 const SectionPage = () => {
+  const [section, setSection] = useState<Section>({
+    hasOwnAccession: false,
+    name: "",
+    prefix: "",
+    id: 0,
+  });
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -43,6 +51,10 @@ const SectionPage = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
+  const initEdit = (section: Section) => {
+    setSection(section);
+    openEditModal();
+  };
   return (
     <>
       <Container>
@@ -57,6 +69,7 @@ const SectionPage = () => {
               <Table.Head>
                 <Table.HeadCell>Section</Table.HeadCell>
                 <Table.HeadCell>Different Accession</Table.HeadCell>
+                <Table.HeadCell>Current Counter</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y dark:divide-gray-700">
@@ -75,10 +88,13 @@ const SectionPage = () => {
                           <span className="text-gray-600">No</span>
                         )}
                       </Table.Cell>
+                      <Table.Cell>{section.lastValue}</Table.Cell>
                       <Table.Cell className="p-2 flex gap-2 items-center">
                         <Tippy content="Edit">
                           <Button
-                            onClick={openEditModal}
+                            onClick={() => {
+                              initEdit(section);
+                            }}
                             color="secondary"
                             size="xs"
                           >
@@ -86,13 +102,13 @@ const SectionPage = () => {
                           </Button>
                         </Tippy>
                         <Tippy content="Delete">
-                          <Button
+                          {/* <Button
                             onClick={openEditModal}
                             color="failure"
                             size="xs"
                           >
                             <AiOutlineDelete className="cursor-pointer  text-xl" />
-                          </Button>
+                          </Button> */}
                         </Tippy>
                       </Table.Cell>
                     </Table.Row>
@@ -105,7 +121,11 @@ const SectionPage = () => {
       </Container>
 
       <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
-      {/* <EditSectionModal isOpen={isEditModalOpen} closeModal={closeEditModal} /> */}
+      <EditSectionModal
+        formData={section}
+        isOpen={isEditModalOpen}
+        closeModal={closeEditModal}
+      />
     </>
   );
 };
