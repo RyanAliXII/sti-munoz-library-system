@@ -13,7 +13,7 @@ type BorrowingQueue struct {
 }
 type BorrowingQueueRepository interface {
 	Queue(model.BorrowingQueue) error
-	GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error)
+	GetClientActiveQueueItems(accountId string)  ([]model.BorrowingQueueItem, error) 
 	GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error)
 	DequeueByBookId(bookId string)(error)
 	GetQueueItemsByBookId(bookId string) ([]model.BorrowingQueueItem, error)
@@ -71,10 +71,10 @@ func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {
 }
 
 
-func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error) {
-	queues := make([]model.BorrowingQueue, 0)
+func (repo * BorrowingQueue)GetClientActiveQueueItems(accountId string) ([]model.BorrowingQueueItem, error) {
+	queues := make([]model.BorrowingQueueItem, 0)
 	query := `
-	SELECT queue.id, queue.book_id, account_id, json_format as book, 
+	SELECT queue.id, queue.book_id, account_id, json_format as book, queue.created_at,
 	json_build_object('id', account.id, 
 		'givenName', account.given_name,
 		 'surname', account.surname, 
@@ -84,7 +84,7 @@ func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.Bor
 	) as client from borrowing.queue
 	INNER JOIN book_view on queue.book_id = book_view.id
 	INNER JOIN system.account on queue.account_id = account.id
-	where queue.account_id = $1
+	where queue.account_id = $1 and queue.dequeued_at is null
 	`
 	err := repo.db.Select(&queues, query, accountId)
 	if err != nil {

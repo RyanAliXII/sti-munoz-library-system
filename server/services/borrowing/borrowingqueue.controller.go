@@ -98,7 +98,7 @@ func(ctrler * BorrowingQueue)DequeueByBookId(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 	accountId := ctx.GetString("requestorId")
-	queues, err := ctrler.queueRepo.GetClientActiveQueues(accountId)
+	queues, err := ctrler.queueRepo.GetClientActiveQueueItems(accountId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetClientActiveQueues"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))

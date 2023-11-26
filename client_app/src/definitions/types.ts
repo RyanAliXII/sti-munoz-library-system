@@ -140,6 +140,8 @@ export type BorrowingQueue = {
   bookId: string;
   book: Book;
   account: Account;
+  createdAt?: string;
+  dequeuedAt?: string;
 };
 
 export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {
