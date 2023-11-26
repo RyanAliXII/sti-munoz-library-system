@@ -29,13 +29,15 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   const queryClient = useQueryClient();
   const { Put } = useRequest();
   const mutation = useMutation({
-    mutationFn: () => Put(`/sections/${form.id}`, form, {}),
+    mutationFn: (formValues: Section) =>
+      Put(`/sections/${formValues.id}`, formValues, {}),
     onSuccess: () => {
       toast.success("Section updated.");
       queryClient.invalidateQueries(["sections"]);
       resetForm();
     },
     onError: (error) => {
+      toast.error("Unknown error occured.");
       console.error(error);
     },
     onSettled: () => {
@@ -46,8 +48,9 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   const submit = async (event: BaseSyntheticEvent) => {
     event.preventDefault();
     try {
-      await validate();
-      mutation.mutate();
+      const parsedForm = await validate();
+      if (!parsedForm) return;
+      mutation.mutate(parsedForm);
     } catch (error) {
       console.error(error);
     }
