@@ -9,6 +9,7 @@ type BorrowingQueue struct {
 	Book BookJSON `json:"book" db:"book"`
 	Items int `json:"items" db:"items"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
+
 }
 
 type BorrowingQueueItem struct {
@@ -18,4 +19,5 @@ type BorrowingQueueItem struct {
 	Book BookJSON `json:"book" db:"book"`
 	Client         AccountJSON     `json:"client" db:"client"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
+	DequeuedAt db.NullableTime `json:"dequeuedAt" db:"dequeued_at"`
 }

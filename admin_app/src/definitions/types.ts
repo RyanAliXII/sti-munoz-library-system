@@ -102,6 +102,8 @@ export type BorrowingQueueItem = {
   bookId: string;
   book: Book;
   client: Account;
+  createdAt?: string;
+  dequeuedAt?: string;
 };
 
 export type Game = {

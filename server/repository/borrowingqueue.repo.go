@@ -161,7 +161,7 @@ func (repo * BorrowingQueue)DequeueItem(itemId string) error {
 func (repo * BorrowingQueue)GetInactiveQueues() ([]model.BorrowingQueueItem, error) {
 	items := make([]model.BorrowingQueueItem, 0)
 	query := `
-	SELECT queue.id, queue.book_id, account_id, json_format as book, 
+	SELECT queue.id, queue.book_id, account_id, json_format as book, queue.created_at, queue.dequeued_at, 
 	json_build_object('id', account.id, 
 		'givenName', account.given_name,
 		 'surname', account.surname, 
@@ -171,7 +171,7 @@ func (repo * BorrowingQueue)GetInactiveQueues() ([]model.BorrowingQueueItem, err
 	) as client from borrowing.queue
 	INNER JOIN book_view on queue.book_id = book_view.id
 	INNER JOIN system.account on queue.account_id = account.id
-	queue.dequeued_at is not null ORDER BY queue.queued_at
+	where queue.dequeued_at is not null ORDER BY queue.queued_at
 	`
 	err := repo.db.Select(&items, query)
 	return items, err

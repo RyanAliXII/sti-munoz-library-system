@@ -1,6 +1,7 @@
 import Container from "@components/ui/container/Container";
 import { Tabs } from "flowbite-react";
 import ActiveQueuesTable from "./ActiveQueuesTable";
+import QueueHistory from "./QueueHistory";
 const QueuePage = () => {
   return (
     <Container>
@@ -9,9 +10,7 @@ const QueuePage = () => {
           <ActiveQueuesTable />
         </Tabs.Item>
         <Tabs.Item title="Queue History">
-          <Container>
-            <h1 className="dark:text-white">Still in development</h1>
-          </Container>
+          <QueueHistory />
         </Tabs.Item>
       </Tabs.Group>
     </Container>
