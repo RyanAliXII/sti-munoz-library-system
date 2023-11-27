@@ -7,13 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
-
 type StatsController struct {
 	statsRepo repository.StatsRepositoryInterface
-
-
 }
 func (ctrler *StatsController) GetLibraryStats(ctx *gin.Context) {
 	stats := ctrler.statsRepo.GetLibraryStats()
@@ -25,8 +20,19 @@ func (ctrler *StatsController) GetLibraryStats(ctx *gin.Context) {
 	if err != nil {
 		logger.Error(err.Error())
 	}
+	weeklyBorrowedSection, err := ctrler.statsRepo.GetWeeklyBorrowedSection()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	monthlyBorrowedSection, err := ctrler.statsRepo.GetMonthlyBorrowedSection()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	stats.MonthlyWalkIns = monthlyWalkIns
 	stats.WeeklyWalkIns = weeklyWalkIns
+     stats.MonthlyBorrowedSection = monthlyBorrowedSection
+	 stats.WeeklyBorrowedSection = weeklyBorrowedSection
 	ctx.JSON(httpresp.Success200(gin.H{
 		"stats": stats,
 	}, "Library Stats has been fetched."))

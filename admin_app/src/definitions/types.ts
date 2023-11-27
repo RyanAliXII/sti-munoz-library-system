@@ -290,12 +290,17 @@ export type LibraryStats = {
   cancelledBooks: number;
   monthlyWalkIns: WalkInLog[];
   weeklyWalkIns: WalkInLog[];
+  monthlyBorrowedSections: BorrowedSection[];
+  weeklyBorrowedSections: BorrowedSection[];
 };
 export type WalkInLog = {
   date: string;
   walkIns: number;
 };
-
+export type BorrowedSection = {
+  total: number;
+  name: string;
+};
 export type ScannerAccount = {
   id?: string;
   description: string;
