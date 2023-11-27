@@ -28,6 +28,29 @@ func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
     return stats
 }
 
+func (repo * StatsRepository)GetWeeklyLogs()([]model.WalkInLog, error){
+	logs := make([]model.WalkInLog, 0)
+	query := `
+	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
+	from system.client_log
+	where date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 MONTH'
+	GROUP BY date(client_log.created_at at time zone 'PHT')
+	`
+	err := repo.db.Select(&logs, query)
+	return logs, err
+}
+func(repo * StatsRepository)GetMonthlyLogs()([]model.WalkInLog, error) {
+	logs := make([]model.WalkInLog, 0)
+	query := `
+	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
+	from system.client_log
+	where date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK'
+	GROUP BY date(client_log.created_at at time zone 'PHT')
+	`
+	err := repo.db.Select(&logs, query)
+	return logs, err
+}
+
 func NewStatsRepository() StatsRepositoryInterface {
 	db :=  postgresdb.GetOrCreateInstance()
 	return &StatsRepository{db:db}
@@ -36,4 +59,6 @@ func NewStatsRepository() StatsRepositoryInterface {
 
 type StatsRepositoryInterface interface {
 	GetLibraryStats()model.LibraryStats
+	GetWeeklyLogs()([]model.WalkInLog, error)
+	GetMonthlyLogs()([]model.WalkInLog, error) 
 }

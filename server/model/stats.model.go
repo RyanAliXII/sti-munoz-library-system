@@ -16,3 +16,8 @@ type LibraryStats struct {
 	CancelledBooks int `json:"cancelledBooks" db:"cancelled_books"`
 
 }
+
+type WalkInLog struct {
+	Date string `json:"date" db:"date"`
+	WalkIns int `json:"walkIns" db:"walk_ins"`
+}
