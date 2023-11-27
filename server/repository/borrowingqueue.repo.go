@@ -21,6 +21,7 @@ type BorrowingQueueRepository interface {
 	DequeueItem(itemId string) error
 	GetInactiveQueues() ([]model.BorrowingQueueItem, error)
 	GetClientInactiveQueues(clientId string) ([]model.BorrowingQueueItem, error)
+	DequeueItemByIdAndAccountId(itemId string, accountId string) error
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -157,6 +158,10 @@ func (repo * BorrowingQueue)UpdateQueueItems(items []model.BorrowingQueueItem) e
 
 func (repo * BorrowingQueue)DequeueItem(itemId string) error {
 	_, err := repo.db.Exec("UPDATE borrowing.queue SET dequeued_at = now() where id = $1", itemId)
+	return err
+}
+func (repo * BorrowingQueue)DequeueItemByIdAndAccountId(itemId string, accountId string) error {
+	_, err := repo.db.Exec("UPDATE borrowing.queue SET dequeued_at = now() where id = $1 and account_id = $2", itemId, accountId)
 	return err
 }
 func (repo * BorrowingQueue)GetInactiveQueues() ([]model.BorrowingQueueItem, error) {

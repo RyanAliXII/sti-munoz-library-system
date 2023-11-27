@@ -139,9 +139,24 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 	id := ctx.Param("id")
+	requestorApp := ctx.GetString("requestorApp")
+	if requestorApp == azuread.ClientAppClientId {
+		ctrler.handleClientDequeueing(ctx, id)
+		return 
+	}
 	err := ctrler.queueRepo.DequeueItem(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Item dequeued."))
+}
+func(ctrler * BorrowingQueue)handleClientDequeueing(ctx * gin.Context, id string) {
+	accountId := ctx.GetString("requestorId")
+	err := ctrler.queueRepo.DequeueItemByIdAndAccountId(id,accountId )
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DequeueItemByIdAndAccountId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}

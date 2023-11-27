@@ -84,18 +84,18 @@ const ProfilePage = () => {
       : avatarUrl;
   return (
     <div className="lg:w-8/12 mx-auto">
-      <div className="w-full h-56 bg-gray-300 relative">
+      <div className="mt-10 p-5">
         <img
           src={profilePicUrl}
-          className="h-36 w-36 absolute  border rounded-full bg-black left-5"
+          className="h-36 w-36  border rounded-full bg-black left-5"
           style={{ bottom: "-55px" }}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null;
             currentTarget.src = avatarUrl;
           }}
-        ></img>
+        />
       </div>
-      <div className="flex justify-between flex-col w-full px-9 mt-16">
+      <div className="flex justify-between flex-col w-full px-9 ">
         <div>
           <div>
             <h1 className="lg:text-xl font-bold ">

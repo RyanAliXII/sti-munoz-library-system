@@ -110,7 +110,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                     return (
                       <React.Fragment key={permission.id}>
                         <li
-                          className="grid grid-cols-3 px-1 py-1 cursor-pointer text-gray-300 items-center"
+                          className="grid grid-cols-3 px-1 py-1 cursor-pointer text-gray-600 items-center"
                           onClick={() => {
                             if (!isChecked) {
                               setForm((prev) => ({

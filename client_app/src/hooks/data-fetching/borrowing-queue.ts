@@ -1,8 +1,10 @@
 import { BorrowingQueue } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
+  MutationOptions,
   QueryFunction,
   UseQueryOptions,
+  useMutation,
   useQuery,
 } from "@tanstack/react-query";
 
@@ -90,5 +92,23 @@ export const useQueueHistory = ({
     onError: onError,
     queryKey: queryKey,
     onSettled,
+  });
+};
+export const useDequeueItem = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Delete } = useRequest();
+  return useMutation({
+    mutationFn: (id) =>
+      Delete(`/borrowing/queues/items/${id}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
   });
 };

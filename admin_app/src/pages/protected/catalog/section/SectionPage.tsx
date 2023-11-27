@@ -1,19 +1,17 @@
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineEdit } from "react-icons/ai";
 import "react-responsive-modal/styles.css";
-
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container from "@components/ui/container/Container";
 import { Section } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-
 import TableContainer from "@components/ui/table/TableContainer";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
+import { useState } from "react";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
-import { useState } from "react";
 
 const SectionPage = () => {
   const [section, setSection] = useState<Section>({
