@@ -78,6 +78,7 @@ const DateSlotPage = lazy(
 const ReservationPage = lazy(
   () => import("./protected/services/reservations/ReservationPage")
 );
+const ReportPage = lazy(() => import("./protected/report/ReportPage"));
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -416,6 +417,17 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <ReservationPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/reports"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <ReportPage />
             </PermissionGate>
           </Suspense>
         }
