@@ -17,7 +17,7 @@ func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
 	query := `
 	SELECT
     (SELECT COUNT(1) FROM system.account) as accounts,
-    (SELECT COUNT(1) FROM catalog.accession) as books,
+    (SELECT COUNT(1) FROM catalog.accession where weeded_at is null) as books,
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty) as penalties,
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NOT NULL) as settled_penalties,
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NULL) as unsettled_penalties`
@@ -28,27 +28,39 @@ func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
     return stats
 }
 
-func (repo * StatsRepository)GetWeeklyLogs()([]model.WalkInLog, error){
+func (repo * StatsRepository)GetMonthlyLogs()([]model.WalkInLog, error){
 	logs := make([]model.WalkInLog, 0)
 	query := `
 	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
 	from system.client_log
 	where date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 MONTH'
 	GROUP BY date(client_log.created_at at time zone 'PHT')
+	ORDER BY date(client_log.created_at at time zone 'PHT') asc
 	`
 	err := repo.db.Select(&logs, query)
 	return logs, err
 }
-func(repo * StatsRepository)GetMonthlyLogs()([]model.WalkInLog, error) {
+func(repo * StatsRepository)GetWeeklyLogs()([]model.WalkInLog, error) {
 	logs := make([]model.WalkInLog, 0)
 	query := `
 	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
 	from system.client_log
 	where date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK'
 	GROUP BY date(client_log.created_at at time zone 'PHT')
+	ORDER BY date(client_log.created_at at time zone 'PHT') asc
 	`
 	err := repo.db.Select(&logs, query)
 	return logs, err
+}
+func (repo * StatsRepository)GetWeeklyBorrowingBySection () {
+	query := `
+	SELECT  section.name, COUNT(1) as total  FROM borrowed_book_view as bv
+INNER JOIN catalog.book on bv.book_id = book.id
+INNER JOIN catalog.section on book.section_id = section.id
+ where date(bv.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK'
+GROUP BY  section.name
+
+	`
 }
 
 func NewStatsRepository() StatsRepositoryInterface {

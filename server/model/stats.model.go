@@ -2,6 +2,8 @@ package model
 
 
 
+
+
 type LibraryStats struct {
 	Accounts int `json:"accounts" db:"accounts"`
 	Books int `json:"books" db:"books"`
@@ -14,6 +16,8 @@ type LibraryStats struct {
 	ReturnedBooks int `json:"returnedBooks" db:"returned_books"`
 	UnreturnedBooks int `json:"unreturnedBooks" db:"unreturned_books"`
 	CancelledBooks int `json:"cancelledBooks" db:"cancelled_books"`
+	WeeklyWalkIns []WalkInLog `json:"weeklyWalkIns" db:"weekly_walk_ins"`
+	MonthlyWalkIns []WalkInLog `json:"monthlyWalkIns" db:"monthly_walk_ins"`
 
 }
 

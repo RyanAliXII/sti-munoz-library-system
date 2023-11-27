@@ -288,6 +288,12 @@ export type LibraryStats = {
   returnedBooks: number;
   unreturnedBooks: number;
   cancelledBooks: number;
+  monthlyWalkIns: WalkInLog[];
+  weeklyWalkIns: WalkInLog[];
+};
+export type WalkInLog = {
+  date: string;
+  walkIns: number;
 };
 
 export type ScannerAccount = {

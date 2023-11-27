@@ -25,10 +25,10 @@ func (ctrler *StatsController) GetLibraryStats(ctx *gin.Context) {
 	if err != nil {
 		logger.Error(err.Error())
 	}
+	stats.MonthlyWalkIns = monthlyWalkIns
+	stats.WeeklyWalkIns = weeklyWalkIns
 	ctx.JSON(httpresp.Success200(gin.H{
 		"stats": stats,
-		"monthlyWalkIns": monthlyWalkIns,
-		"weeklyWalkIns": weeklyWalkIns,
 	}, "Library Stats has been fetched."))
 }
 
