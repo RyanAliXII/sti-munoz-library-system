@@ -40,4 +40,5 @@ func InventoryRoutes(router *gin.RouterGroup) {
 	auditActionGrp.POST("/books/:bookId", 
 	middlewares.BlockRequestFromClientApp,
 	controller.AddBookToAudit)
+	auditActionGrp.POST("/reports", middlewares.BlockRequestFromClientApp, controller.GenerateReport)
 }

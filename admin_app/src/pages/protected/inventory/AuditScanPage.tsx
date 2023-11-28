@@ -2,7 +2,6 @@ import { Accession, Audit, Book } from "@definitions/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { useNavigate, useParams } from "react-router-dom";
-
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container from "@components/ui/container/Container";
 import { useRequest } from "@hooks/useRequest";
@@ -48,6 +47,24 @@ const AuditScan = () => {
       {
         navigate("/void");
       }
+    },
+  });
+  const generateReport = useMutation({
+    mutationFn: (id: string) =>
+      Post(
+        `/inventory/audits/${id}/reports`,
+        {},
+        {
+          responseType: "blob",
+        }
+      ),
+    onSuccess: (response) => {
+      toast.success("Report has been generated.");
+      const url = URL.createObjectURL(response.data);
+      const a = document.createElement("a");
+      a.download = "audit-report.pdf";
+      a.href = url;
+      a.click();
     },
   });
 
@@ -131,7 +148,7 @@ const AuditScan = () => {
           <Button
             color="primary"
             onClick={() => {
-              toast.info("Feature is still in development.");
+              generateReport.mutate(id ?? "");
             }}
           >
             <HiOutlineDocumentReport className="text-lg mr-2" />

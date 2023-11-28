@@ -1,4 +1,4 @@
-package printables
+package reports
 
 import (
 	"bytes"
@@ -10,41 +10,45 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/ysmood/gson"
 )
 
 
-type BookPrintable struct{
-	bookRepo repository.BookRepositoryInterface
+type Report struct {
+	reportRepo repository.ReportRepository
+	inventoryRepo repository.InventoryRepositoryInterface
 }
-func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
-	id := ctx.Param("id")
-	book := p.bookRepo.GetOne(id)
-	if book.Id == "" {
-		 ctx.JSON(httpresp.Fail404(nil, "Book not found."))
-		 return
-	}
-	
-	authors := make([]string, 0)
 
-	for _, author := range book.Authors {
-		authors = append(authors, author.Name)
-	}
-	ctx.HTML(http.StatusOK, "printables-generator/books/index", gin.H{
-		"book": book,
-		"authors": authors,
-	})
+type ReportController interface {
+	NewReport(ctx * gin.Context)
+	RenderReport(ctx * gin.Context)
+	RenderAuditReport(ctx * gin.Context)
 }
-func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
-	browser, err := browser.NewBrowser()
-	bookId := ctx.Param("id")
+func NewReportController () ReportController {
+	return &Report{
+		reportRepo: repository.NewReportRepository(),
+		inventoryRepo: repository.NewInventoryRepository(),
+	}
+}
+func(ctrler * Report)NewReport(ctx * gin.Context){
+	body := ReportFilter{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+	fmt.Println(body)
+	
+	err := body.Validate()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewBrowserErr"))
+		logger.Error(err.Error(), slimlog.Error("validateErr"))
+		ctx.JSON(httpresp.Success200(nil, "Unknown error occured."))
+	}
+	browser, err := browser.NewBrowser()
+	if err != nil {
+		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/printables-generator/books/%s",  bookId))
+	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/renderer/reports?from=%s&to=%s", body.From, body.To))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GotoErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -64,7 +68,6 @@ func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("PDFError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
-		return
 	}
 	var buffer bytes.Buffer
 	_, err = buffer.ReadFrom(pdf)
@@ -72,14 +75,4 @@ func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
 		logger.Error(err.Error())
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
-}
-type PrintableController interface {
-	RenderBookPrintables(c * gin.Context)
-	GetBookPrintablesByBookId(c * gin.Context)
-}
-
-func NewBookPrintableController() PrintableController {
-	return &BookPrintable{
-		bookRepo: repository.NewBookRepository(),
-	}
 }

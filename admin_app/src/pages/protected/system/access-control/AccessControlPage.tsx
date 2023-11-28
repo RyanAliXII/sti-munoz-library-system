@@ -5,13 +5,11 @@ import { Role } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-
 import {
   AiFillInfoCircle,
   AiOutlineDelete,
   AiOutlineEdit,
 } from "react-icons/ai";
-
 import HasAccess from "@components/auth/HasAccess";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import TableContainer from "@components/ui/table/TableContainer";
