@@ -58,7 +58,7 @@ func (repo * StatsRepository)GetWeeklyBorrowedSection ()([]model.BorrowedSection
 	SELECT  section.name, COUNT(1) as total  FROM borrowed_book_view as bv
 	INNER JOIN catalog.book on bv.book_id = book.id
 	INNER JOIN catalog.section on book.section_id = section.id
-	where date(bv.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK'
+	where date(bv.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK' and status_id = 4
 	GROUP BY  section.name
 	`
 	err := repo.db.Select(&borrowedSection, query)
@@ -71,7 +71,7 @@ func (repo * StatsRepository)GetMonthlyBorrowedSection ()([]model.BorrowedSectio
 	SELECT  section.name, COUNT(1) as total  FROM borrowed_book_view as bv
 	INNER JOIN catalog.book on bv.book_id = book.id
 	INNER JOIN catalog.section on book.section_id = section.id
-	where date(bv.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 MONTH'
+	where date(bv.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 MONTH' and status_id = 4
 	GROUP BY  section.name
 	`
 	err := repo.db.Select(&borrowedSection, query)

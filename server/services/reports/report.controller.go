@@ -18,15 +18,18 @@ import (
 
 type Report struct {
 	reportRepo repository.ReportRepository
+	inventoryRepo repository.InventoryRepositoryInterface
 }
 
 type ReportController interface {
 	NewReport(ctx * gin.Context)
 	RenderReport(ctx * gin.Context)
+	RenderAuditReport(ctx * gin.Context)
 }
 func NewReportController () ReportController {
 	return &Report{
 		reportRepo: repository.NewReportRepository(),
+		inventoryRepo: repository.NewInventoryRepository(),
 	}
 }
 func(ctrler * Report)NewReport(ctx * gin.Context){

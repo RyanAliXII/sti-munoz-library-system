@@ -2,7 +2,6 @@ package reports
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -21,7 +20,7 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		return
 	}
 	err = reportFilter.Validate()
-	fmt.Println(reportFilter)
+	
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "ValidationErr"))
@@ -70,5 +69,15 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		"borrowedSections": borrowedSections,
 		"from": reportFilter.From,
 		"to": reportFilter.To,
+	})
+}
+
+
+func (ctrler  * Report)RenderAuditReport(ctx * gin.Context){
+	auditId := ctx.Param("auditId")
+	audited  := ctrler.inventoryRepo.GetAuditedAccessionById(auditId)
+	
+	ctx.HTML(http.StatusOK, "report/audit/index", gin.H{
+		"auditedBooks": audited,
 	})
 }
