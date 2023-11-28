@@ -1,3 +1,4 @@
+import { Label } from "flowbite-react";
 import Select, { GroupBase, Props } from "react-select";
 
 interface CustomSelectProps<
@@ -23,7 +24,7 @@ const CustomSelect = <
   const selectedClass = props.error ? ErrorClass : DefaultClass;
   return (
     <>
-      <label className="text-gray-600 text-sm">{props.label}</label>
+      <Label>{props.label}</Label>
       <div className={`w-full ${props.wrapperclass}`}>
         <Select
           classNames={{
@@ -35,6 +36,7 @@ const CustomSelect = <
             control: () => {
               return selectedClass;
             },
+            input: () => "text-gray-900 dark:text-white react-select-input",
             menu: () => {
               return "bg-gray-50 dark:bg-gray-700";
             },
@@ -47,8 +49,8 @@ const CustomSelect = <
                 ...baseStyles,
                 borderColor: props.error ? "red" : "none",
                 boxShadow: "none",
-                outline: "none",
               }),
+
               option: (baseStyles) => ({
                 ...baseStyles,
                 backgroundColor: "none",

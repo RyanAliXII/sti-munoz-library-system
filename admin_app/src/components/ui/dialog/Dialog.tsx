@@ -1,11 +1,11 @@
-import { Button, Modal, Textarea } from "flowbite-react";
-import { useState } from "react";
+import { Button, ButtonProps, Modal, Textarea } from "flowbite-react";
+import { FormEvent, useState } from "react";
 import {
   HiOutlineExclamationCircle,
   HiOutlineInformationCircle,
 } from "react-icons/hi";
 import { LighButton, PrimaryButton } from "../button/Button";
-import { Input, InputProps } from "../form/Input";
+import { CustomInput, Input, InputProps } from "../form/Input";
 import { MdOutlineWarning } from "react-icons/md";
 type DialogProps = {
   title?: string;
@@ -115,6 +115,7 @@ type PromptDialogProps = {
   proceedBtnText?: string;
   close: () => void;
   onProceed?: (text: string) => void;
+  submitButtonsProps?: ButtonProps;
 };
 export const PromptTextAreaDialog = ({
   title,
@@ -123,6 +124,7 @@ export const PromptTextAreaDialog = ({
   onProceed,
   placeholder,
   proceedBtnText,
+  submitButtonsProps,
 }: PromptDialogProps) => {
   const [text, setText] = useState<string>("");
 
@@ -148,6 +150,7 @@ export const PromptTextAreaDialog = ({
             onClick={() => {
               onProceed?.(text);
             }}
+            {...submitButtonsProps}
           >
             {proceedBtnText}
           </Button>
@@ -179,29 +182,28 @@ export const PromptInputDialog = ({
   proceedBtnText,
   inputProps,
 }: PromptInputDialogProps) => {
-  if (!isOpen) return null;
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onProceed?.();
+  };
   return (
-    <Modal show={isOpen} onClose={close}>
-      <div className="w-96 rounded">
-        <div className="header w-full h-10 px-2 py-2 text-lg font-medium  text-gray-600">
-          <span>{title}</span>
-        </div>
-        <div className="px-2 h-28 flex items-center">
-          <div className="w-full ">
-            <Input {...inputProps} />
+    <Modal show={isOpen} onClose={close} size="lg">
+      <Modal.Header>{title}</Modal.Header>
+      <Modal.Body>
+        <form onSubmit={onSubmit}>
+          <div className="pb-2">
+            <CustomInput {...inputProps} />
           </div>
-        </div>
-        <div className="flex gap-2 h-30 p-2 w-full justify-end">
-          <LighButton onClick={close}>Cancel</LighButton>
-          <PrimaryButton
-            onClick={() => {
-              onProceed?.();
-            }}
-          >
-            {proceedBtnText}
-          </PrimaryButton>
-        </div>
-      </div>
+          <div className="flex gap-2">
+            <Button color="primary" type="submit">
+              {proceedBtnText}
+            </Button>
+            <Button color="light" onClick={close}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };

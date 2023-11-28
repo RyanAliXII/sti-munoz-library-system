@@ -1,0 +1,128 @@
+{{define "report/audit/index"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <title>{{.book.Id}}</title>
+  </head>
+  <style type="text/css">
+    div {
+      break-inside: avoid;
+    }
+    .catalog-card {
+      min-height: 3in;
+      width: 5in;
+      border: 1px dotted black;
+      margin: 10px auto;
+      font-family: "Roboto", sans-serif;
+    }
+    .roboto {
+      font-family: "Roboto", sans-serif;
+    }
+    .ddc-cutter {
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .author-list {
+      max-width: 280px;
+    }
+    .card-content-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card-content {
+      width: fit-content;
+      max-width: 300px;
+    }
+    .main-text {
+      font-size: medium;
+    }
+    .text {
+      font-size: smaller;
+      word-spacing: 2px;
+    }
+    .text-small {
+      font-size: x-small;
+    }
+    .call-numbers {
+      width: 3in;
+      width: 5in;
+      gap: 15px;
+      margin: auto;
+    }
+    .call-number {
+      width: 0.9in;
+      height: 1.3in;
+      padding: 10px;
+      border: 1px dotted black;
+    }
+    .item {
+      margin-top: 5px;
+      align-items: center;
+      gap: 5px;
+      display: flex;
+    }
+    .headers {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+  </style>
+  <body>
+    <main style="width: 85%; margin: auto">
+      <div class="headers">
+        <img src="/assets/images/library-icon.svg" width="90px" height="90px" />
+        <h4>STI College Munoz-EDSA Library</h4>
+        <h5>Inventory Audit Report</h5>
+      </div>
+      <div class="mt-5">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Book</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $auditedBook := .auditedBooks}} {{range $auditedAccession :=
+            $auditedBook.Accession}}
+            <tr>
+              <td scope="row">
+                <div class="font-weight-bold">{{$auditedBook.Book.Title}}</div>
+              </td>
+
+              {{if not $auditedAccession.IsCheckedOut}} {{if
+              $auditedAccession.IsAudited}}
+
+              <td scope="row" color>
+                <div class="text-success">Found</div>
+              </td>
+              {{else}}
+              <td scope="row" class="text-danger">Missing</td>
+              {{end}} {{else}}
+              <td class="text-warning">Checked Out</td>
+              {{end}}
+            </tr>
+            {{end}} {{end}}
+          </tbody>
+        </table>
+        <div>
+          <div style="width: 800px"><canvas id="myChart"></canvas></div>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script src="/assets/js/bootstrap.bundle.min"></script>
+</html>
+
+{{end}}

@@ -1,5 +1,6 @@
 import {
   Route,
+  Router,
   createBrowserRouter,
   createRoutesFromElements,
 } from "react-router-dom";
@@ -15,6 +16,8 @@ import BagPage from "./protected/bag/BagPage";
 import ProfilePage from "./protected/profile/ProfilePage";
 import BorrowedBooksPage from "./protected/borrowed_books/BorrowedBookPage";
 import EbookView from "./protected/ebook/EbookView";
+import ReservationPage from "./protected/reservation/ReservationPage";
+import QueuePage from "./protected/queues/QueuePage";
 
 const pages = createBrowserRouter(
   createRoutesFromElements(
@@ -31,6 +34,8 @@ const pages = createBrowserRouter(
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/borrowed-books" element={<BorrowedBooksPage />} />
         <Route path="/ebooks/:id" element={<EbookView />} />
+        <Route path="/reservations" element={<ReservationPage />} />
+        <Route path="/queues" element={<QueuePage />} />
       </Route>
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />

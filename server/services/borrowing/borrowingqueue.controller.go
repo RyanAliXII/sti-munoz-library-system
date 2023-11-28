@@ -1,7 +1,6 @@
 package borrowing
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -23,6 +22,7 @@ type BorrowingQueueController interface {
 	GetQueueItemsByBookId(ctx * gin.Context)
 	UpdateQueueItems(ctx * gin.Context)
 	DequeueItem(ctx * gin.Context) 
+	GetInactiveQueueItems(ctx * gin.Context)
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
@@ -98,7 +98,7 @@ func(ctrler * BorrowingQueue)DequeueByBookId(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 	accountId := ctx.GetString("requestorId")
-	queues, err := ctrler.queueRepo.GetClientActiveQueues(accountId)
+	queues, err := ctrler.queueRepo.GetClientActiveQueueItems(accountId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetClientActiveQueues"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -139,7 +139,11 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 	id := ctx.Param("id")
-	fmt.Println(id)
+	requestorApp := ctx.GetString("requestorApp")
+	if requestorApp == azuread.ClientAppClientId {
+		ctrler.handleClientDequeueing(ctx, id)
+		return 
+	}
 	err := ctrler.queueRepo.DequeueItem(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
@@ -147,4 +151,41 @@ func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Item dequeued."))
+}
+func(ctrler * BorrowingQueue)handleClientDequeueing(ctx * gin.Context, id string) {
+	accountId := ctx.GetString("requestorId")
+	err := ctrler.queueRepo.DequeueItemByIdAndAccountId(id,accountId )
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DequeueItemByIdAndAccountId"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Item dequeued."))
+}
+
+func (ctrler * BorrowingQueue)GetInactiveQueueItems(ctx * gin.Context){
+	app := ctx.GetString("requestorApp")
+	if app == azuread.ClientAppClientId{
+		ctrler.handleGetClientInactiveQueues(ctx)
+		return
+	}
+
+	items, err := ctrler.queueRepo.GetInactiveQueues()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetInactiveItemsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"inactiveItems": items,
+	}, "Item fetched."))
+}
+
+func (ctrler * BorrowingQueue)handleGetClientInactiveQueues(ctx * gin.Context) {
+	accountId := ctx.GetString("requestorId")
+	items, err := ctrler.queueRepo.GetClientInactiveQueues(accountId)
+	if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetClientInactiveQueuesErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"inactiveItems": items,
+	}, "Item fetched."))
 }

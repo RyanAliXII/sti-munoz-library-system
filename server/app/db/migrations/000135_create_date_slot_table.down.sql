@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS services.date_slot;

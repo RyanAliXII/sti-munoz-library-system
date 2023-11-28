@@ -13,12 +13,15 @@ type BorrowingQueue struct {
 }
 type BorrowingQueueRepository interface {
 	Queue(model.BorrowingQueue) error
-	GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error)
+	GetClientActiveQueueItems(accountId string)  ([]model.BorrowingQueueItem, error) 
 	GetActiveQueuesGroupByBook()([]model.BorrowingQueue, error)
 	DequeueByBookId(bookId string)(error)
 	GetQueueItemsByBookId(bookId string) ([]model.BorrowingQueueItem, error)
 	UpdateQueueItems(items []model.BorrowingQueueItem) error
 	DequeueItem(itemId string) error
+	GetInactiveQueues() ([]model.BorrowingQueueItem, error)
+	GetClientInactiveQueues(clientId string) ([]model.BorrowingQueueItem, error)
+	DequeueItemByIdAndAccountId(itemId string, accountId string) error
 }
 func NewBorrowingQueue () BorrowingQueueRepository {
 	return &BorrowingQueue{
@@ -70,10 +73,10 @@ func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {
 }
 
 
-func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.BorrowingQueue, error) {
-	queues := make([]model.BorrowingQueue, 0)
+func (repo * BorrowingQueue)GetClientActiveQueueItems(accountId string) ([]model.BorrowingQueueItem, error) {
+	queues := make([]model.BorrowingQueueItem, 0)
 	query := `
-	SELECT queue.id, queue.book_id, account_id, json_format as book, 
+	SELECT queue.id, queue.book_id, account_id, json_format as book, queue.created_at,
 	json_build_object('id', account.id, 
 		'givenName', account.given_name,
 		 'surname', account.surname, 
@@ -83,7 +86,7 @@ func (repo * BorrowingQueue)GetClientActiveQueues(accountId string) ([]model.Bor
 	) as client from borrowing.queue
 	INNER JOIN book_view on queue.book_id = book_view.id
 	INNER JOIN system.account on queue.account_id = account.id
-	where queue.account_id = $1
+	where queue.account_id = $1 and queue.dequeued_at is null
 	`
 	err := repo.db.Select(&queues, query, accountId)
 	if err != nil {
@@ -157,6 +160,50 @@ func (repo * BorrowingQueue)DequeueItem(itemId string) error {
 	_, err := repo.db.Exec("UPDATE borrowing.queue SET dequeued_at = now() where id = $1", itemId)
 	return err
 }
+func (repo * BorrowingQueue)DequeueItemByIdAndAccountId(itemId string, accountId string) error {
+	_, err := repo.db.Exec("UPDATE borrowing.queue SET dequeued_at = now() where id = $1 and account_id = $2", itemId, accountId)
+	return err
+}
+func (repo * BorrowingQueue)GetInactiveQueues() ([]model.BorrowingQueueItem, error) {
+	items := make([]model.BorrowingQueueItem, 0)
+	query := `
+	SELECT queue.id, queue.book_id, account_id, json_format as book, queue.created_at, queue.dequeued_at, 
+	json_build_object('id', account.id, 
+		'givenName', account.given_name,
+		 'surname', account.surname, 
+		'displayName',account.display_name,
+		 'email', account.email,
+		 'profilePicture', account.profile_picture
+	) as client from borrowing.queue
+	INNER JOIN book_view on queue.book_id = book_view.id
+	INNER JOIN system.account on queue.account_id = account.id
+	where queue.dequeued_at is not null ORDER BY queue.queued_at
+	`
+	err := repo.db.Select(&items, query)
+	return items, err
+}
+
+
+func (repo * BorrowingQueue)GetClientInactiveQueues(clientId string) ([]model.BorrowingQueueItem, error) {
+	items := make([]model.BorrowingQueueItem, 0)
+	query := `
+	SELECT queue.id, queue.book_id, account_id, json_format as book, queue.created_at, queue.dequeued_at, 
+	json_build_object('id', account.id, 
+		'givenName', account.given_name,
+		 'surname', account.surname, 
+		'displayName',account.display_name,
+		 'email', account.email,
+		 'profilePicture', account.profile_picture
+	) as client from borrowing.queue
+	INNER JOIN book_view on queue.book_id = book_view.id
+	INNER JOIN system.account on queue.account_id = account.id
+	where queue.dequeued_at is not null and queue.account_id = $1 ORDER BY queue.queued_at
+	`
+	err := repo.db.Select(&items, query, clientId)
+	return items, err
+}
+
+
 
 
 

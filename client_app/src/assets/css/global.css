@@ -8,3 +8,20 @@
   width: 95% !important;
   height: 95% !important;
 } */
+
+.react-datepicker {
+  z-index: 2 !important;
+}
+
+.react-datepicker__triangle {
+  z-index: 2 !important;
+}
+.react-datepicker-wrapper {
+  display: block;
+}
+
+@media screen and (max-width: 767px) {
+  .fc-toolbar.fc-header-toolbar {
+    font-size: 60%;
+  }
+}

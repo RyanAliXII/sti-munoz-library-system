@@ -51,9 +51,41 @@ func (repo *SectionRepository) New(section model.Section) error {
 	transaction.Commit()
 	return nil
 }
+func (repo * SectionRepository)Update(section model.Section) error {
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}	
+	accessionCounter := ""
+	err = transaction.Get(&accessionCounter, "SELECT accession_table from catalog.section where id = $1", section.Id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err  = transaction.Exec("UPDATE accession.counter set last_value = $1 where accession = $2", section.LastValue, accessionCounter)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err  = transaction.Exec("UPDATE catalog.section set name= $1, prefix = $2 where id = $3", section.Name, section.Prefix, section.Id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return nil;
+}
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
-	selectErr := repo.db.Select(&sections, "SELECT id, name, prefix, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section ORDER BY created_at DESC")
+	selectErr := repo.db.Select(&sections, `
+	SELECT id, 
+	name,
+	prefix,
+	(case when accession_table = 'accession_main' then false else true end) 
+	as has_own_accession, last_value from catalog.section 
+	inner join accession.counter on accession_table = counter.accession
+	ORDER BY created_at DESC`)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}
@@ -74,4 +106,5 @@ type SectionRepositoryInterface interface {
 	New(section model.Section) error
 	Get() []model.Section
 	GetOne(id int) model.Section
+	Update(section model.Section) error
 }

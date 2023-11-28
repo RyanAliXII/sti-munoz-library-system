@@ -35,6 +35,7 @@ export type Section = {
   id?: number;
   name: string;
   prefix: string;
+  lastValue?: number;
   hasOwnAccession: boolean;
 };
 
@@ -102,8 +103,55 @@ export type BorrowingQueueItem = {
   bookId: string;
   book: Book;
   client: Account;
+  createdAt?: string;
+  dequeuedAt?: string;
 };
 
+export type Game = {
+  id: string;
+  name: string;
+  description: string;
+};
+export type DateSlot = {
+  id: string;
+  date: string;
+  profileId: string;
+  timeSlotProfile: TimeSlotProfile;
+};
+export type GameLog = {
+  id: string;
+  gameId: string;
+  accountId: string;
+  client: Account;
+  game: Game;
+  createdAt: string;
+};
+export type Reservation = {
+  id: string;
+  deviceId: string;
+  timeSlotId: string;
+  dateSlotId: string;
+  accountId: string;
+  timeSlot: TimeSlot;
+  dateSlot: DateSlot;
+  client: Account;
+  device: Device;
+  status: string;
+  remarks: string;
+  statusId: number;
+  createdAt: string;
+};
+export type Device = {
+  id: string;
+  name: string;
+  description: string;
+  available: number;
+};
+export type TimeSlotProfile = {
+  id: string;
+  name: string;
+  timeSlots?: TimeSlot[];
+};
 export type Account = {
   id?: string;
   displayName: string;
@@ -240,8 +288,19 @@ export type LibraryStats = {
   returnedBooks: number;
   unreturnedBooks: number;
   cancelledBooks: number;
+  monthlyWalkIns: WalkInLog[];
+  weeklyWalkIns: WalkInLog[];
+  monthlyBorrowedSections: BorrowedSection[];
+  weeklyBorrowedSections: BorrowedSection[];
 };
-
+export type WalkInLog = {
+  date: string;
+  walkIns: number;
+};
+export type BorrowedSection = {
+  total: number;
+  name: string;
+};
 export type ScannerAccount = {
   id?: string;
   description: string;
@@ -255,3 +314,12 @@ export type ClientLog = {
   scanner: ScannerAccount;
   createdAt: string;
 };
+export type TimeSlot = {
+  id: string;
+  startTime: string;
+  endTime: string;
+  profileId: string;
+};
+export interface EditModalProps<T> extends ModalProps {
+  formData: T;
+}

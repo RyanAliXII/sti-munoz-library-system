@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import { ImBooks } from "react-icons/im";
 import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
 import { GiLightBackpack } from "react-icons/gi";
-import { AiOutlineSearch } from "react-icons/ai";
+import { AiFillCaretDown, AiOutlineSearch } from "react-icons/ai";
 import ProfileDropdown from "@components/ProfileDropdown";
 import HeaderIcon from "@assets/images/library-icon.svg";
 
@@ -37,8 +37,31 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/borrowed-books" className={isHeaderNavActive}>
-                Books
+              <div className="dropdown ">
+                <div
+                  tabIndex={0}
+                  role="button"
+                  className="rounded-btn p-0 text-sm  normal-case focus:bg-none font-normal flex items-center gap-1"
+                >
+                  Books
+                </div>
+                <ul className="menu dropdown-content z-[1] p-2 shadow bg-base-100 rounded-box w-52 mt-4">
+                  <li className="text-gray-700">
+                    <NavLink to="/borrowed-books" className={isHeaderNavActive}>
+                      Borrowed
+                    </NavLink>
+                  </li>
+                  <li className="text-gray-700">
+                    <NavLink to="/queues" className={isHeaderNavActive}>
+                      Queues
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <NavLink to="/reservations" className={isHeaderNavActive}>
+                Reservations
               </NavLink>
             </li>
           </ul>

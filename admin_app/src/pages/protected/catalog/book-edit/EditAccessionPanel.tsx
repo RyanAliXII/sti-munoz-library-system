@@ -1,29 +1,27 @@
 import { useBookEditFormContext } from "./BookEditFormContext";
 
-import { BsFillTrashFill } from "react-icons/bs";
-import Tippy from "@tippyjs/react";
-import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
-import { AiOutlinePlus } from "react-icons/ai";
-import { useSwitch } from "@hooks/useToggle";
+import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import Container from "@components/ui/container/Container";
 import {
   ConfirmDialog,
   PromptInputDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useRequest } from "@hooks/useRequest";
-import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
-import { Accession } from "@definitions/types";
-import { GiRecycle } from "react-icons/gi";
-import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import { text } from "stream/consumers";
-import { useForm } from "@hooks/useForm";
-import { number, object, string } from "yup";
-import Container from "@components/ui/container/Container";
-import { Button, Table } from "flowbite-react";
 import TableContainer from "@components/ui/table/TableContainer";
+import { Accession } from "@definitions/types";
+import { useForm } from "@hooks/useForm";
+import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Tippy from "@tippyjs/react";
+import { Button, Table } from "flowbite-react";
+import { useState } from "react";
+import { AiOutlinePlus } from "react-icons/ai";
+import { BsFillTrashFill } from "react-icons/bs";
+import { GiRecycle } from "react-icons/gi";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { number, object } from "yup";
 
 enum Action {
   Weed = 1,
@@ -237,10 +235,10 @@ const EditAccessionPanel = () => {
         }}
         proceedBtnText="Proceed"
         onProceed={async () => {
-          closeAddCopyDialog();
           try {
             const parsed = await validate();
             newCopies.mutate(parsed ?? { copies: 0 });
+            closeAddCopyDialog();
           } catch (error) {
             console.log(error);
           }

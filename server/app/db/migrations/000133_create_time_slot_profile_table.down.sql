@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS services.time_slot_profile;

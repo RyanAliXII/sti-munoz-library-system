@@ -92,3 +92,16 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   remarks: "",
   isReturned: false,
 };
+
+export const GameLogInitialValue = {
+  accountId: "",
+  createdAt: "",
+  client: AccountInitialValue,
+  game: {
+    description: "",
+    id: "",
+    name: "",
+  },
+  gameId: "",
+  id: "",
+};

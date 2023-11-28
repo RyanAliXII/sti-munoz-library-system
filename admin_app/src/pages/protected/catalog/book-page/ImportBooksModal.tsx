@@ -11,7 +11,7 @@ import Dashboard from "@uppy/react/src/Dashboard";
 import { AxiosError } from "axios";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Button, Modal, Select } from "flowbite-react";
+import { Button, Label, Modal, Select, Textarea } from "flowbite-react";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
 
@@ -133,7 +133,8 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
         )}
         <form onSubmit={handleSubmit}>
           <div className="mt-5">
-            <Select name="id" onChange={handleFormInput}>
+            <Select name="id" onChange={handleFormInput} value={form.id}>
+              <option value="0">Select Section</option>
               {sections?.map((section) => {
                 return (
                   <option key={section.id} value={section.id}>

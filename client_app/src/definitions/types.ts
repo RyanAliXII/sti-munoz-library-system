@@ -19,7 +19,45 @@ export type Author = {
   id?: string;
   name: string;
 };
-
+export type DateSlot = {
+  id: string;
+  date: string;
+  profileId: string;
+  timeSlotProfile: TimeSlotProfile;
+};
+export type TimeSlot = {
+  id: string;
+  startTime: string;
+  endTime: string;
+  profileId: string;
+  booked?: number;
+};
+export type Device = {
+  id: string;
+  name: string;
+  description: string;
+  available: number;
+};
+export type Reservation = {
+  id: string;
+  deviceId: string;
+  timeSlotId: string;
+  dateSlotId: string;
+  accountId: string;
+  timeSlot: TimeSlot;
+  dateSlot: DateSlot;
+  client: Account;
+  device: Device;
+  status: string;
+  remarks: string;
+  statusId: number;
+  createdAt: string;
+};
+export type TimeSlotProfile = {
+  id: string;
+  name: string;
+  timeSlots?: TimeSlot[];
+};
 export type Publisher = {
   id?: number;
   name: string;
@@ -102,6 +140,8 @@ export type BorrowingQueue = {
   bookId: string;
   book: Book;
   account: Account;
+  createdAt?: string;
+  dequeuedAt?: string;
 };
 
 export interface BorrowedCopy extends Omit<DetailedAccession, "isCheckedOut"> {

@@ -152,3 +152,35 @@ export const useDequeueItem = ({
     onSettled: onSettled,
   });
 };
+
+export const useQueueHistory = ({
+  onSuccess,
+  onError,
+  onSettled,
+  queryKey,
+}: UseQueryOptions<QueueItemsData, unknown, QueueItemsData>) => {
+  const { Get } = useRequest();
+
+  const fetchQueueItems: QueryFunction<QueueItemsData> = async ({
+    queryKey,
+  }) => {
+    try {
+      const bookId = queryKey?.[1] ?? "";
+      const { data: response } = await Get(`/borrowing/queues/history`, {});
+      return {
+        items: response?.data?.inactiveItems ?? [],
+      } as QueueItemsData;
+    } catch {
+      return {
+        items: [],
+      } as QueueItemsData;
+    }
+  };
+  return useQuery<QueueItemsData>({
+    queryFn: fetchQueueItems,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: queryKey,
+    onSettled,
+  });
+};

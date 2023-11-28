@@ -1,35 +1,118 @@
-import { ModalProps } from "@definitions/types";
+import { CustomInput } from "@components/ui/form/Input";
+import { EditModalProps, Section } from "@definitions/types";
+import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
+import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button, Modal } from "flowbite-react";
+import { BaseSyntheticEvent } from "react";
+import { toast } from "react-toastify";
+import { EditSectionSchema } from "../schema";
 
-const EditSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  if (!isOpen) return null; //; temporary fix for react-responsive modal bug
+const EditSectionModal: React.FC<EditModalProps<Section>> = ({
+  isOpen,
+  closeModal,
+  formData,
+}) => {
+  const FORM_DEFAULT_VALUES: Section = {
+    name: "",
+    prefix: "",
+    hasOwnAccession: false,
+    lastValue: 0,
+  };
+  const { form, errors, handleFormInput, validate, resetForm, setForm } =
+    useForm<Section>({
+      initialFormData: FORM_DEFAULT_VALUES,
+      schema: EditSectionSchema,
+    });
+
+  const queryClient = useQueryClient();
+  const { Put } = useRequest();
+  const mutation = useMutation({
+    mutationFn: (formValues: Section) =>
+      Put(`/sections/${formValues.id}`, formValues, {}),
+    onSuccess: () => {
+      toast.success("Section updated.");
+      queryClient.invalidateQueries(["sections"]);
+      resetForm();
+    },
+    onError: (error) => {
+      toast.error("Unknown error occured.");
+      console.error(error);
+    },
+    onSettled: () => {
+      closeModal();
+    },
+  });
+
+  const submit = async (event: BaseSyntheticEvent) => {
+    event.preventDefault();
+    try {
+      const parsedForm = await validate();
+      if (!parsedForm) return;
+      mutation.mutate(parsedForm);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useModalToggleListener(isOpen, () => {
+    if (!isOpen) {
+      resetForm();
+      return;
+    }
+    setForm(formData);
+  });
   return (
-    <></>
-    // <Modal
-    //   open={isOpen}
-    //   onClose={closeModal}
-    //   classNames={{ modal: "w-11/12 md:w-1/3 lg:w-1/4 rounded" }}
-    //   center
-    // >
-    //   <form>
-    //     <div className="w-full h-46">
-    //       <div className="px-2 mb-3">
-    //         <h1 className="text-xl font-medium">Edit Section</h1>
-    //       </div>
-    //       <div className="px-2">
-    //         <Input
-    //           label="Section name"
-    //           // error={errors?.name}
-    //           type="text"
-    //           name="name"
-    //         />
-    //       </div>
-    //       <div className="flex gap-1 p-2">
-    //         <PrimaryButton>Update section</PrimaryButton>
-    //         <LighButton onClick={closeModal}>Cancel</LighButton>
-    //       </div>
-    //     </div>
-    //   </form>
-    // </Modal>
+    <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
+      <Modal.Header>Edit Section</Modal.Header>
+      <Modal.Body>
+        <form onSubmit={submit}>
+          <div className="w-full py-1">
+            <CustomInput
+              label="Section name"
+              error={errors?.name}
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleFormInput}
+            />
+          </div>
+          <div className="w-full py-1">
+            <CustomInput
+              label="Section Prefix"
+              error={errors?.prefix}
+              type="text"
+              name="prefix"
+              value={form.prefix}
+              onChange={handleFormInput}
+            />
+          </div>
+          <div className="w-full py-1">
+            <CustomInput
+              label="Accession counter"
+              error={errors?.lastValue}
+              type="number"
+              name="lastValue"
+              value={form.lastValue}
+              onChange={handleFormInput}
+            />
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <Button
+              color="primary"
+              type="submit"
+              isProcessing={mutation.isLoading}
+            >
+              Save
+            </Button>
+            <Button color="light" onClick={closeModal}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Modal.Body>
+    </Modal>
   );
 };
 

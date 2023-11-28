@@ -1,7 +1,7 @@
 import { Book } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useReducer, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import Container from "@components/ui/container/Container";
@@ -13,10 +13,11 @@ import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
 import useDebounce from "@hooks/useDebounce";
 import { isValid } from "date-fns";
-import { Button, Table, TextInput } from "flowbite-react";
+import { Button, Checkbox, Table, TextInput } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
 import { BookPrintablesModal } from "./BookPrintablesModal";
 import CustomPagination from "@components/pagination/CustomPagination";
+import { bookSelectionReducer } from "./bookselection-reducer";
 
 const BookPage = () => {
   const {
@@ -84,6 +85,28 @@ const BookPage = () => {
     isOpen: isImportModalOpen,
   } = useSwitch();
 
+  const [bookSelections, dispatchSelection] = useReducer(bookSelectionReducer, {
+    books: new Map<string, Book>(),
+  });
+
+  const onSelect = (event: ChangeEvent<HTMLInputElement>, book: Book) => {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      dispatchSelection({
+        payload: {
+          single: book,
+        },
+        type: "select",
+      });
+      return;
+    }
+    dispatchSelection({
+      payload: {
+        single: book,
+      },
+      type: "unselect",
+    });
+  };
   return (
     <>
       <Container>
@@ -129,6 +152,7 @@ const BookPage = () => {
             <div className="inline-block min-w-full align-middle">
               <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <Table.Head>
+                  <Table.HeadCell></Table.HeadCell>
                   <Table.HeadCell>Date Received</Table.HeadCell>
                   <Table.HeadCell>Title</Table.HeadCell>
                   <Table.HeadCell>Copies</Table.HeadCell>
@@ -139,6 +163,15 @@ const BookPage = () => {
                   {books?.map((book) => {
                     return (
                       <Table.Row key={book.id}>
+                        <Table.Cell>
+                          <Checkbox
+                            color="primary"
+                            checked={bookSelections.books.has(book?.id ?? "")}
+                            onChange={(event) => {
+                              onSelect(event, book);
+                            }}
+                          />
+                        </Table.Cell>
                         <Table.Cell>
                           {isValid(new Date(book.receivedAt))
                             ? new Date(book.receivedAt).toLocaleDateString(

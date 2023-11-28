@@ -6,7 +6,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BaseSyntheticEvent } from "react";
 import { toast } from "react-toastify";
 import { PublisherSchema } from "../schema";
-
 import { CustomInput } from "@components/ui/form/Input";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { Button, Modal } from "flowbite-react";

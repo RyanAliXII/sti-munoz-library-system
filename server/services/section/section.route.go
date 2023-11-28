@@ -11,10 +11,9 @@ func SectionRoutes(router *gin.RouterGroup) {
 	router.Use(middlewares.ValidatePermissions("Section.Access"))
 	router.Use(middlewares.BlockRequestFromClientApp)
 	router.GET("/", 
-	
 	controller.GetCategories)
 	router.POST("/",
-
 	middlewares.ValidateBody[SectionBody],
 	controller.NewCategory)
+	router.PUT("/:id", middlewares.ValidateBody[UpdateSectionBody], controller.UpdateSection)
 }

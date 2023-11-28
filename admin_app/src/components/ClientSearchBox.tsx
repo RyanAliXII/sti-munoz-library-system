@@ -12,9 +12,14 @@ import { Label } from "flowbite-react";
 type ClientSearchBoxProps = {
   setClient: (account: Account) => void;
   className?: string;
+  initialValue?: Account;
 };
 const HIGHLIGHTED_CLASS = "bg-gray-100 dark:bg-gray-600";
-const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
+const ClientSearchBox = ({
+  setClient,
+  className,
+  initialValue,
+}: ClientSearchBoxProps) => {
   const [searchKeyword, setKeyword] = useState("");
   const debounce = useDebounce();
   const DELAY_IN_MILLISECOND = 500;
@@ -24,7 +29,7 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
   const { Get } = useRequest();
   const fetchAccounts = async () => {
     try {
-      const { data: response } = await Get("/accounts/", {
+      const { data: response } = await Get("/accounts/?active=true", {
         params: {
           offset: 0,
           keyword: searchKeyword,
@@ -45,8 +50,10 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
   return (
     <>
       <Downshift
+        initialSelectedItem={initialValue}
         itemToString={(account) => (account ? account.displayName : "")}
         onChange={(account) => {
+          if (!account) return;
           setClient(account);
         }}
       >
@@ -77,7 +84,7 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
                 <ul
                   {...getMenuProps({
                     className:
-                      "w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded z-10 dark:bg-gray-700 dark:border-gray-600 small-scroll",
+                      "w-full absolute list-none max-h-80 bg-white overflow-y-auto cursor-pointer border mt-2 rounded z-20 dark:bg-gray-700 dark:border-gray-600 small-scroll",
                   })}
                 >
                   {accounts?.map((account, index) => {
@@ -100,14 +107,14 @@ const ClientSearchBox = ({ setClient, className }: ClientSearchBoxProps) => {
                   })}
                 </ul>
               ) : (
-                <div className="w-full absolute list-none h-52 overflow-y-auto cursor-pointer items-center flex justify-center bg-white border rounded mt-2 dark:bg-gray-700">
+                <div className="w-full absolute list-none h-52 overflow-y-auto cursor-pointer items-center flex justify-center bg-white border rounded mt-2 dark:bg-gray-700 z-20">
                   <ClipLoader color="#C5C5C5" />
                 </div>
               )
             ) : null}
 
             {isOpen && accounts.length === 0 ? (
-              <div className="w-full absolute list-none h-52 bg-white overflow-y-auto cursor-pointer border mt-2 rounded flex items-center justify-center dark:bg-gray-700 dark:border-none">
+              <div className="w-full absolute list-none h-52 bg-white overflow-y-auto cursor-pointer border mt-2 rounded flex items-center justify-center dark:bg-gray-700 dark:border-none z-20">
                 <span className="text-gray-400 text-sm">
                   No result found for {searchKeyword}
                 </span>
