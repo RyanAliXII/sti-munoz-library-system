@@ -60,9 +60,9 @@ const QueueItemsPage = lazy(
   () => import("./protected/borrowing-queue/ActiveQueueItems")
 );
 const GamePage = lazy(() => import("./protected/services/games/GamesPage"));
-const GameLogPage = lazy(
-  () => import("./protected/services/games/logs/GameLogPage")
-);
+// const GameLogPage = lazy(
+//   () => import("./protected/services/games/logs/GameLogPage")
+// );
 const DevicePage = lazy(
   () => import("./protected/services/devices/DevicePage")
 );
@@ -361,7 +361,7 @@ const pages = createRoutesFromChildren(
           </Suspense>
         }
       />
-      <Route
+      {/* <Route
         path="/services/games/logs"
         element={
           <Suspense fallback={<Loader />}>
@@ -370,7 +370,7 @@ const pages = createRoutesFromChildren(
             </PermissionGate>
           </Suspense>
         }
-      />
+      /> */}
       <Route
         path="/services/devices"
         element={
