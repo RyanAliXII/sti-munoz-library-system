@@ -1,0 +1,282 @@
+{{define "report/index"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <title>{{.book.Id}}</title>
+  </head>
+  <style type="text/css">
+    div {
+      break-inside: avoid;
+    }
+    .catalog-card {
+      min-height: 3in;
+      width: 5in;
+      border: 1px dotted black;
+      margin: 10px auto;
+      font-family: "Roboto", sans-serif;
+    }
+    .roboto {
+      font-family: "Roboto", sans-serif;
+    }
+    .ddc-cutter {
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .author-list {
+      max-width: 280px;
+    }
+    .card-content-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card-content {
+      width: fit-content;
+      max-width: 300px;
+    }
+    .main-text {
+      font-size: medium;
+    }
+    .text {
+      font-size: smaller;
+      word-spacing: 2px;
+    }
+    .text-small {
+      font-size: x-small;
+    }
+    .call-numbers {
+      width: 3in;
+      width: 5in;
+      gap: 15px;
+      margin: auto;
+    }
+    .call-number {
+      width: 0.9in;
+      height: 1.3in;
+      padding: 10px;
+      border: 1px dotted black;
+    }
+    .item {
+      margin-top: 5px;
+      align-items: center;
+      gap: 5px;
+      display: flex;
+    }
+    .headers {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+  </style>
+  <body>
+    <main style="width: 85%; margin: auto">
+      <div class="headers">
+        <img src="/assets/images/library-icon.svg" width="90px" height="90px" />
+        <h4>STI College Munoz-EDSA Library</h4>
+        <p>
+          <span>{{.from}}</span>
+          to
+          <span>{{.to}}</span>
+        </p>
+      </div>
+      <div class="mt-5">
+        <h5>Client Statistics</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td scope="row">Total Number of Clients</td>
+              <td scope="row">{{ .reportData.WalkIns}}</td>
+            </tr>
+            <tr>
+              <td scope="row">Average Clients Daily</td>
+              <td scope="row">{{ .reportData.AverageWalkIns }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div>
+          <div style="width: 800px"><canvas id="myChart"></canvas></div>
+        </div>
+      </div>
+      <div class="mt-5">
+        <h5>Borrowed Books</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td scope="row">Borrowed Books</td>
+              <td scope="row">{{ .reportData.BorrowedBooks}}</td>
+            </tr>
+            <tr>
+              <td scope="row">Unreturned Books</td>
+              <td scope="row">{{.reportData.UnreturnedBooks}}</td>
+            </tr>
+            {{range $borrowedSection := .borrowedSections}}
+            <tr>
+              <td scope="row">{{$borrowedSection.Name}}</td>
+              <td scope="row">{{$borrowedSection.Total}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+        <!-- <div><canvas id="gamePieCtx"></canvas></div> -->
+      </div>
+      <div class="mt-5" style="page-break-before: always">
+        <h5>Game Statistics</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $gameData := .gameLogData}}
+            <tr>
+              <td scope="row">{{$gameData.Name}}</td>
+              <td scope="row">{{$gameData.Total}}</td>
+            </tr>
+
+            {{end}}
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-center mt-2">
+          <div style="width: 400px">
+            <canvas id="gamePieCtx"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5">
+        <h5>Device Statistics</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $deviceData:= .deviceLogData}}
+            <tr>
+              <td scope="row">{{$deviceData.Name}}</td>
+              <td scope="row">{{$deviceData.Total}}</td>
+            </tr>
+
+            {{end}}
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-center mt-2">
+          <div style="width: 400px">
+            <canvas id="devicePieCtx"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script src="/assets/js/bootstrap.bundle.min"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const toReadableDate = (dateStr) => {
+      return new Date(dateStr).toLocaleDateString(undefined, {
+        month: "long",
+        day: "2-digit",
+        year: "numeric",
+      });
+    };
+    const deviceLogs = JSON.parse("{{.deviceLogJSON}}") ?? [];
+    const gameLogs = JSON.parse("{{.gameLogJSON}}") ?? [];
+    const walkInLogs = JSON.parse("{{.walkInLogsJSON}}") ?? [];
+
+    const ctx = document.getElementById("myChart");
+    const gamePieCtx = document.getElementById("gamePieCtx");
+    const devicePieCtx = document.getElementById("devicePieCtx");
+    new Chart(ctx, {
+      type: "bar",
+      animation: false,
+      data: {
+        labels: walkInLogs.map((log) => toReadableDate(log.date)),
+        datasets: [
+          {
+            label: "Client Statistics",
+            data: walkInLogs.map((log) => log.walkIns),
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        animation: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+
+    new Chart(gamePieCtx, {
+      type: "pie",
+      data: {
+        labels: gameLogs.map((g) => g.name),
+        datasets: [
+          {
+            label: "Game Statistics",
+            data: gameLogs.map((g) => g.total),
+            backgroundColor: [
+              "rgb(255, 99, 132)",
+              "rgb(54, 162, 235)",
+              "rgb(255, 205, 86)",
+            ],
+          },
+        ],
+      },
+      options: {
+        animation: false,
+      },
+    });
+    new Chart(devicePieCtx, {
+      type: "pie",
+      data: {
+        labels: deviceLogs.map((d) => d.name),
+        datasets: [
+          {
+            label: "Device Statistics",
+            data: deviceLogs.map((d) => d.total),
+            backgroundColor: [
+              "rgb(255, 99, 132)",
+              "rgb(54, 162, 235)",
+              "rgb(255, 205, 86)",
+            ],
+            hoverOffset: 4,
+          },
+        ],
+      },
+      options: {
+        animation: false,
+      },
+    });
+  </script>
+</html>
+
+{{end}}

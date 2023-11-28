@@ -37,6 +37,7 @@ func main() {
 	r := gin.New()
 	r.SetFuncMap(funcmap.FuncMap)
 	r.LoadHTMLFiles(loadtmpl.LoadHTMLFiles("./templates")...)
+	r.Static("/assets", "./assets")
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
 	r.Use(cors.New(cors.Config{

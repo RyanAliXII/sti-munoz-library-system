@@ -125,7 +125,7 @@ const Dashboard = () => {
       {
         label: "Statistics",
         data: walkInStats.map((w) => w.walkIns),
-        backgroundColor: ["#0288D1", "#F4D03F"],
+        backgroundColor: ["#0288D1"],
       },
     ],
   };

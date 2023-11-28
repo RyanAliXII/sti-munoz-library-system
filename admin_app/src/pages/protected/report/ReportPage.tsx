@@ -21,9 +21,17 @@ const ReportPage = () => {
   });
   const { Post } = useRequest();
   const generateReport = useMutation({
-    mutationFn: (form: GenerateReportForm) => Post("/reports", form),
-    onSuccess: () => {
+    mutationFn: (form: GenerateReportForm) =>
+      Post("/reports", form, {
+        responseType: "blob",
+      }),
+    onSuccess: (response) => {
       toast.success("Report has been generated.");
+      const url = URL.createObjectURL(response.data);
+      const a = document.createElement("a");
+      a.download = "report.pdf";
+      a.href = url;
+      a.click();
     },
   });
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -39,12 +47,12 @@ const ReportPage = () => {
   return (
     <Container>
       <form onSubmit={onSubmit}>
-        <div className="flex gap-2 py-4">
+        {/* <div className="flex gap-2 py-4">
           <Button color="primary" outline>
             Monthly
           </Button>
           <Button color="light">Weekly</Button>
-        </div>
+        </div> */}
         <div className="py-2">
           <Label>From</Label>
           <Datepicker
