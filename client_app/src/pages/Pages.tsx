@@ -6,36 +6,112 @@ import {
 } from "react-router-dom";
 import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
-import Login from "./Login";
-import Homepage from "./Homepage";
-import Search from "./protected/Search";
-import Catalog from "./protected/catalog/Catalog";
-import CatalogBookView from "./protected/catalog/CatalogBookView";
-import Page404 from "./error/Page404";
-import BagPage from "./protected/bag/BagPage";
-import ProfilePage from "./protected/profile/ProfilePage";
-import BorrowedBooksPage from "./protected/borrowed_books/BorrowedBookPage";
-import EbookView from "./protected/ebook/EbookView";
-import ReservationPage from "./protected/reservation/ReservationPage";
-import QueuePage from "./protected/queues/QueuePage";
+import { Suspense, lazy } from "react";
+import Loader from "@components/Loader";
+const Login = lazy(() => import("./Login"));
+const Homepage = lazy(() => import("./Homepage"));
+const Search = lazy(() => import("./protected/Search"));
+const Catalog = lazy(() => import("./protected/catalog/Catalog"));
+const CatalogBookView = lazy(
+  () => import("./protected/catalog/CatalogBookView")
+);
+const Page404 = lazy(() => import("./error/Page404"));
+const BagPage = lazy(() => import("./protected/bag/BagPage"));
+const ProfilePage = lazy(() => import("./protected/profile/ProfilePage"));
+const BorrowedBooksPage = lazy(
+  () => import("./protected/borrowed_books/BorrowedBookPage")
+);
+const EbookView = lazy(() => import("./protected/ebook/EbookView"));
+const ReservationPage = lazy(
+  () => import("./protected/reservation/ReservationPage")
+);
+const QueuePage = lazy(() => import("./protected/queues/QueuePage"));
 
 const pages = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route element={<ProtectedRoutes />}>
-        <Route path="/search" element={<Search />} />
-        <Route path="/catalog" element={<Catalog />} />
-        <Route path="/catalog/:id" element={<CatalogBookView />} />
-        <Route path="/bag" element={<BagPage />} />
+        <Route
+          path="/search"
+          element={
+            <Suspense fallback={<Loader />}>
+              <Search />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/catalog"
+          element={
+            <Suspense fallback={<Loader />}>
+              <Catalog />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/catalog/:id"
+          element={
+            <Suspense fallback={<Loader />}>
+              <CatalogBookView />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/bag"
+          element={
+            <Suspense fallback={<Loader />}>
+              <BagPage />{" "}
+            </Suspense>
+          }
+        />
 
-        <Route path="/search" element={<Search />} />
-        <Route path="/catalog" element={<Catalog />} />
-        <Route path="/catalog/:id" element={<CatalogBookView />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/borrowed-books" element={<BorrowedBooksPage />} />
-        <Route path="/ebooks/:id" element={<EbookView />} />
-        <Route path="/reservations" element={<ReservationPage />} />
-        <Route path="/queues" element={<QueuePage />} />
+        <Route
+          path="/catalog/:id"
+          element={
+            <Suspense fallback={<Loader />}>
+              <CatalogBookView />{" "}
+            </Suspense>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <Suspense fallback={<Loader />}>
+              <ProfilePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/borrowed-books"
+          element={
+            <Suspense fallback={<Loader />}>
+              <BorrowedBooksPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/ebooks/:id"
+          element={
+            <Suspense fallback={<Loader />}>
+              <EbookView />{" "}
+            </Suspense>
+          }
+        />
+        <Route
+          path="/reservations"
+          element={
+            <Suspense fallback={<Loader />}>
+              <ReservationPage />{" "}
+            </Suspense>
+          }
+        />
+        <Route
+          path="/queues"
+          element={
+            <Suspense fallback={<Loader />}>
+              <QueuePage />{" "}
+            </Suspense>
+          }
+        />
       </Route>
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />
