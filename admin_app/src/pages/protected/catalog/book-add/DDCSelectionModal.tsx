@@ -18,7 +18,7 @@ import { Button, Checkbox, Modal, Table } from "flowbite-react";
 const DDCSelectionModal: React.FC<ModalProps> = ({ closeModal, isOpen }) => {
   return (
     <Modal onClose={closeModal} show={isOpen} dismissible size={"4xl"}>
-      <Modal.Body>
+      <Modal.Body style={{ maxHeight: "800px" }} className="small-scroll">
         <DDCTable closeModal={closeModal} />
       </Modal.Body>
     </Modal>
