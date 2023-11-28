@@ -5,14 +5,14 @@ import React, {
   useState,
 } from "react";
 import { ObjectSchema, ValidationError } from "yup";
-import { ObjectShape } from "yup/lib/object";
+// import { ObjectShape } from "yup/lib/object";
 import get from "lodash/get";
 import set from "lodash/set";
 import scrollToElement from "scroll-to-element";
 
 type UseFormProps<T> = {
   initialFormData: T;
-  schema?: ObjectSchema<ObjectShape>;
+  schema?: any;
   scrollToError?: boolean;
   parentElementScroll?: MutableRefObject<HTMLElement | null>;
 };
