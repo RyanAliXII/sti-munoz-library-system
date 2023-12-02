@@ -10,4 +10,5 @@ func UserRoutes(router * gin.RouterGroup){
 	userCtrler := NewUserController()
 	router.Use(middlewares.BlockRequestFromClientApp)
 	router.GET("/types", userCtrler.GetUserTypes)
+	router.GET("/programs", userCtrler.GetUserProgramsAndStrands)
 }

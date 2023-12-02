@@ -315,6 +315,11 @@ export type UserType = {
   id: string;
   name: string;
 };
+export type UserProgramOrStrand = {
+  id: string;
+  name: string;
+  code: string;
+};
 
 export type ClientLog = {
   id: string;

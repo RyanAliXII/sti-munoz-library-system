@@ -16,6 +16,7 @@ func NewUserRepository () UserRepository {
 }
 type UserRepository interface {
 	GetUserTypes() ([]model.UserType, error)
+	GetUserProgramsAndStrands()([]model.UserProgramOrStrand, error) 
 }
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
@@ -23,3 +24,9 @@ func (repo * User)GetUserTypes()([]model.UserType, error) {
 	err := repo.db.Select(&types,"SELECT id, name from system.user_type")
 	return types, err
 }
+func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){
+	programs := make([]model.UserProgramOrStrand, 0)
+	err := repo.db.Select(&programs,"SELECT id, code, name from system.user_program")
+	return programs, err
+}
+

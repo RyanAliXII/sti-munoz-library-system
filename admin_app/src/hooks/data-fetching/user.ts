@@ -1,4 +1,4 @@
-import { UserType } from "@definitions/types";
+import { UserProgramOrStrand, UserType } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 
@@ -26,6 +26,34 @@ export const useUserTypes = ({
     onSuccess: onSuccess,
     onError: onError,
     queryKey: ["userTypes"],
+    onSettled,
+  });
+};
+
+export const useUserPrograms = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: UseQueryOptions<UserProgramOrStrand[]>) => {
+  const { Get } = useRequest();
+
+  const fetchUserPrograms = async () => {
+    try {
+      const { data: response } = await Get("/users/programs", {
+        params: {},
+      });
+
+      const { data } = response;
+      return data?.programs ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<UserProgramOrStrand[]>({
+    queryFn: fetchUserPrograms,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["userPrograms"],
     onSettled,
   });
 };

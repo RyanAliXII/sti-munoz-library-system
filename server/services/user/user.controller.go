@@ -18,6 +18,7 @@ func NewUserController() UserController {
 }
 type UserController interface {
 	GetUserTypes(ctx *gin.Context)
+	GetUserProgramsAndStrands(ctx *gin.Context)
 }
 
 func (ctrler * User)GetUserTypes(ctx *gin.Context){
@@ -31,3 +32,13 @@ func (ctrler * User)GetUserTypes(ctx *gin.Context){
 
 }
 
+func (ctrler * User)GetUserProgramsAndStrands(ctx *gin.Context){
+	programs, err := ctrler.userRepo.GetUserProgramsAndStrands()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"programs": programs,
+	}, "User types fetched."))
+
+}
