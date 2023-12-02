@@ -1,31 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
-
 import Container from "@components/ui/container/Container";
 import { BorrowRequest } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useSearchParams } from "react-router-dom";
+import TableContainer from "@components/ui/table/TableContainer";
+import { toReadableDatetime } from "@helpers/datetime";
+import { Table } from "flowbite-react";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 import { BiErrorAlt } from "react-icons/bi";
-import TimeAgo from "timeago-react";
-import { Table } from "flowbite-react";
-import { toReadableDatetime } from "@helpers/datetime";
-import TableContainer from "@components/ui/table/TableContainer";
+import { useSearchParamsState } from "react-use-search-params-state";
+import { useState } from "react";
+import CustomPagination from "@components/pagination/CustomPagination";
 
 const BorrowRequestPage = () => {
+  const [pages, setPages] = useState(1);
+  const [filters, setFilters] = useSearchParamsState({
+    page: { default: 1, type: "number" },
+    from: { default: "", type: "string" },
+    to: { default: "", type: "string" },
+    keyword: { default: "", type: "string" },
+  });
   const { Get } = useRequest();
   const fetchTransactions = async () => {
     try {
-      const { data: response } = await Get("/borrowing/requests", {});
-
+      const { data: response } = await Get("/borrowing/requests", {
+        params: {
+          page: filters?.page ?? 1,
+          from: filters?.from ?? "",
+          to: filters?.to ?? "",
+          keyword: filters?.keyword ?? "",
+        },
+      });
+      setPages(response?.data?.metadata?.pages ?? 1);
       return response?.data?.borrowRequests ?? [];
     } catch {
       return [];
     }
   };
+
   const { data: requests } = useQuery<BorrowRequest[]>({
     queryFn: fetchTransactions,
-    queryKey: ["transactions"],
+    queryKey: ["transactions", filters],
   });
   const navigate = useNavigate();
   return (
@@ -68,6 +83,15 @@ const BorrowRequestPage = () => {
               })}
             </Table.Body>
           </Table>
+          <div className="py-5">
+            <CustomPagination
+              pageCount={pages}
+              forcePage={filters?.page - 1 ?? 1}
+              onPageChange={({ selected }) => {
+                setFilters({ page: selected + 1 });
+              }}
+            />
+          </div>
         </TableContainer>
       </Container>
     </>

@@ -78,7 +78,8 @@ func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]m
 		goqu.L("COUNT(1) filter(where status_id = 5) as total_cancelled"),
 		goqu.L("COUNT(1) filter (where status_id = 6) as total_unreturned"),
 		goqu.MAX("bbv.created_at").As("created_at"),
-	).From(goqu.T("borrowed_book_all_view").As("bbv")).GroupBy("group_id", "account_id", "client").Prepared(true).
+	).From(goqu.T("borrowed_book_all_view").As("bbv")).
+	GroupBy("group_id", "account_id", "client").Prepared(true).
 	Order(exp.NewOrderedExpression(goqu.MAX("bbv.created_at"), exp.DescSortDir,exp.NoNullsSortType)).
 	Limit(uint(filter.Limit)).
 	Offset(uint(filter.Offset))
