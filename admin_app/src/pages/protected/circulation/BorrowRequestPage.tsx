@@ -15,12 +15,19 @@ import {
 } from "flowbite-react";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 import { BiErrorAlt } from "react-icons/bi";
+<<<<<<< HEAD
 import { useSearchParamsState } from "react-use-search-params-state";
 import { ChangeEvent, useState } from "react";
 import CustomPagination from "@components/pagination/CustomPagination";
 import { format } from "date-fns";
 import useDebounce from "@hooks/useDebounce";
 import { MdFilterList } from "react-icons/md";
+=======
+import TimeAgo from "timeago-react";
+import { Table } from "flowbite-react";
+import { toReadableDatetime } from "@helpers/datetime";
+import TableContainer from "@components/ui/table/TableContainer";
+>>>>>>> 5278322ac0fcfa6f69ceea98d1db3a0bfedddefb
 
 const BorrowRequestPage = () => {
   const [pages, setPages] = useState(1);
