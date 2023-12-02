@@ -232,6 +232,7 @@ const GameLoggingPage = () => {
           <div className="py-5">
             <CustomPagination
               pageCount={pages}
+              isHidden={pages <= 1}
               forcePage={filters?.page - 1 ?? 0}
               onPageChange={({ selected }) => {
                 setFilters({

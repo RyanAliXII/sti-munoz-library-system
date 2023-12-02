@@ -4,13 +4,23 @@ import { BorrowRequest } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import TableContainer from "@components/ui/table/TableContainer";
-import { toReadableDatetime } from "@helpers/datetime";
-import { Table } from "flowbite-react";
+import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
+import {
+  Button,
+  Datepicker,
+  Dropdown,
+  Label,
+  Table,
+  TextInput,
+} from "flowbite-react";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 import { BiErrorAlt } from "react-icons/bi";
 import { useSearchParamsState } from "react-use-search-params-state";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import CustomPagination from "@components/pagination/CustomPagination";
+import { format } from "date-fns";
+import useDebounce from "@hooks/useDebounce";
+import { MdFilterList } from "react-icons/md";
 
 const BorrowRequestPage = () => {
   const [pages, setPages] = useState(1);
@@ -43,9 +53,76 @@ const BorrowRequestPage = () => {
     queryKey: ["transactions", filters],
   });
   const navigate = useNavigate();
+  const handleFrom = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setFilters({
+      from: dateStr,
+      page: 1,
+    });
+  };
+  const handleTo = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setFilters({
+      to: dateStr,
+      page: 1,
+    });
+  };
+  const handleReset = () => {
+    setFilters({
+      from: "",
+      to: "",
+    });
+  };
+  const debounceSearch = useDebounce();
+  const search = (q: any) => {
+    setFilters({ page: 1, keyword: q });
+  };
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    debounceSearch(search, event.target.value, 500);
+  };
   return (
     <>
       <Container>
+        <div className="py-5">
+          <div className="py-3 flex justify-between items-center">
+            <div className="flex gap-2">
+              <TextInput
+                placeholder="Search by account"
+                onChange={handleSearch}
+              />
+              <Dropdown
+                color="light"
+                arrowIcon={false}
+                className="py-2 p-3"
+                label={<MdFilterList className="text-lg" />}
+              >
+                <div className="p-2 flex flex-col gap-2 ">
+                  <Label>From</Label>
+                  <Datepicker
+                    value={toReadableDate(filters.from)}
+                    onSelectedDateChanged={handleFrom}
+                  />
+                </div>
+                <div className="p-2 flex flex-col">
+                  <Label className="block">To</Label>
+                  <Datepicker
+                    value={toReadableDate(filters?.to)}
+                    onSelectedDateChanged={handleTo}
+                  />
+                </div>
+                <Button
+                  color="primary"
+                  className="w-full"
+                  onClick={handleReset}
+                >
+                  Reset
+                </Button>
+              </Dropdown>
+            </div>
+
+            <Button color="primary">Log Game</Button>
+          </div>
+        </div>
         <TableContainer>
           <Table hoverable>
             <Table.Head>
@@ -86,6 +163,7 @@ const BorrowRequestPage = () => {
           <div className="py-5">
             <CustomPagination
               pageCount={pages}
+              isHidden={pages <= 1}
               forcePage={filters?.page - 1 ?? 1}
               onPageChange={({ selected }) => {
                 setFilters({ page: selected + 1 });
