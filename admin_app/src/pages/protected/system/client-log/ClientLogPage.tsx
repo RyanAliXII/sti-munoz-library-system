@@ -1,26 +1,43 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
+import CustomPagination from "@components/pagination/CustomPagination";
 import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
 
 import { ClientLog } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
+import pages from "@pages/Pages";
 import { useQuery } from "@tanstack/react-query";
 import { Table } from "flowbite-react";
+import { useState } from "react";
+import { useSearchParamsState } from "react-use-search-params-state";
 import TimeAgo from "timeago-react";
 
 const ClientLogPage = () => {
   const { Get } = useRequest();
+
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterParams, setFilterParams] = useSearchParamsState({
+    page: { default: 1, type: "number" },
+  });
   const fetchClientLogs = async () => {
     try {
-      const { data: response } = await Get("/client-logs/");
-      return response?.data?.clientLogs ?? [];
+      const { data: response } = await Get("/client-logs/", {
+        params: {
+          page: filterParams?.page ?? 1,
+        },
+      });
+      const { data } = response;
+      if (data?.metadata) {
+        setTotalPages(data?.metadata?.pages ?? 1);
+      }
+      return data?.clientLogs ?? [];
     } catch (error) {
       return [];
     }
   };
   const { data: clientLogs } = useQuery<ClientLog[]>({
     queryFn: fetchClientLogs,
-    queryKey: ["clientLogs"],
+    queryKey: ["clientLogs", filterParams],
   });
   return (
     <Container>
@@ -59,6 +76,17 @@ const ClientLogPage = () => {
             </Table.Body>
           </Table>
         </TableContainer>
+        <div className="py-5">
+          <CustomPagination
+            isHidden={totalPages <= 1}
+            pageCount={totalPages}
+            onPageChange={({ selected }) => {
+              setFilterParams({
+                page: selected + 1,
+              });
+            }}
+          />
+        </div>
       </LoadingBoundaryV2>
     </Container>
   );

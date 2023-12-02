@@ -72,8 +72,8 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 	FROM system.client_log as cl
 	INNER JOIN system.account on cl.client_id = account.id
 	INNER JOIN system.scanner_account on cl.scanner_id = scanner_account.id
-	ORDER BY cl.created_at DESC LIMIT $1`
-	err := repo.db.Select(&clientLogs, query, filter.Limit)
+	ORDER BY cl.created_at DESC LIMIT $1 OFFSET $2 `
+	err := repo.db.Select(&clientLogs, query, filter.Limit, filter.Offset)
 	if err != nil {
 		return clientLogs,meta, err
 	}
