@@ -18,8 +18,9 @@ func(repo * Game)Log(log model.GameLog) error{
 	return err
 }
 
-func (repo * Game)GetLogs(filter * GameLogFilter)([]model.GameLog, error) {
+func (repo * Game)GetLogs(filter * GameLogFilter)([]model.GameLog, Metadata, error) {
 	logs := make([]model.GameLog, 0)
+	metadata := Metadata{}
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(
 		goqu.C("id").Table("game_log"),
@@ -55,10 +56,22 @@ func (repo * Game)GetLogs(filter * GameLogFilter)([]model.GameLog, error) {
 	Offset(uint(filter.Offset))
 	query, args, err := ds.ToSQL()
 	if err != nil {
-		return logs, err
+		return logs, metadata, err
 	}
 	err = repo.db.Select(&logs, query, args...)
-	return logs, err
+	if err != nil {
+		return logs, metadata, err
+	}
+	ds = repo.buildGameLogMetadataQuery(filter)
+	query, args, err = ds.ToSQL()
+	if err != nil {
+		return logs, metadata, err
+	}
+	err = repo.db.Get(&metadata, query, args...)
+	if err != nil {
+		return logs, metadata, err
+	}
+	return logs, metadata, nil
 }
 func (repo *Game)buildGameLogFilters(ds * goqu.SelectDataset, filter * GameLogFilter)*goqu.SelectDataset{
 	if(len(filter.From) > 0 && len(filter.To) > 0) {
@@ -66,6 +79,15 @@ func (repo *Game)buildGameLogFilters(ds * goqu.SelectDataset, filter * GameLogFi
 			goqu.L("date(game_log.created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
 		) 
 	}
+	return ds
+}
+func(repo *Game)buildGameLogMetadataQuery(filter * GameLogFilter)*goqu.SelectDataset {
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filter.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("game_log").Schema("services"))
+	ds = repo.buildGameLogFilters(ds, filter)
 	return ds
 }
 func (repo * Game)DeleteLog(id string)(error){

@@ -26,7 +26,7 @@ func (ctrler * Game)LogGame(ctx * gin.Context) {
 }
 func (ctrler * Game)GetGameLogs(ctx * gin.Context){
 	filter := NewGameLogFilter(ctx)
-	logs, err := ctrler.gameRepo.GetLogs(&repository.GameLogFilter{
+	logs,metadata, err := ctrler.gameRepo.GetLogs(&repository.GameLogFilter{
 		From: filter.From,
 		To: filter.To,
 		Filter: filter.Filter,
@@ -36,6 +36,7 @@ func (ctrler * Game)GetGameLogs(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"gameLogs": logs,
+		"metadata": metadata,
 	}, "Logs fetched."))
 }
 func(ctrler * Game) DeleteGameLog(ctx * gin.Context){
