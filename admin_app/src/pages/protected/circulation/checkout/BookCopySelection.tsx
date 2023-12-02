@@ -137,9 +137,7 @@ const BookCopySelectionModal = ({
       )
     ) {
       const date = getDate5DaysFromNow();
-      const dateValue = `${date.getFullYear()}-${
-        date.getMonth() + 1
-      }-${date.getDate()}`;
+      const dateValue = format(date, "yyyy-MM-dd");
       setSelectedAccessions((prevSelected) => [
         ...prevSelected,
         {

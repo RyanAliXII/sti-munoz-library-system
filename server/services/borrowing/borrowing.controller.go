@@ -175,8 +175,8 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	}
 	nowTime := time.Now().In(loc)
 	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
-	layout := "2006-01-02"
-	parsedTime, err := time.Parse(layout, dateStr)
+	
+	parsedTime, err := time.Parse(time.DateOnly, dateStr)
 	if err != nil {
 		return err
 	}

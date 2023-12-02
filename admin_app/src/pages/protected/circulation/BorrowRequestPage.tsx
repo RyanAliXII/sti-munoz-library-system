@@ -10,6 +10,7 @@ import { BiErrorAlt } from "react-icons/bi";
 import TimeAgo from "timeago-react";
 import { Table } from "flowbite-react";
 import { toReadableDatetime } from "@helpers/datetime";
+import TableContainer from "@components/ui/table/TableContainer";
 
 const BorrowRequestPage = () => {
   const { Get } = useRequest();
@@ -30,40 +31,44 @@ const BorrowRequestPage = () => {
   return (
     <>
       <Container>
-        <Table hoverable>
-          <Table.Head>
-            <Table.HeadCell>Client</Table.HeadCell>
-            <Table.HeadCell>Created At</Table.HeadCell>
-            <Table.HeadCell></Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y dark:divide-gray-700">
-            {requests?.map((request) => {
-              return (
-                <Table.Row
-                  key={request.id}
-                  className="cursor-pointer"
-                  onClick={() => navigate(`/borrowing/requests/${request.id}`)}
-                >
-                  <Table.Cell className="font-semibold text-gray-900 dark:text-gray-50">
-                    <div className="font-semibold">
-                      {request.client.displayName}
-                    </div>
-                    <div className="text-sm text-gray-500 ">
-                      {request.client.email}
-                    </div>
-                  </Table.Cell>
+        <TableContainer>
+          <Table hoverable>
+            <Table.Head>
+              <Table.HeadCell>Client</Table.HeadCell>
+              <Table.HeadCell>Created At</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y dark:divide-gray-700">
+              {requests?.map((request) => {
+                return (
+                  <Table.Row
+                    key={request.id}
+                    className="cursor-pointer"
+                    onClick={() =>
+                      navigate(`/borrowing/requests/${request.id}`)
+                    }
+                  >
+                    <Table.Cell className="font-semibold text-gray-900 dark:text-gray-50">
+                      <div className="font-semibold">
+                        {request.client.displayName}
+                      </div>
+                      <div className="text-sm text-gray-500 ">
+                        {request.client.email}
+                      </div>
+                    </Table.Cell>
 
-                  <Table.Cell>
-                    {toReadableDatetime(request.createdAt)}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <RequiresAttentionText request={request} />
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-          </Table.Body>
-        </Table>
+                    <Table.Cell>
+                      {toReadableDatetime(request.createdAt)}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <RequiresAttentionText request={request} />
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table>
+        </TableContainer>
       </Container>
     </>
   );

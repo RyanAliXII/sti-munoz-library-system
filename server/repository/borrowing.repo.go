@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -87,9 +89,30 @@ func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]m
 		return requests, metadata, err
 	}
 	err = repo.db.Select(&requests, query, args...)
+	if err != nil {
+		return requests, metadata, err
+	}
+	ds = repo.buildBorrowingRequestMetadata(filter)
+	query, args, err = ds.ToSQL()
+	fmt.Println(query)
+	if err != nil {
+		return requests, metadata, err
+	}
+	err = repo.db.Get(&metadata, query, args...)
+	if err != nil {
+		return requests, metadata, err
+	}
 	return requests, metadata, err
 }
-
+func (repo * Borrowing)buildBorrowingRequestMetadata(filter * BorrowingRequestFilter)(*goqu.SelectDataset) {
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filter.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.Select("group_id").From(goqu.T("borrowed_book_all_view")).GroupBy("group_id").As("bbv"))
+	
+	return ds
+}
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
 	query := `SELECT * FROM borrowed_book_all_view where group_id = $1`
