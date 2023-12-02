@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import Loader from "@components/Loader";
 import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
+import UserProgramPage from "./protected/users/UserProgramPage";
 
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
@@ -440,6 +441,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <UserTypePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/users/program-strand"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <UserProgramPage />
             </PermissionGate>
           </Suspense>
         }
