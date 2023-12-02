@@ -6,6 +6,8 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
@@ -56,24 +58,48 @@ func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	return nil
 }
 func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, Metadata, error) {
-	
 	clientLogs := make([]model.ClientLog, 0)
 	meta := Metadata{}
-	query := `
-	SELECT cl.id,json_build_object('id', account.id, 
-	'givenName', account.given_name,
-	 'surname', account.surname, 
-	'displayName',account.display_name,
-	 'email', account.email) as client,  json_build_object('id', scanner_account.id, 
-	'username', scanner_account.username,
-	 'description', scanner_account.description 
-	) as scanner,
-	cl.created_at
-	FROM system.client_log as cl
-	INNER JOIN system.account on cl.client_id = account.id
-	INNER JOIN system.scanner_account on cl.scanner_id = scanner_account.id
-	ORDER BY cl.created_at DESC LIMIT $1 OFFSET $2 `
-	err := repo.db.Select(&clientLogs, query, filter.Limit, filter.Offset)
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(
+		goqu.C("id").Table("cl"),
+		goqu.C("created_at").Table("cl"),
+		goqu.L(`
+		json_build_object(
+		'id', account.id, 
+		'givenName', account.given_name,
+		'surname', account.surname, 
+		'displayName',account.display_name,
+		'email', account.email)`).As("client"),
+		goqu.L(`
+		json_build_object(
+		'id', scanner_account.id, 
+		'username', scanner_account.username,
+		'description', scanner_account.description 
+		)`).As("scanner"),
+	).
+	From(goqu.T("client_log").Schema("system").As("cl")).
+	InnerJoin(goqu.T("account").Schema("system"), goqu.On(goqu.Ex{
+		"cl.client_id" : goqu.I("account.id"),
+	})).
+	InnerJoin(goqu.T("scanner_account").Schema("system"), goqu.On(goqu.Ex{
+		"cl.scanner_id" : goqu.I("scanner_account.id"),
+	}))
+	if(len(filter.From) > 0  && len(filter.To) > 0){
+		ds = ds.Where(
+			goqu.L("date(cl.created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
+		) 
+	}
+	ds = ds.Prepared(true).
+	Order(exp.NewOrderedExpression(goqu.I("cl.created_at"), exp.DescSortDir, exp.NoNullsSortType)).
+	Limit(uint(filter.Limit)).
+	Offset(uint(filter.Offset))
+	query, args, err :=  ds.ToSQL()
+
+	if err != nil {
+		return clientLogs, meta, err
+	}
+	err = repo.db.Select(&clientLogs, query, args...)
 	if err != nil {
 		return clientLogs,meta, err
 	}
