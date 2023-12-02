@@ -1,4 +1,4 @@
-package game
+package clientlog
 
 import (
 	"time"
@@ -6,22 +6,17 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/gin-gonic/gin"
 )
-type GameBody struct {
-	Name string `json:"name" binding:"required,max=100,min=1"`
-	Description string `json:"description" binding:"required,min=1,max=255"`
-}
 
-type GameLogBody struct {
-	AccountId string `json:"accountId" binding:"required,uuid"`
-	GameId string `json:"gameId" binding:"required,uuid"`
-}
-type GameLogFilter struct {
+
+
+type ClientLogFilter struct {
 	From  string `form:"from"`
 	To string `form:"to"`
 	Filter filter.Filter
 }
-func NewGameLogFilter(ctx * gin.Context) *GameLogFilter{
-	filter := &GameLogFilter{}
+
+func NewFilter(ctx * gin.Context) *ClientLogFilter {
+	filter := ClientLogFilter{}
 	err := ctx.BindQuery(&filter)
 	if err != nil {
 		logger.Error(err.Error())
@@ -37,5 +32,5 @@ func NewGameLogFilter(ctx * gin.Context) *GameLogFilter{
 		filter.From = ""
 		filter.To = ""
 	}
-	return filter
+	return &filter
 }

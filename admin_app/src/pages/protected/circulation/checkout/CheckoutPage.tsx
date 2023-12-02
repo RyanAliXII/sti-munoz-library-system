@@ -1,10 +1,7 @@
 import { useState } from "react";
-
 import { Account, Book, DetailedAccession } from "@definitions/types";
 import { useMutation } from "@tanstack/react-query";
-
 import { useForm } from "@hooks/useForm";
-
 import Container from "@components/ui/container/Container";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import { BookInitialValue } from "@definitions/defaults";
@@ -17,7 +14,6 @@ import { CheckoutSchemaValidation } from "../schema";
 import BookCopySelectionModal from "./BookCopySelection";
 import BookSearchBox from "./BookSearchBox";
 import ClientSearchBox from "./ClientSearchBox";
-
 import { ConfirmDialog } from "@components/ui/dialog/Dialog";
 import Tippy from "@tippyjs/react";
 import { format } from "date-fns";
@@ -255,6 +251,7 @@ const CheckoutPage = () => {
                           onChange={(date) => {
                             if (!date) return;
                             const dateValue = format(date, "yyyy-MM-dd");
+                            console.log(dateValue);
                             setForm((prev) => ({
                               ...prev,
                               accessions: prev.accessions.map((a) => {

@@ -1,7 +1,8 @@
-import { Game, GameLog } from "@definitions/types";
+import { Game, GameLog, Metadata } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
+  QueryFunction,
   UseQueryOptions,
   useMutation,
   useQuery,
@@ -116,32 +117,65 @@ export const useGameLog = ({
   });
 };
 
+type GameLogFilter = {
+  page: number;
+  keyword: string;
+  from: string;
+  to: string;
+};
+
+type GameLogsData = {
+  metadata: Metadata;
+  gameLogs: GameLog[];
+};
 export const useGameLogs = ({
   onSuccess,
   onError,
   onSettled,
-}: UseQueryOptions<GameLog[]>) => {
+  queryKey,
+}: UseQueryOptions<
+  GameLogsData,
+  unknown,
+  GameLogsData,
+  [string, GameLogFilter]
+>) => {
   const { Get } = useRequest();
 
-  const fetchLogs = async () => {
+  const fetchLogs: QueryFunction<
+    GameLogsData,
+    [string, GameLogFilter]
+  > = async ({ queryKey }) => {
     try {
+      const filter = queryKey[1];
       const { data: response } = await Get("/games/logs", {
-        params: {},
+        params: {
+          page: filter?.page ?? 1,
+          keyword: filter?.keyword ?? "",
+          from: filter?.from ?? "",
+          to: filter?.to ?? "",
+        },
       });
-
       const { data } = response;
-      return data?.gameLogs ?? [];
+      return data;
     } catch {
-      return [];
+      return {
+        gameLogs: [],
+        metadata: {
+          pages: 1,
+          records: 0,
+        },
+      };
     }
   };
-  return useQuery<GameLog[]>({
-    queryFn: fetchLogs,
-    onSuccess: onSuccess,
-    onError: onError,
-    queryKey: ["gameLogs"],
-    onSettled,
-  });
+  return useQuery<GameLogsData, unknown, GameLogsData, [string, GameLogFilter]>(
+    {
+      queryFn: fetchLogs,
+      onSuccess: onSuccess,
+      onError: onError,
+      queryKey: queryKey,
+      onSettled,
+    }
+  );
 };
 
 export const useDeleteGameLog = ({

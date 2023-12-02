@@ -4,7 +4,6 @@ export const BookInitialValue: Book = {
   subject: "",
   title: "",
   ebook: "",
-  subject: "",
   isbn: "",
   authors: [],
   section: {

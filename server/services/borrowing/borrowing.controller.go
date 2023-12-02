@@ -175,8 +175,8 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	}
 	nowTime := time.Now().In(loc)
 	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
-	layout := "2006-01-02"
-	parsedTime, err := time.Parse(layout, dateStr)
+	
+	parsedTime, err := time.Parse(time.DateOnly, dateStr)
 	if err != nil {
 		return err
 	}
@@ -188,12 +188,18 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	return nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
-	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
+	filter := NewBorrowingRequestFilter(ctx)
+	requests,metadata, err := ctrler.borrowingRepo.GetBorrowingRequests(&repository.BorrowingRequestFilter{
+		From: filter.From,
+		To: filter.To,
+		Filter: filter.Filter,
+	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowRequests": requests,
+		"metadata": metadata,
 	}, "Borrow requests fetched."))
 }
 func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){

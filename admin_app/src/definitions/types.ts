@@ -293,6 +293,10 @@ export type LibraryStats = {
   monthlyBorrowedSections: BorrowedSection[];
   weeklyBorrowedSections: BorrowedSection[];
 };
+export type Metadata = {
+  pages: number;
+  records: number;
+};
 export type WalkInLog = {
   date: string;
   walkIns: number;

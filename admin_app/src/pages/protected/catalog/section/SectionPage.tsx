@@ -99,15 +99,15 @@ const SectionPage = () => {
                             <AiOutlineEdit className="cursor-pointer text-xl" />
                           </Button>
                         </Tippy>
-                        <Tippy content="Delete">
-                          {/* <Button
+                        {/* <Tippy content="Delete">
+                          <Button
                             onClick={openEditModal}
                             color="failure"
                             size="xs"
                           >
                             <AiOutlineDelete className="cursor-pointer  text-xl" />
-                          </Button> */}
-                        </Tippy>
+                          </Button>
+                        </Tippy> */}
                       </Table.Cell>
                     </Table.Row>
                   );

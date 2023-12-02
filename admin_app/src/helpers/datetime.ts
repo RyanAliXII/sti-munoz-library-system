@@ -28,6 +28,7 @@ export const getTimeFromDate = (datetimeStr: string) => {
 };
 
 export const toReadableDate = (dateStr: string) => {
+  if (dateStr.length === 0) return "";
   return new Date(dateStr).toLocaleDateString(undefined, {
     month: "long",
     day: "2-digit",

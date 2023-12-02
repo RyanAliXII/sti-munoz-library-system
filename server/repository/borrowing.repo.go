@@ -2,14 +2,17 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
 type BorrowingRepository interface {
 
 	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
-	GetBorrowingRequests()([]model.BorrowingRequest, error)
+	GetBorrowingRequests(filter * BorrowingRequestFilter)([]model.BorrowingRequest, Metadata, error)
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
 	MarkAsApproved(id string, remarks string) error 
@@ -25,7 +28,11 @@ type BorrowingRepository interface {
 }
 type Borrowing struct{
 	db * sqlx.DB
-
+}
+type BorrowingRequestFilter struct {
+    From string
+	To string
+	filter.Filter
 }
 func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error{
 	transaction, err := repo.db.Beginx()
@@ -53,27 +60,86 @@ func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEb
 	transaction.Commit()
 	return err
 }
-
-
-func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
+func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]model.BorrowingRequest, Metadata, error){
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(
+		goqu.C("group_id").As("id"),
+		goqu.C("account_id"),
+		goqu.C("client"),
+		goqu.L("SUM(penalty)").As("total_penalty"),
+		goqu.L("COUNT(1) filter (where status_id = 1)  as total_pending"),
+		goqu.L("COUNT(1) filter(where status_id = 2) as total_approved"),
+		goqu.L("COUNT(1) filter (where status_id = 3) as total_checked_out"),
+		goqu.L("COUNT(1) filter(where status_id = 4) as total_returned"),
+		goqu.L("COUNT(1) filter(where status_id = 5) as total_cancelled"),
+		goqu.L("COUNT(1) filter (where status_id = 6) as total_unreturned"),
+		goqu.MAX("bbv.created_at").As("created_at"),
+	).From(goqu.T("borrowed_book_all_view").As("bbv"))
+	ds = repo.buildBorrowingRequestFilters(ds, filter)
+	ds = ds.GroupBy("group_id", "account_id", "client").Prepared(true).
+	Order(exp.NewOrderedExpression(goqu.MAX("bbv.created_at"), exp.DescSortDir,exp.NoNullsSortType)).
+	Limit(uint(filter.Limit)).
+	Offset(uint(filter.Offset))
+	
+    metadata := Metadata{}
 	requests := make([]model.BorrowingRequest, 0) 
-	query := `SELECT group_id as id, account_id,client, SUM(penalty) as total_penalty, 
-	COUNT(1) filter (where status_id = 1)  as total_pending, 
-	COUNT(1) filter(where status_id = 2) as total_approved, 
-	COUNT(1) filter (where status_id = 3) as total_checked_out, 
-	COUNT(1) filter(where status_id = 4) as total_returned,
-	COUNT(1) filter(where status_id = 5) as total_cancelled,
-	COUNT(1) filter (where status_id = 6) as total_unreturned,
-	MAX(bbv.created_at)  as created_at
-	FROM borrowed_book_all_view as bbv GROUP BY group_id, account_id, client ORDER BY created_at desc
-	`
-	err := repo.db.Select(&requests, query)
-	return requests, err
+	query, args ,err := ds.ToSQL()
+    if err != nil {
+		return requests, metadata, err
+	}
+	err = repo.db.Select(&requests, query, args...)
+	if err != nil {
+		return requests, metadata, err
+	}
+	ds = repo.buildBorrowingRequestMetadata(filter)
+	query, args, err = ds.ToSQL()
+	if err != nil {
+		return requests, metadata, err
+	}
+	err = repo.db.Get(&metadata, query, args...)
+	if err != nil {
+		return requests, metadata, err
+	}
+	return requests, metadata, err
 }
-
+func (repo * Borrowing)buildBorrowingRequestMetadata(filter * BorrowingRequestFilter)(*goqu.SelectDataset) {
+	dialect := goqu.Dialect("postgres")
+	subDs := goqu.Select("group_id", goqu.MAX("created_at").As("created_at")).
+	From(goqu.T("borrowed_book_all_view")).GroupBy("group_id").As("bbv")	
+	subDs = repo.buildBorrowingRequestFilters(subDs, filter)
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filter.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(subDs)
+	return ds
+}
+func (repo * Borrowing)buildBorrowingRequestFilters(ds * goqu.SelectDataset, filter * BorrowingRequestFilter)(*goqu.SelectDataset){
+	if(len(filter.From) > 0 && len(filter.To) > 0) {
+		ds = ds.Where(
+			goqu.L("date(created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
+		) 
+	}
+	keyword := filter.Keyword
+	if(len(keyword) > 0 ){
+		ds = ds.Where(
+			goqu.L(`	
+		    (account_search_vector @@ (phraseto_tsquery('simple', ?) :: text) :: tsquery  
+			OR 
+			account_search_vector @@ (plainto_tsquery('simple', ?)::text) :: tsquery
+			OR
+			client ->> 'email' ILIKE '%' || ? || '%'
+			OR 
+			client ->> 'givenName' ILIKE '%' || ? || '%'
+			OR
+			client ->> 'surname' ILIKE'%' || ? || '%')
+		  `, keyword, keyword, keyword, keyword, keyword),
+		)
+	}
+	return ds
+}
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_all_view where group_id = $1`
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook FROM borrowed_book_all_view where group_id = $1`
 	err := repo.db.Select(&borrowedBooks, query, groupId)
 	return borrowedBooks, err
 }

@@ -120,7 +120,7 @@ const Dashboard = () => {
     setIsMonthlyBorrowedSection(true);
   };
   const data = {
-    labels: walkInStats.map((w) => toReadableDate(w.date)),
+    labels: walkInStats?.map((w) => toReadableDate(w.date)),
     datasets: [
       {
         label: "Statistics",
@@ -143,7 +143,7 @@ const Dashboard = () => {
   };
 
   const borrowedSectionData = {
-    labels: borrowedSections.map((s) => s.name),
+    labels: borrowedSections?.map((s) => s.name),
     datasets: [
       {
         label: "Borrowed Books Per Section",
