@@ -67,31 +67,33 @@ const GameLoggingPage = () => {
   return (
     <Container>
       <div className="py-5">
-        <div className="py-3 flex gap-2">
-          <TextInput placeholder="Search by account or game" />
-          <Dropdown
-            color="light"
-            arrowIcon={false}
-            className="py-2 p-3"
-            label={<MdFilterList className="text-lg" />}
-          >
-            <div className="p-2 flex flex-col gap-2 ">
-              <Label>From</Label>
-              <Datepicker />
-            </div>
-            <div className="p-2 flex flex-col">
-              <Label className="block">To</Label>
-              <Datepicker />
-            </div>
-            <Button color="primary" className="w-full">
-              Reset
-            </Button>
-          </Dropdown>
-        </div>
+        <div className="py-3 flex justify-between items-center">
+          <div className="flex gap-2">
+            <TextInput placeholder="Search by account or game" />
+            <Dropdown
+              color="light"
+              arrowIcon={false}
+              className="py-2 p-3"
+              label={<MdFilterList className="text-lg" />}
+            >
+              <div className="p-2 flex flex-col gap-2 ">
+                <Label>From</Label>
+                <Datepicker />
+              </div>
+              <div className="p-2 flex flex-col">
+                <Label className="block">To</Label>
+                <Datepicker />
+              </div>
+              <Button color="primary" className="w-full">
+                Reset
+              </Button>
+            </Dropdown>
+          </div>
 
-        <Button color="primary" onClick={openLogModal}>
-          Log Game
-        </Button>
+          <Button color="primary" onClick={openLogModal}>
+            Log Game
+          </Button>
+        </div>
       </div>
       <TableContainer>
         <Table>

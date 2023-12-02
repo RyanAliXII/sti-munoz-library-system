@@ -4,6 +4,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -24,7 +25,12 @@ func (ctrler * Game)LogGame(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Game logged."))
 }
 func (ctrler * Game)GetGameLogs(ctx * gin.Context){
-	logs, err := ctrler.gameRepo.GetLogs()
+	filter := NewGameLogFilter(ctx)
+	logs, err := ctrler.gameRepo.GetLogs(&repository.GameLogFilter{
+		From: filter.From,
+		To: filter.To,
+		Filter: filter.Filter,
+	})
 	if err != nil {
 	   logger.Error(err.Error(), slimlog.Error("GetLogsErr"))
 	}
