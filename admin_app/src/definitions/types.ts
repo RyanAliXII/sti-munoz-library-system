@@ -311,6 +311,10 @@ export type ScannerAccount = {
   password?: string;
   username: string;
 };
+export type UserType = {
+  id: string;
+  name: string;
+};
 
 export type ClientLog = {
   id: string;
