@@ -188,12 +188,13 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	return nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
-	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
+	requests,metadata, err := ctrler.borrowingRepo.GetBorrowingRequests()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowRequests": requests,
+		"metadata": metadata,
 	}, "Borrow requests fetched."))
 }
 func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){

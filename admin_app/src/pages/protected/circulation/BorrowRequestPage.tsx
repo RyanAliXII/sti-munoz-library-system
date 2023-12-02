@@ -9,6 +9,7 @@ import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 import { BiErrorAlt } from "react-icons/bi";
 import TimeAgo from "timeago-react";
 import { Table } from "flowbite-react";
+import { toReadableDatetime } from "@helpers/datetime";
 
 const BorrowRequestPage = () => {
   const { Get } = useRequest();
@@ -31,8 +32,8 @@ const BorrowRequestPage = () => {
       <Container>
         <Table hoverable>
           <Table.Head>
-            <Table.HeadCell>Created At</Table.HeadCell>
             <Table.HeadCell>Client</Table.HeadCell>
+            <Table.HeadCell>Created At</Table.HeadCell>
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y dark:divide-gray-700">
@@ -43,16 +44,17 @@ const BorrowRequestPage = () => {
                   className="cursor-pointer"
                   onClick={() => navigate(`/borrowing/requests/${request.id}`)}
                 >
-                  <Table.Cell>
-                    <TimeAgo datetime={request.createdAt} />
-                  </Table.Cell>
                   <Table.Cell className="font-semibold text-gray-900 dark:text-gray-50">
                     <div className="font-semibold">
                       {request.client.displayName}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 ">
                       {request.client.email}
                     </div>
+                  </Table.Cell>
+
+                  <Table.Cell>
+                    {toReadableDatetime(request.createdAt)}
                   </Table.Cell>
                   <Table.Cell>
                     <RequiresAttentionText request={request} />

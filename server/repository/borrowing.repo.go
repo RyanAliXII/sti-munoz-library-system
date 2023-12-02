@@ -3,13 +3,15 @@ package repository
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
 type BorrowingRepository interface {
 
 	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
-	GetBorrowingRequests()([]model.BorrowingRequest, error)
+	GetBorrowingRequests()([]model.BorrowingRequest, Metadata, error)
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
 	MarkAsApproved(id string, remarks string) error 
@@ -55,20 +57,31 @@ func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEb
 }
 
 
-func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, error){
+func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, Metadata, error){
+
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(
+		goqu.C("group_id").As("id"),
+		goqu.C("account_id"),
+		goqu.C("client"),
+		goqu.L("SUM(penalty)").As("total_penalty"),
+		goqu.L("COUNT(1) filter (where status_id = 1)  as total_pending"),
+		goqu.L("COUNT(1) filter(where status_id = 2) as total_approved"),
+		goqu.L("COUNT(1) filter (where status_id = 3) as total_checked_out"),
+		goqu.L("COUNT(1) filter(where status_id = 4) as total_returned"),
+		goqu.L("COUNT(1) filter(where status_id = 5) as total_cancelled"),
+		goqu.L("COUNT(1) filter (where status_id = 6) as total_unreturned"),
+		goqu.MAX("bbv.created_at").As("created_at"),
+	).From(goqu.T("borrowed_book_all_view").As("bbv")).GroupBy("group_id", "account_id", "client").
+	Order(exp.NewOrderedExpression(goqu.I("created_at"), exp.DescSortDir,exp.NoNullsSortType))
+    metadata := Metadata{}
 	requests := make([]model.BorrowingRequest, 0) 
-	query := `SELECT group_id as id, account_id,client, SUM(penalty) as total_penalty, 
-	COUNT(1) filter (where status_id = 1)  as total_pending, 
-	COUNT(1) filter(where status_id = 2) as total_approved, 
-	COUNT(1) filter (where status_id = 3) as total_checked_out, 
-	COUNT(1) filter(where status_id = 4) as total_returned,
-	COUNT(1) filter(where status_id = 5) as total_cancelled,
-	COUNT(1) filter (where status_id = 6) as total_unreturned,
-	MAX(bbv.created_at)  as created_at
-	FROM borrowed_book_all_view as bbv GROUP BY group_id, account_id, client ORDER BY created_at desc
-	`
-	err := repo.db.Select(&requests, query)
-	return requests, err
+	query, _ ,err := ds.ToSQL()
+    if err != nil {
+		return requests, metadata, err
+	}
+	err = repo.db.Select(&requests, query)
+	return requests, metadata, err
 }
 
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){

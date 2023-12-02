@@ -115,16 +115,16 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/borrowing/requests",
         items: [],
       },
-      {
-        text: "Borrow Book",
-        to: "/borrowing/checkout",
-        requiredPermissions: [
-          "Borrowing.Access",
-          "Book.Access",
-          "Account.Access",
-        ],
-        items: [],
-      },
+      // {
+      //   text: "Borrow Book",
+      //   to: "/borrowing/checkout",
+      //   requiredPermissions: [
+      //     "Borrowing.Access",
+      //     "Book.Access",
+      //     "Account.Access",
+      //   ],
+      //   items: [],
+      // },
       {
         text: "Queues",
         to: "/borrowing/queues",
