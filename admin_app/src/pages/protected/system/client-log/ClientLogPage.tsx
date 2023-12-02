@@ -29,6 +29,8 @@ const ClientLogPage = () => {
       const { data: response } = await Get("/client-logs/", {
         params: {
           page: filterParams?.page ?? 1,
+          from: filterParams?.from ?? "",
+          to: filterParams?.to ?? "",
         },
       });
       const { data } = response;

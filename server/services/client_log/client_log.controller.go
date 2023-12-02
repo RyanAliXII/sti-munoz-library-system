@@ -14,9 +14,13 @@ type ClientLog struct {
 	clientLogRepo repository.ClientLogRepository
 }
 func (ctrler * ClientLog) GetClientLogs(ctx * gin.Context){
-	filter := repository.ClientLogFilter{}
+	filter := NewFilter(ctx)
 	filter.Filter.ExtractFilter(ctx)
-	logs,metadata, err := ctrler.clientLogRepo.GetLogs(&filter)
+	logs,metadata, err := ctrler.clientLogRepo.GetLogs(&repository.ClientLogFilter{
+		From: filter.From,
+		To: filter.To,
+		Filter: filter.Filter,
+	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetLogsErr"))
 	}
