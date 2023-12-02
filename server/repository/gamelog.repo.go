@@ -79,6 +79,27 @@ func (repo *Game)buildGameLogFilters(ds * goqu.SelectDataset, filter * GameLogFi
 			goqu.L("date(game_log.created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
 		) 
 	}
+	keyword := filter.Keyword
+	if(len(keyword) > 0 ){
+		ds = ds.Where(
+			goqu.L(`	
+		   (account.search_vector @@ (phraseto_tsquery('simple', ?) :: text) :: tsquery  
+			OR 
+			account.search_vector @@ (plainto_tsquery('simple', ?)::text) :: tsquery
+			OR
+			account.email ILIKE '%' || ? || '%'
+			OR 
+			account.given_name ILIKE '%' || ? || '%'
+			OR
+			account.surname ILIKE'%' || ? || '%'
+		    OR
+			game.name ILIKE'%' || ? || '%'
+			OR
+			game.description ILIKE '%' || ? || '%'
+		    )
+		  `, keyword, keyword, keyword, keyword, keyword, keyword, keyword ),
+		)
+	}
 	return ds
 }
 func(repo *Game)buildGameLogMetadataQuery(filter * GameLogFilter)*goqu.SelectDataset {

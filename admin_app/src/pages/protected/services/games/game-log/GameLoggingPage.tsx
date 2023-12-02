@@ -15,7 +15,7 @@ import {
   Table,
   TextInput,
 } from "flowbite-react";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -28,6 +28,8 @@ import CustomPagination from "@components/pagination/CustomPagination";
 import LoadingBoundary, {
   LoadingBoundaryV2,
 } from "@components/loader/LoadingBoundary";
+import { format } from "date-fns";
+import useDebounce from "@hooks/useDebounce";
 
 const GameLoggingPage = () => {
   const [gameLog, setGameLog] = useState<GameLog>({ ...GameLogInitialValue });
@@ -93,12 +95,42 @@ const GameLoggingPage = () => {
     setGameLog(gameLog);
     openEditLog();
   };
+  const handleFrom = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setFilters({
+      from: dateStr,
+      page: 1,
+    });
+  };
+  const handleTo = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setFilters({
+      to: dateStr,
+      page: 1,
+    });
+  };
+  const handleReset = () => {
+    setFilters({
+      from: "",
+      to: "",
+    });
+  };
+  const debounceSearch = useDebounce();
+  const search = (q: any) => {
+    setFilters({ page: 1, keyword: q });
+  };
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    debounceSearch(search, event.target.value, 500);
+  };
   return (
     <Container>
       <div className="py-5">
         <div className="py-3 flex justify-between items-center">
           <div className="flex gap-2">
-            <TextInput placeholder="Search by account or game" />
+            <TextInput
+              placeholder="Search by account or game"
+              onChange={handleSearch}
+            />
             <Dropdown
               color="light"
               arrowIcon={false}
@@ -107,13 +139,19 @@ const GameLoggingPage = () => {
             >
               <div className="p-2 flex flex-col gap-2 ">
                 <Label>From</Label>
-                <Datepicker />
+                <Datepicker
+                  value={toReadableDate(filters.from)}
+                  onSelectedDateChanged={handleFrom}
+                />
               </div>
               <div className="p-2 flex flex-col">
                 <Label className="block">To</Label>
-                <Datepicker />
+                <Datepicker
+                  value={toReadableDate(filters?.to)}
+                  onSelectedDateChanged={handleTo}
+                />
               </div>
-              <Button color="primary" className="w-full">
+              <Button color="primary" className="w-full" onClick={handleReset}>
                 Reset
               </Button>
             </Dropdown>
