@@ -2,15 +2,15 @@ import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import CustomPagination from "@components/pagination/CustomPagination";
 import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
-
 import { ClientLog } from "@definitions/types";
 import { toReadableDate } from "@helpers/datetime";
+import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Datepicker, Dropdown, Label, Table } from "flowbite-react";
+import { Button, Datepicker, Dropdown, Label, Table } from "flowbite-react";
 import { TextInput } from "flowbite-react";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { MdFilterList } from "react-icons/md";
 import { useSearchParamsState } from "react-use-search-params-state";
 import TimeAgo from "timeago-react";
@@ -23,6 +23,7 @@ const ClientLogPage = () => {
     page: { default: 1, type: "number" },
     from: { default: "", type: "string" },
     to: { default: "", type: "string" },
+    keyword: { default: "", type: "string" },
   });
   const fetchClientLogs = async () => {
     try {
@@ -31,6 +32,7 @@ const ClientLogPage = () => {
           page: filterParams?.page ?? 1,
           from: filterParams?.from ?? "",
           to: filterParams?.to ?? "",
+          keyword: filterParams?.keyword ?? "",
         },
       });
       const { data } = response;
@@ -50,18 +52,34 @@ const ClientLogPage = () => {
     const dateStr = format(date, "yyyy-MM-dd");
     setFilterParams({
       from: dateStr,
+      page: 1,
     });
   };
   const handleTo = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
     setFilterParams({
       to: dateStr,
+      page: 1,
     });
+  };
+  const handleReset = () => {
+    setFilterParams({
+      from: "",
+      to: "",
+    });
+  };
+
+  const debounceSearch = useDebounce();
+  const search = (q: any) => {
+    setFilterParams({ page: 1, keyword: q });
+  };
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    debounceSearch(search, event.target.value, 500);
   };
   return (
     <Container>
       <div className="py-3 flex gap-2">
-        <TextInput placeholder="Search" />
+        <TextInput placeholder="Search Account" onChange={handleSearch} />
         <Dropdown
           color="light"
           arrowIcon={false}
@@ -82,6 +100,9 @@ const ClientLogPage = () => {
               onSelectedDateChanged={handleTo}
             />
           </div>
+          <Button color="primary" className="w-full" onClick={handleReset}>
+            Reset
+          </Button>
         </Dropdown>
       </div>
       <LoadingBoundaryV2 isError={false} isLoading={false}>

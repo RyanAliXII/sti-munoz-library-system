@@ -24,13 +24,11 @@ func NewFilter(ctx * gin.Context) *ClientLogFilter {
 	}
 	_, err  = time.Parse(time.DateOnly, filter.From)
 	if err != nil {
-		logger.Error(err.Error())
 		filter.From = ""
 		filter.To = ""
 	}
 	_, err = time.Parse(time.DateOnly, filter.To)
 	if(err != nil){
-		logger.Error(err.Error())
 		filter.From = ""
 		filter.To = ""
 	}

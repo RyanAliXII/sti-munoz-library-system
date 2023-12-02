@@ -62,8 +62,8 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 	meta := Metadata{}
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(
-		goqu.C("id").Table("cl"),
-		goqu.C("created_at").Table("cl"),
+		goqu.C("id").Table("client_log"),
+		goqu.C("created_at").Table("client_log"),
 		goqu.L(`
 		json_build_object(
 		'id', account.id, 
@@ -78,24 +78,20 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 		'description', scanner_account.description 
 		)`).As("scanner"),
 	).
-	From(goqu.T("client_log").Schema("system").As("cl")).
+	From(goqu.T("client_log").Schema("system").As("client_log")).
 	InnerJoin(goqu.T("account").Schema("system"), goqu.On(goqu.Ex{
-		"cl.client_id" : goqu.I("account.id"),
+		"client_log.client_id" : goqu.I("account.id"),
 	})).
 	InnerJoin(goqu.T("scanner_account").Schema("system"), goqu.On(goqu.Ex{
-		"cl.scanner_id" : goqu.I("scanner_account.id"),
+		"client_log.scanner_id" : goqu.I("scanner_account.id"),
 	}))
-	if(len(filter.From) > 0  && len(filter.To) > 0){
-		ds = ds.Where(
-			goqu.L("date(cl.created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
-		) 
-	}
+	ds = repo.buildClientLogFilters(ds, filter)
 	ds = ds.Prepared(true).
-	Order(exp.NewOrderedExpression(goqu.I("cl.created_at"), exp.DescSortDir, exp.NoNullsSortType)).
+	Order(exp.NewOrderedExpression(goqu.I("client_log.created_at"), exp.DescSortDir, exp.NoNullsSortType)).
 	Limit(uint(filter.Limit)).
 	Offset(uint(filter.Offset))
 	query, args, err :=  ds.ToSQL()
-
+	fmt.Println(query)
 	if err != nil {
 		return clientLogs, meta, err
 	}
@@ -103,14 +99,51 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 	if err != nil {
 		return clientLogs,meta, err
 	}
-
-	query = `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM system.client_log`
-	err = repo.db.Get(&meta, query, filter.Limit)
+	metadataDs  := repo.buildMetadataQuery(filter)
+	query, args, err = metadataDs.ToSQL()
 	if err != nil {
-	return clientLogs, meta, err
+		return clientLogs, meta, err
 	}
-	
+	err = repo.db.Get(&meta, query, args...)
+	if err != nil {
+		return clientLogs, meta, err
+	}
 	return clientLogs, meta, nil
+}
+
+func (repo * ClientLog)buildMetadataQuery(filter * ClientLogFilter) (*goqu.SelectDataset){
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filter.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("client_log").Schema("system"))
+	ds = repo.buildClientLogFilters(ds, filter)
+	
+	return ds
+}
+func(repo * ClientLog) buildClientLogFilters(ds * goqu.SelectDataset,  filter * ClientLogFilter) *goqu.SelectDataset{
+	if(len(filter.From) > 0  && len(filter.To) > 0){
+		ds = ds.Where(
+			goqu.L("date(client_log.created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
+		) 
+	}
+	if(len(filter.Keyword) > 0){
+		keyword := filter.Filter.Keyword
+		ds = ds.Where(
+			goqu.L(`	
+		   (account.search_vector @@ (phraseto_tsquery('simple', ?) :: text) :: tsquery  
+			OR 
+			account.search_vector @@ (plainto_tsquery('simple', ?)::text) :: tsquery
+			OR
+			account.email ILIKE '%' || ? || '%'
+			OR 
+			account.given_name ILIKE '%' || ? || '%'
+			OR
+			account.surname ILIKE'%' || ? || '%')
+		  `, keyword, keyword, keyword, keyword, keyword ),
+		)
+	}
+	return ds
 }
 func NewClientLog()ClientLogRepository {
 	return &ClientLog{db : db.Connect()}
