@@ -46,8 +46,13 @@ const BorrowRequestPage = () => {
                   <Table.Cell>
                     <TimeAgo datetime={request.createdAt} />
                   </Table.Cell>
-                  <Table.Cell className="font-semibold text-gray-50">
-                    {request.client.displayName}
+                  <Table.Cell className="font-semibold text-gray-900 dark:text-gray-50">
+                    <div className="font-semibold">
+                      {request.client.displayName}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {request.client.email}
+                    </div>
                   </Table.Cell>
                   <Table.Cell>
                     <RequiresAttentionText request={request} />

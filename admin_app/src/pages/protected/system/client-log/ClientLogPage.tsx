@@ -79,7 +79,7 @@ const ClientLogPage = () => {
   return (
     <Container>
       <div className="py-3 flex gap-2">
-        <TextInput placeholder="Search Account" onChange={handleSearch} />
+        <TextInput placeholder="Search by account" onChange={handleSearch} />
         <Dropdown
           color="light"
           arrowIcon={false}

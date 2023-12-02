@@ -7,13 +7,22 @@ import { useDeleteGameLog, useGameLogs } from "@hooks/data-fetching/game";
 import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
-import { Button, Table } from "flowbite-react";
+import {
+  Button,
+  Datepicker,
+  Dropdown,
+  Label,
+  Table,
+  TextInput,
+} from "flowbite-react";
 import { useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import EditLogModal from "./EditLogModal";
 import NewLogModal from "./NewLogModal";
+import { MdFilterList } from "react-icons/md";
+import { toReadableDate } from "@helpers/datetime";
 
 const GameLoggingPage = () => {
   const [gameLog, setGameLog] = useState<GameLog>({ ...GameLogInitialValue });
@@ -58,6 +67,28 @@ const GameLoggingPage = () => {
   return (
     <Container>
       <div className="py-5">
+        <div className="py-3 flex gap-2">
+          <TextInput placeholder="Search by account or game" />
+          <Dropdown
+            color="light"
+            arrowIcon={false}
+            className="py-2 p-3"
+            label={<MdFilterList className="text-lg" />}
+          >
+            <div className="p-2 flex flex-col gap-2 ">
+              <Label>From</Label>
+              <Datepicker />
+            </div>
+            <div className="p-2 flex flex-col">
+              <Label className="block">To</Label>
+              <Datepicker />
+            </div>
+            <Button color="primary" className="w-full">
+              Reset
+            </Button>
+          </Dropdown>
+        </div>
+
         <Button color="primary" onClick={openLogModal}>
           Log Game
         </Button>
