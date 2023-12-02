@@ -23,15 +23,44 @@ import EditLogModal from "./EditLogModal";
 import NewLogModal from "./NewLogModal";
 import { MdFilterList } from "react-icons/md";
 import { toReadableDate } from "@helpers/datetime";
+import { useSearchParamsState } from "react-use-search-params-state";
+import CustomPagination from "@components/pagination/CustomPagination";
+import LoadingBoundary, {
+  LoadingBoundaryV2,
+} from "@components/loader/LoadingBoundary";
 
 const GameLoggingPage = () => {
   const [gameLog, setGameLog] = useState<GameLog>({ ...GameLogInitialValue });
+  const [pages, setPages] = useState(1);
+  const [filters, setFilters] = useSearchParamsState({
+    page: { default: 1, type: "number" },
+    from: { default: "", type: "string" },
+    to: { default: "", type: "string" },
+    keyword: { default: "", type: "string" },
+  });
   const {
     isOpen: isLogModalOpen,
     close: closeLogModal,
     open: openLogModal,
   } = useSwitch();
-  const { data: gameLogs } = useGameLogs({});
+  const {
+    data: gameLogsData,
+    isFetching,
+    isError,
+  } = useGameLogs({
+    queryKey: [
+      "gameLogs",
+      {
+        from: filters?.from,
+        to: filters?.to,
+        keyword: filters?.keyword,
+        page: filters?.page,
+      },
+    ],
+    onSuccess: (data) => {
+      setPages(data?.metadata.pages);
+    },
+  });
   const queryClient = useQueryClient();
   const deleteGameLog = useDeleteGameLog({
     onSuccess: () => {
@@ -95,73 +124,86 @@ const GameLoggingPage = () => {
           </Button>
         </div>
       </div>
-      <TableContainer>
-        <Table>
-          <Table.Head>
-            <Table.HeadCell>Created At</Table.HeadCell>
-            <Table.HeadCell>Game</Table.HeadCell>
-            <Table.HeadCell>Client</Table.HeadCell>
-            <Table.HeadCell></Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y dark:divide-gray-700">
-            {gameLogs?.map((log) => {
-              return (
-                <Table.Row key={log.id}>
-                  <Table.Cell>
-                    {new Date(log.createdAt).toLocaleString(undefined, {
-                      month: "long",
-                      day: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="text-base font-semibold text-gray-900 dark:text-white">
-                      {log.game.name}
-                    </div>
-                    <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                      {log.game.description}
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="text-base font-semibold text-gray-900 dark:text-white">
-                      {log.client.givenName} {log.client.surname}
-                    </div>
-                    <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                      {log.client.email}
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex gap-2">
-                      <Tippy content="Edit Log">
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            initEdit(log);
-                          }}
-                        >
-                          <AiOutlineEdit />
-                        </Button>
-                      </Tippy>
-                      <Tippy content="Delete Log">
-                        <Button
-                          color="failure"
-                          onClick={() => {
-                            initDelete(log);
-                          }}
-                        >
-                          <FaTrash />
-                        </Button>
-                      </Tippy>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            })}
-          </Table.Body>
-        </Table>
-      </TableContainer>
+      <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
+        <TableContainer>
+          <Table>
+            <Table.Head>
+              <Table.HeadCell>Created At</Table.HeadCell>
+              <Table.HeadCell>Game</Table.HeadCell>
+              <Table.HeadCell>Client</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y dark:divide-gray-700">
+              {gameLogsData?.gameLogs?.map((log) => {
+                return (
+                  <Table.Row key={log.id}>
+                    <Table.Cell>
+                      {new Date(log.createdAt).toLocaleString(undefined, {
+                        month: "long",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="text-base font-semibold text-gray-900 dark:text-white">
+                        {log.game.name}
+                      </div>
+                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        {log.game.description}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="text-base font-semibold text-gray-900 dark:text-white">
+                        {log.client.givenName} {log.client.surname}
+                      </div>
+                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        {log.client.email}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="flex gap-2">
+                        <Tippy content="Edit Log">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              initEdit(log);
+                            }}
+                          >
+                            <AiOutlineEdit />
+                          </Button>
+                        </Tippy>
+                        <Tippy content="Delete Log">
+                          <Button
+                            color="failure"
+                            onClick={() => {
+                              initDelete(log);
+                            }}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </Tippy>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table>
+          <div className="py-5">
+            <CustomPagination
+              pageCount={pages}
+              forcePage={filters?.page - 1 ?? 0}
+              onPageChange={({ selected }) => {
+                setFilters({
+                  page: selected + 1,
+                });
+              }}
+            />
+          </div>
+        </TableContainer>
+      </LoadingBoundaryV2>
       <NewLogModal isOpen={isLogModalOpen} closeModal={closeLogModal} />
       <EditLogModal
         closeModal={closeEditLog}

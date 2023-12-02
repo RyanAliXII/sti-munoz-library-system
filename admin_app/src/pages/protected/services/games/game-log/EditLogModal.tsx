@@ -66,7 +66,6 @@ const EditLogModal: FC<EditModalProps<GameLog>> = ({
   });
   useModalToggleListener(isOpen, () => {
     if (!isOpen) resetForm();
-    console.log(formData);
     setForm(formData);
   });
   return (

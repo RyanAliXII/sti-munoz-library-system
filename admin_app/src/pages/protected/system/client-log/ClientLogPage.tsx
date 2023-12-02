@@ -144,6 +144,7 @@ const ClientLogPage = () => {
           <CustomPagination
             isHidden={totalPages <= 1}
             pageCount={totalPages}
+            forcePage={filterParams?.page - 1}
             onPageChange={({ selected }) => {
               setFilterParams({
                 page: selected + 1,
