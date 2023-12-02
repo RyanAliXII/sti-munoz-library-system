@@ -14,12 +14,15 @@ type ClientLog struct {
 	clientLogRepo repository.ClientLogRepository
 }
 func (ctrler * ClientLog) GetClientLogs(ctx * gin.Context){
-	logs, err := ctrler.clientLogRepo.GetLogs()
+	filter := repository.ClientLogFilter{}
+	filter.Filter.ExtractFilter(ctx)
+	logs,metadata, err := ctrler.clientLogRepo.GetLogs(&filter)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetLogsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"clientLogs": logs,
+		"metadata": metadata,
 	}, "Client logs fetched."))
 }
 func NewClientLogController () ClientLogController {

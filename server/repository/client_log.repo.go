@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
@@ -12,12 +13,18 @@ import (
 
 
 type ClientLogRepository interface {
-	GetLogs() ([]model.ClientLog, error)
+	GetLogs(filter *  ClientLogFilter)([]model.ClientLog, Metadata, error)
 	NewLog(clientId string, scannerId string) error
+	
 }
 
 type ClientLog struct {
 	db * sqlx.DB
+}
+type ClientLogFilter struct {
+	From string
+	To string
+	filter.Filter
 }
 func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	transaction, err := repo.db.Beginx()
@@ -48,8 +55,10 @@ func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	transaction.Commit()
 	return nil
 }
-func (repo * ClientLog) GetLogs() ([]model.ClientLog, error) {
+func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, Metadata, error) {
+	
 	clientLogs := make([]model.ClientLog, 0)
+	meta := Metadata{}
 	query := `
 	SELECT cl.id,json_build_object('id', account.id, 
 	'givenName', account.given_name,
@@ -63,9 +72,19 @@ func (repo * ClientLog) GetLogs() ([]model.ClientLog, error) {
 	FROM system.client_log as cl
 	INNER JOIN system.account on cl.client_id = account.id
 	INNER JOIN system.scanner_account on cl.scanner_id = scanner_account.id
-	ORDER BY cl.created_at DESC`
-	err := repo.db.Select(&clientLogs, query)
-	return clientLogs, err
+	ORDER BY cl.created_at DESC LIMIT $1`
+	err := repo.db.Select(&clientLogs, query, filter.Limit)
+	if err != nil {
+		return clientLogs,meta, err
+	}
+
+	query = `SELECT CASE WHEN COUNT(1) = 0 then 0 else CEIL((COUNT(1)/$1::numeric))::bigint end as pages, count(1) as records FROM system.client_log`
+	err = repo.db.Get(&meta, query, filter.Limit)
+	if err != nil {
+	return clientLogs, meta, err
+	}
+	
+	return clientLogs, meta, nil
 }
 func NewClientLog()ClientLogRepository {
 	return &ClientLog{db : db.Connect()}
