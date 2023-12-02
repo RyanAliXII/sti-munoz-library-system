@@ -188,7 +188,12 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	return nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
-	requests,metadata, err := ctrler.borrowingRepo.GetBorrowingRequests()
+	filter := NewBorrowingRequestFilter(ctx)
+	requests,metadata, err := ctrler.borrowingRepo.GetBorrowingRequests(&repository.BorrowingRequestFilter{
+		From: filter.From,
+		To: filter.To,
+		Filter: filter.Filter,
+	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
 	}

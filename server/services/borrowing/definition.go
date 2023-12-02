@@ -1,8 +1,12 @@
 package borrowing
 
 import (
+	"time"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/gin-gonic/gin"
 )
 
 type CheckoutBody struct {
@@ -43,4 +47,29 @@ type UpdateQueueItemsBody struct {
 
 type UpdateQueueItemsModel struct {
 	Items []model.BorrowingQueueItem `json:"items"`
+}
+
+type BorrowingRequestFilter struct {
+	From  string `form:"from"`
+	To string `form:"to"`
+	Filter filter.Filter
+}
+func NewBorrowingRequestFilter(ctx * gin.Context) *BorrowingRequestFilter{
+	filter := &BorrowingRequestFilter{}
+	err := ctx.BindQuery(&filter)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	filter.Filter.ExtractFilter(ctx)
+	_, err  = time.Parse(time.DateOnly, filter.From)
+	if err != nil {
+		filter.From = ""
+		filter.To = ""
+	}
+	_, err = time.Parse(time.DateOnly, filter.To)
+	if(err != nil){
+		filter.From = ""
+		filter.To = ""
+	}
+	return filter
 }

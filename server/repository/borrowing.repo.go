@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -11,7 +12,7 @@ import (
 type BorrowingRepository interface {
 
 	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
-	GetBorrowingRequests()([]model.BorrowingRequest, Metadata, error)
+	GetBorrowingRequests(filter * BorrowingRequestFilter)([]model.BorrowingRequest, Metadata, error)
 	MarkAsReturned(id string, remarks string) error
 	MarkAsUnreturned(id string, remarks string) error 
 	MarkAsApproved(id string, remarks string) error 
@@ -27,7 +28,11 @@ type BorrowingRepository interface {
 }
 type Borrowing struct{
 	db * sqlx.DB
-
+}
+type BorrowingRequestFilter struct {
+    From string
+	To string
+	filter.Filter
 }
 func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error{
 	transaction, err := repo.db.Beginx()
@@ -57,8 +62,7 @@ func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEb
 }
 
 
-func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, Metadata, error){
-
+func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]model.BorrowingRequest, Metadata, error){
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(
 		goqu.C("group_id").As("id"),
@@ -72,15 +76,17 @@ func (repo * Borrowing)GetBorrowingRequests()([]model.BorrowingRequest, Metadata
 		goqu.L("COUNT(1) filter(where status_id = 5) as total_cancelled"),
 		goqu.L("COUNT(1) filter (where status_id = 6) as total_unreturned"),
 		goqu.MAX("bbv.created_at").As("created_at"),
-	).From(goqu.T("borrowed_book_all_view").As("bbv")).GroupBy("group_id", "account_id", "client").
-	Order(exp.NewOrderedExpression(goqu.I("created_at"), exp.DescSortDir,exp.NoNullsSortType))
+	).From(goqu.T("borrowed_book_all_view").As("bbv")).GroupBy("group_id", "account_id", "client").Prepared(true).
+	Order(exp.NewOrderedExpression(goqu.MAX("bbv.created_at"), exp.DescSortDir,exp.NoNullsSortType)).
+	Limit(uint(filter.Limit)).
+	Offset(uint(filter.Offset))
     metadata := Metadata{}
 	requests := make([]model.BorrowingRequest, 0) 
-	query, _ ,err := ds.ToSQL()
+	query, args ,err := ds.ToSQL()
     if err != nil {
 		return requests, metadata, err
 	}
-	err = repo.db.Select(&requests, query)
+	err = repo.db.Select(&requests, query, args...)
 	return requests, metadata, err
 }
 
