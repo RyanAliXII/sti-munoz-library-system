@@ -79,6 +79,7 @@ const ReservationPage = lazy(
   () => import("./protected/services/reservations/ReservationPage")
 );
 const ReportPage = lazy(() => import("./protected/report/ReportPage"));
+const UserTypePage = lazy(() => import("./protected/users/UserTypePage"));
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -428,6 +429,17 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <ReportPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/users/types"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <UserTypePage />
             </PermissionGate>
           </Suspense>
         }
