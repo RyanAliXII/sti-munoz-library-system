@@ -169,7 +169,7 @@ func (repo *AccountRepository) GetAccount(filter * filter.Filter) []model.Accoun
 	return accounts
 }
 func (repo *AccountRepository) GetAccountById(id string) (model.Account, error) {
-	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 and deleted_at is null and active_since is not null LIMIT 1`
+	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 and deleted_at is null and is_active LIMIT 1`
 	account := model.Account{}
 	err := repo.db.Get(&account, query, id)
 	return account, err
