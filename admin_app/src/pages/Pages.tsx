@@ -81,6 +81,10 @@ const ReservationPage = lazy(
 );
 const ReportPage = lazy(() => import("./protected/report/ReportPage"));
 const UserTypePage = lazy(() => import("./protected/users/UserTypePage"));
+
+const BulkActivatePage = lazy(
+  () => import("./protected/client/BulkActivatePage")
+);
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -451,6 +455,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <UserProgramPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/clients/accounts/bulk-activate"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <BulkActivatePage />
             </PermissionGate>
           </Suspense>
         }

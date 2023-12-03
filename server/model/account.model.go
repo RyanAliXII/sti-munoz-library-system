@@ -80,3 +80,11 @@ func (meta AccountMetadata) Value(value interface{}) (driver.Value, error) {
 }
 
 
+type AccountActivation struct {
+	Email string `json:"email" csv:"email"`
+	GivenName string `json:"givenName" csv:"given_name"`
+	Surname string	`json:"surname" csv:"surname"`
+	StudentNumber string `json:"studentNumber" csv:"student_number"`
+	UserType int `json:"userType" csv:"user_type"`
+	Program string `json:"program" csv:"program"`
+}

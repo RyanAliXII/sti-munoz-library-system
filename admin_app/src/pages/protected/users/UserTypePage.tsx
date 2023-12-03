@@ -1,7 +1,7 @@
 import Container from "@components/ui/container/Container";
 import { useUserTypes } from "@hooks/data-fetching/user";
 import { useSwitch } from "@hooks/useToggle";
-import { Button, Table } from "flowbite-react";
+import { Table } from "flowbite-react";
 import AddUserTypeModal from "./AddUserTypeModal";
 
 const UserTypePage = () => {
@@ -10,11 +10,6 @@ const UserTypePage = () => {
   const newTypeModal = useSwitch();
   return (
     <Container>
-      <div className="py-2">
-        <Button color="primary" onClick={newTypeModal.open}>
-          New User Type
-        </Button>
-      </div>
       <Table>
         <Table.Head>
           <Table.HeadCell>Id</Table.HeadCell>

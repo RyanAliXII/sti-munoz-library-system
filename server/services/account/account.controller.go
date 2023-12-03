@@ -22,6 +22,7 @@ import (
 type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
 	recordMetadataRepository  repository.RecordMetadataRepository
+	userRepo repository.UserRepository
 	validator   * validator.Validate
 	
 }
@@ -69,18 +70,12 @@ func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	))
 }
 
-func(ctrler * AccountController) validateHeaders(file multipart.File) error {
+func(ctrler * AccountController) validateCSVHeaders(file multipart.File, requiredHeaders map[string]struct{}) error {
 	m, err := gocsv.CSVToMaps(bufio.NewReader(file))
 	if err != nil {
 		return err
 	}
-	requiredHeaders := map[string]struct{}{
-		"id": {},
-		"display_name":{},
-		"surname": {},
-		"given_name": {},
-		"email": {},
-	}
+	
 
 	for header := range m[0] {
 		delete(requiredHeaders, header)		
@@ -113,8 +108,14 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	defer file.Close()
-	err := ctrler.validateHeaders(file)
+	defer file.Close() 
+	err := ctrler.validateCSVHeaders(file, map[string]struct{}{
+		"id": {},
+		"display_name":{},
+		"surname": {},
+		"given_name": {},
+		"email": {},
+	})
 	if err != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{
 			"error": err.Error(),
@@ -278,7 +279,7 @@ func NewAccountController() AccountControllerInterface {
 			CacheExpiration: time.Minute * 5,
 	   }),
 		validator: validator.New(),
-		
+	   userRepo: repository.NewUserRepository(),
 	}
 
 }
@@ -293,4 +294,5 @@ type AccountControllerInterface interface {
 	DeleteAccounts(ctx * gin.Context)
 	DisableAccounts(ctx * gin.Context)
 	RestoreAccounts(ctx * gin.Context)
+	ActivateBulk (ctx * gin.Context)
 }
