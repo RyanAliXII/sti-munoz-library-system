@@ -87,4 +87,5 @@ type AccountActivation struct {
 	StudentNumber string `json:"studentNumber" csv:"student_number"`
 	UserType int `json:"userType" csv:"user_type"`
 	Program string `json:"program" csv:"program"`
+	ProgramId int `json:"programId"`
 }

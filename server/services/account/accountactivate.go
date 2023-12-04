@@ -1,6 +1,7 @@
 package account
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -12,7 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
 )
+type ActivateBulkError struct {
+	Messages []string `json:"messages"`
+	Err error
+}
 
+func (e * ActivateBulkError) Error() string {
+	return e.Err.Error()
+}
 func (ctrler * AccountController) ActivateBulk (ctx * gin.Context){
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
 	if fileHeaderErr != nil {
@@ -27,14 +35,7 @@ func (ctrler * AccountController) ActivateBulk (ctx * gin.Context){
 	}
 	defer file.Close()
 
-
-	//const ExpectedFileExtension = ".csv"
 	fileExtension := filepath.Ext(fileHeader.Filename)
-	// if(fileExtension != ExpectedFileExtension){
-	// 	logger.Error("File is not csv.", slimlog.Function("AccountController.ActivateBulk"), slimlog.Error("WrongFileExtensionErr"))
-	// 	ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-	// 	return
-	// }
 	switch(fileExtension){
 		case ".csv":
 		ctrler.handleCSV(file, ctx)
@@ -52,12 +53,12 @@ func(ctrler * AccountController) handleCSV(file multipart.File, ctx * gin.Contex
 		"student_number": {},
 		"user_type": {},
 		"program": {},
-	})
-
-	
+	})	
 	if err != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{
-			"error": err.Error(),
+			"errors":gin.H{
+				"messages": []string{err.Error()},
+			},
 		}, "Invalid CSV structure."))
 		return 
 	}
@@ -82,27 +83,66 @@ func(ctrler * AccountController) handleCSV(file multipart.File, ctx * gin.Contex
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.validateTypeAndProgram(accounts)
+	err = ctrler.validateTypeAndProgram(&accounts)
 	if err != nil {
 		logger.Error(err.Error())
+		activateBulkErr, isActiveBulkErr := err.(*ActivateBulkError)
+		if isActiveBulkErr {
+			ctx.JSON(httpresp.Fail400(gin.H{
+				"errors":gin.H{
+					"messages": activateBulkErr.Messages,
+				},
+			}, "Validation error"))
+			return 
+		}
+	
+	}
+	err = ctrler.accountRepository.ActivateAccountBulk(accounts)
+	if err != nil{
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"errors":gin.H{
+				"messages": []string{"Unknown error occured."},
+			},
+		}, "Validation error"))
+		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
 }
 
-func(ctrler * AccountController)validateTypeAndProgram(accounts []model.AccountActivation) error {
-	types, err  := ctrler.userRepo.GetUserTypesToMap()	
+func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.AccountActivation) error {
+	typesMaps, err  := ctrler.userRepo.GetUserTypesToMap()	
 	if err != nil {
 		return err
 	}
-	fmt.Println(types)
-	programs, err := ctrler.userRepo.GetUserProgramsAndStrandsToMap()
+	
+	programsMap, err := ctrler.userRepo.GetUserProgramsAndStrandsToMap()
 	if err != nil {
 		return err
 	}
-	fmt.Println(programs)
-	for _, account := range accounts {
+	messages := []string{}
+	for idx, account := range *accounts {
+		_, isAccountTypeExists := typesMaps[account.UserType]
+		
+		if(account.UserType != 0 && !isAccountTypeExists){
+			messages = append(messages, fmt.Sprintf("User type is invalid on row: %d with value: %d", idx + 1, account.UserType))
+		}
 		if(account.UserType == 0) {
+			program, isProgramExists := programsMap[account.Program]
+			if(!isProgramExists){
+				messages = append(messages, fmt.Sprintf("Program is invalid or undefined on row: %d with value: %s", idx + 1, account.Program))
+			}
+			(*accounts)[idx].UserType = program.UserTypeId
+			(*accounts)[idx].ProgramId = program.Id
+			account.ProgramId = program.Id
+			continue
+		}
+	}
 
+	if(len(messages) > 0){
+		return &ActivateBulkError{
+			Messages: messages,
+			Err: errors.New("error occured while validating type and program"),
 		}
 	}
 	return nil

@@ -18,18 +18,18 @@ type UserRepository interface {
 	GetUserTypes() ([]model.UserType, error)
 	GetUserProgramsAndStrands()([]model.UserProgramOrStrand, error) 
 	GetUserTypesToMap() (map[int]model.UserType, error)
-	GetUserProgramsAndStrandsToMap()(map[int]model.UserProgramOrStrand,error)
+	GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error)
 	
 }
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
 	types := make([]model.UserType, 0)
-	err := repo.db.Select(&types,"SELECT id, name from system.user_type")
+	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type")
 	return types, err
 }
 func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){
 	programs := make([]model.UserProgramOrStrand, 0)
-	err := repo.db.Select(&programs,"SELECT id, code, name from system.user_program")
+	err := repo.db.Select(&programs,"SELECT id, code, name, user_type_id from system.user_program")
 	return programs, err
 }
 func (repo * User)GetUserTypesToMap() (map[int]model.UserType, error){
@@ -43,15 +43,14 @@ func (repo * User)GetUserTypesToMap() (map[int]model.UserType, error){
 	}
 	return typesMap, nil
 }
-func (repo * User)GetUserProgramsAndStrandsToMap()(map[int]model.UserProgramOrStrand,error){
-	programsMap := make(map[int]model.UserProgramOrStrand, 0)
-	programs := make([]model.UserProgramOrStrand, 0)
-	err := repo.db.Select(&programs,"SELECT id, code, name from system.user_program")
+func (repo * User)GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error){
+	programsMap := make(map[string]model.UserProgramOrStrand, 0)
+	programs, err := repo.GetUserProgramsAndStrands()
 	if err != nil {
 		return programsMap, err
 	}
 	for _, program := range programs {
-		programsMap[program.Id] = program
+		programsMap[program.Code] = program
 	}
 	return programsMap, nil
 }

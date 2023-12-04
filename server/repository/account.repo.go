@@ -504,4 +504,5 @@ type AccountRepositoryInterface interface {
 	DisableAccounts(accountIds []string) error
 	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
 	RestoreAccounts(accountIds []string) error
+	ActivateAccountBulk(accounts []model.AccountActivation) error 
 }
