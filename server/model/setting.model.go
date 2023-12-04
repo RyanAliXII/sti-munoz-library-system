@@ -13,6 +13,9 @@ type Settings struct{
 
 type SettingsValue struct {
 	DuePenalty SettingsFieldInt `json:"app.due-penalty"`
+	MaxReservationPerDay SettingsFieldInt `json:"app.max-reservation" `
+	DaysToDueDate SettingsFieldInt `json:"app.days-to-due-date"`
+	AccountValidity SettingsFieldString `json:"app.account-validity"`
 }
 
 
@@ -20,7 +23,19 @@ type SettingsFieldInt struct {
 	Id string `json:"id"`
 	Label string `json:"label"`
 	Description string `json:"description"`
+	Type string `json:"type"`
+	DefaultValue int `json:"defaultValue"`
 	Value int `json:"value"`
+
+}
+
+type SettingsFieldString struct {
+	Id string `json:"id"`
+	Label string `json:"label"`
+	Description string `json:"description"`
+	Type string `json:"type"`
+	DefaultValue string `json:"defaultValue"`
+	Value string `json:"value"`
 
 }
 

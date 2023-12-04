@@ -1,14 +1,17 @@
-import { ButtonClasses } from "@components/ui/button/Button";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
-import { Settings } from "@definitions/types";
+import Container from "@components/ui/container/Container";
+import { ModalProps, Settings, SettingsField } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { AiOutlineEdit } from "react-icons/ai";
+import IntModal from "./IntModal";
 
+export interface InputModalProps extends ModalProps {
+  label?: string;
+  value: number | string;
+}
 const SettingsPage = () => {
   const { Get } = useRequest();
   const fetchAppSettings = async () => {
@@ -29,6 +32,15 @@ const SettingsPage = () => {
     queryFn: fetchAppSettings,
     queryKey: ["appSettings"],
   });
+
+  const intModal = useSwitch();
+
+  const initEdit = (field: SettingsField) => {
+    if (field.type === "int") {
+      intModal.open();
+    }
+  };
+
   return (
     <>
       <Container>
@@ -49,7 +61,12 @@ const SettingsPage = () => {
                     <Table.Cell>{setting.value}</Table.Cell>
                     <Table.Cell>
                       <Tippy content="Edit Setting">
-                        <Button color="secondary">
+                        <Button
+                          color="secondary"
+                          onClick={() => {
+                            initEdit(setting);
+                          }}
+                        >
                           <AiOutlineEdit className="text-lg"></AiOutlineEdit>
                         </Button>
                       </Tippy>
@@ -60,6 +77,11 @@ const SettingsPage = () => {
             </Table.Body>
           </Table>
         }
+        <IntModal
+          closeModal={intModal.close}
+          isOpen={intModal.isOpen}
+          value={1}
+        />
       </Container>
     </>
   );

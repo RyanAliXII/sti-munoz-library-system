@@ -255,14 +255,18 @@ export type OnlineBorrowedBook = {
   client: Account;
 };
 
-export interface SettingsField<T> {
+export interface SettingsField {
   id: string;
   label: string;
   description: string;
-  value: T;
+  type: "int" | "date" | "string" | "boolean";
+  value: any;
 }
 export type Settings = {
-  "app.due-penalty": SettingsField<number>;
+  "app.due-penalty": SettingsField;
+  "app.days-to-due-date": SettingsField;
+  "app.max-reservation": SettingsField;
+  "app.account-validity": SettingsField;
 };
 
 export type Penalty = {
