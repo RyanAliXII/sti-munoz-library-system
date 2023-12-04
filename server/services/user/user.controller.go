@@ -1,6 +1,8 @@
 package user
 
 import (
+	"strconv"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -22,6 +24,7 @@ type UserController interface {
 	GetUserTypes(ctx *gin.Context)
 	GetUserProgramsAndStrands(ctx *gin.Context)
 	NewUserType(ctx *gin.Context)
+	UpdateUserType(ctx *gin.Context)
 }
 
 func (ctrler * User)GetUserTypes(ctx *gin.Context){
@@ -43,6 +46,33 @@ func (ctrler * User)NewUserType(ctx *gin.Context){
 		return
 	}
 	err = ctrler.userRepo.NewUserType(userType)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("NewUserType"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+	}, "New user type added."))
+
+}
+
+func (ctrler * User)UpdateUserType(ctx *gin.Context){
+	id, err := strconv.Atoi(ctx.Param("id"))
+
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	userType := model.UserType{}
+	err = ctx.ShouldBindBodyWith(&userType, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	userType.Id = id
+	err = ctrler.userRepo.UpdateUserType(userType)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewUserType"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

@@ -11,5 +11,6 @@ func UserRoutes(router * gin.RouterGroup){
 	router.Use(middlewares.BlockRequestFromClientApp)
 	router.GET("/types", userCtrler.GetUserTypes)
 	router.POST("/types",middlewares.ValidateBody[UserType], userCtrler.NewUserType)
+	router.PUT("/types/:id",middlewares.ValidateBody[UserType], userCtrler.UpdateUserType)
 	router.GET("/programs", userCtrler.GetUserProgramsAndStrands)
 }

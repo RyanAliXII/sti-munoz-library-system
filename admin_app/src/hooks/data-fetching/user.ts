@@ -78,3 +78,16 @@ export const useNewUserType = ({
     onSettled: onSettled,
   });
 };
+export const useEditUserType = ({
+  onError,
+  onSuccess,
+  onSettled,
+}: UseMutationOptions<unknown, unknown, UserType>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (form) => Put(`/users/types/${form.id}`, form),
+    onError: onError,
+    onSuccess: onSuccess,
+    onSettled: onSettled,
+  });
+};

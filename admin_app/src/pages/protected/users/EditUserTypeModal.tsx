@@ -1,6 +1,6 @@
 import { CustomInput } from "@components/ui/form/Input";
 import { EditModalProps, ModalProps, UserType } from "@definitions/types";
-import { useNewUserType } from "@hooks/data-fetching/user";
+import { useEditUserType, useNewUserType } from "@hooks/data-fetching/user";
 import { useForm } from "@hooks/useForm";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Checkbox, Label, Modal } from "flowbite-react";
@@ -25,9 +25,9 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
       schema: UserTypeValidation,
     });
   const queryClient = useQueryClient();
-  const newUserType = useNewUserType({
+  const updateUserType = useEditUserType({
     onSuccess: () => {
-      toast.success("User type added.");
+      toast.success("User type updated.");
       queryClient.invalidateQueries(["userTypes"]);
     },
     onError: () => {
@@ -41,7 +41,7 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
       const parsed = await validate();
       if (!parsed) return;
       closeModal();
-      newUserType.mutate(parsed);
+      updateUserType.mutate(parsed);
     } catch (error) {
       console.error(error);
     }
