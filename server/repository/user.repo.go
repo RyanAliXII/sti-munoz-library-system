@@ -19,6 +19,7 @@ type UserRepository interface {
 	GetUserProgramsAndStrands()([]model.UserProgramOrStrand, error) 
 	GetUserTypesToMap() (map[int]model.UserType, error)
 	GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error)
+	NewUserType(userType model.UserType)(error)
 	
 }
 
@@ -26,6 +27,10 @@ func (repo * User)GetUserTypes()([]model.UserType, error) {
 	types := make([]model.UserType, 0)
 	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type order by id asc")
 	return types, err
+}
+func (repo * User)NewUserType(userType model.UserType)(error){
+	_, err := repo.db.Exec("INSERT INTO user_type (name, has_program)VALUES($1, $2)", userType.Name, userType.HasProgram)
+	return err
 }
 func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){
 	programs := make([]model.UserProgramOrStrand, 0)

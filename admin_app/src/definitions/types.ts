@@ -314,11 +314,12 @@ export type ScannerAccount = {
   username: string;
 };
 export type UserType = {
-  id: string;
+  id: number;
   name: string;
+  hasProgram: boolean;
 };
 export type UserProgramOrStrand = {
-  id: string;
+  id: number;
   name: string;
   code: string;
 };

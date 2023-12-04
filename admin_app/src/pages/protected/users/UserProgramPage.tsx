@@ -4,6 +4,7 @@ import { Table } from "flowbite-react";
 
 const UserProgramPage = () => {
   const { data: programs } = useUserPrograms({});
+
   return (
     <Container>
       <Table>
