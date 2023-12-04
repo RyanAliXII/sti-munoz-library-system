@@ -24,7 +24,7 @@ type UserRepository interface {
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
 	types := make([]model.UserType, 0)
-	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type")
+	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type order by id asc")
 	return types, err
 }
 func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){

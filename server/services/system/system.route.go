@@ -49,4 +49,7 @@ func SystemRoutes(router *gin.RouterGroup) {
 	router.GET("/settings",
 	middlewares.ValidatePermissions("Settings.Access"),
 	middlewares.BlockRequestFromClientApp, ctrler.GetAppSettings)
+	router.PUT("/settings",
+	middlewares.ValidatePermissions("Settings.Access"),
+	middlewares.BlockRequestFromClientApp, ctrler.UpdateAppSettings)
 }

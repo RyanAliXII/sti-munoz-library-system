@@ -192,12 +192,7 @@ func (ctrler * SystemController) RemoveRoleAssignment(ctx * gin.Context){
 	ctrler.systemRepository.RemoveRoleAssignment(roleId, accountId.String())
 	ctx.JSON(httpresp.Success200(nil, "Role assignment has been removed."))
 }
-func (ctrler * SystemController) GetAppSettings(ctx * gin.Context){
 
-	settings :=ctrler.settingsRepository.Get()
-	
-	ctx.JSON(httpresp.Success200(gin.H{"settings": settings}, "App settings fetched."))
-}
 func NewSystemConctroller() SystemControllerInterface {
 	return &SystemController{
 		accountRepository: repository.NewAccountRepository(),
@@ -217,4 +212,5 @@ type SystemControllerInterface interface {
 	GetAccountRoles(ctx * gin.Context)
 	RemoveRoleAssignment(ctx * gin.Context)
 	GetAppSettings(ctx * gin.Context)
+	UpdateAppSettings(ctx * gin.Context)
 }

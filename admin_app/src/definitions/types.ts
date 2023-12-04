@@ -261,12 +261,10 @@ export interface SettingsField {
   description: string;
   type: "int" | "date" | "string" | "boolean";
   value: any;
+  defaultValue: any;
 }
 export type Settings = {
-  "app.due-penalty": SettingsField;
-  "app.days-to-due-date": SettingsField;
-  "app.max-reservation": SettingsField;
-  "app.account-validity": SettingsField;
+  [id: string]: SettingsField;
 };
 
 export type Penalty = {

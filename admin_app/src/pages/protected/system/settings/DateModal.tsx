@@ -1,30 +1,39 @@
-import { CustomInput } from "@components/ui/form/Input";
-import { useEditSettings } from "@hooks/data-fetching/settings";
-import { useForm } from "@hooks/useForm";
-import useModalToggleListener from "@hooks/useModalToggleListener";
-import { useQueryClient } from "@tanstack/react-query";
-import { Button, Modal } from "flowbite-react";
-import { FC, FormEvent } from "react";
-import { FaSave } from "react-icons/fa";
-import { toast } from "react-toastify";
-import { number, object } from "yup";
+import React, { FC, FormEvent } from "react";
 import { InputModalProps } from "./SettingsPage";
+import { Button, Datepicker, Label, Modal } from "flowbite-react";
+import { CustomInput } from "@components/ui/form/Input";
+import { FaSave } from "react-icons/fa";
+import { useForm } from "@hooks/useForm";
+import { object, string } from "yup";
+import { SettingsField } from "@definitions/types";
+import useModalToggleListener from "@hooks/useModalToggleListener";
+import { TbSettingsFilled } from "react-icons/tb";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEditSettings } from "@hooks/data-fetching/settings";
+import { toast } from "react-toastify";
+import { format, isValid, parse } from "date-fns";
 
-const IntModal: FC<InputModalProps> = ({
-  isOpen,
+const DateModal: FC<InputModalProps> = ({
   closeModal,
+  isOpen,
   settingField,
   settings,
 }) => {
-  const { setFieldValue, handleFormInput, form, validate, errors } = useForm({
+  const { form, setFieldValue, errors, validate } = useForm({
     initialFormData: {
-      value: 0,
+      value: "",
     },
     schema: object({
-      value: number()
-        .integer("Value should be integer")
+      value: string()
         .required("Value is required")
-        .typeError("Value is required."),
+        .test("is-valid-date-str", "Value is required", (value) => {
+          try {
+            const parsedDate = parse(value ?? "", "yyyy-MM-dd", new Date());
+            return isValid(parsedDate);
+          } catch (error) {
+            return false;
+          }
+        }),
     }),
   });
   useModalToggleListener(isOpen, () => {
@@ -56,18 +65,28 @@ const IntModal: FC<InputModalProps> = ({
       console.error(error);
     }
   };
+  const handleDateSelect = (date: Date) => {
+    try {
+      const dateStr = format(date, "yyyy-MM-dd");
+      setFieldValue("value", dateStr);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <Modal show={isOpen} onClose={closeModal} size="lg" dismissible>
       <Modal.Header>{settingField.label}</Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="overflow-visible">
         <form onSubmit={onSubmit}>
-          <div className="py-2">
-            <CustomInput
+          <div className="pb-2">
+            <Label>Value</Label>
+            <Datepicker
               value={form.value}
-              name="value"
-              onChange={handleFormInput}
-              error={errors?.value}
+              onSelectedDateChanged={handleDateSelect}
             />
+            <div className="h-2 flex items-center mt-2">
+              <small className="text-red-500">{errors?.value}</small>
+            </div>
           </div>
           <Button color="primary" type="submit">
             <div className="flex gap-2">
@@ -81,4 +100,4 @@ const IntModal: FC<InputModalProps> = ({
   );
 };
 
-export default IntModal;
+export default DateModal;

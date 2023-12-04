@@ -17,6 +17,10 @@ type SettingsValue struct {
 	DaysToDueDate SettingsFieldInt `json:"app.days-to-due-date"`
 	AccountValidity SettingsFieldString `json:"app.account-validity"`
 }
+func(instance * SettingsValue)ToBytes() ([]byte, error) {
+	bytes, err := json.Marshal(instance)
+	return bytes, err
+}
 
 
 type SettingsFieldInt struct {
