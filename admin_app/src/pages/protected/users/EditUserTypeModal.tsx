@@ -1,5 +1,5 @@
 import { CustomInput } from "@components/ui/form/Input";
-import { ModalProps, UserType } from "@definitions/types";
+import { EditModalProps, ModalProps, UserType } from "@definitions/types";
 import { useNewUserType } from "@hooks/data-fetching/user";
 import { useForm } from "@hooks/useForm";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,16 +9,21 @@ import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { UserTypeValidation } from "./schema";
 import useModalToggleListener from "@hooks/useModalToggleListener";
-const NewUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, handleFormInput, validate, errors, resetForm } = useForm<
-    Omit<UserType, "id">
-  >({
-    initialFormData: {
-      name: "",
-      hasProgram: false,
-    },
-    schema: UserTypeValidation,
-  });
+
+const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
+  formData,
+  isOpen,
+  closeModal,
+}) => {
+  const { form, handleFormInput, validate, errors, setForm } =
+    useForm<UserType>({
+      initialFormData: {
+        id: 0,
+        name: "",
+        hasProgram: false,
+      },
+      schema: UserTypeValidation,
+    });
   const queryClient = useQueryClient();
   const newUserType = useNewUserType({
     onSuccess: () => {
@@ -42,12 +47,12 @@ const NewUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     }
   };
   useModalToggleListener(isOpen, () => {
-    if (isOpen) return;
-    resetForm();
+    if (!isOpen) return;
+    setForm(formData);
   });
   return (
     <Modal dismissible show={isOpen} onClose={closeModal} size="lg">
-      <Modal.Header>New User Type</Modal.Header>
+      <Modal.Header>Edit User Type</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div className="pb-2">
@@ -81,4 +86,4 @@ const NewUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
   );
 };
 
-export default NewUserTypeModal;
+export default EditUserTypeModal;
