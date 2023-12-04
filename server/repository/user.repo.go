@@ -20,6 +20,7 @@ type UserRepository interface {
 	GetUserTypesToMap() (map[int]model.UserType, error)
 	GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error)
 	NewUserType(userType model.UserType)(error)
+	UpdateUserType(userType model.UserType)(error)
 	
 }
 
@@ -47,6 +48,10 @@ func (repo * User)GetUserTypesToMap() (map[int]model.UserType, error){
 		typesMap[t.Id] = t
 	}
 	return typesMap, nil
+}
+func(repo * User)UpdateUserType(userType model.UserType)(error){
+	_, err := repo.db.Exec("UPDATE system.user_type set name = $1, has_program = $2 where id =$3", userType.Name, userType.HasProgram, userType.Id)
+	return err
 }
 func (repo * User)GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error){
 	programsMap := make(map[string]model.UserProgramOrStrand, 0)
