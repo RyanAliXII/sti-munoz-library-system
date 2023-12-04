@@ -1,6 +1,11 @@
 import { Settings } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { MutationOptions, useMutation } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useEditSettings = ({
   onSuccess,
@@ -18,5 +23,25 @@ export const useEditSettings = ({
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,
+  });
+};
+
+export const useSettings = ({
+  onSuccess,
+}: UseQueryOptions<Settings, unknown, Settings>) => {
+  const { Get } = useRequest();
+  const fetchAppSettings = async () => {
+    try {
+      const response = await Get("/system/settings", {}, []);
+      const { data } = response.data;
+      return data?.settings ?? {};
+    } catch (error) {
+      return {};
+    }
+  };
+  return useQuery<Settings, unknown, Settings>({
+    queryFn: fetchAppSettings,
+    onSuccess: onSuccess,
+    queryKey: ["appSettings"],
   });
 };

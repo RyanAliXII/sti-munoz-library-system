@@ -88,4 +88,5 @@ type AccountActivation struct {
 	UserType int `json:"userType" csv:"user_type"`
 	Program string `json:"program" csv:"program"`
 	ProgramId int `json:"programId"`
+	ActiveUntil string `json:"activeUntil"`
 }

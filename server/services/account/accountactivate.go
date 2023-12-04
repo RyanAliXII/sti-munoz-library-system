@@ -115,7 +115,8 @@ func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.Accoun
 	if err != nil {
 		return err
 	}
-	
+	settings := ctrler.settingsRepo.Get()
+
 	programsMap, err := ctrler.userRepo.GetUserProgramsAndStrandsToMap()
 	if err != nil {
 		return err
@@ -123,7 +124,7 @@ func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.Accoun
 	messages := []string{}
 	for idx, account := range *accounts {
 		_, isAccountTypeExists := typesMaps[account.UserType]
-		
+		(*accounts)[idx].ActiveUntil = settings.AccountValidity.Value
 		if(account.UserType != 0 && !isAccountTypeExists){
 			messages = append(messages, fmt.Sprintf("User type is invalid on row: %d with value: %d", idx + 1, account.UserType))
 		}
@@ -132,13 +133,12 @@ func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.Accoun
 			if(!isProgramExists){
 				messages = append(messages, fmt.Sprintf("Program is invalid or undefined on row: %d with value: %s", idx + 1, account.Program))
 			}
-			(*accounts)[idx].UserType = program.UserTypeId
+		
 			(*accounts)[idx].ProgramId = program.Id
-			account.ProgramId = program.Id
 			continue
 		}
 	}
-
+	
 	if(len(messages) > 0){
 		return &ActivateBulkError{
 			Messages: messages,

@@ -37,7 +37,7 @@ const AccountPage = () => {
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
     deleted: { type: "boolean", default: false },
-    active: { type: "boolean", default: false },
+    active: { type: "boolean", default: true },
     disabled: { type: "boolean", default: false },
   });
   const {
@@ -246,7 +246,7 @@ const AccountPage = () => {
                 >
                   Disabled
                 </Dropdown.Item>
-                <Dropdown.Item
+                {/* <Dropdown.Item
                   disabled={isDeleteButtonDisabled}
                   onClick={openConfirmDeleteDialog}
                 >
@@ -257,7 +257,7 @@ const AccountPage = () => {
                   onClick={openConfirmRestoreDialog}
                 >
                   Restore
-                </Dropdown.Item>
+                </Dropdown.Item> */}
               </Dropdown>
               <Button
                 color="primary"

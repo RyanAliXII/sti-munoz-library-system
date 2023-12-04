@@ -23,6 +23,7 @@ type AccountController struct {
 	accountRepository repository.AccountRepositoryInterface
 	recordMetadataRepository  repository.RecordMetadataRepository
 	userRepo repository.UserRepository
+	settingsRepo repository.SettingsRepositoryInterface
 	validator   * validator.Validate
 	
 }
@@ -279,6 +280,7 @@ func NewAccountController() AccountControllerInterface {
 			CacheExpiration: time.Minute * 5,
 	   }),
 		validator: validator.New(),
+		settingsRepo: repository.NewSettingsRepository(),
 	   userRepo: repository.NewUserRepository(),
 	}
 
