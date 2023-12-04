@@ -24,6 +24,7 @@ type UserRepository interface {
 	GetUserTypesWithProgram()([]model.UserType, error)
 	NewProgram(program model.UserProgramOrStrand) error
 	UpdateProgram(program model.UserProgramOrStrand)error
+	GetUserProgramsAndStrandsByType(id int)([]model.UserProgramOrStrand,error)
 }
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
@@ -48,6 +49,17 @@ func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error)
 	from system.user_program
 	INNER JOIN system.user_type on user_program.user_type_id = user_type.id
 	order by code asc`)
+	return programs, err
+}
+func (repo * User)GetUserProgramsAndStrandsByType(id int)([]model.UserProgramOrStrand,error){
+	programs := make([]model.UserProgramOrStrand, 0)
+	err := repo.db.Select(&programs,`
+	SELECT user_program.id, code, user_program.name, user_type_id, 
+	JSON_BUILD_OBJECT('id', user_type.id, 'name', user_type.name, 'hasProgram', user_type.has_program)  as user_type
+	from system.user_program
+	INNER JOIN system.user_type on user_program.user_type_id = user_type.id
+	where user_type_id = $1
+	order by code asc`, id)
 	return programs, err
 }
 

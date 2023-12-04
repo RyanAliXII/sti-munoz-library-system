@@ -82,6 +82,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
         <Table.HeadCell></Table.HeadCell>
         <Table.HeadCell>User</Table.HeadCell>
         <Table.HeadCell>Email</Table.HeadCell>
+        <Table.HeadCell>User Group</Table.HeadCell>
         <Table.HeadCell>Status</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y dark:divide-gray-700">
@@ -122,6 +123,14 @@ const AccountTable: React.FC<AccountTableProps> = ({
                 </div>
               </Table.Cell>
               <Table.Cell>{account.email}</Table.Cell>
+              <Table.Cell>
+                <div className="text-base font-semibold text-gray-900 dark:text-white">
+                  {account.userType}
+                </div>
+                <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                  {account.programCode}
+                </div>
+              </Table.Cell>
               <Table.Cell>
                 <StatusBadge account={account}></StatusBadge>
               </Table.Cell>

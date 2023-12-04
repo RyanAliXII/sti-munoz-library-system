@@ -51,6 +51,9 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("profile_picture"),
 		goqu.C("surname"),
 		goqu.C("metadata"),
+		goqu.C("program_name"),
+		goqu.C("user_type"),
+		goqu.C("program_code"),
 	 ).From(goqu.T("account_view"))
 
 
@@ -193,6 +196,9 @@ func (repo *AccountRepository) SearchAccounts(filter * AccountFilter) ([]model.A
 		goqu.C("profile_picture"),
 		goqu.C("surname"),
 		goqu.C("metadata"),
+		goqu.C("program_name"),
+		goqu.C("program_code"),
+		goqu.C("user_type"),
 	).From(goqu.T("account_view"))
 	
 	ds = ds.Where(

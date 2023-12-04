@@ -30,6 +30,7 @@ import AccountTable from "./AccountTable";
 import ImportAccountModal from "./ImportAccountModal";
 import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
 import { MdFilterList } from "react-icons/md";
+import ActivateModal from "./ActivateModal";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -146,7 +147,7 @@ const AccountPage = () => {
     close: closeConfirmRestoreDialog,
     open: openConfirmRestoreDialog,
   } = useSwitch();
-
+  const activateModal = useSwitch();
   const onConfirmDelete = () => {
     deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
@@ -167,6 +168,10 @@ const AccountPage = () => {
     const name = event.target.name;
     const isChecked = event.target.checked;
     setFilterParams({ [name]: isChecked, page: 1 });
+  };
+
+  const initActivate = () => {
+    activateModal.open();
   };
   return (
     <>
@@ -198,7 +203,7 @@ const AccountPage = () => {
                 <div className="text-sm">Disabled</div>
               </div>
 
-              <div className="p-2 flex gap-2 items-center">
+              {/* <div className="p-2 flex gap-2 items-center">
                 <Checkbox
                   color="primary"
                   name="deleted"
@@ -206,7 +211,7 @@ const AccountPage = () => {
                   onChange={handleFilterSelection}
                 />
                 <div className="text-sm">Deleted</div>
-              </div>
+              </div> */}
             </Dropdown>
             <CustomInput
               type="text"
@@ -236,7 +241,7 @@ const AccountPage = () => {
               >
                 <Dropdown.Item
                   disabled={isActivateButtonDisabled}
-                  onClick={openConfirmActivateDialog}
+                  onClick={initActivate}
                 >
                   Activate
                 </Dropdown.Item>
@@ -275,7 +280,7 @@ const AccountPage = () => {
           <LoadingBoundaryV2
             isLoading={isFetching}
             isError={isError}
-            contentLoadDelay={150}
+            contentLoadDelay={50}
           >
             <AccountTable
               selectedAccountIds={selectedAccountIds}
@@ -335,6 +340,10 @@ const AccountPage = () => {
         <ImportAccountModal
           closeModal={closeImportModal}
           isOpen={isImportModalOpen}
+        />
+        <ActivateModal
+          closeModal={activateModal.close}
+          isOpen={activateModal.isOpen}
         />
       </HasAccess>
     </>

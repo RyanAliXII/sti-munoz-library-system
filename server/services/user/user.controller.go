@@ -27,6 +27,7 @@ type UserController interface {
 	UpdateUserType(ctx *gin.Context)
 	NewUserProgram(ctx *gin.Context)
 	UpdateUserProgram(ctx *gin.Context)
+	GetUserProgramsAndStrandsByType(ctx * gin.Context)
 }
 
 func (ctrler * User)GetUserTypes(ctx *gin.Context){
@@ -149,6 +150,21 @@ func (ctrler * User)GetUserProgramsAndStrands(ctx *gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"programs": programs,
-	}, "User types fetched."))
+	}, "User programs fetched."))
 
 }
+func (ctrler * User)GetUserProgramsAndStrandsByType(ctx *gin.Context){
+	id, err := strconv.Atoi(ctx.Param("typeId"))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
+	}
+	programs, err := ctrler.userRepo.GetUserProgramsAndStrandsByType(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetUserProgramsAndStrandsByTypeErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"programs": programs,
+	}, "User programs fetched by type."))
+
+}
+

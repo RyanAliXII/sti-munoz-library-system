@@ -160,6 +160,9 @@ export type Account = {
   email: string;
   isActive: boolean;
   isDeleted: boolean;
+  programName: string;
+  userType: string;
+  programCode: string;
   metadata: {
     totalPenalty: number;
     checkedOutBooks: number;

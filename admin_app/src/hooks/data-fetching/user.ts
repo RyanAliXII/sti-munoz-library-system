@@ -1,6 +1,7 @@
 import { UserProgramOrStrand, UserType } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
+  QueryFunction,
   UseMutationOptions,
   UseQueryOptions,
   useMutation,
@@ -88,6 +89,50 @@ export const useUserPrograms = ({
     onSuccess: onSuccess,
     onError: onError,
     queryKey: ["userPrograms"],
+    onSettled,
+  });
+};
+export const useUserProgramsByType = ({
+  onSuccess,
+  onSettled,
+  onError,
+  queryKey,
+}: UseQueryOptions<
+  UserProgramOrStrand[],
+  unknown,
+  UserProgramOrStrand[],
+  [string, number, boolean]
+>) => {
+  const { Get } = useRequest();
+
+  const fetchUserPrograms: QueryFunction<
+    UserProgramOrStrand[],
+    [string, number, boolean]
+  > = async ({ queryKey }) => {
+    try {
+      const typeId = queryKey[1];
+      const hasProgram = queryKey[2];
+      if (!hasProgram) return [];
+      const { data: response } = await Get(`/users/types/${typeId}/programs`, {
+        params: {},
+      });
+
+      const { data } = response;
+      return data?.programs ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<
+    UserProgramOrStrand[],
+    unknown,
+    UserProgramOrStrand[],
+    [string, number, boolean]
+  >({
+    queryFn: fetchUserPrograms,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: queryKey,
     onSettled,
   });
 };

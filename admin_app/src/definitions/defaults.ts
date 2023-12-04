@@ -39,8 +39,11 @@ export const AccountInitialValue: Account = {
   givenName: "",
   surname: "",
   id: "",
+  programCode: "",
   isActive: false,
   isDeleted: false,
+  userType: "",
+  programName: "",
   metadata: {
     approvedBooks: 0,
     cancelledBooks: 0,
@@ -70,10 +73,13 @@ export const BorrowedCopyInitialValue: BorrowedCopy = {
 export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
     displayName: "",
+    programCode: "",
     email: "",
     givenName: "",
     surname: "",
     id: "",
+    userType: "",
+    programName: "",
     isActive: false,
     isDeleted: false,
     metadata: {
