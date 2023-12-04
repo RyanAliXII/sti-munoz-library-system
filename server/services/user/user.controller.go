@@ -25,6 +25,8 @@ type UserController interface {
 	GetUserProgramsAndStrands(ctx *gin.Context)
 	NewUserType(ctx *gin.Context)
 	UpdateUserType(ctx *gin.Context)
+	NewUserProgram(ctx *gin.Context)
+	UpdateUserProgram(ctx *gin.Context)
 }
 
 func (ctrler * User)GetUserTypes(ctx *gin.Context){
@@ -66,6 +68,51 @@ func (ctrler * User)NewUserType(ctx *gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 	}, "New user type added."))
+
+}
+
+func (ctrler * User)NewUserProgram(ctx *gin.Context){
+	program := model.UserProgramOrStrand{}
+	err := ctx.ShouldBindBodyWith(&program, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.userRepo.NewProgram(program)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("NewUserProgram"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+	}, "New program added."))
+
+}
+
+func (ctrler * User)UpdateUserProgram(ctx *gin.Context){
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	program := model.UserProgramOrStrand{}
+	err = ctx.ShouldBindBodyWith(&program, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	program.Id = id
+	err = ctrler.userRepo.UpdateProgram(program)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateProgram"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+	}, "Program updated."))
 
 }
 

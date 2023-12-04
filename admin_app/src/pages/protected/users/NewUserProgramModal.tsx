@@ -7,6 +7,9 @@ import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { UserProgramValidation } from "./schema";
 import { SingleValue } from "react-select";
+import { useNewProgram } from "@hooks/data-fetching/user";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NewUserProgramModalProps extends ModalProps {
   userTypes: UserType[];
@@ -31,10 +34,23 @@ const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
     },
     schema: UserProgramValidation,
   });
+  const queryClient = useQueryClient();
+  const newProgram = useNewProgram({
+    onSuccess: () => {
+      toast.success("Program/Strand added.");
+      queryClient.invalidateQueries(["userPrograms"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault();
       const parsed = await validate();
+      if (!parsed) return;
+      newProgram.mutate(parsed);
+      closeModal();
     } catch (error) {
       console.error(error);
     }

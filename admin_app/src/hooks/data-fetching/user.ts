@@ -119,3 +119,17 @@ export const useEditUserType = ({
     onSettled: onSettled,
   });
 };
+
+export const useNewProgram = ({
+  onError,
+  onSuccess,
+  onSettled,
+}: UseMutationOptions<unknown, unknown, Omit<UserProgramOrStrand, "id">>) => {
+  const { Post } = useRequest();
+  return useMutation({
+    mutationFn: (form) => Post("/users/programs", form, {}),
+    onError: onError,
+    onSuccess: onSuccess,
+    onSettled: onSettled,
+  });
+};

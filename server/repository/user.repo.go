@@ -22,6 +22,8 @@ type UserRepository interface {
 	NewUserType(userType model.UserType)(error)
 	UpdateUserType(userType model.UserType)(error)
 	GetUserTypesWithProgram()([]model.UserType, error)
+	NewProgram(program model.UserProgramOrStrand) error
+	UpdateProgram(program model.UserProgramOrStrand)error
 }
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
@@ -69,4 +71,13 @@ func (repo * User)GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramO
 		programsMap[program.Code] = program
 	}
 	return programsMap, nil
+}
+
+func (repo * User)NewProgram(program model.UserProgramOrStrand)error{
+	_, err := repo.db.Exec("INSERT INTO system.user_program(code, name, user_type_id) VALUES($1, $2, $3)", program.Code, program.Name, program.UserTypeId)
+	return err
+}
+func (repo * User)UpdateProgram(program model.UserProgramOrStrand)error{
+	_, err := repo.db.Exec("UPDATE system.user_program SET code = $1, name = $2, user_type_id = $3 WHERE code = $4", program.Code, program.Name, program.UserTypeId, program.Id)
+	return err
 }
