@@ -23,12 +23,12 @@ const UserTypePage = () => {
   };
   return (
     <Container>
+      <div className="py-2">
+        <Button color="primary" onClick={newTypeModal.open}>
+          New User Type
+        </Button>
+      </div>
       <TableContainer>
-        <div className="py-2">
-          <Button color="primary" onClick={newTypeModal.open}>
-            New User Type
-          </Button>
-        </div>
         <Table>
           <Table.Head>
             <Table.HeadCell>Id</Table.HeadCell>
