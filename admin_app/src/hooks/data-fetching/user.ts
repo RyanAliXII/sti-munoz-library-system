@@ -124,10 +124,28 @@ export const useNewProgram = ({
   onError,
   onSuccess,
   onSettled,
-}: UseMutationOptions<unknown, unknown, Omit<UserProgramOrStrand, "id">>) => {
+}: UseMutationOptions<
+  unknown,
+  unknown,
+  Omit<UserProgramOrStrand, "id" | "userType">
+>) => {
   const { Post } = useRequest();
   return useMutation({
     mutationFn: (form) => Post("/users/programs", form, {}),
+    onError: onError,
+    onSuccess: onSuccess,
+    onSettled: onSettled,
+  });
+};
+
+export const useEditProgram = ({
+  onError,
+  onSuccess,
+  onSettled,
+}: UseMutationOptions<unknown, unknown, UserProgramOrStrand>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (form) => Put(`/users/programs/${form.id}`, form),
     onError: onError,
     onSuccess: onSuccess,
     onSettled: onSettled,

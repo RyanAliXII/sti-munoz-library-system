@@ -1,45 +1,58 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { CustomInput } from "@components/ui/form/Input";
-import { ModalProps, UserProgramOrStrand, UserType } from "@definitions/types";
+import {
+  EditModalProps,
+  ModalProps,
+  UserProgramOrStrand,
+  UserType,
+} from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { Button, Modal } from "flowbite-react";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { UserProgramValidation } from "./schema";
 import { SingleValue } from "react-select";
-import { useNewProgram } from "@hooks/data-fetching/user";
+import { useEditProgram, useNewProgram } from "@hooks/data-fetching/user";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 
-interface NewUserProgramModalProps extends ModalProps {
+interface EditUserProgramModalProps
+  extends EditModalProps<UserProgramOrStrand> {
   userTypes: UserType[];
 }
-const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
+export const EditUserProgramModal: FC<EditUserProgramModalProps> = ({
   isOpen,
   closeModal,
   userTypes,
+  formData,
 }) => {
   const {
     errors,
     form,
+    setForm,
     validate,
     handleFormInput,
     removeFieldError,
     setFieldValue,
-    resetForm,
-  } = useForm<Omit<UserProgramOrStrand, "id" | "userType">>({
+  } = useForm<UserProgramOrStrand>({
     initialFormData: {
+      id: 0,
       code: "",
       name: "",
       userTypeId: 0,
+      userType: {
+        hasProgram: false,
+        id: 0,
+        name: "",
+      },
     },
     schema: UserProgramValidation,
   });
   const queryClient = useQueryClient();
-  const newProgram = useNewProgram({
+  const editProgram = useEditProgram({
     onSuccess: () => {
-      toast.success("Program/Strand added.");
+      toast.success("Program/Strand updated.");
       queryClient.invalidateQueries(["userPrograms"]);
     },
     onError: () => {
@@ -51,7 +64,7 @@ const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
       event.preventDefault();
       const parsed = await validate();
       if (!parsed) return;
-      newProgram.mutate(parsed);
+      editProgram.mutate(parsed);
       closeModal();
     } catch (error) {
       console.error(error);
@@ -59,15 +72,17 @@ const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
   };
   const handleProgramSelection = (newValue: SingleValue<UserType>) => {
     removeFieldError("userTypeId");
+    setFieldValue("userType", newValue);
     setFieldValue("userTypeId", newValue?.id);
   };
+
   useModalToggleListener(isOpen, () => {
-    if (isOpen) return;
-    resetForm();
+    if (!isOpen) return;
+    setForm(formData);
   });
   return (
     <Modal size="lg" onClose={closeModal} show={isOpen} dismissible>
-      <Modal.Header>New Program/Strand</Modal.Header>
+      <Modal.Header>Edit Program/Strand</Modal.Header>
       <Modal.Body className="overflow-visible">
         <form onSubmit={onSubmit}>
           <div className="pb-2">
@@ -90,6 +105,7 @@ const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
           </div>
           <div className="pb-2">
             <CustomSelect
+              value={form.userType}
               error={errors?.userTypeId}
               label="User type"
               name="userTypeId"
@@ -112,4 +128,4 @@ const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
   );
 };
 
-export default NewUserProgramModal;
+export default EditUserProgramModal;

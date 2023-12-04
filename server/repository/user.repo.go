@@ -42,7 +42,12 @@ func (repo * User)NewUserType(userType model.UserType)(error){
 }
 func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){
 	programs := make([]model.UserProgramOrStrand, 0)
-	err := repo.db.Select(&programs,"SELECT id, code, name, user_type_id from system.user_program")
+	err := repo.db.Select(&programs,`
+	SELECT user_program.id, code, user_program.name, user_type_id, 
+	JSON_BUILD_OBJECT('id', user_type.id, 'name', user_type.name, 'hasProgram', user_type.has_program)  as user_type
+	from system.user_program
+	INNER JOIN system.user_type on user_program.user_type_id = user_type.id
+	order by code asc`)
 	return programs, err
 }
 
@@ -78,6 +83,6 @@ func (repo * User)NewProgram(program model.UserProgramOrStrand)error{
 	return err
 }
 func (repo * User)UpdateProgram(program model.UserProgramOrStrand)error{
-	_, err := repo.db.Exec("UPDATE system.user_program SET code = $1, name = $2, user_type_id = $3 WHERE code = $4", program.Code, program.Name, program.UserTypeId, program.Id)
+	_, err := repo.db.Exec("UPDATE system.user_program SET code = $1, name = $2, user_type_id = $3 WHERE id = $4", program.Code, program.Name, program.UserTypeId, program.Id)
 	return err
 }
