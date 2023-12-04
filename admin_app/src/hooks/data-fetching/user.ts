@@ -1,6 +1,12 @@
 import { UserProgramOrStrand, UserType } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+import {
+  UseMutateFunction,
+  UseMutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useUserTypes = ({
   onSuccess,
@@ -55,5 +61,20 @@ export const useUserPrograms = ({
     onError: onError,
     queryKey: ["userPrograms"],
     onSettled,
+  });
+};
+
+export const useNewUserType = ({
+  onError,
+  onSuccess,
+  onSettled,
+}: UseMutationOptions<unknown, unknown, Omit<UserType, "id">>) => {
+  const { Post } = useRequest();
+
+  return useMutation({
+    mutationFn: (form) => Post("/users/types", form, {}),
+    onError: onError,
+    onSuccess: onSuccess,
+    onSettled: onSettled,
   });
 };

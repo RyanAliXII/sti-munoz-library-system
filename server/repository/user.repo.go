@@ -29,7 +29,7 @@ func (repo * User)GetUserTypes()([]model.UserType, error) {
 	return types, err
 }
 func (repo * User)NewUserType(userType model.UserType)(error){
-	_, err := repo.db.Exec("INSERT INTO user_type (name, has_program)VALUES($1, $2)", userType.Name, userType.HasProgram)
+	_, err := repo.db.Exec("INSERT INTO system.user_type (name, has_program)VALUES($1, $2)", userType.Name, userType.HasProgram)
 	return err
 }
 func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){

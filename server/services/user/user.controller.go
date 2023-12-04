@@ -6,6 +6,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type User struct{
@@ -35,7 +36,7 @@ func (ctrler * User)GetUserTypes(ctx *gin.Context){
 }
 func (ctrler * User)NewUserType(ctx *gin.Context){
 	userType := model.UserType{}
-	err := ctx.ShouldBindJSON(&userType)
+	err := ctx.ShouldBindBodyWith(&userType, binding.JSON)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
