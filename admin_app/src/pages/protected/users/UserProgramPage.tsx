@@ -1,5 +1,9 @@
 import Container from "@components/ui/container/Container";
-import { useUserPrograms, useUserTypes } from "@hooks/data-fetching/user";
+import {
+  useUserPrograms,
+  useUserTypes,
+  useUserTypesWithPrograms,
+} from "@hooks/data-fetching/user";
 import { Button, Table } from "flowbite-react";
 import NewUserProgramModal from "./NewUserProgramModal";
 import { useSwitch } from "@hooks/useToggle";
@@ -8,7 +12,7 @@ import TableContainer from "@components/ui/table/TableContainer";
 const UserProgramPage = () => {
   const { data: programs } = useUserPrograms({});
   const newProgramModal = useSwitch();
-  const { data: userTypes } = useUserTypes({});
+  const { data: userTypes } = useUserTypesWithPrograms({});
   return (
     <Container>
       <div className="py-2">

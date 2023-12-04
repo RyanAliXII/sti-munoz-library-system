@@ -1,9 +1,12 @@
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { CustomInput } from "@components/ui/form/Input";
-import { ModalProps, UserType } from "@definitions/types";
+import { ModalProps, UserProgramOrStrand, UserType } from "@definitions/types";
+import { useForm } from "@hooks/useForm";
 import { Button, Modal } from "flowbite-react";
-import { FC } from "react";
+import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
+import { UserProgramValidation } from "./schema";
+import { SingleValue } from "react-select";
 
 interface NewUserProgramModalProps extends ModalProps {
   userTypes: UserType[];
@@ -13,24 +16,65 @@ const NewUserProgramModal: FC<NewUserProgramModalProps> = ({
   closeModal,
   userTypes,
 }) => {
+  const {
+    errors,
+    form,
+    validate,
+    handleFormInput,
+    removeFieldError,
+    setFieldValue,
+  } = useForm<Omit<UserProgramOrStrand, "id">>({
+    initialFormData: {
+      code: "",
+      name: "",
+      userTypeId: 0,
+    },
+    schema: UserProgramValidation,
+  });
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    try {
+      event.preventDefault();
+      const parsed = await validate();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const handleProgramSelection = (newValue: SingleValue<UserType>) => {
+    removeFieldError("userTypeId");
+    setFieldValue("userTypeId", newValue?.id);
+  };
   return (
     <Modal size="lg" onClose={closeModal} show={isOpen}>
       <Modal.Header>New Program or Strand</Modal.Header>
       <Modal.Body className="overflow-visible">
-        <form>
+        <form onSubmit={onSubmit}>
           <div className="pb-2">
-            <CustomInput name="code" label="Code" />
+            <CustomInput
+              name="code"
+              label="Code"
+              error={errors?.code}
+              value={form.code}
+              onChange={handleFormInput}
+            />
           </div>
           <div className="pb-2">
-            <CustomInput name="name" label="Name" />
+            <CustomInput
+              name="name"
+              label="Name"
+              error={errors?.name}
+              value={form.name}
+              onChange={handleFormInput}
+            />
           </div>
           <div className="pb-2">
             <CustomSelect
+              error={errors?.userTypeId}
+              label="User type"
               name="userTypeId"
               options={userTypes}
               getOptionLabel={(t) => t.name}
               getOptionValue={(t) => t.id.toString()}
-              onChange={() => {}}
+              onChange={handleProgramSelection}
             />
           </div>
           <div className="py-2">

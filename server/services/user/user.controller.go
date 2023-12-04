@@ -28,6 +28,19 @@ type UserController interface {
 }
 
 func (ctrler * User)GetUserTypes(ctx *gin.Context){
+	
+	filter := UserTypeFilter{}
+	ctx.ShouldBindQuery(&filter)
+	if filter.HasProgram {
+		userTypes, err := ctrler.userRepo.GetUserTypesWithProgram()
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"userTypes": userTypes,
+		}, "User types with programs and strands fetched."))
+		return 
+	}
 	userTypes, err := ctrler.userRepo.GetUserTypes()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))

@@ -322,6 +322,7 @@ export type UserProgramOrStrand = {
   id: number;
   name: string;
   code: string;
+  userTypeId: number;
 };
 
 export type ClientLog = {

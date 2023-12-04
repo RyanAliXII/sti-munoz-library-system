@@ -1,7 +1,6 @@
 import { UserProgramOrStrand, UserType } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
-  UseMutateFunction,
   UseMutationOptions,
   UseQueryOptions,
   useMutation,
@@ -36,6 +35,35 @@ export const useUserTypes = ({
   });
 };
 
+export const useUserTypesWithPrograms = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: UseQueryOptions<UserType[]>) => {
+  const { Get } = useRequest();
+
+  const fetchUserTypes = async () => {
+    try {
+      const { data: response } = await Get("/users/types", {
+        params: {
+          hasProgram: true,
+        },
+      });
+
+      const { data } = response;
+      return data?.userTypes ?? [];
+    } catch {
+      return [];
+    }
+  };
+  return useQuery<UserType[]>({
+    queryFn: fetchUserTypes,
+    onSuccess: onSuccess,
+    onError: onError,
+    queryKey: ["userTypesWithPrograms"],
+    onSettled,
+  });
+};
 export const useUserPrograms = ({
   onSuccess,
   onSettled,

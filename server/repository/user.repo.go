@@ -21,12 +21,17 @@ type UserRepository interface {
 	GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error)
 	NewUserType(userType model.UserType)(error)
 	UpdateUserType(userType model.UserType)(error)
-	
+	GetUserTypesWithProgram()([]model.UserType, error)
 }
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
 	types := make([]model.UserType, 0)
 	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type order by id asc")
+	return types, err
+}
+func (repo * User)GetUserTypesWithProgram()([]model.UserType, error) {
+	types := make([]model.UserType, 0)
+	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type where has_program order by id asc")
 	return types, err
 }
 func (repo * User)NewUserType(userType model.UserType)(error){
@@ -38,6 +43,7 @@ func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error)
 	err := repo.db.Select(&programs,"SELECT id, code, name, user_type_id from system.user_program")
 	return programs, err
 }
+
 func (repo * User)GetUserTypesToMap() (map[int]model.UserType, error){
 	typesMap := make(map[int]model.UserType, 0)
 	types, err := repo.GetUserTypes()
