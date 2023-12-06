@@ -58,8 +58,8 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        text: "Section",
-        to: "/books/sections",
+        text: "Collections",
+        to: "/books/collections",
         requiredPermissions: ["Section.Access"],
         icon: SiBookstack,
         items: [],

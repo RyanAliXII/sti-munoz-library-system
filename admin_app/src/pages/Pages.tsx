@@ -163,7 +163,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/sections"
+        path="/books/collections"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Section.Access"]}>
