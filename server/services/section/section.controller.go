@@ -29,8 +29,17 @@ func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "model.Section created."))
 }
 func (ctrler *SectionController)GetCategories(ctx *gin.Context) {
+	filter  := CollectionFilter{}
+	if filter.IsMain {
+		sections, err := ctrler.sectionRepository.GetMainCollections()
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetMainCollectionsErr"))
+		}
+		ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Collections fetched."))
+		return
+	}
 	var sections = ctrler.sectionRepository.Get()
-	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Sections fetched."))
+	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Collections fetched."))
 }
 func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 	id, err := strconv.Atoi(ctx.Param("id"))
@@ -52,6 +61,7 @@ func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Section updated."))
 }
+
 func NewSectionController() SectionControllerInterface {
 	return &SectionController{
 		sectionRepository: repository.NewSectionRepository(),

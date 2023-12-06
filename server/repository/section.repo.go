@@ -91,6 +91,19 @@ func (repo *SectionRepository) Get() []model.Section {
 	}
 	return sections
 }
+func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
+	var sections []model.Section = make([]model.Section, 0)
+	selectErr := repo.db.Select(&sections, `
+	SELECT id, 
+	name,
+	prefix,
+	(case when accession_table = 'accession_main' then false else true end) 
+	as has_own_accession, last_value from catalog.section 
+	inner join accession.counter on accession_table = counter.accession
+	where main_collection_id is null
+	ORDER BY created_at DESC`)
+	return sections, selectErr
+}
 func (repo *SectionRepository) GetOne(id int) model.Section {
 	var section model.Section
 
@@ -107,4 +120,5 @@ type SectionRepositoryInterface interface {
 	Get() []model.Section
 	GetOne(id int) model.Section
 	Update(section model.Section) error
+	GetMainCollections()([]model.Section, error )
 }

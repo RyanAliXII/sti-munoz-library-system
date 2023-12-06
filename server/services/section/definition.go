@@ -13,3 +13,7 @@ type UpdateSectionBody struct {
 	LastValue        int `json:"lastValue" binding:"required,min=0"`
 }
 
+
+type CollectionFilter struct {
+	IsMain bool `json:"isMain" form:"isMain"`
+}
