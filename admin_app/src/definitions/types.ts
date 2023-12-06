@@ -37,6 +37,7 @@ export type Section = {
   prefix: string;
   lastValue?: number;
   isSubCollection: boolean;
+  isDeleteable: boolean;
   mainCollectionId: number;
 };
 

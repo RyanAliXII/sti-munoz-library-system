@@ -1,6 +1,6 @@
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import { AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import "react-responsive-modal/styles.css";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container from "@components/ui/container/Container";
@@ -12,6 +12,7 @@ import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 
 const SectionPage = () => {
   const [section, setSection] = useState<Section>({
@@ -19,6 +20,7 @@ const SectionPage = () => {
     name: "",
     prefix: "",
     id: 0,
+    isDeleteable: false,
     mainCollectionId: 0,
   });
   const {
@@ -53,6 +55,13 @@ const SectionPage = () => {
   const initEdit = (section: Section) => {
     setSection(section);
     openEditModal();
+  };
+
+  const deleteConfirm = useSwitch();
+
+  const initDelete = (section: Section) => {
+    setSection(section);
+    deleteConfirm.open();
   };
   return (
     <>
@@ -100,15 +109,19 @@ const SectionPage = () => {
                             <AiOutlineEdit className="cursor-pointer text-xl" />
                           </Button>
                         </Tippy>
-                        {/* <Tippy content="Delete">
-                          <Button
-                            onClick={openEditModal}
-                            color="failure"
-                            size="xs"
-                          >
-                            <AiOutlineDelete className="cursor-pointer  text-xl" />
-                          </Button>
-                        </Tippy> */}
+                        {section.isDeleteable && (
+                          <Tippy content="Delete">
+                            <Button
+                              color="failure"
+                              size="xs"
+                              onClick={() => {
+                                initDelete(section);
+                              }}
+                            >
+                              <AiOutlineDelete className="cursor-pointer  text-xl" />
+                            </Button>
+                          </Tippy>
+                        )}
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -124,6 +137,12 @@ const SectionPage = () => {
         formData={section}
         isOpen={isEditModalOpen}
         closeModal={closeEditModal}
+      />
+      <DangerConfirmDialog
+        title="Delete Collection"
+        text="Are you sure you want to delete collection?"
+        close={deleteConfirm.close}
+        isOpen={deleteConfirm.isOpen}
       />
     </>
   );

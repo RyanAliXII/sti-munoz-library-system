@@ -87,13 +87,15 @@ func (repo * SectionRepository)Update(section model.Section) error {
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
 	selectErr := repo.db.Select(&sections, `
-	SELECT id, 
+	SELECT section.id, 
 	name,
 	prefix,
+	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
-	ORDER BY created_at DESC`)
+	LEFT join catalog.book on section.id = book.section_id
+	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}
@@ -102,14 +104,16 @@ func (repo *SectionRepository) Get() []model.Section {
 func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
 	var sections []model.Section = make([]model.Section, 0)
 	selectErr := repo.db.Select(&sections, `
-	SELECT id, 
+	SELECT section.id, 
 	name,
 	prefix,
+	(case when (count(book.id) > 0) then false else true end) is_deletable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
+	LEFT join catalog.book on section.id = book.section_id
 	where main_collection_id is null
-	ORDER BY created_at DESC`)
+	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
 	return sections, selectErr
 }
 func (repo *SectionRepository) GetOne(id int) model.Section {
