@@ -85,7 +85,11 @@ const DocumentView = ({ eBookUrl = "" }) => {
       </div>
       <Document
         file={eBookUrl}
-        noData={"Book has no eBook"}
+        noData={
+          <span className="dark:text-white text-gray-900">
+            Book has no eBook
+          </span>
+        }
         className="w-full flex justify-center flex-col items-center p-4 gap-2"
         onLoadSuccess={onDocumentLoadSuccess}
       >

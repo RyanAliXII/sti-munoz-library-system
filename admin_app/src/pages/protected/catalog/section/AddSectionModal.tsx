@@ -126,7 +126,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               type="submit"
               isProcessing={mutation.isLoading}
             >
-              Add section
+              Save
             </Button>
             <Button color="light" onClick={closeModal}>
               Cancel

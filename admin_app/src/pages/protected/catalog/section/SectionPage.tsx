@@ -1,5 +1,5 @@
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import "react-responsive-modal/styles.css";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
@@ -13,6 +13,8 @@ import { useState } from "react";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useDeleteCollection } from "@hooks/data-fetching/collection";
+import { toast } from "react-toastify";
 
 const SectionPage = () => {
   const [section, setSection] = useState<Section>({
@@ -52,23 +54,37 @@ const SectionPage = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
+  const queryClient = useQueryClient();
   const initEdit = (section: Section) => {
     setSection(section);
     openEditModal();
   };
 
   const deleteConfirm = useSwitch();
-
   const initDelete = (section: Section) => {
     setSection(section);
     deleteConfirm.open();
   };
+  const onConfirmDelete = () => {
+    deleteCollection.mutate(section.id ?? 0);
+    deleteConfirm.close();
+  };
+  const deleteCollection = useDeleteCollection({
+    onSuccess: () => {
+      toast.success("Collection deleted.");
+      queryClient.invalidateQueries(["sections"]);
+      queryClient.invalidateQueries(["sectionsMain"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
   return (
     <>
       <Container>
         <div className="w-full flex justify-end pb-4 ">
           <Button color="primary" onClick={openAddModal}>
-            New Section
+            New Collection
           </Button>
         </div>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
@@ -143,6 +159,7 @@ const SectionPage = () => {
         text="Are you sure you want to delete collection?"
         close={deleteConfirm.close}
         isOpen={deleteConfirm.isOpen}
+        onConfirm={onConfirmDelete}
       />
     </>
   );

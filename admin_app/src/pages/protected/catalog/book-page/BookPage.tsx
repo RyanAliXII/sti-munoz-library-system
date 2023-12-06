@@ -107,6 +107,7 @@ const BookPage = () => {
       type: "unselect",
     });
   };
+
   return (
     <>
       <Container>
@@ -153,14 +154,15 @@ const BookPage = () => {
               <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                 <Table.Head>
                   <Table.HeadCell></Table.HeadCell>
-                  <Table.HeadCell>Date Received</Table.HeadCell>
                   <Table.HeadCell>Title</Table.HeadCell>
+                  <Table.HeadCell>Authors</Table.HeadCell>
                   <Table.HeadCell>Copies</Table.HeadCell>
                   <Table.HeadCell>Year Published</Table.HeadCell>
                   <Table.HeadCell></Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y dark:divide-gray-700">
                   {books?.map((book) => {
+                    const author = book.authors?.[0]?.name ?? "";
                     return (
                       <Table.Row key={book.id}>
                         <Table.Cell>
@@ -172,18 +174,7 @@ const BookPage = () => {
                             }}
                           />
                         </Table.Cell>
-                        <Table.Cell>
-                          {isValid(new Date(book.receivedAt))
-                            ? new Date(book.receivedAt).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: "short",
-                                  day: "2-digit",
-                                  year: "numeric",
-                                }
-                              )
-                            : "Unspecified"}
-                        </Table.Cell>
+
                         <Table.Cell>
                           <div className="text-base font-semibold text-gray-900 dark:text-white">
                             {book.title}
@@ -192,6 +183,7 @@ const BookPage = () => {
                             {book.section.name}
                           </div>
                         </Table.Cell>
+                        <Table.Cell>{author}</Table.Cell>
                         <Table.Cell>{book.copies}</Table.Cell>
                         <Table.Cell>{book.yearPublished}</Table.Cell>
 

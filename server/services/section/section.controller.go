@@ -62,6 +62,23 @@ func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Section updated."))
 }
 
+func(ctrler * SectionController)DeleteCollection(ctx * gin.Context){
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("convErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+	}
+	
+	err = ctrler.sectionRepository.Delete(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Collection updated."))
+}
+
+
 func NewSectionController() SectionControllerInterface {
 	return &SectionController{
 		sectionRepository: repository.NewSectionRepository(),
@@ -73,4 +90,5 @@ type SectionControllerInterface interface {
 	NewCategory(ctx *gin.Context)
 	GetCategories(ctx *gin.Context)
 	UpdateSection(ctx * gin.Context)
+	DeleteCollection(ctx * gin.Context)
 }

@@ -45,7 +45,7 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
+	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table from catalog.section where id = $1 ", book.Section.Id)
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))

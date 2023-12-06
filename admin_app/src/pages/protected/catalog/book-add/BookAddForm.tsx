@@ -1,15 +1,11 @@
 import { CustomInput } from "@components/ui/form/Input";
-
 import { useSwitch } from "@hooks/useToggle";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
-
 import { Book, Publisher, Section } from "@definitions/types";
-
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MultiValue, SingleValue } from "react-select";
-
 import Container from "@components/ui/container/Container";
 import { FieldRow } from "@components/ui/form/FieldRow";
 import { ErrorMsg } from "@definitions/var";
@@ -284,10 +280,8 @@ const BookAddForm = () => {
             />
           </FieldRow>
           <FieldRow
-            label="Section"
+            label="Colletion"
             isRequired
-            fieldDetails="This refers to the book section or collection the book will be
-                added."
             ref={registerFormGroup("section.value")}
           >
             <CustomSelect
