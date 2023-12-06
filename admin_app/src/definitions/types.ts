@@ -38,6 +38,7 @@ export type Section = {
   lastValue?: number;
   isSubCollection: boolean;
   isDeleteable: boolean;
+  accessionTable: string;
   mainCollectionId: number;
 };
 

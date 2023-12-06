@@ -15,15 +15,19 @@ import { useMainCollections } from "@hooks/data-fetching/collection";
 import { SingleValue } from "react-select";
 
 const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const FORM_DEFAULT_VALUES: Omit<Section, "isDeleteable" | "isSubCollection"> =
-    {
-      name: "",
-      prefix: "",
+  const FORM_DEFAULT_VALUES: Omit<
+    Section,
+    "isDeleteable" | "isSubCollection" | "accessionTable"
+  > = {
+    name: "",
+    prefix: "",
 
-      mainCollectionId: 0,
-    };
+    mainCollectionId: 0,
+  };
   const { form, errors, handleFormInput, validate, resetForm, setForm } =
-    useForm<Omit<Section, "isDeleteable" | "isSubCollection">>({
+    useForm<
+      Omit<Section, "isDeleteable" | "isSubCollection" | "accessionTable">
+    >({
       initialFormData: FORM_DEFAULT_VALUES,
       schema: SectionSchema,
     });

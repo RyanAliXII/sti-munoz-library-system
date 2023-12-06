@@ -14,15 +14,16 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   closeModal,
   formData,
 }) => {
-  const FORM_DEFAULT_VALUES: Omit<Section, "isDeleteable"> = {
-    name: "",
-    prefix: "",
-    isSubCollection: false,
-    mainCollectionId: 0,
-    lastValue: 0,
-  };
+  const FORM_DEFAULT_VALUES: Omit<Section, "isDeleteable" | "accessionTable"> =
+    {
+      name: "",
+      prefix: "",
+      isSubCollection: false,
+      mainCollectionId: 0,
+      lastValue: 0,
+    };
   const { form, errors, handleFormInput, validate, resetForm, setForm } =
-    useForm<Omit<Section, "isDeleteable">>({
+    useForm<Omit<Section, "isDeleteable" | "accessionTable">>({
       initialFormData: FORM_DEFAULT_VALUES,
       schema: EditSectionSchema,
     });
@@ -30,8 +31,9 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   const queryClient = useQueryClient();
   const { Put } = useRequest();
   const mutation = useMutation({
-    mutationFn: (formValues: Omit<Section, "isDeleteable">) =>
-      Put(`/sections/${formValues.id}`, formValues, {}),
+    mutationFn: (
+      formValues: Omit<Section, "isDeleteable" | "accessionTable">
+    ) => Put(`/sections/${formValues.id}`, formValues, {}),
     onSuccess: () => {
       toast.success("Section updated.");
       queryClient.invalidateQueries(["sections"]);

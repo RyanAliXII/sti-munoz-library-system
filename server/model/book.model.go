@@ -21,7 +21,7 @@ type Book struct {
 	Section    SectionJSON    `json:"section" db:"section"`
 	Publisher  PublisherJSON  `json:"publisher" db:"publisher"`
 	SourceOfFund string `json:"source_of_fund" db:"source_of_fund"`
-
+	AccessionTable string `json:"accessionTable" db:"accession_table"`
 	CostPrice     float32         `json:"costPrice,omitempty" db:"cost_price"`
 	Edition       int             `json:"edition" db:"edition"`
 	YearPublished int             `json:"yearPublished" db:"year_published"`
