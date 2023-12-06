@@ -15,10 +15,11 @@ import EditSectionModal from "./EditSectionModal";
 
 const SectionPage = () => {
   const [section, setSection] = useState<Section>({
-    hasOwnAccession: false,
+    isSubCollection: false,
     name: "",
     prefix: "",
     id: 0,
+    mainCollectionId: 0,
   });
   const {
     isOpen: isAddModalOpen,
@@ -65,8 +66,8 @@ const SectionPage = () => {
           <TableContainer>
             <Table>
               <Table.Head>
-                <Table.HeadCell>Section</Table.HeadCell>
-                <Table.HeadCell>Different Accession</Table.HeadCell>
+                <Table.HeadCell>Collection</Table.HeadCell>
+                <Table.HeadCell>Sub-collection(Yes/No)</Table.HeadCell>
                 <Table.HeadCell>Current Counter</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
@@ -80,7 +81,7 @@ const SectionPage = () => {
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        {section.hasOwnAccession ? (
+                        {section.isSubCollection ? (
                           <span className="text-green-600"> Yes</span>
                         ) : (
                           <span className="text-gray-600">No</span>

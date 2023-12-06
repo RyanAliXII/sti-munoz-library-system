@@ -36,7 +36,8 @@ export type Section = {
   name: string;
   prefix: string;
   lastValue?: number;
-  hasOwnAccession: boolean;
+  isSubCollection: boolean;
+  mainCollectionId: number;
 };
 
 export interface Book {

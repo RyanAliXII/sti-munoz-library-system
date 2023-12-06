@@ -18,24 +18,24 @@ type SectionController struct {
 }
 
 func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
-	var body SectionBody
+	var body model.Section
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	ctrler.sectionRepository.New(model.Section{
-		Name:            body.Name,
-		Prefix: 		 body.Prefix,
-		HasOwnAccession: body.HasOwnAccession,
-	})
-
+	ctrler.sectionRepository.New(body)
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "model.Section created."))
 }
 func (ctrler *SectionController)GetCategories(ctx *gin.Context) {
 	filter  := CollectionFilter{}
+	err := ctx.ShouldBindQuery(&filter)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	
 	if filter.IsMain {
 		sections, err := ctrler.sectionRepository.GetMainCollections()
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("GetMainCollectionsErr"))
 		}
-		ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Collections fetched."))
+		ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Main collections fetched."))
 		return
 	}
 	var sections = ctrler.sectionRepository.Get()

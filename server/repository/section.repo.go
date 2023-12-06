@@ -23,7 +23,8 @@ func (repo *SectionRepository) New(section model.Section) error {
 	}
 	const TABLE_PREFIX = "accession_"
 	var tableName string
-	if section.HasOwnAccession {
+
+	if section.MainCollectionId == 0 {
 		t := time.Now().Unix()
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
@@ -33,8 +34,15 @@ func (repo *SectionRepository) New(section model.Section) error {
 			return insertErr
 		}
 	} else {
-		tableName = "accession_main"
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1,$2,$3)", section.Name, tableName, section.Prefix)
+		collection := model.Section{}
+		err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 and main_collection_id is null LIMIT 1", section.MainCollectionId)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
+			transaction.Rollback()
+			return err
+		}
+		tableName := collection.AccessionTable
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id)VALUES($1,$2,$3,$4)", section.Name, tableName, section.Prefix, section.MainCollectionId)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
@@ -82,8 +90,8 @@ func (repo *SectionRepository) Get() []model.Section {
 	SELECT id, 
 	name,
 	prefix,
-	(case when accession_table = 'accession_main' then false else true end) 
-	as has_own_accession, last_value from catalog.section 
+	(case when main_collection_id is null then false else true end) 
+	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
 	ORDER BY created_at DESC`)
 	if selectErr != nil {
@@ -97,8 +105,8 @@ func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
 	SELECT id, 
 	name,
 	prefix,
-	(case when accession_table = 'accession_main' then false else true end) 
-	as has_own_accession, last_value from catalog.section 
+	(case when main_collection_id is null then false else true end) 
+	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
 	where main_collection_id is null
 	ORDER BY created_at DESC`)

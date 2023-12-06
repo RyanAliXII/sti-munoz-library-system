@@ -17,7 +17,8 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   const FORM_DEFAULT_VALUES: Section = {
     name: "",
     prefix: "",
-    hasOwnAccession: false,
+    isSubCollection: false,
+    mainCollectionId: 0,
     lastValue: 0,
   };
   const { form, errors, handleFormInput, validate, resetForm, setForm } =

@@ -10,14 +10,18 @@ import { useRequest } from "@hooks/useRequest";
 import { toast } from "react-toastify";
 import { BaseSyntheticEvent } from "react";
 import useModalToggleListener from "@hooks/useModalToggleListener";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { useMainCollections } from "@hooks/data-fetching/collection";
+import { SingleValue } from "react-select";
 
 const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const FORM_DEFAULT_VALUES: Section = {
     name: "",
     prefix: "",
-    hasOwnAccession: false,
+    isSubCollection: false,
+    mainCollectionId: 0,
   };
-  const { form, errors, handleFormInput, validate, resetForm } =
+  const { form, errors, handleFormInput, validate, resetForm, setForm } =
     useForm<Section>({
       initialFormData: FORM_DEFAULT_VALUES,
       schema: SectionSchema,
@@ -52,10 +56,17 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   useModalToggleListener(isOpen, () => {
     if (!isOpen) resetForm();
   });
+  const handleCollectionSelection = (newValue: SingleValue<Section>) => {
+    setForm((collection) => ({
+      ...collection,
+      mainCollectionId: newValue?.id ?? 0,
+    }));
+  };
+  const { data: collections } = useMainCollections();
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
       <Modal.Header>New Section</Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="overflow-visible">
         <form onSubmit={submit}>
           <div className="w-full">
             <CustomInput
@@ -77,7 +88,18 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               onChange={handleFormInput}
             />
           </div>
-          <div className="pt-1">
+
+          <div className="w-full pt-1">
+            <CustomSelect
+              label="Sub-collection of"
+              onChange={handleCollectionSelection}
+              options={collections}
+              isOptionSelected={(option) => option.id === form.mainCollectionId}
+              getOptionLabel={(collection) => collection.name}
+              getOptionValue={(collection) => collection.id?.toString() ?? ""}
+            />
+          </div>
+          {/* <div className="pt-1">
             <div className="flex gap-2 items-center">
               <Checkbox
                 color="primary"
@@ -95,7 +117,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
                 </span>
               </Tippy>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex gap-2 mt-4">
             <Button
