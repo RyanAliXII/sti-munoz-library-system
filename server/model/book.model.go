@@ -127,3 +127,4 @@ type AccessionCounter struct {
 	Accession string `json:"accession" db:"accession"`
 	LastValue int `json:"lastValue" db:"last_value"`
 }
+

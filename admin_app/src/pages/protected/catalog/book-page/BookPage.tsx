@@ -131,10 +131,13 @@ const BookPage = () => {
       migrateModal.open();
     }
   };
+
+  const [sectionId, setSectionId] = useState<number>(0);
   const onProceedMigration = (section: Section) => {
     if (!firstSelectedBook) return;
     if (section.accessionTable != firstSelectedBook.section.accessionTable) {
       confirmMigration.open();
+      setSectionId(section.id ?? 0);
       return;
     }
   };

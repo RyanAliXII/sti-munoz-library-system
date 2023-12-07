@@ -55,3 +55,7 @@ type EbookBody struct {
 type WeedingBody struct {
 	Remarks string `json:"remarks" binding:"required"`
 }
+type MigrateBody struct {
+	SectionId int `json:"sectionId" binding:"required,min=1"`
+	BookIds []string `json:"bookIds" binding:"required,min=1"`
+}
