@@ -22,6 +22,23 @@ export const useMainCollections = () => {
     queryKey: ["sectionsMain"],
   });
 };
+
+export const useCollections = () => {
+  const { Get } = useRequest();
+  const fetchSections = async () => {
+    try {
+      const { data: response } = await Get("/sections/", {});
+      return response.data?.sections ?? [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
+  return useQuery<Section[]>({
+    queryFn: fetchSections,
+    queryKey: ["collections"],
+  });
+};
 export const useDeleteCollection = ({
   onSuccess,
   onSettled,

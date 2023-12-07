@@ -29,9 +29,6 @@ type ParseErr = {
   message: string;
 };
 const INITIAL_FORM_VALUE = {
-  hasOwnAccession: false,
-  name: "",
-  prefix: " ",
   id: 0,
 };
 const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
@@ -53,17 +50,25 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
     queryKey: ["sections"],
   });
   const queryClient = useQueryClient();
-  const { form, setForm, errors, validate, handleFormInput } = useForm<Section>(
-    {
-      initialFormData: INITIAL_FORM_VALUE,
-      schema: object({
-        id: number()
-          .min(1, "Section is required.")
-          .required("Section is required.")
-          .typeError("Section is required."),
-      }),
-    }
-  );
+  const { form, setForm, errors, validate, handleFormInput } = useForm<
+    Omit<
+      Section,
+      | "isDeleteable"
+      | "accessionTable"
+      | "isSubCollection"
+      | "prefix"
+      | "name"
+      | "mainCollectionId"
+    >
+  >({
+    initialFormData: INITIAL_FORM_VALUE,
+    schema: object({
+      id: number()
+        .min(1, "Section is required.")
+        .required("Section is required.")
+        .typeError("Section is required."),
+    }),
+  });
   const { Post } = useRequest();
   const importBooks = useMutation({
     mutationFn: (formData: FormData) => Post("/books/bulk", formData),

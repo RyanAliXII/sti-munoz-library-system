@@ -90,6 +90,7 @@ func (repo *SectionRepository) Get() []model.Section {
 	SELECT section.id, 
 	name,
 	prefix,
+	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 
@@ -109,6 +110,7 @@ func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
 	SELECT section.id, 
 	name,
 	prefix,
+	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 
@@ -125,6 +127,7 @@ func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
 	SELECT section.id, 
 	name,
 	prefix,
+	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 

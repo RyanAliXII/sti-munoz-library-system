@@ -1,7 +1,7 @@
-import { Book } from "@definitions/types";
+import { Book, Section } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
-import { ChangeEvent, useReducer, useState } from "react";
+import { ChangeEvent, useMemo, useReducer, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import Container from "@components/ui/container/Container";
@@ -13,11 +13,14 @@ import { TbDatabaseImport } from "react-icons/tb";
 import ImportBooksModal from "./ImportBooksModal";
 import useDebounce from "@hooks/useDebounce";
 import { isValid } from "date-fns";
-import { Button, Checkbox, Table, TextInput } from "flowbite-react";
+import { Button, Checkbox, Dropdown, Table, TextInput } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
 import { BookPrintablesModal } from "./BookPrintablesModal";
 import CustomPagination from "@components/pagination/CustomPagination";
 import { bookSelectionReducer } from "./bookselection-reducer";
+import { array } from "yup";
+import MigrateModal from "./MigrateModal";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 
 const BookPage = () => {
   const {
@@ -107,12 +110,40 @@ const BookPage = () => {
       type: "unselect",
     });
   };
+  const firstSelectedBook = bookSelections.books.entries().next().value?.[1] as
+    | Book
+    | undefined;
+
+  const isSelectionsSameAccessionTable = useMemo(
+    () =>
+      Array.from(bookSelections.books).every(([key, book]) => {
+        return (
+          firstSelectedBook?.section?.accessionTable ===
+          book.section.accessionTable
+        );
+      }),
+    [bookSelections.books]
+  );
+  const migrateModal = useSwitch();
+  const confirmMigration = useSwitch();
+  const migrate = () => {
+    if (isSelectionsSameAccessionTable && bookSelections.books.size > 0) {
+      migrateModal.open();
+    }
+  };
+  const onProceedMigration = (section: Section) => {
+    if (!firstSelectedBook) return;
+    if (section.accessionTable != firstSelectedBook.section.accessionTable) {
+      confirmMigration.open();
+      return;
+    }
+  };
 
   return (
     <>
       <Container>
         <div className="p-2 flex justify-between ">
-          <div>
+          <div className="flex gap-2">
             <form>
               <TextInput
                 onChange={handleSearch}
@@ -120,6 +151,10 @@ const BookPage = () => {
                 defaultValue={filterParams?.keyword}
               />
             </form>
+            {isSelectionsSameAccessionTable &&
+              bookSelections.books.size > 0 && (
+                <Button onClick={migrate}>Migrate</Button>
+              )}
           </div>
 
           <div className="flex gap-2">
@@ -240,7 +275,11 @@ const BookPage = () => {
           </div>
         </LoadingBoundaryV2>
       </Container>
-
+      <MigrateModal
+        closeModal={migrateModal.close}
+        isOpen={migrateModal.isOpen}
+        onProceed={onProceedMigration}
+      />
       <BookPrintablesModal
         closeModal={closePrintablesModal}
         isOpen={isPrintablesModalOpen}
@@ -249,6 +288,12 @@ const BookPage = () => {
       <ImportBooksModal
         closeModal={closeImportModal}
         isOpen={isImportModalOpen}
+      />
+      <DangerConfirmDialog
+        close={confirmMigration.close}
+        isOpen={confirmMigration.isOpen}
+        title="Collection Migration"
+        text="The system detected that the current collection is not related nor sub-collection of selected collection. This will result in accession number regeneration. Are you sure you want to proceed?"
       />
     </>
   );
