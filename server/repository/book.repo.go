@@ -414,4 +414,5 @@ type BookRepositoryInterface interface {
 	GetEbookById(id string, ) (*minio.Object, error)
 	RemoveEbookById(id string, ) error
 	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
+	MigrateCollection(sectionId int, bookIds []string)error
 }

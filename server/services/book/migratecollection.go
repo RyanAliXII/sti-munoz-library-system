@@ -1,8 +1,6 @@
 package book
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
@@ -20,6 +18,12 @@ func (repo * BookController)MigrateCollection(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	fmt.Println(body)
+	err = repo.bookRepository.MigrateCollection(body.SectionId, body.BookIds)
+	if err != nil {
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail500(nil,"Unknown error occured."))
+		return
+	}
+	
 	ctx.JSON(httpresp.Success200(nil, "Book Collection Migrated"))
 }

@@ -1,6 +1,6 @@
 import { Book, Section } from "@definitions/types";
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChangeEvent, useMemo, useReducer, useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus, AiOutlinePrinter } from "react-icons/ai";
 import { Link } from "react-router-dom";
@@ -21,6 +21,8 @@ import { bookSelectionReducer } from "./bookselection-reducer";
 import { array } from "yup";
 import MigrateModal from "./MigrateModal";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useMigrateCollection } from "@hooks/data-fetching/book";
+import { toast } from "react-toastify";
 
 const BookPage = () => {
   const {
@@ -131,8 +133,14 @@ const BookPage = () => {
       migrateModal.open();
     }
   };
-
+  const queryClient = useQueryClient();
   const [sectionId, setSectionId] = useState<number>(0);
+  const migrateCollection = useMigrateCollection({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["books"]);
+      toast.success("Books migrated to another collection.");
+    },
+  });
   const onProceedMigration = (section: Section) => {
     if (!firstSelectedBook) return;
     if (section.accessionTable != firstSelectedBook.section.accessionTable) {
@@ -140,6 +148,17 @@ const BookPage = () => {
       setSectionId(section.id ?? 0);
       return;
     }
+    migrateCollection.mutate({
+      sectionId: section.id ?? 0,
+      bookIds: Array.from(bookSelections.books.keys()),
+    });
+  };
+  const onConfirmMigrate = () => {
+    confirmMigration.close();
+    migrateCollection.mutate({
+      sectionId: sectionId,
+      bookIds: Array.from(bookSelections.books.keys()),
+    });
   };
 
   return (
@@ -296,6 +315,7 @@ const BookPage = () => {
         close={confirmMigration.close}
         isOpen={confirmMigration.isOpen}
         title="Collection Migration"
+        onConfirm={onConfirmMigrate}
         text="The system detected that the current collection is not related nor sub-collection of selected collection. This will result in accession number regeneration. Are you sure you want to proceed?"
       />
     </>
