@@ -1,6 +1,4 @@
 import HasAccess from "@components/auth/HasAccess";
-import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import CustomPagination from "@components/pagination/CustomPagination";
 import { Book } from "@definitions/types";
 import Tippy from "@tippyjs/react";
 import { Button, Checkbox, Table } from "flowbite-react";

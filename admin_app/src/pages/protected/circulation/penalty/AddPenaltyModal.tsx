@@ -59,7 +59,7 @@ const AddPenaltyModal = (props: ModalProps) => {
   if (!props.isOpen) return null;
   return (
     <Modal show={props.isOpen} onClose={props.closeModal} dismissible>
-      <Modal.Header>Edit Penalty</Modal.Header>
+      <Modal.Header>New Penalty</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           {selectedAccount === null && (

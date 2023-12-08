@@ -1,0 +1,3 @@
+ALTER TABLE IF EXISTS borrowing.penalty
+ADD COLUMN item TEXT DEFAULT '',
+ADD COLUMN proof TEXT DEFAULT '';

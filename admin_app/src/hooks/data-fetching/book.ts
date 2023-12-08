@@ -31,6 +31,7 @@ export const useMigrateCollection = ({
 type BookFilter = {
   page: number;
   keyword: string;
+  tags: [];
 };
 type UseBookData = {
   books: Book[];
@@ -55,13 +56,15 @@ export const useBooks = ({
         params: {
           page: filter?.page ?? 0,
           keyword: filter?.keyword ?? "",
+          tags: filter?.tags ?? [],
         },
       });
+
       return {
         books: response?.data?.books ?? [],
         metadata: {
-          pages: 0,
-          records: 0,
+          pages: response?.data?.metadata?.pages ?? 0,
+          records: response?.data?.metadata?.records ?? 0,
         },
       };
     } catch (error) {
@@ -78,6 +81,6 @@ export const useBooks = ({
   return useQuery<UseBookData, unknown, UseBookData, [string, BookFilter]>({
     queryFn: fetchBooks,
     queryKey: queryKey,
-    onSuccess: onSuccess,
+    onSuccess,
   });
 };

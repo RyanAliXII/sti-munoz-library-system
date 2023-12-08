@@ -242,7 +242,6 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 		}
 	}
 	if len(ebooks) > 0 {
-		fmt.Println("EXECUTED")
 		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_ebook(book_id, group_id, account_id, status_id ) VALUES(:book_id, :group_id, :account_id, :status_id)", ebooks)
 		if err != nil {
 			transaction.Rollback()

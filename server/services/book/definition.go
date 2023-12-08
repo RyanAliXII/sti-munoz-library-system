@@ -4,6 +4,7 @@ import (
 	"mime/multipart"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 )
 
 type MetadataInt struct {
@@ -58,4 +59,10 @@ type WeedingBody struct {
 type MigrateBody struct {
 	SectionId int `json:"sectionId" binding:"required,min=1"`
 	BookIds []string `json:"bookIds" binding:"required,min=1"`
+}
+
+type BookFilter struct {
+	filter.Filter
+	Tags []string `form:"tags[]"`
+	Collection []string `form:"collections[]"`
 }

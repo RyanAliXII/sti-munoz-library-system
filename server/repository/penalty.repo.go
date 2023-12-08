@@ -73,7 +73,7 @@ func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
     }
 	return nil
 }
-func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty ) error {
+func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty) error {
 	query := `
    		 UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3  where id = $4`
     _,updateErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Id)

@@ -8,7 +8,7 @@ import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, TextInput } from "flowbite-react";
-import { ChangeEvent, useMemo, useReducer, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useReducer, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { TbDatabaseImport } from "react-icons/tb";
 import { Link } from "react-router-dom";
@@ -21,6 +21,7 @@ import { bookSelectionReducer } from "./bookselection-reducer";
 import BookTable from "./BookTable";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import CustomPagination from "@components/pagination/CustomPagination";
+import pages from "@pages/Pages";
 
 const BookPage = () => {
   const {
@@ -33,10 +34,9 @@ const BookPage = () => {
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
+    tags: { type: "string", multiple: true, default: ["test"] },
   });
-
   const searchDebounce = useDebounce();
-
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     searchDebounce(
       () => {
@@ -70,12 +70,21 @@ const BookPage = () => {
     isFetching,
     isError,
   } = useBooks({
-    onSuccess: () => {},
+    onSuccess: (data) => {
+      setTotalPages(data?.metadata?.pages ?? 0);
+    },
     queryKey: [
       "books",
-      { keyword: filterParams?.keyword, page: filterParams?.page },
+      {
+        keyword: filterParams?.keyword,
+        page: filterParams?.page,
+        tags: filterParams?.tags,
+      },
     ],
   });
+  useEffect(() => {
+    setFilterParams({ tags: ["test", "ll", "s"] });
+  }, []);
   const onSelect = (event: ChangeEvent<HTMLInputElement>, book: Book) => {
     const isChecked = event.target.checked;
     if (isChecked) {
