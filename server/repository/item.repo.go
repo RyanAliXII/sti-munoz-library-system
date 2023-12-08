@@ -23,7 +23,7 @@ type ItemRepository interface {
 
 func (repo * Item)SearchItems(filter * filter.Filter)([]model.Item, error){
 	items := make([]model.Item, 0)
-	query := `SELECT * FROM item_view
+	query := `SELECT id, name, type  FROM item_view
 	WHERE search_vector @@ websearch_to_tsquery('english', $1) 
 	OR search_vector @@ plainto_tsquery('simple', $1) 
 	OR name ILIKE '%' || $1 || '%'

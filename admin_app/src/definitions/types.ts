@@ -41,6 +41,11 @@ export type Section = {
   accessionTable: string;
   mainCollectionId: number;
 };
+export type Item = {
+  id: string;
+  name: string;
+  type: string;
+};
 
 export interface Book {
   id?: string;
@@ -278,6 +283,7 @@ export type Penalty = {
   description: string;
   amount: number;
   accountId: string;
+  item: string;
   account: Account;
   isSettled: boolean;
   settledAt: string | null; //iso-time-string

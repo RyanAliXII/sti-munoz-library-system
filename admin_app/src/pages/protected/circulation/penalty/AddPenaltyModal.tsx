@@ -1,16 +1,18 @@
 import ClientSearchBox from "@components/ClientSearchBox";
 import { CustomInput } from "@components/ui/form/Input";
-import { Account, ModalProps } from "@definitions/types";
+import { Account, Item, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
-import { Button, Modal, Textarea } from "flowbite-react";
+import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { BaseSyntheticEvent, useState } from "react";
 import { MdRemoveCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
 import { AddPenaltyValidation } from "./schema";
+import ItemSearchBox from "@components/ItemSearchBox";
+import { useSwitch } from "@hooks/useToggle";
 
 const AddPenaltyModal = (props: ModalProps) => {
   const { Post } = useRequest();
@@ -19,8 +21,10 @@ const AddPenaltyModal = (props: ModalProps) => {
       accountId: string;
       description: string;
       amount: number;
+      item: string;
     }>({
       initialFormData: {
+        item: "",
         accountId: "",
         description: "",
         amount: 0,
@@ -56,11 +60,15 @@ const AddPenaltyModal = (props: ModalProps) => {
       resetForm();
     },
   });
+  const itemInput = useSwitch();
+  const onSelectItem = (item: Item) => {
+    setForm((it) => ({ ...it, item: item.name }));
+  };
   if (!props.isOpen) return null;
   return (
     <Modal show={props.isOpen} onClose={props.closeModal} dismissible>
       <Modal.Header>New Penalty</Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="overflow-visible">
         <form onSubmit={onSubmit}>
           {selectedAccount === null && (
             <>
@@ -95,6 +103,7 @@ const AddPenaltyModal = (props: ModalProps) => {
                   {selectedAccount.email}
                 </small>
               </div>
+
               <div className="flex items-center">
                 <Tippy content="Unselect account">
                   <button
@@ -114,23 +123,58 @@ const AddPenaltyModal = (props: ModalProps) => {
               </div>
             </div>
           )}
+
+          <div className="mt-1">
+            {!itemInput.isOpen && (
+              <div>
+                <ItemSearchBox
+                  label="Select item"
+                  setItem={onSelectItem}
+                  className={`w-full mb-2`}
+                />
+                <div className="h-2 flex items-center py-2 mt-1">
+                  <small className="text-red-500 ml-1">{errors?.item}</small>
+                </div>
+              </div>
+            )}
+
+            {itemInput.isOpen && (
+              <div className="flex-1">
+                <CustomInput
+                  value={form.item}
+                  name="item"
+                  onChange={handleFormInput}
+                  label="Item"
+                  placeholder="Enter Item name"
+                  error={errors?.item}
+                />
+              </div>
+            )}
+
+            <div className="mt-1">
+              <Button
+                color="primary"
+                outline
+                onClick={() => {
+                  itemInput.set(!itemInput.isOpen);
+                }}
+              >
+                {itemInput.isOpen ? "Select Item" : "Enter Item"}
+              </Button>
+            </div>
+          </div>
           <div className="mt-3">
-            <label
-              htmlFor="description"
-              className="text-sm text-gray-500 ml-0.5"
-            >
-              Description
-            </label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               name="description"
               value={form.description}
               onChange={handleFormInput}
               className={
                 errors?.description
-                  ? "w-full resize-none h-52 mt-1 focus:outline-none border p-3 border-red-500"
-                  : "w-full resize-none h-52 mt-1 focus:outline-none border p-3 "
+                  ? "w-full resize-none mt-1 focus:outline-none border p-3 border-red-500"
+                  : "w-full resize-none  mt-1 focus:outline-none border p-3 "
               }
-            ></Textarea>
+            />
             <small className="text-red-500 ml-0.5 ">
               {errors?.description}
             </small>
@@ -143,7 +187,7 @@ const AddPenaltyModal = (props: ModalProps) => {
               label="Amount"
               name="amount"
               onChange={handleFormInput}
-            ></CustomInput>
+            />
           </div>
           <div className="flex gap-1 mt-5">
             <Button

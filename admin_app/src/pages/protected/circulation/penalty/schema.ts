@@ -7,6 +7,7 @@ export const AddPenaltyValidation = object({
     .min(1, "Amount must be greater than 0")
     .typeError("Invalid amount value."),
   description: string().required("Description is required."),
+  item: string().required("Item is required."),
 });
 export const EditPenaltyValidation = object({
   id: string().required().uuid(),

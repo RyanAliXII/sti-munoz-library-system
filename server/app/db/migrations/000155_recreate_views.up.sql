@@ -293,8 +293,8 @@ FROM borrowed_book_all_view GROUP BY account_id
 
 
 CREATE OR REPLACE VIEW item_view as 
-SELECT  * FROM (SELECT book.id,title as name, 'book'  as type, search_vector,created_at FROM catalog.book
+SELECT  * FROM (SELECT book.id,title as name, 'book'  as type, description, search_vector,created_at FROM catalog.book
 UNION ALL
-SELECT game.id, name, 'game'  as type, search_vector,created_at FROM services.game
+SELECT game.id, name, 'game'  as type, description,  search_vector,created_at FROM services.game
 UNION ALL
-SELECT device.id, name, 'device' as type, search_vector,created_at from services.device) as items ;
+SELECT device.id, name, 'device' as type, description,  search_vector,created_at from services.device) as items ;

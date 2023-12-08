@@ -31,12 +31,12 @@ func (ctrler * Item)GetItems(ctx * gin.Context) {
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"items": items,
-		}, "Unknown error occured."))
+		}, "Items fetched."))
 		return
 	}
 
 	ctx.JSON(httpresp.Success200(gin.H{
 		"items": []struct{}{},
-	}, "Unknown error occured."))
+	}, "items fetched."))
 	
 }
