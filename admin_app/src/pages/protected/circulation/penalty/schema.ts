@@ -12,6 +12,7 @@ export const AddPenaltyValidation = object({
 export const EditPenaltyValidation = object({
   id: string().required().uuid(),
   accountId: string().uuid().required("Account  is required."),
+  item: string().required("Item is required."),
   amount: number()
     .required("Amount is required.")
     .min(1, "Amount must be greater than 0")

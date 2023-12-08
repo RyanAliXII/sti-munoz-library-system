@@ -1,14 +1,14 @@
-import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import Container from "@components/ui/container/Container";
 
+import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty } from "@definitions/types";
+import { toReadableDatetime } from "@helpers/datetime";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
+import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import {
   AiFillCheckCircle,
@@ -18,12 +18,9 @@ import {
 } from "react-icons/ai";
 import { MdRemoveCircle } from "react-icons/md";
 import { toast } from "react-toastify";
-import TimeAgo from "timeago-react";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
-import { Button, Table } from "flowbite-react";
-import TableContainer from "@components/ui/table/TableContainer";
 
 const PenaltyPage = () => {
   const { Get, Patch } = useRequest();
@@ -65,6 +62,7 @@ const PenaltyPage = () => {
     settledAt: "",
     description: "",
     amount: 0,
+    item: "",
   });
   const queryClient = useQueryClient();
   const updateSettlement = useMutation({
@@ -103,18 +101,15 @@ const PenaltyPage = () => {
         <TableContainer>
           <Table>
             <Table.Head>
-              <Table.HeadCell>Created At</Table.HeadCell>
               <Table.HeadCell>Account</Table.HeadCell>
               <Table.HeadCell>Amount</Table.HeadCell>
               <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell>Created At</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y dark:divide-gray-700">
               {penalties?.map((penalty) => (
                 <Table.Row key={penalty.id}>
-                  <Table.Cell>
-                    <TimeAgo datetime={penalty.createdAt} />
-                  </Table.Cell>
                   <Table.Cell>
                     <div></div>
 
@@ -137,6 +132,9 @@ const PenaltyPage = () => {
                         Unsettled
                       </span>
                     )}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {toReadableDatetime(penalty.createdAt)}
                   </Table.Cell>
                   <Table.Cell className="flex gap-2">
                     <Tippy content="View Penalty">
@@ -161,6 +159,7 @@ const PenaltyPage = () => {
                         <AiOutlineEdit className="text-lg" />
                       </Button>
                     </Tippy>
+
                     {penalty.isSettled && (
                       <Tippy content="Mark as Unsettled">
                         <Button

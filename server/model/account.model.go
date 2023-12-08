@@ -13,6 +13,7 @@ type Account struct {
 	GivenName   string          `json:"givenName" db:"given_name" csv:"given_name"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
 	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
+	StudentNumber string 		`json:"studentNumber" db:"student_number" csv:"student_number"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
 	UserType string `json:"userType" db:"user_type"`
 	ProgramName string `json:"programName" db:"program_name"`

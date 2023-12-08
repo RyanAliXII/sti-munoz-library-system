@@ -171,6 +171,7 @@ export type Account = {
   programName: string;
   userType: string;
   programCode: string;
+  studentNumber?: string;
   metadata: {
     totalPenalty: number;
     checkedOutBooks: number;
@@ -286,6 +287,7 @@ export type Penalty = {
   item: string;
   account: Account;
   isSettled: boolean;
+  referenceNumber?: string;
   settledAt: string | null; //iso-time-string
   createdAt: string; //iso-time-string
 };

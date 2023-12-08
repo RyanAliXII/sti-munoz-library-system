@@ -16,21 +16,28 @@ import { useSwitch } from "@hooks/useToggle";
 
 const AddPenaltyModal = (props: ModalProps) => {
   const { Post } = useRequest();
-  const { form, handleFormInput, errors, validate, setForm, resetForm } =
-    useForm<{
-      accountId: string;
-      description: string;
-      amount: number;
-      item: string;
-    }>({
-      initialFormData: {
-        item: "",
-        accountId: "",
-        description: "",
-        amount: 0,
-      },
-      schema: AddPenaltyValidation,
-    });
+  const {
+    form,
+    handleFormInput,
+    errors,
+    validate,
+    setForm,
+    resetForm,
+    removeFieldError,
+  } = useForm<{
+    accountId: string;
+    description: string;
+    amount: number;
+    item: string;
+  }>({
+    initialFormData: {
+      item: "",
+      accountId: "",
+      description: "",
+      amount: 0,
+    },
+    schema: AddPenaltyValidation,
+  });
   const queryClient = useQueryClient();
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const onSubmit = async (event: BaseSyntheticEvent) => {
@@ -62,6 +69,7 @@ const AddPenaltyModal = (props: ModalProps) => {
   });
   const itemInput = useSwitch();
   const onSelectItem = (item: Item) => {
+    removeFieldError("item");
     setForm((it) => ({ ...it, item: item.name }));
   };
   if (!props.isOpen) return null;

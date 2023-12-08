@@ -24,6 +24,7 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 			ds = ds.Set(goqu.Record{
 				"program_id" : account.ProgramId,
 				"active_until" : account.ActiveUntil,
+				"student_number": account.StudentNumber,
 			})
 			
 			
@@ -31,6 +32,7 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 			ds = ds.Set(goqu.Record{
 				"type_id" : account.UserType, 
 				"active_until" : account.ActiveUntil,
+				"student_number" : account.StudentNumber,
 			})
 		}
 		ds = ds.Where(goqu.L("email =  ? OR LOWER(CONCAT(given_name, surname)) = ?", account.Email, name))

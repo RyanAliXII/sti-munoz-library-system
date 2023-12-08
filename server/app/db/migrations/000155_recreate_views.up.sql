@@ -260,7 +260,12 @@ jsonb_build_object('id', account.id,
 	 'surname', account.surname, 
 	'displayName',account.display_name,
 	 'email', account.email,
-	 'profilePicture', account.profile_picture
+	 'profilePicture', account.profile_picture,
+     'studentNumber', account.student_number,
+    'programName', (case when user_program.name is null then '' else user_program.name end), 
+    'programCode', (case when user_program.code is null then '' else user_program.code end),
+    'userType', (case when program_id is null and type_id is null then '' else 
+    (case when program_id is not null then user_program.program_type else user_type.name end) end)
 ) as json_format,
 jsonb_build_object( 
 	'totalPenalty', COALESCE(penalty_tbl.total, 0),

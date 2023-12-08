@@ -54,6 +54,7 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("program_name"),
 		goqu.C("user_type"),
 		goqu.C("program_code"),
+		goqu.C("student_number"),
 	 ).From(goqu.T("account_view"))
 
 
@@ -199,6 +200,7 @@ func (repo *AccountRepository) SearchAccounts(filter * AccountFilter) ([]model.A
 		goqu.C("program_name"),
 		goqu.C("program_code"),
 		goqu.C("user_type"),
+		goqu.C("student_number"),
 	).From(goqu.T("account_view"))
 	
 	ds = ds.Where(
