@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
+import SettleModal from "./SettleModal";
 
 const PenaltyPage = () => {
   const { Get, Patch } = useRequest();
@@ -40,6 +41,7 @@ const PenaltyPage = () => {
     open: openViewModal,
     close: closeViewModal,
   } = useSwitch();
+  const settleModal = useSwitch();
   const fetchPenalties = async () => {
     try {
       const response = await Get("/penalties/", {});
@@ -160,7 +162,7 @@ const PenaltyPage = () => {
                       </Button>
                     </Tippy>
 
-                    {penalty.isSettled && (
+                    {/* {penalty.isSettled && (
                       <Tippy content="Mark as Unsettled">
                         <Button
                           color="failure"
@@ -174,16 +176,13 @@ const PenaltyPage = () => {
                           <MdRemoveCircle className="text-lg" />
                         </Button>
                       </Tippy>
-                    )}
+                    )} */}
                     {!penalty.isSettled && (
                       <Tippy content="Mark as Settled">
                         <Button
                           color="success"
                           onClick={() => {
-                            updateSettlement.mutate({
-                              id: penalty.id ?? "",
-                              isSettled: true,
-                            });
+                            settleModal.open();
                           }}
                         >
                           <AiFillCheckCircle className="text-lg" />
@@ -203,6 +202,7 @@ const PenaltyPage = () => {
         closeModal={closeEditModal}
         penalty={selectedPenalty}
       />
+      <SettleModal isOpen={settleModal.isOpen} closeModal={settleModal.close} />
       <ViewPenaltyModal
         closeModal={closeViewModal}
         isOpen={isViewModalOpen}
