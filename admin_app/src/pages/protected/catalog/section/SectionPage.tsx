@@ -15,6 +15,7 @@ import EditSectionModal from "./EditSectionModal";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { useDeleteCollection } from "@hooks/data-fetching/collection";
 import { toast } from "react-toastify";
+import HasAccess from "@components/auth/HasAccess";
 
 const SectionPage = () => {
   const [section, setSection] = useState<Section>({
@@ -84,9 +85,11 @@ const SectionPage = () => {
     <>
       <Container>
         <div className="w-full flex justify-end pb-4 ">
-          <Button color="primary" onClick={openAddModal}>
-            New Collection
-          </Button>
+          <HasAccess requiredPermissions={["Collection.Add"]}>
+            <Button color="primary" onClick={openAddModal}>
+              New Collection
+            </Button>
+          </HasAccess>
         </div>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <TableContainer>
@@ -115,30 +118,34 @@ const SectionPage = () => {
                       </Table.Cell>
                       <Table.Cell>{section.lastValue}</Table.Cell>
                       <Table.Cell className="p-2 flex gap-2 items-center">
-                        <Tippy content="Edit">
-                          <Button
-                            onClick={() => {
-                              initEdit(section);
-                            }}
-                            color="secondary"
-                            size="xs"
-                          >
-                            <AiOutlineEdit className="cursor-pointer text-xl" />
-                          </Button>
-                        </Tippy>
-                        {section.isDeleteable && (
-                          <Tippy content="Delete">
+                        <HasAccess requiredPermissions={["Collection.Edit"]}>
+                          <Tippy content="Edit">
                             <Button
-                              color="failure"
-                              size="xs"
                               onClick={() => {
-                                initDelete(section);
+                                initEdit(section);
                               }}
+                              color="secondary"
+                              size="xs"
                             >
-                              <AiOutlineDelete className="cursor-pointer  text-xl" />
+                              <AiOutlineEdit className="cursor-pointer text-xl" />
                             </Button>
                           </Tippy>
-                        )}
+                        </HasAccess>
+                        <HasAccess requiredPermissions={["Collection.Delete"]}>
+                          {section.isDeleteable && (
+                            <Tippy content="Delete">
+                              <Button
+                                color="failure"
+                                size="xs"
+                                onClick={() => {
+                                  initDelete(section);
+                                }}
+                              >
+                                <AiOutlineDelete className="cursor-pointer  text-xl" />
+                              </Button>
+                            </Tippy>
+                          )}
+                        </HasAccess>
                       </Table.Cell>
                     </Table.Row>
                   );

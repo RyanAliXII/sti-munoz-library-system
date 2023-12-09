@@ -13,6 +13,7 @@ import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import EditGameModal from "./EditGameModal";
 import NewGameModal from "./NewGameModal";
+import HasAccess from "@components/auth/HasAccess";
 
 const GamesPage = () => {
   const {
@@ -63,9 +64,11 @@ const GamesPage = () => {
   return (
     <Container>
       <div className="py-2">
-        <Button color="primary" onClick={openNewGameModal}>
-          New Game
-        </Button>
+        <HasAccess requiredPermissions={["Game.Add"]}>
+          <Button color="primary" onClick={openNewGameModal}>
+            New Game
+          </Button>
+        </HasAccess>
       </div>
       <TableContainer>
         <Table>
@@ -84,26 +87,30 @@ const GamesPage = () => {
                   <Table.Cell>{game.description}</Table.Cell>
                   <Table.Cell>
                     <div className="flex gap-2">
-                      <Tippy content="Edit Game">
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            initEdit(game);
-                          }}
-                        >
-                          <AiOutlineEdit />
-                        </Button>
-                      </Tippy>
-                      <Tippy content="Delete Game">
-                        <Button
-                          color="failure"
-                          onClick={() => {
-                            initDelete(game);
-                          }}
-                        >
-                          <FaTrash />
-                        </Button>
-                      </Tippy>
+                      <HasAccess requiredPermissions={["Game.Edit"]}>
+                        <Tippy content="Edit Game">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              initEdit(game);
+                            }}
+                          >
+                            <AiOutlineEdit />
+                          </Button>
+                        </Tippy>
+                      </HasAccess>
+                      <HasAccess requiredPermissions={["Game.Delete"]}>
+                        <Tippy content="Delete Game">
+                          <Button
+                            color="failure"
+                            onClick={() => {
+                              initDelete(game);
+                            }}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </Tippy>
+                      </HasAccess>
                     </div>
                   </Table.Cell>
                 </Table.Row>

@@ -30,6 +30,7 @@ import LoadingBoundary, {
 } from "@components/loader/LoadingBoundary";
 import { format } from "date-fns";
 import useDebounce from "@hooks/useDebounce";
+import HasAccess from "@components/auth/HasAccess";
 
 const GameLoggingPage = () => {
   const [gameLog, setGameLog] = useState<GameLog>({ ...GameLogInitialValue });
@@ -156,10 +157,11 @@ const GameLoggingPage = () => {
               </Button>
             </Dropdown>
           </div>
-
-          <Button color="primary" onClick={openLogModal}>
-            Log Game
-          </Button>
+          <HasAccess requiredPermissions={["GameLog.Add"]}>
+            <Button color="primary" onClick={openLogModal}>
+              Log Game
+            </Button>
+          </HasAccess>
         </div>
       </div>
       <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
@@ -202,26 +204,30 @@ const GameLoggingPage = () => {
                     </Table.Cell>
                     <Table.Cell>
                       <div className="flex gap-2">
-                        <Tippy content="Edit Log">
-                          <Button
-                            color="secondary"
-                            onClick={() => {
-                              initEdit(log);
-                            }}
-                          >
-                            <AiOutlineEdit />
-                          </Button>
-                        </Tippy>
-                        <Tippy content="Delete Log">
-                          <Button
-                            color="failure"
-                            onClick={() => {
-                              initDelete(log);
-                            }}
-                          >
-                            <FaTrash />
-                          </Button>
-                        </Tippy>
+                        <HasAccess requiredPermissions={["GameLog.Edit"]}>
+                          <Tippy content="Edit Log">
+                            <Button
+                              color="secondary"
+                              onClick={() => {
+                                initEdit(log);
+                              }}
+                            >
+                              <AiOutlineEdit />
+                            </Button>
+                          </Tippy>
+                        </HasAccess>
+                        <HasAccess requiredPermissions={["GameLog.Delete"]}>
+                          <Tippy content="Delete Log">
+                            <Button
+                              color="failure"
+                              onClick={() => {
+                                initDelete(log);
+                              }}
+                            >
+                              <FaTrash />
+                            </Button>
+                          </Tippy>
+                        </HasAccess>
                       </div>
                     </Table.Cell>
                   </Table.Row>

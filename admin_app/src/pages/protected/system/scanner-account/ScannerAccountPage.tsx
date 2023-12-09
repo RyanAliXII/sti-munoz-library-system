@@ -16,6 +16,7 @@ import { Button, Table } from "flowbite-react";
 import { BsTrashFill } from "react-icons/bs";
 import EditAccountModal from "./EditAccountModal";
 import NewAccountModal from "./NewAccountModal";
+import HasAccess from "@components/auth/HasAccess";
 
 const ScannerAccountPage = () => {
   const { Get, Delete } = useRequest();
@@ -72,14 +73,16 @@ const ScannerAccountPage = () => {
       <Container>
         <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
           <div className="flex justify-end py-5">
-            <Button
-              color="primary"
-              className="flex items-center gap-2"
-              onClick={openAddAccountModal}
-            >
-              <AiOutlinePlus />
-              New Account
-            </Button>
+            <HasAccess requiredPermissions={["ScannerAccount.Add"]}>
+              <Button
+                color="primary"
+                className="flex items-center gap-2"
+                onClick={openAddAccountModal}
+              >
+                <AiOutlinePlus />
+                New Account
+              </Button>
+            </HasAccess>
           </div>
           <TableContainer>
             <Table>
@@ -95,30 +98,39 @@ const ScannerAccountPage = () => {
                       <Table.Cell>{account.username}</Table.Cell>
                       <Table.Cell>{account.description}</Table.Cell>
                       <Table.Cell className="flex gap-2">
-                        <Tippy content="Edit Account">
-                          <Button
-                            color="secondary"
-                            onClick={() => {
-                              setSelectedAccount(account);
-                              openEditAccountModal();
-                            }}
-                            type="button"
-                          >
-                            <AiOutlineEdit />
-                          </Button>
-                        </Tippy>
-                        <Tippy content="Delete Account">
-                          <Button
-                            color="failure"
-                            onClick={() => {
-                              setSelectedAccount(account);
-                              openDeleteConfirmation();
-                            }}
-                            type="button"
-                          >
-                            <BsTrashFill />
-                          </Button>
-                        </Tippy>
+                        <HasAccess
+                          requiredPermissions={["ScannerAccount.Edit"]}
+                        >
+                          <Tippy content="Edit Account">
+                            <Button
+                              color="secondary"
+                              onClick={() => {
+                                setSelectedAccount(account);
+                                openEditAccountModal();
+                              }}
+                              type="button"
+                            >
+                              <AiOutlineEdit />
+                            </Button>
+                          </Tippy>
+                        </HasAccess>
+
+                        <HasAccess
+                          requiredPermissions={["ScannerAccount.Delete"]}
+                        >
+                          <Tippy content="Delete Account">
+                            <Button
+                              color="failure"
+                              onClick={() => {
+                                setSelectedAccount(account);
+                                openDeleteConfirmation();
+                              }}
+                              type="button"
+                            >
+                              <BsTrashFill />
+                            </Button>
+                          </Tippy>
+                        </HasAccess>
                       </Table.Cell>
                     </Table.Row>
                   );

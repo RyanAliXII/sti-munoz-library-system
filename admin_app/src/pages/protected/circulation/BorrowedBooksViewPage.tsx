@@ -25,6 +25,7 @@ import ordinal from "ordinal";
 import { AiOutlineEdit } from "react-icons/ai";
 import EditDueDateModal from "./EditDueDateModal";
 import EditRemarksModal from "./EditRemarksModal";
+import HasAccess from "@components/auth/HasAccess";
 const BorrowedBooksViewPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -198,15 +199,14 @@ const BorrowedBooksViewPage = () => {
           <TableContainer>
             <Table>
               <Table.Head>
-                <Table.HeadCell>Created At</Table.HeadCell>
                 <Table.HeadCell>Title</Table.HeadCell>
-
                 <Table.HeadCell>Due Date</Table.HeadCell>
                 <Table.HeadCell>Copy number</Table.HeadCell>
                 <Table.HeadCell>Accession number</Table.HeadCell>
                 <Table.HeadCell>Book Type</Table.HeadCell>
                 <Table.HeadCell>Status</Table.HeadCell>
                 <Table.HeadCell>Penalty</Table.HeadCell>
+                <Table.HeadCell>Created At</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y dark:divide-gray-700">
@@ -272,129 +272,141 @@ const BorrowedBooksViewPage = () => {
                       </Table.Cell>
 
                       <Table.Cell>
-                        <div className="flex gap-2">
-                          {borrowedBook.statusId === BorrowStatus.CheckedOut &&
-                            !borrowedBook.isEbook && (
+                        <HasAccess requiredPermissions={["BorrowedBook.Edit"]}>
+                          <div className="flex gap-2">
+                            {borrowedBook.statusId ===
+                              BorrowStatus.CheckedOut &&
+                              !borrowedBook.isEbook && (
+                                <Tippy
+                                  content="Mark borrowed book as returned."
+                                  key={"return"}
+                                >
+                                  <Button
+                                    color="success"
+                                    onClick={() => {
+                                      setSelectedBorrowedBook(
+                                        borrowedBook.book
+                                      );
+                                      setBorrowedBookId(borrowedBook.id ?? "");
+                                      openReturnRemarkPrompt();
+                                    }}
+                                  >
+                                    Return
+                                  </Button>
+                                </Tippy>
+                              )}
+                            {borrowedBook.statusId === BorrowStatus.Pending && (
                               <Tippy
-                                content="Mark borrowed book as returned."
-                                key={"return"}
+                                content="Mark book as for pick-up."
+                                key={"approve"}
                               >
                                 <Button
-                                  color="success"
+                                  color="primary"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
-                                    openReturnRemarkPrompt();
+                                    openApprovalConfirmationDialog();
                                   }}
                                 >
-                                  Return
+                                  For pick-up
                                 </Button>
                               </Tippy>
                             )}
-                          {borrowedBook.statusId === BorrowStatus.Pending && (
-                            <Tippy
-                              content="Approve borrowing request."
-                              key={"approve"}
-                            >
-                              <Button
-                                color="primary"
-                                onClick={() => {
-                                  setSelectedBorrowedBook(borrowedBook.book);
-                                  setBorrowedBookId(borrowedBook.id ?? "");
-                                  openApprovalConfirmationDialog();
-                                }}
-                              >
-                                Approve
-                              </Button>
-                            </Tippy>
-                          )}
-                          {borrowedBook.statusId === BorrowStatus.Approved && (
-                            <Tippy content="Checkout book.">
-                              <Button
-                                color="primary"
-                                onClick={() => {
-                                  setSelectedBorrowedBook(borrowedBook.book);
-                                  setBorrowedBookId(borrowedBook.id ?? "");
-                                  openEditDueDateModal();
-                                }}
-                              >
-                                Check out
-                              </Button>
-                            </Tippy>
-                          )}
-
-                          {borrowedBook.statusId ===
-                            BorrowStatus.CheckedOut && (
-                            <Tippy content="Edit due date.">
-                              <Button
-                                color="primary"
-                                onClick={() => {
-                                  setSelectedBorrowedBook(borrowedBook.book);
-                                  setBorrowedBook(borrowedBook);
-                                  setBorrowedBookId(borrowedBook.id ?? "");
-                                  openEditDueDateModal();
-                                }}
-                              >
-                                Edit
-                              </Button>
-                            </Tippy>
-                          )}
-
-                          {borrowedBook.statusId === BorrowStatus.CheckedOut &&
-                            !borrowedBook.isEbook && (
-                              <Tippy content="Mark borrowed book as unreturned.">
+                            {borrowedBook.statusId ===
+                              BorrowStatus.Approved && (
+                              <Tippy content="Checkout book.">
                                 <Button
-                                  color="warning"
+                                  color="primary"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
-                                    openUnreturnedRemarkPrompt();
+                                    openEditDueDateModal();
                                   }}
                                 >
-                                  Unreturn
+                                  Check out
                                 </Button>
                               </Tippy>
                             )}
-                          {(borrowedBook.statusId === BorrowStatus.Pending ||
-                            borrowedBook.statusId === BorrowStatus.Approved ||
-                            borrowedBook.statusId ===
-                              BorrowStatus.CheckedOut) && (
-                            <Tippy content="Cancel Request">
-                              <Button
-                                color="failure"
-                                onClick={() => {
-                                  setSelectedBorrowedBook(borrowedBook.book);
-                                  setBorrowedBookId(borrowedBook.id ?? "");
-                                  openCancellationRemarkPrompt();
-                                }}
-                              >
-                                Cancel
-                              </Button>
-                            </Tippy>
-                          )}
 
-                          {(borrowedBook.statusId === BorrowStatus.Returned ||
-                            borrowedBook.statusId === BorrowStatus.Cancelled ||
-                            borrowedBook.statusId ===
-                              BorrowStatus.Unreturned) &&
-                            !borrowedBook.isEbook && (
-                              <Tippy content="Edit Remarks">
-                                <button
-                                  className={
-                                    ButtonClasses.PrimaryOutlineButtonClasslist
-                                  }
+                            {borrowedBook.statusId ===
+                              BorrowStatus.CheckedOut && (
+                              <Tippy content="Edit due date.">
+                                <Button
+                                  color="primary"
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
-                                    setBorrowedBookId(borrowedBook.id ?? "");
                                     setBorrowedBook(borrowedBook);
-                                    openEditRemarksModal();
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    openEditDueDateModal();
                                   }}
                                 >
-                                  <AiOutlineEdit />
-                                </button>
+                                  Edit
+                                </Button>
                               </Tippy>
                             )}
-                        </div>
+
+                            {borrowedBook.statusId ===
+                              BorrowStatus.CheckedOut &&
+                              !borrowedBook.isEbook && (
+                                <Tippy content="Mark borrowed book as unreturned.">
+                                  <Button
+                                    color="warning"
+                                    onClick={() => {
+                                      setSelectedBorrowedBook(
+                                        borrowedBook.book
+                                      );
+                                      setBorrowedBookId(borrowedBook.id ?? "");
+                                      openUnreturnedRemarkPrompt();
+                                    }}
+                                  >
+                                    Unreturn
+                                  </Button>
+                                </Tippy>
+                              )}
+                            {/* {(borrowedBook.statusId === BorrowStatus.Pending ||
+                              borrowedBook.statusId === BorrowStatus.Approved ||
+                              borrowedBook.statusId ===
+                                BorrowStatus.CheckedOut) && (
+                              <Tippy content="Cancel Request">
+                                <Button
+                                  color="failure"
+                                  onClick={() => {
+                                    setSelectedBorrowedBook(borrowedBook.book);
+                                    setBorrowedBookId(borrowedBook.id ?? "");
+                                    openCancellationRemarkPrompt();
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </Tippy>
+                            )} */}
+
+                            {(borrowedBook.statusId === BorrowStatus.Returned ||
+                              borrowedBook.statusId ===
+                                BorrowStatus.Cancelled ||
+                              borrowedBook.statusId ===
+                                BorrowStatus.Unreturned) &&
+                              !borrowedBook.isEbook && (
+                                <Tippy content="Edit Remarks">
+                                  <button
+                                    className={
+                                      ButtonClasses.PrimaryOutlineButtonClasslist
+                                    }
+                                    onClick={() => {
+                                      setSelectedBorrowedBook(
+                                        borrowedBook.book
+                                      );
+                                      setBorrowedBookId(borrowedBook.id ?? "");
+                                      setBorrowedBook(borrowedBook);
+                                      openEditRemarksModal();
+                                    }}
+                                  >
+                                    <AiOutlineEdit />
+                                  </button>
+                                </Tippy>
+                              )}
+                          </div>
+                        </HasAccess>
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -444,8 +456,8 @@ const BorrowedBooksViewPage = () => {
       />
       <ConfirmDialog
         key={"forApproval"}
-        title="Approve Borrow Request!"
-        text="Are you sure you want to approve borrow request?"
+        title="Mark book for pick-up"
+        text="Are you sure you want to mark the book for pick-up?"
         isOpen={isApprovalConfirmationDialogOpen}
         close={closeApprovalConfirmationDialog}
         onConfirm={onConfirmApproval}

@@ -9,7 +9,10 @@ export const BookInitialValue: Book = {
     name: "",
     id: 0,
     prefix: "",
-    hasOwnAccession: false,
+    accessionTable: "",
+    isDeleteable: false,
+    isSubCollection: false,
+    mainCollectionId: 0,
   },
   publisher: {
     name: "",

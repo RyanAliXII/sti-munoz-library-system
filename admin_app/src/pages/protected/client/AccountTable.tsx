@@ -5,7 +5,7 @@ import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
 type AccountTableProps = {
   accounts: Account[];
-  selectedAccountIds: Set<string>;
+  selectedAccountIds: Map<string, Account>;
   dispatchSelection: Dispatch<SelectedAccountIdsAction>;
 };
 const AccountTable: React.FC<AccountTableProps> = ({
@@ -15,47 +15,43 @@ const AccountTable: React.FC<AccountTableProps> = ({
 }) => {
   const selectedAccountIdsCache = useMemo<Map<string, string>>(() => {
     const map = new Map<string, string>();
-    for (const accountId of selectedAccountIds) {
-      map.set(accountId, accountId);
+    for (const [key, value] of selectedAccountIds) {
+      map.set(key, key);
     }
 
     return map;
   }, [selectedAccountIds]);
 
-  const handleAccountSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    const isChecked = event.target.checked;
-    const accountId = event.target.value;
-    if (isChecked) {
-      dispatchSelection({
-        payload: { single: accountId },
-        type: "select",
-      });
-      return;
-    }
+  const handleAccountSelect = (account: Account) => {
     dispatchSelection({
-      payload: { single: accountId },
+      payload: { single: account },
+      type: "select",
+    });
+    return;
+  };
+  const handleAccountDeselect = (account: Account) => {
+    dispatchSelection({
+      payload: { single: account },
       type: "unselect",
     });
   };
   const selectedText =
     selectedAccountIds.size > 0 ? `${selectedAccountIds.size} selected` : "";
   const selectAll = (event: ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked;
-    const accountIds = accounts.map((account) => account.id ?? "");
-    if (checked) {
+    const isChecked = event.target.checked;
+    if (isChecked) {
       dispatchSelection({
+        payload: { multiple: accounts },
         type: "select-all-page",
-        payload: { multiple: accountIds ?? [] },
+      });
+      return;
+    } else {
+      dispatchSelection({
+        payload: { multiple: accounts },
+        type: "unselect-all-page",
       });
       return;
     }
-    dispatchSelection({
-      type: "unselect-all-page",
-      payload: {
-        multiple: accountIds,
-      },
-    });
-    return;
   };
   const isSelectAllChecked = useMemo(
     () =>
@@ -94,7 +90,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
             "name",
             `${account.givenName} ${account.surname}`
           );
-          const isChecked = selectedAccountIdsCache.has(account.id ?? "");
+          const isChecked = selectedAccountIds.has(account.id ?? "");
           const name =
             account.givenName.length + account.surname.length === 0
               ? "Unnamed"
@@ -105,7 +101,13 @@ const AccountTable: React.FC<AccountTableProps> = ({
                 <Checkbox
                   checked={isChecked}
                   color="primary"
-                  onChange={handleAccountSelect}
+                  onChange={() => {
+                    if (!isChecked) {
+                      handleAccountSelect(account);
+                      return;
+                    }
+                    handleAccountDeselect(account);
+                  }}
                   value={account.id}
                 ></Checkbox>
               </Table.Cell>

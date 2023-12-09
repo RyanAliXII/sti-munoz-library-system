@@ -113,7 +113,7 @@ const BorrowedBooksPage = () => {
             setActiveTab(BorrowStatus.Approved);
           }}
         >
-          Approved
+          For pick-up
         </a>
         <a
           className={isTabActive(activeTab, BorrowStatus.CheckedOut)}

@@ -70,14 +70,7 @@ const BookTable: FC<BookTableProps> = ({
                         <AiOutlinePrinter className="text-lg cursor-pointer " />
                       </Button>
                     </Tippy>
-                    <HasAccess
-                      requiredPermissions={[
-                        "Book.Access",
-                        "Publisher.Access",
-                        "Section.Access",
-                        "Author.Access",
-                      ]}
-                    >
+                    <HasAccess requiredPermissions={["Book.Edit"]}>
                       <Tippy content="Edit Book">
                         <Button
                           as={Link}

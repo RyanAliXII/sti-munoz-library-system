@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import TableContainer from "@components/ui/table/TableContainer";
 import { Link } from "react-router-dom";
+import HasAccess from "@components/auth/HasAccess";
 
 const TimeSlotProfilePage = () => {
   const {
@@ -66,9 +67,11 @@ const TimeSlotProfilePage = () => {
   return (
     <Container>
       <div className="py-2">
-        <Button color="primary" onClick={openNewProfileModal}>
-          New Profile
-        </Button>
+        <HasAccess requiredPermissions={["TimeSlot.Add"]}>
+          <Button color="primary" onClick={openNewProfileModal}>
+            New Profile
+          </Button>
+        </HasAccess>
       </div>
       <TableContainer>
         <Table>
@@ -92,26 +95,30 @@ const TimeSlotProfilePage = () => {
                           <FaEye />
                         </Button>
                       </Tippy>
-                      <Tippy content="Edit Profile">
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            initEdit(profile);
-                          }}
-                        >
-                          <AiOutlineEdit />
-                        </Button>
-                      </Tippy>
-                      <Tippy content="Delete Profile">
-                        <Button
-                          color="failure"
-                          onClick={() => {
-                            initDelete(profile);
-                          }}
-                        >
-                          <FaTrash />
-                        </Button>
-                      </Tippy>
+                      <HasAccess requiredPermissions={["TimeSlot.Edit"]}>
+                        <Tippy content="Edit Profile">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              initEdit(profile);
+                            }}
+                          >
+                            <AiOutlineEdit />
+                          </Button>
+                        </Tippy>
+                      </HasAccess>
+                      <HasAccess requiredPermissions={["TimeSlot.Delete"]}>
+                        <Tippy content="Delete Profile">
+                          <Button
+                            color="failure"
+                            onClick={() => {
+                              initDelete(profile);
+                            }}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </Tippy>
+                      </HasAccess>
                     </div>
                   </Table.Cell>
                 </Table.Row>

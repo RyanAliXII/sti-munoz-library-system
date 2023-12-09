@@ -1,20 +1,37 @@
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { ModalProps, UserProgramOrStrand, UserType } from "@definitions/types";
+import {
+  Account,
+  ModalProps,
+  UserProgramOrStrand,
+  UserType,
+} from "@definitions/types";
+import { useAccountActivation } from "@hooks/data-fetching/account";
 import { useUserProgramsByType, useUserTypes } from "@hooks/data-fetching/user";
 import { useForm } from "@hooks/useForm";
 import useModalToggleListener from "@hooks/useModalToggleListener";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "flowbite-react";
-import { FC, FormEvent } from "react";
+import { Dispatch, FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { SingleValue } from "react-select";
+import { toast } from "react-toastify";
 import { boolean, number, object } from "yup";
+import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
 type ActivateForm = {
   userType: UserType;
   program: Omit<UserProgramOrStrand, "userType">;
 };
-const ActivateModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
+interface ActivateModalProps extends ModalProps {
+  selectedAccounts: Map<string, Account>;
+  dispatchSelection: Dispatch<SelectedAccountIdsAction>;
+}
+const ActivateModal: FC<ActivateModalProps> = ({
+  closeModal,
+  isOpen,
+  selectedAccounts,
+  dispatchSelection,
+}) => {
   const { data: userTypes } = useUserTypes({});
   const {
     form,
@@ -48,6 +65,15 @@ const ActivateModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
       }),
     }),
   });
+  const queryClient = useQueryClient();
+  const activateAccounts = useAccountActivation({
+    onSuccess: () => {
+      toast.success("Account/s have been activated.");
+      queryClient.invalidateQueries(["accounts"]);
+      dispatchSelection({ type: "unselect-all", payload: {} });
+    },
+  });
+
   const { data: programs } = useUserProgramsByType({
     queryKey: ["programsByType", form.userType.id, form.userType.hasProgram],
   });
@@ -73,6 +99,13 @@ const ActivateModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
         });
         return;
       }
+      if (!form) return;
+      activateAccounts.mutate({
+        accountIds: Array.from(selectedAccounts.keys()),
+        programId: form?.program.id,
+        userTypeId: form?.userType.id,
+      });
+      closeModal();
     } catch (error) {
       console.error(error);
     }

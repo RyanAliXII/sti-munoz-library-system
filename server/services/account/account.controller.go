@@ -204,23 +204,23 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 		}
 		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
-func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
-	body := SelectedAccountIdsBody{}
-	err := ctx.Bind(&body)
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-		return
-	}
-	err = ctrler.accountRepository.ActivateAccounts(body.AccountIds)
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAccountsAsActive"))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
+// func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
+// 	body := SelectedAccountIdsBody{}
+// 	err := ctx.Bind(&body)
+// 	if err != nil {
+// 		logger.Error(err.Error(), slimlog.Error("bindErr"))
+// 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+// 		return
+// 	}
+// 	err = ctrler.accountRepository.ActivateAccounts(body.AccountIds)
+// 	if err != nil {
+// 		logger.Error(err.Error(), slimlog.Error("MarkAccountsAsActive"))
+// 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+// 		return
+// 	}
 
-	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
-}
+// 	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
+// }
 
 func (ctrler * AccountController)DisableAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
@@ -292,9 +292,9 @@ type AccountControllerInterface interface {
 	GetAccountRoles(ctx * gin.Context)
 	GetAccountById(ctx * gin.Context)
 	UpdateProfilePicture(ctx * gin.Context)
-	ActivateAccounts(ctx * gin.Context)
 	DeleteAccounts(ctx * gin.Context)
 	DisableAccounts(ctx * gin.Context)
 	RestoreAccounts(ctx * gin.Context)
 	ActivateBulk (ctx * gin.Context)
+	ActivateAccounts(ctx * gin.Context)
 }

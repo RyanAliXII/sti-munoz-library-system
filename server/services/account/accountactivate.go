@@ -11,6 +11,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/gocarina/gocsv"
 )
 type ActivateBulkError struct {
@@ -146,4 +147,22 @@ func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.Accoun
 		}
 	}
 	return nil
+}
+
+func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
+	    body := AccountsActivateBody{}
+		err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+		if err != nil {
+			logger.Error(err.Error())
+			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+			return
+		}
+		settings := ctrler.settingsRepo.Get()
+		err = ctrler.accountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("account activation error"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return
+		}
+		ctx.JSON(httpresp.Success200(nil, "Account Activated."))
 }

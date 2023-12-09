@@ -171,19 +171,12 @@ const BookPage = () => {
           </div>
 
           <div className="flex gap-2">
-            <HasAccess
-              requiredPermissions={[
-                "Book.Access",
-                "Publisher.Access",
-                "Section.Access",
-                "Author.Access",
-              ]}
-            >
+            <HasAccess requiredPermissions={["Book.Add"]}>
               <Button color="primary" to="/books/new" as={Link}>
                 <AiOutlinePlus /> New Book
               </Button>
             </HasAccess>
-            <HasAccess requiredPermissions={["Book.Access", "Section.Access"]}>
+            <HasAccess requiredPermissions={["Book.Add"]}>
               <Button
                 outline
                 gradientDuoTone={"blueToBlue"}

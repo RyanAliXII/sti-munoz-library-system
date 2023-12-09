@@ -13,6 +13,7 @@ import { WarningConfirmDialog } from "@components/ui/dialog/Dialog";
 import { MdRestartAlt } from "react-icons/md";
 import { useEditSettings } from "@hooks/data-fetching/settings";
 import { toast } from "react-toastify";
+import HasAccess from "@components/auth/HasAccess";
 
 export interface InputModalProps extends ModalProps {
   label?: string;
@@ -98,31 +99,33 @@ const SettingsPage = () => {
                     <Table.Cell>{setting.description}</Table.Cell>
                     <Table.Cell>{setting.value}</Table.Cell>
                     <Table.Cell>
-                      <div className="flex gap-2">
-                        <Tippy content="Edit Setting">
-                          <Button
-                            color="primary"
-                            onClick={() => {
-                              initEdit(setting);
-                            }}
-                          >
-                            <AiOutlineEdit className="text-lg" />
-                          </Button>
-                        </Tippy>
-
-                        {setting.defaultValue != setting.value && (
-                          <Tippy content="Reset to Default">
+                      <HasAccess requiredPermissions={["Setting.Edit"]}>
+                        <div className="flex gap-2">
+                          <Tippy content="Edit Setting">
                             <Button
-                              color="warning"
+                              color="primary"
                               onClick={() => {
-                                initReset(setting);
+                                initEdit(setting);
                               }}
                             >
-                              <MdRestartAlt className="text-lg" />
+                              <AiOutlineEdit className="text-lg" />
                             </Button>
                           </Tippy>
-                        )}
-                      </div>
+
+                          {setting.defaultValue != setting.value && (
+                            <Tippy content="Reset to Default">
+                              <Button
+                                color="warning"
+                                onClick={() => {
+                                  initReset(setting);
+                                }}
+                              >
+                                <MdRestartAlt className="text-lg" />
+                              </Button>
+                            </Tippy>
+                          )}
+                        </div>
+                      </HasAccess>
                     </Table.Cell>
                   </Table.Row>
                 );

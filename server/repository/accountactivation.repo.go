@@ -50,3 +50,29 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 	transaction.Commit()
 	return nil;
 }
+func (repo * AccountRepository)ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string) error {
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Update(goqu.T("account").Schema("system")).Prepared(true)
+	if(programId > 0 ){
+		ds = ds.Set(goqu.Record{
+			"program_id": programId,
+			"active_until" : activeUntil,
+		})
+			
+	}else{
+		ds = ds.Set(goqu.Record{
+			"user_type_id": userTypeId,
+		})
+	}
+	ds = ds.Where(goqu.ExOr{
+		"id" :  accountIds,
+		"active_until" : activeUntil,
+	})
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec(query, args...)
+	
+	return err
+}

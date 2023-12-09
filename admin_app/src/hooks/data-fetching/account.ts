@@ -9,6 +9,8 @@ import {
 
 type ActivateAccountData = {
   accountIds: string[];
+  programId: number;
+  userTypeId: number;
 };
 
 export const useAccountActivation = ({
@@ -18,18 +20,12 @@ export const useAccountActivation = ({
 }: MutationOptions<any, unknown, ActivateAccountData, unknown>) => {
   const { Patch } = useRequest();
   return useMutation({
-    mutationFn: ({ accountIds }) =>
-      Patch(
-        "/accounts/activation",
-        {
-          accountIds: accountIds,
+    mutationFn: (form) =>
+      Patch("/accounts/activation", form, {
+        headers: {
+          "content-type": "application/json",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        }
-      ),
+      }),
     onSuccess: onSuccess,
     onError: onError,
     onSettled: onSettled,

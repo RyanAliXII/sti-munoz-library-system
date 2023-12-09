@@ -23,6 +23,7 @@ import EditPenaltyModal from "./EditPenaltyModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
 import SettleModal from "./SettleModal";
 import EditSettlementModal from "./EditSettlementModal";
+import HasAccess from "@components/auth/HasAccess";
 
 const PenaltyPage = () => {
   const { Get } = useRequest();
@@ -75,13 +76,15 @@ const PenaltyPage = () => {
     <>
       <Container>
         <div className="flex w-full justify-end py-4">
-          <Button
-            color="primary"
-            className="flex items-center gap-1"
-            onClick={openAddModal}
-          >
-            <AiOutlinePlus className="text-lg " /> Add Penalty
-          </Button>
+          <HasAccess requiredPermissions={["Penalty.Add"]}>
+            <Button
+              color="primary"
+              className="flex items-center gap-1"
+              onClick={openAddModal}
+            >
+              <AiOutlinePlus className="text-lg " /> Add Penalty
+            </Button>
+          </HasAccess>
         </div>
         <TableContainer>
           <Table>
@@ -133,46 +136,47 @@ const PenaltyPage = () => {
                         <AiOutlineEye className="text-lg" />
                       </Button>
                     </Tippy>
+                    <HasAccess requiredPermissions={["Penalty.Edit"]}>
+                      {!penalty.isSettled && (
+                        <Tippy content="Edit Penalty">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              setSelectedPenalty(penalty);
+                              openEditModal();
+                            }}
+                          >
+                            <AiOutlineEdit className="text-lg" />
+                          </Button>
+                        </Tippy>
+                      )}
 
-                    {!penalty.isSettled && (
-                      <Tippy content="Edit Penalty">
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            setSelectedPenalty(penalty);
-                            openEditModal();
-                          }}
-                        >
-                          <AiOutlineEdit className="text-lg" />
-                        </Button>
-                      </Tippy>
-                    )}
+                      {penalty.isSettled && (
+                        <Tippy content="Edit Settlement">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              initEditSettleMent(penalty);
+                            }}
+                          >
+                            <AiOutlineEdit className="text-lg" />
+                          </Button>
+                        </Tippy>
+                      )}
 
-                    {penalty.isSettled && (
-                      <Tippy content="Edit Settlement">
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            initEditSettleMent(penalty);
-                          }}
-                        >
-                          <AiOutlineEdit className="text-lg" />
-                        </Button>
-                      </Tippy>
-                    )}
-
-                    {!penalty.isSettled && (
-                      <Tippy content="Mark as Settled">
-                        <Button
-                          color="success"
-                          onClick={() => {
-                            settleModal.open();
-                          }}
-                        >
-                          <AiFillCheckCircle className="text-lg" />
-                        </Button>
-                      </Tippy>
-                    )}
+                      {!penalty.isSettled && (
+                        <Tippy content="Mark as Settled">
+                          <Button
+                            color="success"
+                            onClick={() => {
+                              settleModal.open();
+                            }}
+                          >
+                            <AiFillCheckCircle className="text-lg" />
+                          </Button>
+                        </Tippy>
+                      )}
+                    </HasAccess>
                   </Table.Cell>
                 </Table.Row>
               ))}

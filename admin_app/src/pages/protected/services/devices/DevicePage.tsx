@@ -13,6 +13,7 @@ import { FaTrash } from "react-icons/fa";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
+import HasAccess from "@components/auth/HasAccess";
 
 const ReservableDevicePage = () => {
   const {
@@ -62,10 +63,11 @@ const ReservableDevicePage = () => {
   return (
     <Container>
       <div className="py-3">
-        <Button color="primary" onClick={openNewDeviceModal}>
-          {" "}
-          New Device
-        </Button>
+        <HasAccess requiredPermissions={["Device.Add"]}>
+          <Button color="primary" onClick={openNewDeviceModal}>
+            New Device
+          </Button>
+        </HasAccess>
       </div>
       <TableContainer>
         <Table>
@@ -86,26 +88,30 @@ const ReservableDevicePage = () => {
                   <Table.Cell>{device.available}</Table.Cell>
                   <Table.Cell>
                     <div className="flex gap-2">
-                      <Tippy content="Edit Game">
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            initEdit(device);
-                          }}
-                        >
-                          <AiOutlineEdit />
-                        </Button>
-                      </Tippy>
-                      <Tippy content="Delete Game">
-                        <Button
-                          color="failure"
-                          onClick={() => {
-                            initDelete(device);
-                          }}
-                        >
-                          <FaTrash />
-                        </Button>
-                      </Tippy>
+                      <HasAccess requiredPermissions={["Device.Edit"]}>
+                        <Tippy content="Edit Game">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              initEdit(device);
+                            }}
+                          >
+                            <AiOutlineEdit />
+                          </Button>
+                        </Tippy>
+                      </HasAccess>
+                      <HasAccess requiredPermissions={["Device.Delete"]}>
+                        <Tippy content="Delete Game">
+                          <Button
+                            color="failure"
+                            onClick={() => {
+                              initDelete(device);
+                            }}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </Tippy>
+                      </HasAccess>
                     </div>
                   </Table.Cell>
                 </Table.Row>

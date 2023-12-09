@@ -12,6 +12,7 @@ import { Alert, Button, Datepicker, Label } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BulkActivateErrorModal from "./BulkActivateErrorModal";
+import { toast } from "react-toastify";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -38,6 +39,10 @@ const BulkActivatePage = () => {
       if (messages) {
         setMessages(messages ?? []);
       }
+    });
+
+    uppy.on("upload-success", () => {
+      toast.success("Accounts activated.");
     });
   }, []);
 

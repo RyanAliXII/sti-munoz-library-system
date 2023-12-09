@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Container from "@components/ui/container/Container";
 import { BorrowRequest } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import TableContainer from "@components/ui/table/TableContainer";
 import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
 import {
@@ -21,6 +21,7 @@ import CustomPagination from "@components/pagination/CustomPagination";
 import { format } from "date-fns";
 import useDebounce from "@hooks/useDebounce";
 import { MdFilterList } from "react-icons/md";
+import HasAccess from "@components/auth/HasAccess";
 
 const BorrowRequestPage = () => {
   const [pages, setPages] = useState(1);
@@ -119,14 +120,17 @@ const BorrowRequestPage = () => {
                 </Button>
               </Dropdown>
             </div>
-
-            <Button color="primary">Log Game</Button>
+            <HasAccess requiredPermissions={["BorrowedBook.Add"]}>
+              <Button color="primary" to="/borrowing/checkout" as={Link}>
+                Checkout Book
+              </Button>
+            </HasAccess>
           </div>
         </div>
         <TableContainer>
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell>Client</Table.HeadCell>
+              <Table.HeadCell>Patron</Table.HeadCell>
               <Table.HeadCell>Created At</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>

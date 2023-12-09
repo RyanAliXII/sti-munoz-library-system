@@ -132,6 +132,16 @@ var Permissions = []Permission{
 		Description: "Allows user to view queue.",
 	},
 	{
+		Name: "Edit Queue",
+		Value: "Queue.Edit",
+		Description: "Allows user to edit queue.",
+	},
+	{
+		Name: "Queue Delete",
+		Value: "Queue.Delete",
+		Description: "Allows user to delete queue.",
+	},
+	{
 		Name: "View Penalty",
 		Value: "Penalty.Read",
 		Description: "Allows user to view penalty.",
@@ -231,6 +241,16 @@ var Permissions = []Permission{
 		Name: "Log Game",
 		Value: "GameLog.Add",
 		Description: "Allows user to log game.",
+	},
+	{
+		Name: "Edit Game Log",
+		Value: "GameLog.Edit",
+		Description: "Allows user to edit game log.",
+	},
+	{
+		Name: "Delete Game Log",
+		Value: "GameLog.Delete",
+		Description: "Allows user to delete game log.",
 	},
 	{
 		Name:"View Device",

@@ -139,7 +139,7 @@ func (repo * Borrowing)buildBorrowingRequestFilters(ds * goqu.SelectDataset, fil
 }
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook FROM borrowed_book_all_view where group_id = $1`
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook,created_at FROM borrowed_book_all_view where group_id = $1`
 	err := repo.db.Select(&borrowedBooks, query, groupId)
 	return borrowedBooks, err
 }
@@ -154,13 +154,13 @@ func (repo * Borrowing) GetBorrowedEBookByIdAndStatus (id string, status int)(mo
 
 func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id != 6 order by created_at desc`
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook, created_at FROM borrowed_book_all_view where account_id = $1 and status_id != 6 order by created_at desc`
 	err := repo.db.Select(&borrowedBooks, query, accountId)
 	return borrowedBooks, err
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
-	query := `SELECT * FROM borrowed_book_all_view where account_id = $1 and status_id = $2 order by created_at desc`
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook, created_at FROM borrowed_book_all_view where account_id = $1 and status_id = $2 order by created_at desc`
 	err := repo.db.Select(&borrowedBooks, query, accountId, statusId)
 	return borrowedBooks, err
 }

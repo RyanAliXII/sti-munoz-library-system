@@ -10,6 +10,7 @@ import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import HasAccess from "@components/auth/HasAccess";
 const ActiveQueuesTable = () => {
   const { data } = useActiveQueues({});
   const [bookId, setBookId] = useState("");
@@ -63,15 +64,18 @@ const ActiveQueuesTable = () => {
                       >
                         View
                       </Button>
-                      <Button
-                        disabled={dequeue.isLoading}
-                        color="failure"
-                        onClick={() => {
-                          initDequeue(queue.book.id ?? "");
-                        }}
-                      >
-                        Remove
-                      </Button>
+
+                      <HasAccess requiredPermissions={["Queue.Delete"]}>
+                        <Button
+                          disabled={dequeue.isLoading}
+                          color="failure"
+                          onClick={() => {
+                            initDequeue(queue.book.id ?? "");
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </HasAccess>
                     </div>
                   </Table.Cell>
                 </Table.Row>

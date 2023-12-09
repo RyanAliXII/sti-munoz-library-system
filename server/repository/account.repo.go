@@ -416,24 +416,24 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	transaction.Commit()
 	return nil
 }
-func(repo * AccountRepository)ActivateAccounts(accountIds []string) error {
-	dialect := goqu.Dialect("postgres")
-	if len(accountIds) == 0 {
-		return nil
-	}
-	ds := dialect.Update(goqu.T("account").Schema("system"))
-	ds = ds.Set(goqu.Record{"active_since": goqu.L("now()")})
-	ds = ds.Where(goqu.ExOr{
-		"id" : accountIds,
-	}).Prepared(true)
-	query, args, err := ds.ToSQL()
-	if err != nil {
-		return err
-	}
-	_, err = repo.db.Exec(query, args...)
+// func(repo * AccountRepository)ActivateAccounts(accountIds []string) error {
+// 	dialect := goqu.Dialect("postgres")
+// 	if len(accountIds) == 0 {
+// 		return nil
+// 	}
+// 	ds := dialect.Update(goqu.T("account").Schema("system"))
+// 	ds = ds.Set(goqu.Record{"active_since": goqu.L("now()")})
+// 	ds = ds.Where(goqu.ExOr{
+// 		"id" : accountIds,
+// 	}).Prepared(true)
+// 	query, args, err := ds.ToSQL()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, err = repo.db.Exec(query, args...)
 	
-	return err
-}
+// 	return err
+// }
 
 func(repo * AccountRepository)DisableAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
@@ -507,10 +507,10 @@ type AccountRepositoryInterface interface {
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	GetAccountById(id string) (model.Account, error)
 	UpdateProfilePictureById(id string, image * multipart.FileHeader) error
-	ActivateAccounts(accountIds []string) error
 	DeleteAccounts(accountIds []string) error 
 	DisableAccounts(accountIds []string) error
 	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
 	RestoreAccounts(accountIds []string) error
 	ActivateAccountBulk(accounts []model.AccountActivation) error 
+	ActivateAccounts(accountIds []string,  userTypeId int, programId int, validUntil string) error 
 }
