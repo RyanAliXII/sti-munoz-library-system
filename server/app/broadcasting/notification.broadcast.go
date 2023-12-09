@@ -2,7 +2,6 @@ package broadcasting
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -44,7 +43,7 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 
 	}
 
-	routingKey := fmt.Sprintf("notify_account_%s", accountId)
+	routingKey := "notify_account"
 	bindErr := broadcaster.rabbit.Channel.QueueBind(
 		queue.Name,     // queue name
 		routingKey,     // routing key
@@ -78,6 +77,7 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 			broadcaster.rabbit.Channel.QueueUnbind(queue.Name, routingKey, "notification", nil)
 			return
 		case d, ok := <-messages:
+		
 			if !ok {
 				broadcaster.stop <- true
 				logger.Info("Notification listener has exited consumer not ok.", zap.String("account", accountId))

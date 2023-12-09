@@ -76,16 +76,20 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
     queryFn: fetchPermissions,
   });
   const selectedPermissions = useMemo(() => {
-    return form.permissions.reduce<Map<number, boolean>>((a, p) => {
-      a.set(p.id, true);
+    return form.permissions.reduce<Map<string, boolean>>((a, p) => {
+      a.set(p.value, true);
       return a;
-    }, new Map<number, boolean>());
+    }, new Map<string, boolean>());
   }, [form]);
 
   return (
     <Modal onClose={closeModal} show={isOpen} size="4xl" dismissible>
       <Modal.Header>New Role</Modal.Header>
-      <Modal.Body>
+      <Modal.Body
+        style={{
+          maxHeight: "700px",
+        }}
+      >
         <form onSubmit={submit}>
           <div>
             <CustomInput
@@ -103,14 +107,17 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
               <h2 className="text-lg py-2 font-semibold ml-1 mt-4 text-gray-900 dark:text-gray-100">
                 Role Access Level
               </h2>
-              <div className="px-2">
-                <ul className="list-none px-1 ">
+              <div className="px-2 ">
+                <ul
+                  className="list-none px-1 overflow-y-scroll small-scroll"
+                  style={{ maxHeight: "400px" }}
+                >
                   {permissions?.map((permission) => {
-                    const isChecked = selectedPermissions.has(permission.id);
+                    const isChecked = selectedPermissions.has(permission.value);
                     return (
-                      <React.Fragment key={permission.id}>
+                      <React.Fragment key={permission.value}>
                         <li
-                          className="grid grid-cols-3 px-1 py-1 cursor-pointer text-gray-600 items-center"
+                          className="grid grid-cols-3 px-1 py-1 cursor-pointer text-gray-600 items-center dark:text-gray-50"
                           onClick={() => {
                             if (!isChecked) {
                               setForm((prev) => ({
@@ -122,7 +129,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                             setForm((prev) => ({
                               ...prev,
                               permissions: prev.permissions.filter(
-                                (p) => p.id != permission.id
+                                (p) => p.value != permission.value
                               ),
                             }));
                           }}

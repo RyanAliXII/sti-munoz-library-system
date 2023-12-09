@@ -238,7 +238,6 @@ export type Organization = {
 };
 
 export type Permission = {
-  id: number;
   name: string;
   value: string;
   description: string;

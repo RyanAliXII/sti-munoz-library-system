@@ -62,6 +62,7 @@ services:
       VITE_TENANT_ID: ${ADMIN_APP_TENANT_ID}
       VITE_API_CLIENT_ID: ${API_APP_CLIENT_ID}
       VITE_SERVER_URL: ${SERVER_URL}
+      VITE_WS_URL: ${WS_URL}
       VITE_S3_URL: ${S3_URL}
   client_app:
     container_name: client_app
