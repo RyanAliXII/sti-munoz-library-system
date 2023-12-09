@@ -2,14 +2,15 @@ import ClientSearchBox from "@components/ClientSearchBox";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import FieldError from "@components/ui/form/FieldError";
 import { Account, Device, DeviceLog, ModalProps } from "@definitions/types";
-import { useDevices } from "@hooks/data-fetching/device";
+import { useDeviceLog, useDevices } from "@hooks/data-fetching/device";
 import { useForm } from "@hooks/useForm";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "flowbite-react";
-import React, { FC, FormEvent } from "react";
+import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { SingleValue } from "react-select";
+import { toast } from "react-toastify";
 import { LogDeviceValidation } from "../../schema";
 
 const NewDeviceLogModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
@@ -43,24 +44,24 @@ const NewDeviceLogModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     try {
       removeErrors();
       event.preventDefault();
-      const gameLog = await validate();
-      if (!gameLog) return;
-      // log.mutate(gameLog);
+      const deviceLog = await validate();
+      if (!deviceLog) return;
+      log.mutate(deviceLog);
     } catch (error) {
       console.error(error);
     }
   };
   const queryClient = useQueryClient();
-  // const log = useGameLog({
-  //   onSuccess: () => {
-  //     toast.success("Game has been logged.");
-  //     queryClient.invalidateQueries(["gameLogs"]);
-  //     closeModal();
-  //   },
-  //   onError: () => {
-  //     toast.error("Unknown error occured.");
-  //   },
-  // });
+  const log = useDeviceLog({
+    onSuccess: () => {
+      toast.success("Game has been logged.");
+      queryClient.invalidateQueries(["deviceLogs"]);
+      closeModal();
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
   useModalToggleListener(isOpen, () => {
     if (!isOpen) resetForm();
   });

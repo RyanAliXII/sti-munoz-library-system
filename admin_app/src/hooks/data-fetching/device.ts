@@ -1,4 +1,4 @@
-import { Device } from "@definitions/types";
+import { Device, DeviceLog } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
@@ -81,6 +81,30 @@ export const useDeleteDevice = ({
   return useMutation({
     mutationFn: (bookId) =>
       Delete(`/devices/${bookId}`, {
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};
+
+export const useDeviceLog = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<
+  any,
+  unknown,
+  Omit<DeviceLog, "id" | "client" | "device" | "createdAt">,
+  unknown
+>) => {
+  const { Post } = useRequest();
+  return useMutation({
+    mutationFn: (form) =>
+      Post(`/devices/logs`, form, {
         headers: {
           "content-type": "application/json",
         },
