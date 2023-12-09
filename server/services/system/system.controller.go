@@ -41,6 +41,7 @@ func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
 	}
 	insertErr := ctrler.systemRepository.NewRole(role)
 	if insertErr != nil {
+		logger.Error(insertErr.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -160,13 +161,13 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 				}, "Permissions successfully fetched"))
 				return
 		  }}
-		  dbRole, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
+		  _, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
 		  if getPermissionErr != nil {
 			logger.Error(getPermissionErr.Error(), slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		  }
 		  ctx.JSON(httpresp.Success200(gin.H{
-			"permissions": dbRole.Permissions.ExtractValues(),
+			"permissions": []string{},
 		}, "Permissions successfully fetched"))
 		return
 	}

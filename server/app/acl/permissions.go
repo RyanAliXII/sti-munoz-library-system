@@ -264,7 +264,7 @@ var Permissions = []Permission{
 	},
 	{
 		Name: "Edit Date Slot",	
-		Value: "DateSlot.Add",
+		Value: "DateSlot.Edit",
 		Description: "Allows user to edit date slot.",
 	},
 	{
@@ -298,7 +298,7 @@ var Permissions = []Permission{
 		Description: "Allows user to view reservation.",
 	},
 	{
-		Name: "View Reservation",
+		Name: "Edit Reservation",
 		Value: "Reservation.Edit",
 		Description: "Allows user to edit reservation.",
 	},

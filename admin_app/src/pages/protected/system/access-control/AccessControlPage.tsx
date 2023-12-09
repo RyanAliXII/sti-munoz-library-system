@@ -59,7 +59,7 @@ const AccessControlPage = () => {
     <>
       <Container>
         <div className="flex justify-end py-4">
-          <HasAccess requiredPermissions={["ACL.Access"]}>
+          <HasAccess requiredPermissions={["Role.Add"]}>
             <Button color="primary" onClick={openAddModal}>
               Create Role
             </Button>
@@ -76,15 +76,15 @@ const AccessControlPage = () => {
               </small>
             </div>
             <div className="flex items-center gap-2 mr-5 text-blue-500 justify-self-end">
-              <HasAccess requiredPermissions={["ACL.Access"]}>
+              <HasAccess requiredPermissions={["Role.Assign"]}>
                 <NavLink
                   to={"/system/access-control/assign"}
                   className="text-xs font-semibold"
                 >
                   Start assigning role
                 </NavLink>
+                <BsArrowRight className="font-semibold" />
               </HasAccess>
-              <BsArrowRight className="font-semibold" />
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@ const AccessControlPage = () => {
                       <Table.Cell> {role.name}</Table.Cell>
                       <Table.Cell>
                         <div className="flex gap-2">
-                          <HasAccess requiredPermissions={["ACL.Access"]}>
+                          <HasAccess requiredPermissions={["Role.Edit"]}>
                             <Button
                               color="secondary"
                               onClick={() => {
@@ -114,7 +114,7 @@ const AccessControlPage = () => {
                               <AiOutlineEdit className="cursor-pointertext-xl" />
                             </Button>
                           </HasAccess>
-                          <HasAccess requiredPermissions={["ACL.Access"]}>
+                          <HasAccess requiredPermissions={["Role.Delete"]}>
                             <Button
                               color="failure"
                               onClick={() => {
@@ -135,10 +135,10 @@ const AccessControlPage = () => {
         </LoadingBoundary>
       </Container>
 
-      <HasAccess requiredPermissions={["ACL.Access"]}>
+      <HasAccess requiredPermissions={["Role.Add"]}>
         <AddRoleModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       </HasAccess>
-      <HasAccess requiredPermissions={["ACL.Access"]}>
+      <HasAccess requiredPermissions={["Role.Edit"]}>
         <EditRoleModal
           closeModal={closeEditModal}
           isOpen={isEditModalOpen}

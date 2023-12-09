@@ -2,7 +2,7 @@ package system
 
 type RoleBody struct {
 	Name        string`json:"name" binding:"required"`
-	Permissions []PermissionBody   `json:"permissions" binding:"dive"`
+	Permissions []string   `json:"permissions" binding:"required,min=1"`
 }
 
 

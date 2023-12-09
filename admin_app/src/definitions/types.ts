@@ -246,7 +246,7 @@ export type Permission = {
 export type Role = {
   id?: number;
   name: string;
-  permissions: Permission[];
+  permissions: string[];
 };
 export type AccountRole = {
   account: Account;

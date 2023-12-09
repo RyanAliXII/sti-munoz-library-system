@@ -18,7 +18,7 @@ import { Button, Checkbox, Modal } from "flowbite-react";
 
 const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   const { Get, Post } = useRequest();
-  const modalRef = useRef<HTMLDivElement | null>(null);
+
   const {
     form,
     handleFormInput,
@@ -32,8 +32,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       name: "",
       permissions: [],
     },
-    scrollToError: true,
-    parentElementScroll: modalRef,
+
     schema: RoleSchemaValidation,
   });
 
@@ -56,6 +55,8 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       return [];
     }
   };
+  const isCreateButtonDisabled =
+    form.permissions.length === 0 || form.name.length === 0;
   const createRole = useMutation({
     mutationFn: (role: Role) => Post("/system/roles", role, {}),
     onSuccess: () => {
@@ -77,7 +78,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
   });
   const selectedPermissions = useMemo(() => {
     return form.permissions.reduce<Map<string, boolean>>((a, p) => {
-      a.set(p.value, true);
+      a.set(p, true);
       return a;
     }, new Map<string, boolean>());
   }, [form]);
@@ -117,19 +118,22 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
                     return (
                       <React.Fragment key={permission.value}>
                         <li
-                          className="grid grid-cols-3 px-1 py-1 cursor-pointer text-gray-600 items-center dark:text-gray-50"
+                          className="grid grid-cols-3 px-1 py-1 cursor-pointer text-gray-900 items-center dark:text-gray-50"
                           onClick={() => {
                             if (!isChecked) {
                               setForm((prev) => ({
                                 ...prev,
-                                permissions: [...prev.permissions, permission],
+                                permissions: [
+                                  ...prev.permissions,
+                                  permission.value,
+                                ],
                               }));
                               return;
                             }
                             setForm((prev) => ({
                               ...prev,
                               permissions: prev.permissions.filter(
-                                (p) => p.value != permission.value
+                                (p) => p != permission.value
                               ),
                             }));
                           }}
@@ -157,7 +161,11 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
             </div>
 
             <div className="flex gap-2 mt-5">
-              <Button color="primary" type="submit">
+              <Button
+                color="primary"
+                type="submit"
+                disabled={isCreateButtonDisabled}
+              >
                 Save
               </Button>
               <Button
