@@ -170,7 +170,7 @@ const GameLoggingPage = () => {
             <Table.Head>
               <Table.HeadCell>Created At</Table.HeadCell>
               <Table.HeadCell>Game</Table.HeadCell>
-              <Table.HeadCell>Client</Table.HeadCell>
+              <Table.HeadCell>Patron</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y dark:divide-gray-700">

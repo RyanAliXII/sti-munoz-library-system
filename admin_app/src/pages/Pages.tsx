@@ -4,6 +4,7 @@ import Loader from "@components/Loader";
 import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
 import UserProgramPage from "./protected/users/UserProgramPage";
+import DeviceLogPage from "./protected/services/devices/device-log/DeviceLogPage";
 
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
@@ -389,7 +390,16 @@ const pages = createRoutesFromChildren(
           </Suspense>
         }
       />
-
+      <Route
+        path="/services/devices/logs"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <DeviceLogPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
       <Route
         path="/reports"
         element={
