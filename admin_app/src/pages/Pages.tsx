@@ -100,9 +100,7 @@ const pages = createRoutesFromChildren(
         path="/books"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={["Book.Access", "Section.Access"]}
-            >
+            <PermissionGate requiredPermissions={["Book.Read"]}>
               <BookPage />
             </PermissionGate>
           </Suspense>
@@ -112,7 +110,7 @@ const pages = createRoutesFromChildren(
         path="/books/accessions"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Book.Access"]}>
+            <PermissionGate requiredPermissions={["Book.Read"]}>
               <AccessionPage />
             </PermissionGate>
           </Suspense>
@@ -122,14 +120,7 @@ const pages = createRoutesFromChildren(
         path="/books/new"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={[
-                "Book.Access",
-                "Publisher.Access",
-                "Section.Access",
-                "Author.Access",
-              ]}
-            >
+            <PermissionGate requiredPermissions={["Book.Add"]}>
               <BookAddPage />
             </PermissionGate>
           </Suspense>
@@ -139,14 +130,7 @@ const pages = createRoutesFromChildren(
         path="/books/edit/:id"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={[
-                "Book.Access",
-                "Publisher.Access",
-                "Section.Access",
-                "Author.Access",
-              ]}
-            >
+            <PermissionGate requiredPermissions={["Book.Edit"]}>
               <BookEditPage />
             </PermissionGate>
           </Suspense>
@@ -156,7 +140,7 @@ const pages = createRoutesFromChildren(
         path="/books/authors"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Author.Access"]}>
+            <PermissionGate requiredPermissions={["Author.Read"]}>
               <AuthorPage />
             </PermissionGate>
           </Suspense>
@@ -166,7 +150,7 @@ const pages = createRoutesFromChildren(
         path="/books/collections"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Section.Access"]}>
+            <PermissionGate requiredPermissions={["Collection.Read"]}>
               <SectionPage />
             </PermissionGate>
           </Suspense>
@@ -176,7 +160,7 @@ const pages = createRoutesFromChildren(
         path="/books/publishers"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Publisher.Access"]}>
+            <PermissionGate requiredPermissions={["Publisher.Read"]}>
               <PublisherPage />
             </PermissionGate>
           </Suspense>
@@ -206,7 +190,7 @@ const pages = createRoutesFromChildren(
         path="/clients/accounts"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Account.Access"]}>
+            <PermissionGate requiredPermissions={["Account.Read"]}>
               <AccountPage />
             </PermissionGate>
           </Suspense>
@@ -217,7 +201,7 @@ const pages = createRoutesFromChildren(
         path="/borrowing/requests"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Borrowing.Access"]}>
+            <PermissionGate requiredPermissions={["BorrowedBook.Read"]}>
               <BorrowRequestPage />
             </PermissionGate>
           </Suspense>
@@ -227,7 +211,7 @@ const pages = createRoutesFromChildren(
         path="/system/access-control"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["ACL.Access"]}>
+            <PermissionGate requiredPermissions={["Role.Read"]}>
               <AccessControlPage />
             </PermissionGate>
           </Suspense>
@@ -237,9 +221,7 @@ const pages = createRoutesFromChildren(
         path="/system/access-control/assign"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={["ACL.Access", "Account.Access"]}
-            >
+            <PermissionGate requiredPermissions={["Role.Assign"]}>
               <AssignRolePage />
             </PermissionGate>
           </Suspense>
@@ -249,7 +231,7 @@ const pages = createRoutesFromChildren(
         path="/system/access-control/assignments"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["ACL.Access"]}>
+            <PermissionGate requiredPermissions={["Role.Read"]}>
               <AssignedRolePage />
             </PermissionGate>
           </Suspense>
@@ -259,7 +241,7 @@ const pages = createRoutesFromChildren(
         path="/system/settings"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Settings.Access"]}>
+            <PermissionGate requiredPermissions={["Setting.Read"]}>
               <SettingsPage />
             </PermissionGate>
           </Suspense>
@@ -269,7 +251,7 @@ const pages = createRoutesFromChildren(
         path="/borrowing/requests/:id"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["Borrowing.Access"]}>
+            <PermissionGate requiredPermissions={["BorrowedBook.Read"]}>
               <BorrowedBooksViewPage />
             </PermissionGate>
           </Suspense>
@@ -279,13 +261,7 @@ const pages = createRoutesFromChildren(
         path="/borrowing/checkout"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={[
-                "Borrowing.Access",
-                "Book.Access",
-                "Account.Access",
-              ]}
-            >
+            <PermissionGate requiredPermissions={["BorrowedBook.Add"]}>
               <CheckoutPage />
             </PermissionGate>
           </Suspense>
@@ -296,13 +272,7 @@ const pages = createRoutesFromChildren(
         path="/borrowing/queues"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={[
-                "Borrowing.Access",
-                "Book.Access",
-                "Account.Access",
-              ]}
-            >
+            <PermissionGate requiredPermissions={["Queue.Read"]}>
               <QueuePage />
             </PermissionGate>
           </Suspense>
@@ -312,13 +282,7 @@ const pages = createRoutesFromChildren(
         path="/borrowing/queues/:bookId"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={[
-                "Borrowing.Access",
-                "Book.Access",
-                "Account.Access",
-              ]}
-            >
+            <PermissionGate requiredPermissions={["Queue.Read"]}>
               <QueueItemsPage />
             </PermissionGate>
           </Suspense>
@@ -328,9 +292,7 @@ const pages = createRoutesFromChildren(
         path="/borrowing/penalties"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate
-              requiredPermissions={["Penalty.Access", "Account.Access"]}
-            >
+            <PermissionGate requiredPermissions={["Penalty.Read"]}>
               <PenaltyPage />
             </PermissionGate>
           </Suspense>
@@ -340,7 +302,7 @@ const pages = createRoutesFromChildren(
         path="/system/scanner-accounts"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["ScannerAccount.Access"]}>
+            <PermissionGate requiredPermissions={["ScannerAccount.Read"]}>
               <ScannerAccountPage />
             </PermissionGate>
           </Suspense>
@@ -350,7 +312,7 @@ const pages = createRoutesFromChildren(
         path="/system/client-logs"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate requiredPermissions={["ClientLog.Access"]}>
+            <PermissionGate requiredPermissions={["PatronLog.Read"]}>
               <ClientLogPage />
             </PermissionGate>
           </Suspense>
@@ -361,7 +323,7 @@ const pages = createRoutesFromChildren(
         path="/services/games"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["Game.Read"]}>
               <GamePage />
             </PermissionGate>
           </Suspense>
@@ -371,7 +333,7 @@ const pages = createRoutesFromChildren(
         path="/services/games/logs"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["GameLog.Read"]}>
               <GameLoggingPage />
             </PermissionGate>
           </Suspense>
@@ -381,7 +343,7 @@ const pages = createRoutesFromChildren(
         path="/services/devices"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["Device.Read"]}>
               <DevicePage />
             </PermissionGate>
           </Suspense>
@@ -391,7 +353,7 @@ const pages = createRoutesFromChildren(
         path="/services/time-slot-profiles"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["TimeSlot.Read"]}>
               <TimeSlotProfilePage />
             </PermissionGate>
           </Suspense>
@@ -401,7 +363,7 @@ const pages = createRoutesFromChildren(
         path="/services/time-slot-profiles/:id"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["TimeSlot.Read"]}>
               <TimeSlotPage />
             </PermissionGate>
           </Suspense>
@@ -411,7 +373,7 @@ const pages = createRoutesFromChildren(
         path="/services/date-slots"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["DateSlot.Read"]}>
               <DateSlotPage />
             </PermissionGate>
           </Suspense>
@@ -421,7 +383,7 @@ const pages = createRoutesFromChildren(
         path="/services/reservations"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["Reservation.Read"]}>
               <ReservationPage />
             </PermissionGate>
           </Suspense>
@@ -432,7 +394,7 @@ const pages = createRoutesFromChildren(
         path="/reports"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["Report.Read"]}>
               <ReportPage />
             </PermissionGate>
           </Suspense>
@@ -463,7 +425,7 @@ const pages = createRoutesFromChildren(
         path="/clients/accounts/bulk-activate"
         element={
           <Suspense fallback={<Loader />}>
-            <PermissionGate>
+            <PermissionGate requiredPermissions={["Account.Edit"]}>
               <BulkActivatePage />
             </PermissionGate>
           </Suspense>

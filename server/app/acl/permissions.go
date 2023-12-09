@@ -2,7 +2,6 @@ package acl
 
 
 type Permission struct {
-	
 	Name string `json:"name"`
 	Value string `json:"value"`
 	Description string `json:"description"`
@@ -113,12 +112,12 @@ var Permissions = []Permission{
 	},
 	{
 		Name: "View Borrowed Books",
-		Value:  "BorrowedBook.View",
+		Value:  "BorrowedBook.Read",
 		Description: "Allows user to view borrowed book.",
 	},
 	{
 		Name: "Add Borrowed Books",
-		Value:  "BorrowedBook.View",
+		Value:  "BorrowedBook.Add",
 		Description: "Allows user to checkout book.",
 	},
 
@@ -129,7 +128,7 @@ var Permissions = []Permission{
 	},
 	{
 		Name: "View Queue",
-		Value: "Queue.View",
+		Value: "Queue.Read",
 		Description: "Allows user to view queue.",
 	},
 	{
@@ -168,10 +167,11 @@ var Permissions = []Permission{
 		Description: "Allows user to delete role.",
 	},
 	{
-		Name: "Delete Role",
-		Value: "Role.Delete",
-		Description: "Allows user to delete role.",
+		Name: "Assign Role",
+		Value: "Role.Assign",
+		Description: "Allows user to assign role.",
 	},
+	
 	{
 		Name: "View Scanner Account",
 		Value: "ScannerAccount.Read",
@@ -199,14 +199,121 @@ var Permissions = []Permission{
 	},
 	{
 		Name: "View Settings",
-		Value: "Settings.Read",
-		Description: "Allows user to view setting",
+		Value: "Setting.Read",
+		Description: "Allows user to view setting.",
+	},
+	{
+		Name: "View Game",
+		Value: "Game.Read",
+		Description: "Allows user to view game.",
+	},
+	{
+		Name: "Add Game",
+		Value: "Game.Add",
+		Description: "Allows user to add game.",
+	},
+	{
+		Name: "Edit Game",
+		Value: "Game.Edit",
+		Description: "Allows user to edit game.",
+	},
+	{
+		Name: "Delete Game",
+		Value: "Game.Delete",
+		Description: "Allows user to delete game.",
+	},
+	{
+		Name: "View Game Log",
+		Value: "GameLog.Read",
+		Description: "Allows user to log game.",
+	},
+	{
+		Name: "Log Game",
+		Value: "GameLog.Add",
+		Description: "Allows user to log game.",
+	},
+	{
+		Name:"View Device",
+		Value :"Device.Read",
+		Description: "Allows user to view device.",
+	},
+	{
+		Name: "Add Device",
+		Value: "Device.Add",
+		Description: "Allows user to add device.",
+	},
+	{
+		Name:"Edit Device",
+		Value :"Device.Edit",
+		Description: "Allows user to edit device.",
+	},
+	{
+		Name:"Delete Device",
+		Value :"Device.Delete",
+		Description: "Allows user to edit device.",
+	},
+	{
+		Name: "View Date Slot",	
+		Value: "DateSlot.Read",
+		Description: "Allows user to view date slot.",
+	},
+	{
+		Name: "Add Date Slot",	
+		Value: "DateSlot.Add",
+		Description: "Allows user to add date slot.",
+	},
+	{
+		Name: "Edit Date Slot",	
+		Value: "DateSlot.Add",
+		Description: "Allows user to edit date slot.",
+	},
+	{
+		Name: "Delete Date Slot",	
+		Value: "DateSlot.Delete",
+		Description: "Allows user to delete date slot.",
+	},	
+	{
+		Name: "View Time Slot",
+		Value: "TimeSlot.Read",
+		Description: "Allows user to view time slot",
+	},
+	{
+		Name: "Add Time Slot",
+		Value: "TimeSlot.Add",
+		Description: "Allows user to add time slot",
+	},
+	{
+		Name: "Edit Time Slot",
+		Value: "TimeSlot.Edit",
+		Description: "Allows user to edit time slot",
+	},
+	{
+		Name: "Delete Time Slot",	
+		Value: "TimeSlot.Delete",
+		Description: "Allows user to delete time slot",
+	},
+	{
+		Name: "View Reservation",
+		Value: "Reservation.Read",
+		Description: "Allows user to view reservation.",
+	},
+	{
+		Name: "View Reservation",
+		Value: "Reservation.Edit",
+		Description: "Allows user to edit reservation.",
 	},
 	{
 		Name: "Edit Settings",
-		Value: "Settings.Edit",
-		Description: "Allows user to edit setting",
+		Value: "Setting.Edit",
+		Description: "Allows user to edit setting.",
 	},
+	{
+		Name:"View Report",
+		Value: "Report.Read",
+		Description: "Allows user to view report.",
+	},
+	
+	
 }
 
 
