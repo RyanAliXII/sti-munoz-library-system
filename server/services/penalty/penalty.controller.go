@@ -1,10 +1,11 @@
 package penalty
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
@@ -41,17 +42,32 @@ func (ctrler * PenaltyController) GetPenalties (ctx * gin.Context){
 func (ctrler * PenaltyController)UpdatePenaltySettlement(ctx *gin.Context){
 
 	penaltyId := ctx.Param("id")
-	settlement := ctx.Query("settle")
-	
-	parsedSettlement, parseErr := strconv.ParseBool(settlement)
-	if parseErr != nil {
-		ctx.JSON(httpresp.Fail400(nil, "Bad request."))
-        return
+
+	fmt.Println(penaltyId)
+	body := SettlePenaltyBody{}
+	err := ctx.Bind(&body)
+	isUpdate := ctx.Query("isUpdate")
+
+	if isUpdate == "true"{
+		err := ctrler.penaltyRepo.UpdateSettlement(penaltyId, body.Proof, body.Remarks)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("UpdateSettlement"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+		ctx.JSON(httpresp.Success200(nil, "Settlement has been updated."))
+		return
 	}
-	updateErr := ctrler.penaltyRepo.UpdatePenaltySettlement(penaltyId, parsedSettlement)
-	if updateErr != nil {
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured please try again later."))
-        return
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("BindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	err = ctrler.penaltyRepo.MarkAsSettled(penaltyId, body.Proof, body.Remarks)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("MarkAsSettled"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Settlement has been updated."))
 

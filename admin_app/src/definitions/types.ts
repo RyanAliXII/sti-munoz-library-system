@@ -288,6 +288,8 @@ export type Penalty = {
   account: Account;
   isSettled: boolean;
   referenceNumber?: string;
+  remarks?: string;
+  proof?: string;
   settledAt: string | null; //iso-time-string
   createdAt: string; //iso-time-string
 };

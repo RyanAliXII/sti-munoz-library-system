@@ -1,4 +1,5 @@
-import { EditModalProps, ModalProps, Penalty } from "@definitions/types";
+import { buildS3Url } from "@definitions/configs/s3";
+import { EditModalProps, Penalty } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
@@ -6,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Uppy from "@uppy/core";
 import DashboardComponent from "@uppy/react/src/Dashboard";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
+import { set } from "lodash";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -16,14 +18,14 @@ const uppy = new Uppy({
   },
 });
 
-const SettleModal: FC<EditModalProps<Penalty>> = ({
+const EditSettlementModal: FC<EditModalProps<Penalty>> = ({
   isOpen,
   closeModal,
   formData,
 }) => {
   const queryClient = useQueryClient();
   const { Patch } = useRequest();
-  const { form, handleFormInput, resetForm } = useForm<{
+  const { form, handleFormInput, resetForm, setForm } = useForm<{
     remarks: string;
   }>({
     initialFormData: {
@@ -32,7 +34,11 @@ const SettleModal: FC<EditModalProps<Penalty>> = ({
   });
   const updateSettlement = useMutation({
     mutationFn: (form: FormData) =>
-      Patch(`/penalties/${formData.id}/settlement`, form),
+      Patch(`/penalties/${formData.id}/settlement`, form, {
+        params: {
+          isUpdate: true,
+        },
+      }),
     onSuccess: () => {
       closeModal();
       toast.success("Penalty has been updated");
@@ -54,10 +60,24 @@ const SettleModal: FC<EditModalProps<Penalty>> = ({
     formData.append("remarks", form.remarks);
     updateSettlement.mutate(formData);
   };
-  useModalToggleListener(isOpen, () => {
-    if (isOpen) return;
-    resetForm();
-    uppy.cancelAll();
+  useModalToggleListener(isOpen, async () => {
+    if (!isOpen) {
+      uppy.cancelAll();
+      return;
+    }
+    setForm({ remarks: formData.remarks ?? "" });
+    const url = buildS3Url(formData.proof ?? "");
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      uppy.addFile({
+        name: blob.name,
+        type: blob.type,
+        data: blob,
+      });
+    } catch (err) {
+      console.error(err);
+    }
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible>
@@ -93,4 +113,4 @@ const SettleModal: FC<EditModalProps<Penalty>> = ({
   );
 };
 
-export default SettleModal;
+export default EditSettlementModal;

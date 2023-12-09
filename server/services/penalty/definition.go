@@ -1,10 +1,6 @@
 package penalty
 
-
-
-
-
-
+import "mime/multipart"
 type AddPenaltyBody struct {
 	Description string `json:"description" binding:"required"`
 	Amount      float64    `json:"amount" binding:"required,min=1"`
@@ -19,3 +15,9 @@ type EditPenaltyBody struct {
 	Amount      float64    `json:"amount" binding:"required,min=1"`
 	AccountId string `json:"accountId" binding:"required,uuid"`
 }
+
+type SettlePenaltyBody struct {
+	Remarks string `form:"remarks"`
+	Proof *multipart.FileHeader `form:"proof"`
+}
+

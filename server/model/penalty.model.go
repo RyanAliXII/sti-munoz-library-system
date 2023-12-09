@@ -7,6 +7,7 @@ type Penalty struct {
 	Description string `json:"description" db:"description"`
 	Amount float64 `json:"amount" db:"amount"`
 	Item string `json:"item" db:"item"`
+	Remarks string `json:"remarks" db:"remarks"`
 	ReferenceNumber string `json:"referenceNumber" db:"reference_number"`
 	Proof string `json:"proof" db:"proof"`
 	AccountId string `json:"accountId" db:"account_id"`

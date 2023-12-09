@@ -22,10 +22,10 @@ import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
 import SettleModal from "./SettleModal";
+import EditSettlementModal from "./EditSettlementModal";
 
 const PenaltyPage = () => {
-  const { Get, Patch } = useRequest();
-
+  const { Get } = useRequest();
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -42,6 +42,7 @@ const PenaltyPage = () => {
     close: closeViewModal,
   } = useSwitch();
   const settleModal = useSwitch();
+  const editSettlement = useSwitch();
   const fetchPenalties = async () => {
     try {
       const response = await Get("/penalties/", {});
@@ -66,28 +67,10 @@ const PenaltyPage = () => {
     amount: 0,
     item: "",
   });
-  const queryClient = useQueryClient();
-  const updateSettlement = useMutation({
-    mutationFn: (body: { id: string; isSettled: boolean }) =>
-      Patch(
-        `/penalties/${body.id}/settlement`,
-        {},
-        {
-          params: {
-            settle: body.isSettled,
-          },
-        }
-      ),
-
-    onSuccess: () => {
-      toast.success("Penalty has been updated");
-      queryClient.invalidateQueries(["penalties"]);
-    },
-    onError: () => {
-      toast.error("Unknown error occured, Please try again later");
-    },
-  });
-
+  const initEditSettleMent = (penalty: Penalty) => {
+    editSettlement.open();
+    setSelectedPenalty(penalty);
+  };
   return (
     <>
       <Container>
@@ -150,33 +133,34 @@ const PenaltyPage = () => {
                         <AiOutlineEye className="text-lg" />
                       </Button>
                     </Tippy>
-                    <Tippy content="Edit Penalty">
-                      <Button
-                        color="secondary"
-                        onClick={() => {
-                          setSelectedPenalty(penalty);
-                          openEditModal();
-                        }}
-                      >
-                        <AiOutlineEdit className="text-lg" />
-                      </Button>
-                    </Tippy>
 
-                    {/* {penalty.isSettled && (
-                      <Tippy content="Mark as Unsettled">
+                    {!penalty.isSettled && (
+                      <Tippy content="Edit Penalty">
                         <Button
-                          color="failure"
+                          color="secondary"
                           onClick={() => {
-                            updateSettlement.mutate({
-                              id: penalty.id ?? "",
-                              isSettled: false,
-                            });
+                            setSelectedPenalty(penalty);
+                            openEditModal();
                           }}
                         >
-                          <MdRemoveCircle className="text-lg" />
+                          <AiOutlineEdit className="text-lg" />
                         </Button>
                       </Tippy>
-                    )} */}
+                    )}
+
+                    {penalty.isSettled && (
+                      <Tippy content="Edit Settlement">
+                        <Button
+                          color="secondary"
+                          onClick={() => {
+                            initEditSettleMent(penalty);
+                          }}
+                        >
+                          <AiOutlineEdit className="text-lg" />
+                        </Button>
+                      </Tippy>
+                    )}
+
                     {!penalty.isSettled && (
                       <Tippy content="Mark as Settled">
                         <Button
@@ -202,7 +186,16 @@ const PenaltyPage = () => {
         closeModal={closeEditModal}
         penalty={selectedPenalty}
       />
-      <SettleModal isOpen={settleModal.isOpen} closeModal={settleModal.close} />
+      <EditSettlementModal
+        closeModal={editSettlement.close}
+        isOpen={editSettlement.isOpen}
+        formData={selectedPenalty}
+      />
+      <SettleModal
+        isOpen={settleModal.isOpen}
+        closeModal={settleModal.close}
+        formData={selectedPenalty}
+      />
       <ViewPenaltyModal
         closeModal={closeViewModal}
         isOpen={isViewModalOpen}

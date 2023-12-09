@@ -82,8 +82,6 @@ func (meta *AccountMetadata) Scan(value interface{}) error {
 func (meta AccountMetadata) Value(value interface{}) (driver.Value, error) {
 	return meta, nil
 }
-
-
 type AccountActivation struct {
 	Email string `json:"email" csv:"email"`
 	GivenName string `json:"givenName" csv:"given_name"`
