@@ -134,6 +134,15 @@ export type GameLog = {
   game: Game;
   createdAt: string;
 };
+
+export type DeviceLog = {
+  id: string;
+  deviceId: string;
+  accountId: string;
+  client: Account;
+  device: Device;
+  createdAt: string;
+};
 export type Reservation = {
   id: string;
   deviceId: string;

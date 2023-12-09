@@ -1,5 +1,6 @@
 import HasAccess from "@components/auth/HasAccess";
 import Container from "@components/ui/container/Container";
+import { useSwitch } from "@hooks/useToggle";
 import {
   Button,
   Datepicker,
@@ -9,13 +10,15 @@ import {
   TextInput,
 } from "flowbite-react";
 import { MdFilterList } from "react-icons/md";
+import NewDeviceLogModal from "./NewDeviceLogModal";
 
 const DeviceLogPage = () => {
+  const logModal = useSwitch();
   return (
     <Container>
       <div className="py-3 flex justify-between items-center">
         <div className="flex gap-2">
-          <TextInput placeholder="Search by account or game" />
+          <TextInput placeholder="Search by account or device" />
           <Dropdown
             color="light"
             arrowIcon={false}
@@ -36,7 +39,9 @@ const DeviceLogPage = () => {
           </Dropdown>
         </div>
         <HasAccess>
-          <Button color="primary">Log Device</Button>
+          <Button color="primary" onClick={logModal.open}>
+            Log Device
+          </Button>
         </HasAccess>
       </div>
 
@@ -48,6 +53,7 @@ const DeviceLogPage = () => {
           <Table.HeadCell></Table.HeadCell>
         </Table.Head>
       </Table>
+      <NewDeviceLogModal closeModal={logModal.close} isOpen={logModal.isOpen} />
     </Container>
   );
 };
