@@ -168,7 +168,7 @@ func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, 
 }
 func (repo * Borrowing)GetBorrowedBookById(id string) (model.BorrowedBook, error) {
 	book := model.BorrowedBook{}
-	err := repo.db.Get(&book, "SELECT book, client from borrowed_book_all_view where id = $1 LIMIT 1 ", id)
+	err := repo.db.Get(&book, "SELECT group_id, book, client from borrowed_book_all_view where id = $1 LIMIT 1 ", id)
 	return book, err
 }
 

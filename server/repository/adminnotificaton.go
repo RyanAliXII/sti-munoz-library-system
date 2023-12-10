@@ -62,7 +62,7 @@ func(repo * Notification)NotifyAdminsWithPermission(notif model.AdminNotificatio
 
 func (repo * Notification)GetAdminNotificationByAccountId(accountId string) ([]model.AdminNotification, error) {
 	notifications := make([]model.AdminNotification, 0)
-	err := repo.db.Select(&notifications,`SELECT admin_notification.id, account_id, notification_id, message, link, is_read from messaging.admin_notification
+	err := repo.db.Select(&notifications,`SELECT admin_notification.id, account_id, notification_id, message, link, is_read, admin_notification.created_at from messaging.admin_notification
 	INNER JOIN messaging.notification on notification_id = notification.id
 	where account_id = $1 
 	order by admin_notification.created_at desc`, accountId)

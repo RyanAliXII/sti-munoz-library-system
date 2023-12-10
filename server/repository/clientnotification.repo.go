@@ -41,7 +41,7 @@ func(repo * Notification)NotifyClient(notif model.ClientNotification) error {
 
 func (repo * Notification)GetClientNotificationByAccountId(accountId string) ([]model.ClientNotification, error) {
 	notifications := make([]model.ClientNotification, 0)
-	err := repo.db.Select(&notifications,`SELECT client_notification.id, account_id, notification_id, message, link, is_read from messaging.client_notification
+	err := repo.db.Select(&notifications,`SELECT client_notification.id, account_id, notification_id, message, link, is_read, client_notification.created_at from messaging.client_notification
 	INNER JOIN messaging.notification on notification_id = notification.id
 	where account_id = $1 
 	order by client_notification.created_at desc`, accountId)

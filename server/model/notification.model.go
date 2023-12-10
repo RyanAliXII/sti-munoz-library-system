@@ -7,6 +7,7 @@ type AdminNotification struct {
 	AccountId string `json:"accountId" db:"account_id"`
 	Link string `json:"link" db:"link"`
 	IsRead bool `json:"isRead" db:"is_read"`
+	CreatedAt string `json:"createdAt" db:"created_at"`
 }
 
 type ClientNotification struct {
@@ -16,4 +17,5 @@ type ClientNotification struct {
 	AccountId string `json:"accountId" db:"account_id"`
 	Link string `json:"link" db:"link"`
 	IsRead bool `json:"isRead" db:"is_read"`
+	CreatedAt string `json:"createdAt" db:"created_at"`
 }

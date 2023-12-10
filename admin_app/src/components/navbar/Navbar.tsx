@@ -17,6 +17,7 @@ import {
 import type { FC } from "react";
 import { IoIosNotifications } from "react-icons/io";
 import { Link } from "react-router-dom";
+import TimeAgo from "timeago-react";
 
 const NavbarHeader: FC = function () {
   const [mode, , toggleMode] = useThemeMode();
@@ -113,15 +114,24 @@ const NavbarHeader: FC = function () {
                 </div>
               }
             >
-              {notifications?.slice(0, 10)?.map((n) => {
+              {notifications?.slice(0, 5)?.map((n) => {
                 return (
                   <div key={n.id}>
                     <Dropdown.Item
-                      className="py-5 rounded b "
+                      style={{
+                        maxWidth: "400px",
+                      }}
+                      className={`py-5 rounded flex-col items-start ${
+                        n.link.length === 0 ? "pointer-events-none" : ""
+                      }`}
                       to={n.link}
                       as={Link}
                     >
                       {n.message}
+                      <TimeAgo
+                        datetime={n.createdAt}
+                        className="text-blue-500"
+                      ></TimeAgo>
                     </Dropdown.Item>
                     <Dropdown.Divider />
                   </div>

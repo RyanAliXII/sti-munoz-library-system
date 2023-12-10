@@ -142,6 +142,7 @@ export type Notification = {
   isRead: boolean;
   message: string;
   link: string;
+  createdAt: string;
 };
 
 export type DeviceLog = {

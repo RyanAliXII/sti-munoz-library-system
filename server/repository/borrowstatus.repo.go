@@ -85,9 +85,9 @@ func (repo * Borrowing)handleQueue(transaction * sqlx.Tx, bookId string, accessi
 		return err
 	}
 	err = repo.notificationRepo.NotifyClient(model.ClientNotification{
-		Message: fmt.Sprintf(`You are up! The book you want to borrowed is already pending. Title:%s`, bookTitle),
+		Message: fmt.Sprintf(`You are up! The book, titled "%s", is already pending.`, bookTitle),
 		AccountId: queue.AccountId,
-		
+		Link: "/borrowed-books?statusId=1",
 	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
