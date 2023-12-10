@@ -1,9 +1,16 @@
 import Container from "@components/ui/container/Container";
-import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import {
+  ConfirmDialog,
+  DangerConfirmDialog,
+} from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
 import { GameLogInitialValue } from "@definitions/defaults";
 import { GameLog } from "@definitions/types";
-import { useDeleteGameLog, useGameLogs } from "@hooks/data-fetching/game";
+import {
+  useDeleteGameLog,
+  useGameLogout,
+  useGameLogs,
+} from "@hooks/data-fetching/game";
 import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
@@ -21,8 +28,8 @@ import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import EditLogModal from "./EditLogModal";
 import NewLogModal from "./NewLogModal";
-import { MdFilterList } from "react-icons/md";
-import { toReadableDate } from "@helpers/datetime";
+import { MdFilterList, MdLogout } from "react-icons/md";
+import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
 import { useSearchParamsState } from "react-use-search-params-state";
 import CustomPagination from "@components/pagination/CustomPagination";
 import LoadingBoundary, {
@@ -123,6 +130,25 @@ const GameLoggingPage = () => {
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     debounceSearch(search, event.target.value, 500);
   };
+
+  const confirmLogout = useSwitch();
+  const initLogout = (log: GameLog) => {
+    confirmLogout.open();
+    setGameLog(log);
+  };
+  const logout = useGameLogout({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["gameLogs"]);
+      toast.success("Patron Logged Out");
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
+  const onConfirmLogout = () => {
+    logout.mutate(gameLog.id);
+    confirmLogout.close();
+  };
   return (
     <Container>
       <div className="py-5">
@@ -168,7 +194,8 @@ const GameLoggingPage = () => {
         <TableContainer>
           <Table>
             <Table.Head>
-              <Table.HeadCell>Created At</Table.HeadCell>
+              <Table.HeadCell>Logged In</Table.HeadCell>
+              <Table.HeadCell>Logged Out</Table.HeadCell>
               <Table.HeadCell>Game</Table.HeadCell>
               <Table.HeadCell>Patron</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
@@ -187,6 +214,17 @@ const GameLoggingPage = () => {
                       })}
                     </Table.Cell>
                     <Table.Cell>
+                      <Table.Cell>
+                        {log.isLoggedOut ? (
+                          toReadableDatetime(log.loggedOutAt)
+                        ) : (
+                          <span className="text-yellow-500">
+                            Not Logged Out
+                          </span>
+                        )}
+                      </Table.Cell>
+                    </Table.Cell>
+                    <Table.Cell>
                       <div className="text-base font-semibold text-gray-900 dark:text-white">
                         {log.game.name}
                       </div>
@@ -194,6 +232,7 @@ const GameLoggingPage = () => {
                         {log.game.description}
                       </div>
                     </Table.Cell>
+
                     <Table.Cell>
                       <div className="text-base font-semibold text-gray-900 dark:text-white">
                         {log.client.givenName} {log.client.surname}
@@ -228,6 +267,18 @@ const GameLoggingPage = () => {
                             </Button>
                           </Tippy>
                         </HasAccess>
+
+                        {!log.isLoggedOut && (
+                          <Button
+                            color="primary"
+                            onClick={() => {
+                              initLogout(log);
+                            }}
+                          >
+                            <MdLogout />
+                            Log Out
+                          </Button>
+                        )}
                       </div>
                     </Table.Cell>
                   </Table.Row>
@@ -261,6 +312,13 @@ const GameLoggingPage = () => {
         text="Are you sure you want to delete this log?"
         close={closeConfirmDelete}
         isOpen={isConfirmDeleteOpen}
+      />
+      <ConfirmDialog
+        close={confirmLogout.close}
+        isOpen={confirmLogout.isOpen}
+        title="Logout"
+        onConfirm={onConfirmLogout}
+        text="Are you sure that you want to mark this as logged out?"
       />
     </Container>
   );

@@ -329,10 +329,11 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
 
 	role := model.Role{}
-	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '[]') as permissions from system.account as ac
+	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name,  COALESCE(ARRAY_AGG(role_permission.value),'{}') as permissions from system.account as ac
 		LEFT JOIN system.account_role as ar on ac.id = ar.account_id
 		LEFT JOIN system.role on ar.role_id = role.id
-		where ac.id = $1`
+		LEFT JOIN system.role_permission on role.id  = role_permission.role_id
+		where ac.id = $1 GROUP BY role.id, ac.id`
 
 	getErr := repo.db.Get(&role, query, accountId)
 	if getErr != nil {
@@ -343,21 +344,16 @@ func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role,
 func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 
 	accountRoles := make(model.AccountRoles, 0)
-	query := `SELECT json_build_object('id', account.id, 
-	'givenName', account.given_name,
-	 'surname', account.surname, 
-	'displayName',account.display_name,
-	 'email', account.email,
-	 'profilePicture', account.profile_picture
-	 ) as account,
-	 json_build_object(
-	   'id', role.id,
-	   'name', role.name,
-	   'permissions', role.permissions
-	 ) as role
-	from system.account_role
-	INNER JOIN system.account on account_role.account_id = account.id
-	INNER JOIN system.role on account_role.role_id = role.id`
+	query := `SELECT account.json_format as account,
+	json_build_object(
+	  'id', role.id,
+	  'name', role.name,
+	  'permissions', COALESCE(ARRAY_AGG(role_permission.value),'{}')
+	) as role
+   from system.account_role
+   INNER JOIN account_view as account on account_role.account_id = account.id
+   INNER JOIN system.role on account_role.role_id = role.id
+   INNER JOIN system.role_permission on role.id  = role_permission.role_id GROUP BY account.id, account_role.id, role.id, account.json_format`
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{

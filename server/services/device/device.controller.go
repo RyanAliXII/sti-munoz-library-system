@@ -26,6 +26,8 @@ type DeviceController interface{
 	DeleteDevice(ctx * gin.Context)
 	GetDeviceById(ctx * gin.Context)
 	NewDeviceLog(ctx * gin.Context) 
+	GetDeviceLogs(ctx * gin.Context)
+	LogoutDevice(ctx * gin.Context) 
 }
 func(ctrler * Device) NewDevice (ctx * gin.Context){
   device := model.Device{}

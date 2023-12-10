@@ -67,3 +67,14 @@ func(ctrler * Game)UpdateGameLog(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Log deleted."))
 }
+
+func (ctrler * Game)LogoutGame(ctx * gin.Context) {
+	id := ctx.Param("id")
+	err := ctrler.gameRepo.GameLogout(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeviceLogout"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Device Logs fetched."))
+} 

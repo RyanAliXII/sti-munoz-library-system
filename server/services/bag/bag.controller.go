@@ -1,6 +1,8 @@
 package bag
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -19,9 +21,12 @@ type BagController interface {
 	CheckOrUncheckAllItems(ctx * gin.Context)
 	DeleteAllCheckedItems(ctx * gin.Context)
 	CheckoutCheckedItems(ctx *gin.Context)
+	
 }
 type Bag struct {
 	bagRepo repository.BagRepository
+	notificationRepo repository.NotificationRepository
+	accountRepo repository.AccountRepositoryInterface
 }
 
 func (ctrler * Bag) AddBagItem (ctx * gin.Context){
@@ -149,11 +154,24 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
 	 return
 	}
-	checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
+	groupId,checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
 	if checkoutErr != nil{
 		logger.Error(checkoutErr.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
+	}
+	account ,err := ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(parsedAccountId)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	
+
+	err = ctrler.notificationRepo.NotifyAdminsWithPermission(model.AdminNotification{
+		Message: fmt.Sprintf("%s %s has requested to borrow a book.", account.GivenName, account.Surname),
+		Link: fmt.Sprintf("/borrowing/requests/%s", groupId),
+	}, "BorrowedBook.Read")
+	if err != nil {
+		logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(nil, "Books has been checked out."))
 } 
@@ -162,5 +180,7 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 func NewBagController()BagController {
 	return &Bag{
 		bagRepo: repository.NewBagRepository(),
+		notificationRepo: repository.NewNotificationRepository(),
+		accountRepo: repository.NewAccountRepository(),
 	}
 }

@@ -37,6 +37,10 @@ export type CheckoutForm = {
 
 const CLIENT_INITIAL_DATA: Account = {
   displayName: "",
+  programCode: "",
+  programName: "",
+  userType: "",
+  studentNumber: "",
   email: "",
   givenName: "",
   surname: "",

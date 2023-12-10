@@ -129,19 +129,17 @@ func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error 
 func(repo * SystemRepository) GetAccountsWithAssignedRoles() model.AccountRoles{
 
 	accountRoles := make(model.AccountRoles, 0)
-	query := `SELECT json_build_object('id', account.id, 
-	'givenName', account.given_name,
-	 'surname', account.surname, 
-	'displayName',account.display_name,
-	 'email', account.email) as account,
-	 json_build_object(
-	   'id', role.id,
-	   'name', role.name,
-	   'permissions', role.permissions
-	 ) as role
-	from system.account_role
-	INNER JOIN system.account on account_role.account_id = account.id
-	INNER JOIN system.role on account_role.role_id = role.id`
+	query := `SELECT account.json_format as account,
+	json_build_object(
+	  'id', role.id,
+	  'name', role.name,
+	  'permissions', COALESCE(ARRAY_AGG(role_permission.value),'{}')
+	) as role
+   from system.account_role
+   INNER JOIN account_view as account on account_role.account_id = account.id
+   INNER JOIN system.role on account_role.role_id = role.id
+   INNER JOIN system.role_permission on role.id  = role_permission.role_id GROUP BY account.id, account_role.id, role.id, account.json_format`
+	
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
@@ -165,6 +163,19 @@ func NewSystemRepository() SystemRepositoryInterface {
 		db: db,
 	}
 }
+func(repo * SystemRepository) GetUserWithPermission(permission string) ([]model.AccountJSON, error){
+	accounts := make([]model.AccountJSON, 0)
+	query := `SELECT 
+	account.json_format as account
+    from system.account_role
+    INNER JOIN account_view as account on account_role.account_id = account.id
+    INNER JOIN system.role on account_role.role_id = role.id
+    INNER JOIN system.role_permission on role.id  = role_permission.role_id 
+	where value = $1
+  `
+  err := repo.db.Select(&accounts, query, permission)
+  return accounts, err
+}
 
 type SystemRepositoryInterface interface {
 	NewRole(role model.Role) error
@@ -173,5 +184,5 @@ type SystemRepositoryInterface interface {
 	AssignRole(accountRoles model.AccountRoles) error
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	RemoveRoleAssignment(roleId int , accountId string)error
-	
+	GetUserWithPermission(permission string) ([]model.AccountJSON, error)
 }

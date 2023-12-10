@@ -14,6 +14,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/item"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/notification"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reports"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reservation"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/timeslot"
@@ -56,4 +57,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	reports.ReportRoutes(grp.Group("/reports"))
 	user.UserRoutes(grp.Group("/users"))
 	item.ItemRoutes(grp.Group("/items"))
+	notification.NotificationRoutes(grp.Group("/notifications"))
 }

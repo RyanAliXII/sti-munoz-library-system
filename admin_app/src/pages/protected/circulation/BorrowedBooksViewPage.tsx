@@ -363,7 +363,7 @@ const BorrowedBooksViewPage = () => {
                                   </Button>
                                 </Tippy>
                               )}
-                            {/* {(borrowedBook.statusId === BorrowStatus.Pending ||
+                            {(borrowedBook.statusId === BorrowStatus.Pending ||
                               borrowedBook.statusId === BorrowStatus.Approved ||
                               borrowedBook.statusId ===
                                 BorrowStatus.CheckedOut) && (
@@ -379,7 +379,7 @@ const BorrowedBooksViewPage = () => {
                                   Cancel
                                 </Button>
                               </Tippy>
-                            )} */}
+                            )}
 
                             {(borrowedBook.statusId === BorrowStatus.Returned ||
                               borrowedBook.statusId ===

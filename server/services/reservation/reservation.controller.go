@@ -1,6 +1,7 @@
 package reservation
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -17,11 +18,15 @@ import (
 
 type Reservation struct {
 	reservationRepo repository.ReservationRepository
+	notificationRepo repository.NotificationRepository
+	accountRepo repository.AccountRepositoryInterface
 }
 
 func NewReservationController () ReservationController {
 	return &Reservation{
 		reservationRepo: repository.NewReservationRepository(),
+		notificationRepo: repository.NewNotificationRepository(),
+		accountRepo : repository.NewAccountRepository(),
 	}
 }
 type ReservationController interface {
@@ -43,6 +48,18 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("NewReservationErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
+	}
+	account, err  := ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	err = ctrler.notificationRepo.NotifyAdminsWithPermission(model.AdminNotification{
+		Message: fmt.Sprintf("%s %s booked a reservation.", account.GivenName, account.Surname),
+		AccountId: reservation.AccountId,
+		Link: "/services/reservations",
+	}, "Reservation.Read")
+	if err != nil {
+		logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(nil, "Reservation created."))
 }

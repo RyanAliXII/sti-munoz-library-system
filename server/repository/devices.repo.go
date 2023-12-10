@@ -17,6 +17,8 @@ type DeviceRepository interface {
 	DeleteDevice(id string )error
 	GetDeviceById(id string) (model.Device, error)
 	NewDeviceLog(log model.DeviceLog) error 
+	GetDeviceLogs(*DeviceLogFilter) ([]model.DeviceLog, Metadata, error)
+	DeviceLogout(id string) error 
 }
 func NewDevice()DeviceRepository{
 	return &Device{

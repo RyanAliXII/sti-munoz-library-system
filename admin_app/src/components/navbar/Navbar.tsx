@@ -1,14 +1,18 @@
-import type { FC } from "react";
+import { useMsal } from "@azure/msal-react";
+import { useAuthContext } from "@contexts/AuthContext";
+import { useSidebarState } from "@contexts/SiderbarContext";
+import { useNotifications } from "@hooks/data-fetching/notification";
 import {
   Avatar,
+  Badge,
   DarkThemeToggle,
   Dropdown,
   Navbar,
   useThemeMode,
 } from "flowbite-react";
-import { useAuthContext } from "@contexts/AuthContext";
-import { useMsal } from "@azure/msal-react";
-import { useSidebarState } from "@contexts/SiderbarContext";
+import type { FC } from "react";
+import { IoIosNotifications } from "react-icons/io";
+import { Link } from "react-router-dom";
 
 const NavbarHeader: FC = function () {
   const [mode, , toggleMode] = useThemeMode();
@@ -27,6 +31,7 @@ const NavbarHeader: FC = function () {
     "https://ui-avatars.com/api/&background=2563EB&color=fff"
   );
   avatarUrl.searchParams.set("name", `${user.givenName} ${user.surname}`);
+  const { data: notifications } = useNotifications();
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3">
@@ -73,7 +78,38 @@ const NavbarHeader: FC = function () {
               <Dropdown.Divider />
               <Dropdown.Item onClick={logout}>Sign out</Dropdown.Item>
             </Dropdown>
-
+            <Dropdown
+              arrowIcon={false}
+              color=""
+              className="border-none bg-none"
+              label={
+                <div className="flex">
+                  <IoIosNotifications className="text-xl"></IoIosNotifications>
+                  <Badge color="primary" className="text-xs">
+                    {notifications?.length ?? 0}
+                  </Badge>
+                </div>
+              }
+            >
+              {notifications?.map((n) => {
+                return (
+                  <Dropdown.Item
+                    className="py-5"
+                    key={n.id}
+                    to={n.link}
+                    as={Link}
+                  >
+                    {n.message}
+                  </Dropdown.Item>
+                );
+              })}
+              {/* <Dropdown.Item className="gap-2 flex py-5 border-b">
+                <AiOutlineBook /> Ryan Ali has requested to borrow a book
+              </Dropdown.Item> */}
+              {/* <Dropdown.Item className="gap-2 flex py-5 border-b">
+                <AiOutlineBook /> Ryan Ali has requested to borrow a book
+              </Dropdown.Item> */}
+            </Dropdown>
             <DarkThemeToggle
               onClick={() => {
                 let newMode = mode === "dark" ? "light" : "dark";

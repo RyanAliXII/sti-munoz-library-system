@@ -15,7 +15,7 @@ type NotificationBroadcaster struct {
 	stop    chan bool
 }
 
-func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, context context.Context) {
+func (broadcaster *NotificationBroadcaster) ListenByRoutingKey(routingKey string, context context.Context) {
 	exchangeErr := broadcaster.rabbit.Channel.ExchangeDeclare(
 		"notification",      // name
 		amqp.ExchangeDirect, // type
@@ -26,7 +26,7 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 		nil,                 // arguments
 	)
 	if exchangeErr != nil {
-		logger.Error(exchangeErr.Error(), slimlog.Function("NotificationRepository.ListenByAccountId"), slimlog.Error("exchangeErr"))
+		logger.Error(exchangeErr.Error(), slimlog.Function("NotificationRepository.ListenByRoutingKey"), slimlog.Error("exchangeErr"))
 	}
 
 	queue, queueErr := broadcaster.rabbit.Channel.QueueDeclare(
@@ -39,11 +39,9 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 	)
 
 	if queueErr != nil {
-		logger.Error(queueErr.Error(), slimlog.Function("NotificationRepository.ListenByAccountId"), slimlog.Error("queueErr"))
+		logger.Error(queueErr.Error(), slimlog.Function("NotificationRepository.ListenByRoutingKey"), slimlog.Error("queueErr"))
 
 	}
-
-	routingKey := "notify_account"
 	bindErr := broadcaster.rabbit.Channel.QueueBind(
 		queue.Name,     // queue name
 		routingKey,     // routing key
@@ -52,7 +50,7 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 		nil,
 	)
 	if bindErr != nil {
-		logger.Error(bindErr.Error(), slimlog.Function("NotificationRepository.ListenByAccountId"), slimlog.Error("bindErr"))
+		logger.Error(bindErr.Error(), slimlog.Function("NotificationRepository.ListenByRoutingKey"), slimlog.Error("bindErr"))
 	}
 
 	messages, consumeErr := broadcaster.rabbit.Channel.Consume(
@@ -73,14 +71,14 @@ func (broadcaster *NotificationBroadcaster) ListenByAccountId(accountId string, 
 
 		select {
 		case <-context.Done():
-			logger.Info("Notification listener has exited with cancel context.", zap.String("account", accountId))
+			logger.Info("Notification listener has exited with cancel context.", zap.String("account", routingKey))
 			broadcaster.rabbit.Channel.QueueUnbind(queue.Name, routingKey, "notification", nil)
 			return
 		case d, ok := <-messages:
 		
 			if !ok {
 				broadcaster.stop <- true
-				logger.Info("Notification listener has exited consumer not ok.", zap.String("account", accountId))
+				logger.Info("Notification listener has exited consumer not ok.", zap.String("account", routingKey))
 				return
 			}
 			broadcaster.message <- d
@@ -106,7 +104,7 @@ func NewNotificationBroadcaster() NotificationBroadcasterInterface {
 }
 
 type NotificationBroadcasterInterface interface {
-	ListenByAccountId(accountId string, context context.Context)
+	ListenByRoutingKey(routingKey string, context context.Context)
 	Message() <-chan amqp.Delivery
 	Stop() <-chan bool
 }

@@ -61,10 +61,10 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 }
 func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Context) {
 	ticker := time.NewTicker(time.Second * 3)
-	accountId := ctx.Query("accountId")
+	accountId := ctx.Query("account")
 	context, cancel := context.WithCancel(context.Background())
 	notificationBroadcaster := broadcasting.NewNotificationBroadcaster()
-	go notificationBroadcaster.ListenByAccountId(accountId, context)
+	go notificationBroadcaster.ListenByRoutingKey(fmt.Sprintf("notify_admin_%s", accountId), context)
 	
 	defer func() {
 		logger.Info("Writer Exited.", zap.String("accountId", accountId))
@@ -80,7 +80,7 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 			return
 			
 		case d := <-notificationBroadcaster.Message():
-			fmt.Println(string(d.Body))
+		
 			writeErr := connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
 				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.Writer"), slimlog.Error("writeErr"))

@@ -1,4 +1,10 @@
-import { Account, Book, BorrowedCopy, BorrowingTransaction } from "./types";
+import {
+  Account,
+  Book,
+  BorrowedCopy,
+  BorrowingTransaction,
+  GameLog,
+} from "./types";
 
 export const BookInitialValue: Book = {
   title: "",
@@ -102,7 +108,7 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   isReturned: false,
 };
 
-export const GameLogInitialValue = {
+export const GameLogInitialValue: GameLog = {
   accountId: "",
   createdAt: "",
   client: AccountInitialValue,
@@ -113,4 +119,6 @@ export const GameLogInitialValue = {
   },
   gameId: "",
   id: "",
+  isLoggedOut: false,
+  loggedOutAt: "",
 };

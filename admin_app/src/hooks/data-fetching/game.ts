@@ -220,3 +220,26 @@ export const useEditGameLog = ({
     onSettled: onSettled,
   });
 };
+
+export const useGameLogout = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Patch } = useRequest();
+  return useMutation({
+    mutationFn: (logId) =>
+      Patch(
+        `/games/logs/${logId}/logout`,
+        {},
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
+  });
+};

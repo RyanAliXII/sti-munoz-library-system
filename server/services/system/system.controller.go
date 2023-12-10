@@ -161,13 +161,13 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 				}, "Permissions successfully fetched"))
 				return
 		  }}
-		  _, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
+		  r, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
 		  if getPermissionErr != nil {
 			logger.Error(getPermissionErr.Error(), slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		  }
 		  ctx.JSON(httpresp.Success200(gin.H{
-			"permissions": []string{},
+			"permissions": r.Permissions	 ,
 		}, "Permissions successfully fetched"))
 		return
 	}

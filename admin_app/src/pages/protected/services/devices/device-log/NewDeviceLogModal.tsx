@@ -22,7 +22,12 @@ const NewDeviceLogModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     removeErrors,
     removeFieldError,
     resetForm,
-  } = useForm<Omit<DeviceLog, "id" | "client" | "device" | "createdAt">>({
+  } = useForm<
+    Omit<
+      DeviceLog,
+      "id" | "client" | "device" | "createdAt" | "loggedOutAt" | "isLoggedOut"
+    >
+  >({
     initialFormData: {
       accountId: "",
       deviceId: "",

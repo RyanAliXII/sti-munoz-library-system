@@ -1,4 +1,5 @@
 import { OnlineBorrowStatus } from "@internal/borrow-status";
+import { Message } from "postcss";
 
 export type User = {
   firstname?: string;
@@ -130,9 +131,16 @@ export type GameLog = {
   id: string;
   gameId: string;
   accountId: string;
+  loggedOutAt: string;
+  isLoggedOut: boolean;
   client: Account;
   game: Game;
   createdAt: string;
+};
+export type Notification = {
+  id: string;
+  message: string;
+  link: string;
 };
 
 export type DeviceLog = {
@@ -142,6 +150,8 @@ export type DeviceLog = {
   client: Account;
   device: Device;
   createdAt: string;
+  loggedOutAt: string;
+  isLoggedOut: boolean;
 };
 export type Reservation = {
   id: string;

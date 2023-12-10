@@ -25,6 +25,8 @@ func (repo * Game)GetLogs(filter * GameLogFilter)([]model.GameLog, Metadata, err
 	ds := dialect.Select(
 		goqu.C("id").Table("game_log"),
 		goqu.C("game_id"),
+		goqu.C("logged_out_at"),
+		goqu.L("(case when logged_out_at is null then false else true end)").As("is_logged_out"), 
 		goqu.L(`
 		json_build_object(
 			'id', account.id, 
@@ -118,5 +120,9 @@ func (repo * Game)DeleteLog(id string)(error){
 
 func (repo * Game)UpdateLog(log model.GameLog)(error){
 	_, err := repo.db.Exec("UPDATE services.game_log set game_id = $1, account_id = $2 where id = $3 and deleted_at is null", log.GameId, log.AccountId, log.Id )
+	return err
+}
+func (repo * Game)GameLogout(id string) error {	
+	_, err := repo.db.Exec("UPDATE services.game_log set logged_out_at = now() where id = $1 and logged_out_at is null", id)
 	return err
 }

@@ -8,6 +8,8 @@ type GameLog struct {
 	Client AccountJSON `json:"client" db:"client"`
 	GameId string `json:"gameId" db:"game_id"`
 	Game GameJSON `json:"game" db:"game"`
+	LoggedOutAt  db.NullableTime `json:"loggedOutAt" db:"logged_out_at"`
+	IsLoggedOut bool `json:"isLoggedOut" db:"is_logged_out"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
 

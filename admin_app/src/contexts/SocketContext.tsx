@@ -1,9 +1,8 @@
-import { useMsal } from "@azure/msal-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, createContext } from "react";
 import useWebSocket from "react-use-websocket";
 import { useAuthContext } from "./AuthContext";
-import { toast } from "react-toastify";
-
+import NotificationSound from "@assets/sound/notification-sound.mp3";
 const SocketContext = createContext({});
 
 type SocketProviderProps = {
@@ -11,12 +10,14 @@ type SocketProviderProps = {
 };
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const { user } = useAuthContext();
-  const { instance } = useMsal();
-  const URL = import.meta.env.VITE_WS_URL;
-
-  const {} = useWebSocket(URL, {
+  const WS_URL = import.meta.env.VITE_WS_URL;
+  const url = new URL(WS_URL);
+  url.searchParams.set("account", user.id ?? "");
+  const queryClient = useQueryClient();
+  const {} = useWebSocket(url.toString(), {
     onMessage: () => {
-      toast.info("MESSAGE");
+      new Audio(NotificationSound)?.play();
+      queryClient.invalidateQueries(["notifications"]);
     },
   });
   return <SocketContext.Provider value={{}}>{children}</SocketContext.Provider>;
