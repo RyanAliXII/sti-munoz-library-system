@@ -81,6 +81,7 @@ services:
       VITE_CLIENT_ID: ${CLIENT_APP_CLIENT_ID}
       VITE_TENANT_ID: ${CLIENT_APP_TENANT_ID}
       VITE_API_CLIENT_ID: ${API_APP_CLIENT_ID}
+      VITE_WS_URL: ${WS_CLIENT_URL}
       VITE_S3_URL: ${S3_URL}
   scanner_app:
     container_name: scanner_app

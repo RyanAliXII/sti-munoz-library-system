@@ -5,6 +5,7 @@ import ProtectedRoutes from "@components/auth/ProtectedRoutes";
 import PublicRoutes from "@components/auth/PublicRoutes";
 import UserProgramPage from "./protected/users/UserProgramPage";
 import DeviceLogPage from "./protected/services/devices/device-log/DeviceLogPage";
+import NotificationPage from "./protected/notifications/NotificationPage";
 
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
@@ -437,6 +438,17 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Account.Edit"]}>
               <BulkActivatePage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <NotificationPage />
             </PermissionGate>
           </Suspense>
         }

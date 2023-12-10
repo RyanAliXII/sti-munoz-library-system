@@ -18,7 +18,7 @@ const QueueHistory = () => {
           <Table.HeadCell>Dequeued At</Table.HeadCell>
         </Table.Head>
 
-        <Table.Body className="divide-y dark:divide-gray-700">
+        <Table.Body className=" dark:divide-gray-700">
           {data?.items?.map((item) => {
             const account = item.client;
             const name =

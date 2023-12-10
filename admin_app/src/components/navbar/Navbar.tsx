@@ -83,7 +83,7 @@ const NavbarHeader: FC = function () {
               color=""
               className="border-none bg-none"
               label={
-                <div className="flex">
+                <div className="flex border-none">
                   <IoIosNotifications className="text-xl"></IoIosNotifications>
                   <Badge color="primary" className="text-xs">
                     {notifications?.length ?? 0}
@@ -91,24 +91,26 @@ const NavbarHeader: FC = function () {
                 </div>
               }
             >
-              {notifications?.map((n) => {
+              {notifications?.slice(0, 10)?.map((n) => {
                 return (
-                  <Dropdown.Item
-                    className="py-5"
-                    key={n.id}
-                    to={n.link}
-                    as={Link}
-                  >
-                    {n.message}
-                  </Dropdown.Item>
+                  <>
+                    <Dropdown.Item
+                      className="py-5 rounded b "
+                      key={n.id}
+                      to={n.link}
+                      as={Link}
+                    >
+                      {n.message}
+                    </Dropdown.Item>
+                    <Dropdown.Divider />
+                  </>
                 );
               })}
-              {/* <Dropdown.Item className="gap-2 flex py-5 border-b">
-                <AiOutlineBook /> Ryan Ali has requested to borrow a book
-              </Dropdown.Item> */}
-              {/* <Dropdown.Item className="gap-2 flex py-5 border-b">
-                <AiOutlineBook /> Ryan Ali has requested to borrow a book
-              </Dropdown.Item> */}
+              <div className="px-5 pb-2">
+                <Link to="/notifications" className="text-sm underline">
+                  View Notifications
+                </Link>
+              </div>
             </Dropdown>
             <DarkThemeToggle
               onClick={() => {

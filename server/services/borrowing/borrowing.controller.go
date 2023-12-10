@@ -35,6 +35,7 @@ type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
 	bookRepo repository.BookRepositoryInterface
 	settingsRepo repository.SettingsRepositoryInterface
+	notificationRepo repository.NotificationRepository
 }
 func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 	body := CheckoutBody{}
@@ -327,6 +328,17 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBookById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+	}
+	err = ctrler.notificationRepo.NotifyClient(model.ClientNotification{
+		Message: fmt.Sprintf("The Book you have borrowed titled %s is ready for pick-up.", borrowedBook.Book.Title ),
+		AccountId: borrowedBook.Client.Id,
+	})
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
+	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){
@@ -363,7 +375,7 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("isValideDueDate"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
-	}
+}
 	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsCheckedOut"))
@@ -377,5 +389,6 @@ func NewBorrowingController () BorrowingController {
 		borrowingRepo: repository.NewBorrowingRepository(),
 		settingsRepo: repository.NewSettingsRepository(),
 		bookRepo: repository.NewBookRepository(),
+		notificationRepo : repository.NewNotificationRepository(),
 	}
 }

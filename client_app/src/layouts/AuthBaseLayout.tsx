@@ -1,17 +1,18 @@
-import { BaseProps } from "@definitions/props.definition";
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { ImBooks } from "react-icons/im";
-import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
-import { GiLightBackpack } from "react-icons/gi";
-import { AiFillCaretDown, AiOutlineSearch } from "react-icons/ai";
-import ProfileDropdown from "@components/ProfileDropdown";
 import HeaderIcon from "@assets/images/library-icon.svg";
-
+import ProfileDropdown from "@components/ProfileDropdown";
+import { BaseProps } from "@definitions/props.definition";
+import { useNotifications } from "@hooks/data-fetching/notification";
+import { AiOutlineSearch } from "react-icons/ai";
+import { GiLightBackpack } from "react-icons/gi";
+import { ImBooks } from "react-icons/im";
+import { IoIosNotifications } from "react-icons/io";
+import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
+import { NavLink } from "react-router-dom";
 const AuthBaseLayout = ({ children }: BaseProps) => {
+  const { data: notifications } = useNotifications();
   return (
     <div className="font-INTER min-h-screen">
-      <header className="w-full  flex justify-between items-center py-3 bg-blue-800 text-white">
+      <header className="w-full  flex justify-around items-center py-3 bg-blue-800 text-white">
         <div>
           <img
             src={HeaderIcon}
@@ -66,8 +67,37 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
             </li>
           </ul>
         </nav>
-        <div className="h-full flex items-center mr-16">
+        <div className="h-full flex items-center">
           <ProfileDropdown />
+          <div className="dropdown dropdown-left ">
+            <div
+              tabIndex={0}
+              role="button"
+              className="rounded-btn p-0 text-sm  normal-case focus:bg-none font-normal flex items-center gap-1"
+            >
+              <IoIosNotifications className="text-2xl" />
+              <div className="badge badge-primary">{notifications?.length}</div>
+            </div>
+            <ul className="menu dropdown-content z-[1] p-2 shadow bg-base-100 rounded-box w-80 mt-4">
+              {notifications?.slice(0, 10).map((n) => {
+                return (
+                  <li className="border-b" key={n.id}>
+                    <div className="text-gray-700">{n.message}</div>
+                  </li>
+                );
+              })}
+              {/* <li className="border-b">
+                <div className="text-gray-700">
+                  The book you have requested has been approved.
+                </div>
+              </li>
+              <li className="border-b">
+                <div className="text-gray-700">
+                  The book you have requested has been approved.
+                </div>
+              </li> */}
+            </ul>
+          </div>
         </div>
       </header>
 

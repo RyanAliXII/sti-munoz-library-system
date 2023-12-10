@@ -17,6 +17,8 @@ func NewNotificationRepository () NotificationRepository {
 type NotificationRepository interface {
 		NotifyAdminsWithPermission( notif model.AdminNotification, permission string ) error
 		GetAdminNotificationByAccountId(accountId string) ([]model.AdminNotification, error)
+		GetClientNotificationByAccountId(accountId string) ([]model.ClientNotification, error)
+		NotifyClient(notif model.ClientNotification) error
 }
 func(repo *  Notification) getUserWithPermission(permission string) ([]model.AccountJSON, error){
 	accounts := make([]model.AccountJSON, 0)
@@ -31,3 +33,4 @@ func(repo *  Notification) getUserWithPermission(permission string) ([]model.Acc
   err := repo.db.Select(&accounts, query, permission)
   return accounts, err
 }
+

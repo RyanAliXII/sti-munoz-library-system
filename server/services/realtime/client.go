@@ -12,36 +12,22 @@ import (
 	"go.uber.org/zap"
 )
 
-type RealtimeController struct {
-	// repos *repository.Repositories
-	// broadcasters *broadcasting.Broadcasters
-}
-const (
-	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
 
-	//Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
 
-	// Send pings to peer with this period. Must be less than pongWait.
-	//pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer.
-	//maxMessageSize = 512
-)
-
-func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
+func (ctrler *RealtimeController) InitializeClientWebSocket(ctx *gin.Context) {
 	connection, connectionErr := NewWebSocket(ctx.Writer, ctx.Request)
 	if connectionErr != nil {
 		logger.Error(connectionErr.Error())
 		return
 	}
 	
-	go ctrler.Reader(connection, ctx)
-	go ctrler.Writer(connection, ctx)
+	go ctrler.ClientReader(connection, ctx)
+	go ctrler.ClientWriter(connection, ctx)
 
 }
-func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Context) {
+
+
+func (ctrler *RealtimeController) ClientReader(connection *websocket.Conn, ctx *gin.Context) {
 	accountId := ctx.Query("accountId")
 	defer func() {
 		logger.Info("Reader Exited.", zap.String("accountId", accountId))
@@ -59,12 +45,12 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 		}
 	}
 }
-func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Context) {
+func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *gin.Context) {
 	ticker := time.NewTicker(time.Second * 3)
 	accountId := ctx.Query("account")
 	context, cancel := context.WithCancel(context.Background())
 	notificationBroadcaster := broadcasting.NewNotificationBroadcaster()
-	go notificationBroadcaster.ListenByRoutingKey(fmt.Sprintf("notify_admin_%s", accountId), context)
+	go notificationBroadcaster.ListenByRoutingKey(fmt.Sprintf("notify_client_%s", accountId), context)
 	
 	defer func() {
 		logger.Info("Writer Exited.", zap.String("accountId", accountId))
@@ -83,7 +69,7 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 		
 			writeErr := connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
-				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.Writer"), slimlog.Error("writeErr"))
+				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.ClientWriter"), slimlog.Error("writeErr"))
 				cancel()
 				return
 			}
@@ -99,12 +85,4 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 
 	}
 	
-}
-func NewController() RealtimeControllerInteface {
-	return &RealtimeController{}
-}
-
-type RealtimeControllerInteface interface {
-	InitializeWebSocket(ctx *gin.Context)
-	InitializeClientWebSocket(ctx *gin.Context)
 }

@@ -25,6 +25,7 @@ type BorrowingRepository interface {
 	UpdateRemarks(id string, remarks string) error 
 	CancelByIdAndAccountId(id string, accountId string) error
 	GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error)
+	GetBorrowedBookById(id string) (model.BorrowedBook, error)
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -164,8 +165,13 @@ func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, 
 	err := repo.db.Select(&borrowedBooks, query, accountId, statusId)
 	return borrowedBooks, err
 }
+func (repo * Borrowing)GetBorrowedBookById(id string) (model.BorrowedBook, error) {
+	book := model.BorrowedBook{}
+	err := repo.db.Get(&book, "SELECT book, client from borrowed_book_all_view where id = $1 LIMIT 1 ", id)
+	return book, err
+}
 
-func(repo *Borrowing) UpdateRemarks(id string, remarks string) error {
+func(repo *Borrowing)UpdateRemarks(id string, remarks string) error {
 	query := "UPDATE borrowing.borrowed_book SET  remarks = $1 where id = $2"
 	_, err := repo.db.Exec(query, remarks , id)
 	return err 	
