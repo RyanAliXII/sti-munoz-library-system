@@ -100,7 +100,10 @@ export const useGameLog = ({
 }: MutationOptions<
   any,
   unknown,
-  Omit<GameLog, "id" | "client" | "game" | "createdAt">,
+  Omit<
+    GameLog,
+    "id" | "client" | "game" | "createdAt" | "loggedOutAt" | "isLoggedOut"
+  >,
   unknown
 >) => {
   const { Post } = useRequest();
