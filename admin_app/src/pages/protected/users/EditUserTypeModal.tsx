@@ -52,7 +52,7 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
   });
   return (
     <Modal dismissible show={isOpen} onClose={closeModal} size="lg">
-      <Modal.Header>Edit User Type</Modal.Header>
+      <Modal.Header>Edit User Group</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div className="pb-2">

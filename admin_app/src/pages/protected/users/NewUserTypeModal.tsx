@@ -47,7 +47,7 @@ const NewUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
   });
   return (
     <Modal dismissible show={isOpen} onClose={closeModal} size="lg">
-      <Modal.Header>New User Type</Modal.Header>
+      <Modal.Header>New User Group</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div className="pb-2">

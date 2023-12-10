@@ -25,7 +25,7 @@ const UserTypePage = () => {
     <Container>
       <div className="py-2">
         <Button color="primary" onClick={newTypeModal.open}>
-          New User Type
+          New User Group
         </Button>
       </div>
       <TableContainer>

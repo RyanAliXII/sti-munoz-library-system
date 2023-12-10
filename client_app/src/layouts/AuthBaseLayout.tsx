@@ -11,7 +11,7 @@ import { FaRegListAlt } from "react-icons/fa";
 import { GiLightBackpack } from "react-icons/gi";
 import { ImBooks } from "react-icons/im";
 import { IoIosNotifications } from "react-icons/io";
-import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
+import { RiUserFill } from "react-icons/ri";
 import { Link, NavLink } from "react-router-dom";
 import TimeAgo from "timeago-react";
 const AuthBaseLayout = ({ children }: BaseProps) => {

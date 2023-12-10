@@ -1,8 +1,7 @@
 import { useSidebarState } from "@contexts/SiderbarContext";
-import { Sidebar, TextInput } from "flowbite-react";
+import { Sidebar } from "flowbite-react";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
-import { HiSearch } from "react-icons/hi";
 import { NavLink, useLocation } from "react-router-dom";
 import { SidebarNavigationItems } from "./SidebarNavigations.definition";
 const SidebarNav: FC = function () {

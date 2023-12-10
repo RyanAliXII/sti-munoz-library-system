@@ -89,14 +89,29 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     ],
   },
   {
-    text: "Client",
+    text: "Patron",
     to: "/clients",
+    isCollapse: true,
     icon: MdManageAccounts,
     items: [
       {
         text: "Account",
         requiredPermissions: ["Account.Access"],
         to: "/clients/accounts",
+        icon: MdAccountCircle,
+        items: [],
+      },
+      {
+        text: "User Group",
+        requiredPermissions: ["Account.Access"],
+        to: "/users/types",
+        icon: MdAccountCircle,
+        items: [],
+      },
+      {
+        text: "Program/Strands",
+        requiredPermissions: ["Account.Access"],
+        to: "/users/program-strand",
         icon: MdAccountCircle,
         items: [],
       },
