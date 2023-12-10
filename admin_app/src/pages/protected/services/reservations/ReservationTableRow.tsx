@@ -4,6 +4,7 @@ import { Badge, Table } from "flowbite-react";
 import { FC } from "react";
 import { ReservationTableRowProps } from "./ReservationPage";
 import ReservationActions from "./ReservationActions";
+import HasAccess from "@components/auth/HasAccess";
 
 const ReservationTableRow: FC<ReservationTableRowProps> = ({
   reservation,
@@ -70,14 +71,16 @@ const ReservationTableRow: FC<ReservationTableRowProps> = ({
         {reservation.remarks.length === 0 ? "N/A" : reservation.remarks}
       </Table.Cell>
       <Table.Cell>
-        <ReservationActions
-          editRemarksModal={editRemarksModal}
-          setReservation={setReservation}
-          attendedConfrm={attendedConfrm}
-          missedConfirm={missedConfirm}
-          reservation={reservation}
-          cancelConfirm={cancelConfirm}
-        />
+        <HasAccess requiredPermissions={["Reservation.Edit"]}>
+          <ReservationActions
+            editRemarksModal={editRemarksModal}
+            setReservation={setReservation}
+            attendedConfrm={attendedConfrm}
+            missedConfirm={missedConfirm}
+            reservation={reservation}
+            cancelConfirm={cancelConfirm}
+          />
+        </HasAccess>
       </Table.Cell>
     </Table.Row>
   );

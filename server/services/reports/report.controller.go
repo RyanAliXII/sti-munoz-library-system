@@ -35,7 +35,7 @@ func NewReportController () ReportController {
 func(ctrler * Report)NewReport(ctx * gin.Context){
 	body := ReportFilter{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	fmt.Println(body)
+	
 	
 	err := body.Validate()
 	if err != nil {

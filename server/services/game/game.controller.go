@@ -21,6 +21,7 @@ type GameController interface{
 	GetGameLogs(ctx * gin.Context)
 	DeleteGameLog(ctx * gin.Context)
 	UpdateGameLog(ctx * gin.Context)
+	LogoutGame(ctx * gin.Context)
 }
 
 func NewGameController () GameController{

@@ -14,4 +14,7 @@ func DeviceRoutes(router * gin.RouterGroup){
 	router.GET("/:id", ctrler.GetDeviceById)
 	router.PUT("/:id", middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[DeviceBody], ctrler.UpdateDevice)
 	router.DELETE("/:id", middlewares.BlockRequestFromClientApp, ctrler.DeleteDevice)
+	router.POST("/logs", ctrler.NewDeviceLog)
+	router.GET("/logs", ctrler.GetDeviceLogs)
+	router.PATCH("/logs/:id/logout", ctrler.LogoutDevice)
 }

@@ -1,14 +1,23 @@
-import type { FC } from "react";
+import { useMsal } from "@azure/msal-react";
+import { useAuthContext } from "@contexts/AuthContext";
+import { useSidebarState } from "@contexts/SiderbarContext";
+import {
+  useNotifications,
+  useNotificationsRead,
+} from "@hooks/data-fetching/notification";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Avatar,
+  Badge,
   DarkThemeToggle,
   Dropdown,
   Navbar,
   useThemeMode,
 } from "flowbite-react";
-import { useAuthContext } from "@contexts/AuthContext";
-import { useMsal } from "@azure/msal-react";
-import { useSidebarState } from "@contexts/SiderbarContext";
+import type { FC } from "react";
+import { IoIosNotifications } from "react-icons/io";
+import { Link } from "react-router-dom";
+import TimeAgo from "timeago-react";
 
 const NavbarHeader: FC = function () {
   const [mode, , toggleMode] = useThemeMode();
@@ -27,6 +36,18 @@ const NavbarHeader: FC = function () {
     "https://ui-avatars.com/api/&background=2563EB&color=fff"
   );
   avatarUrl.searchParams.set("name", `${user.givenName} ${user.surname}`);
+  const { data: notifications } = useNotifications();
+  const queryClient = useQueryClient();
+  const notificationsRead = useNotificationsRead({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+    },
+  });
+  const isAllRead = notifications?.every((n) => n.isRead);
+  const notificationTotal = notifications?.reduce((a, r) => {
+    if (!r.isRead) a++;
+    return a;
+  }, 0);
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3">
@@ -73,7 +94,55 @@ const NavbarHeader: FC = function () {
               <Dropdown.Divider />
               <Dropdown.Item onClick={logout}>Sign out</Dropdown.Item>
             </Dropdown>
-
+            <Dropdown
+              arrowIcon={false}
+              color=""
+              className="border-none bg-none"
+              label={
+                <div
+                  className="flex border-none"
+                  onClick={() => {
+                    if (!isAllRead) notificationsRead.mutate({});
+                  }}
+                >
+                  <IoIosNotifications className="text-xl"></IoIosNotifications>
+                  {!isAllRead && (
+                    <Badge color="primary" className="text-xs">
+                      {notificationTotal}
+                    </Badge>
+                  )}
+                </div>
+              }
+            >
+              {notifications?.slice(0, 5)?.map((n) => {
+                return (
+                  <div key={n.id}>
+                    <Dropdown.Item
+                      style={{
+                        maxWidth: "400px",
+                      }}
+                      className={`py-5 rounded flex-col items-start ${
+                        n.link.length === 0 ? "pointer-events-none" : ""
+                      }`}
+                      to={n.link}
+                      as={Link}
+                    >
+                      {n.message}
+                      <TimeAgo
+                        datetime={n.createdAt}
+                        className="text-blue-500"
+                      ></TimeAgo>
+                    </Dropdown.Item>
+                    <Dropdown.Divider />
+                  </div>
+                );
+              })}
+              <div className="px-5 pb-2">
+                <Link to="/notifications" className="text-sm underline">
+                  View Notifications
+                </Link>
+              </div>
+            </Dropdown>
             <DarkThemeToggle
               onClick={() => {
                 let newMode = mode === "dark" ? "light" : "dark";

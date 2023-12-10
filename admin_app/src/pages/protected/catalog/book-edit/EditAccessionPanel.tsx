@@ -17,7 +17,7 @@ import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
-import { BsFillTrashFill } from "react-icons/bs";
+import { FaTimes } from "react-icons/fa";
 import { GiRecycle } from "react-icons/gi";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -145,6 +145,7 @@ const EditAccessionPanel = () => {
                 <Table.HeadCell>Accession Number</Table.HeadCell>
                 <Table.HeadCell>Copy Number</Table.HeadCell>
                 <Table.HeadCell>Status</Table.HeadCell>
+
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y dark:divide-gray-700">
@@ -160,6 +161,7 @@ const EditAccessionPanel = () => {
                           <span className="text-green-500">Active</span>
                         )}
                       </Table.Cell>
+
                       <Table.Cell>
                         {!accession.isWeeded && (
                           <Tippy content="Weed book">
@@ -171,7 +173,7 @@ const EditAccessionPanel = () => {
                                 openWeedingDialog();
                               }}
                             >
-                              <BsFillTrashFill className="text-lg" />
+                              <FaTimes className="text-lg" />
                             </Button>
                           </Tippy>
                         )}
@@ -205,7 +207,7 @@ const EditAccessionPanel = () => {
         title="Weeding Remarks"
         label="Remarks"
         placeholder="Reason for weeding the book"
-        proceedBtnText="Proceed"
+        proceedBtnText="Save"
         onProceed={(text) => {
           closeWeedingDialog();
           updateAccessionStatus.mutate({

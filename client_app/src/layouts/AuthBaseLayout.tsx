@@ -1,14 +1,32 @@
-import { BaseProps } from "@definitions/props.definition";
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { ImBooks } from "react-icons/im";
-import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
-import { GiLightBackpack } from "react-icons/gi";
-import { AiFillCaretDown, AiOutlineSearch } from "react-icons/ai";
-import ProfileDropdown from "@components/ProfileDropdown";
 import HeaderIcon from "@assets/images/library-icon.svg";
-
+import ProfileDropdown from "@components/ProfileDropdown";
+import { BaseProps } from "@definitions/props.definition";
+import {
+  useNotifications,
+  useNotificationsRead,
+} from "@hooks/data-fetching/notification";
+import { useQueryClient } from "@tanstack/react-query";
+import { AiOutlineSearch } from "react-icons/ai";
+import { FaRegListAlt } from "react-icons/fa";
+import { GiLightBackpack } from "react-icons/gi";
+import { ImBooks } from "react-icons/im";
+import { IoIosNotifications } from "react-icons/io";
+import { RiUserFill } from "react-icons/ri";
+import { Link, NavLink } from "react-router-dom";
+import TimeAgo from "timeago-react";
 const AuthBaseLayout = ({ children }: BaseProps) => {
+  const { data: notifications } = useNotifications();
+  const queryClient = useQueryClient();
+  const isAllRead = notifications?.every((n) => n.isRead);
+  const notificationTotal = notifications?.reduce((a, r) => {
+    if (!r.isRead) a++;
+    return a;
+  }, 0);
+  const notificationRead = useNotificationsRead({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+    },
+  });
   return (
     <div className="font-INTER min-h-screen">
       <header className="w-full  flex justify-between items-center py-3 bg-blue-800 text-white">
@@ -16,16 +34,11 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
           <img
             src={HeaderIcon}
             alt="library-logo"
-            className="w-12 lg:w-14 ml-5"
+            className="w-8 lg:w-14 ml-5"
           />
         </div>
-        <nav className="h-full mr-10 hidden md:block">
-          <ul className="h-full flex items-center gap-7 mr-5">
-            <li>
-              <NavLink to="/search" className={isHeaderNavActive}>
-                Search
-              </NavLink>
-            </li>
+        <nav className="h-full lg:mr-10 hidden md:block">
+          <ul className="h-full flex items-center gap-7 lg:mr-5">
             <li>
               <NavLink to="/catalog" className={isHeaderNavActive}>
                 Catalog
@@ -66,8 +79,53 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
             </li>
           </ul>
         </nav>
-        <div className="h-full flex items-center mr-16">
+        <div className="h-full flex items-center">
           <ProfileDropdown />
+          <div className="dropdown dropdown-left mr-5">
+            <div
+              onClick={() => {
+                if (isAllRead) return;
+                notificationRead.mutate({});
+              }}
+              tabIndex={0}
+              role="button"
+              className="rounded-btn p-0 text-sm  normal-case focus:bg-none font-normal flex items-center gap-1"
+            >
+              <IoIosNotifications className="text-xl lg:text-2xl" />
+              {!isAllRead && (
+                <div className="badge badge-primary">{notificationTotal}</div>
+              )}
+            </div>
+            <ul className="menu dropdown-content z-[1] p-2 shadow bg-base-100 rounded-box w-80 mt-4">
+              {notifications?.slice(0, 2).map((n) => {
+                return (
+                  <li className="border-b" key={n.id}>
+                    <Link
+                      to={n.link}
+                      className={`py-5 rounded flex-col items-start ${
+                        n.link.length === 0 ? "pointer-events-none" : ""
+                      }`}
+                    >
+                      <div className="text-gray-700 text-sm">{n.message}</div>
+                      <TimeAgo
+                        className="text-blue-500 text-sm"
+                        datetime={n.createdAt}
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+              <li className="text-gray-900 p-0">
+                <Link
+                  to="/notifications"
+                  className="underline underline-offset-1"
+                >
+                  View Notifications
+                </Link>
+              </li>
+              ;
+            </ul>
+          </div>
         </div>
       </header>
 
@@ -77,25 +135,20 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
         <nav className="h-full w-full">
           <ul className="flex h-full w-full items-center justify-around">
             <li>
-              <NavLink to={"/search"} className={isBottomNavActive}>
-                <AiOutlineSearch />
-              </NavLink>
-            </li>
-            <li>
               <NavLink
                 to={"/catalog"}
                 className={(nav) =>
-                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                  nav.isActive ? "text-blue-500 text-sm" : ""
                 }
               >
-                <RiFileList2Fill />
+                <AiOutlineSearch />
               </NavLink>
             </li>
             <li>
               <NavLink
                 to={"/bag"}
                 className={(nav) =>
-                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                  nav.isActive ? "text-blue-500 text-lg" : "text-lg"
                 }
               >
                 <GiLightBackpack />
@@ -105,7 +158,7 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               <NavLink
                 to={"/borrowed-books"}
                 className={(nav) =>
-                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                  nav.isActive ? "text-blue-500 text-lg" : "text-lg"
                 }
               >
                 <ImBooks />
@@ -113,9 +166,19 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
             </li>
             <li>
               <NavLink
+                to={"/reservations"}
+                className={(nav) =>
+                  nav.isActive ? "text-blue-500 text-lg" : "text-lg"
+                }
+              >
+                <FaRegListAlt />
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
                 to={"/profile"}
                 className={(nav) =>
-                  nav.isActive ? "text-blue-500 text-2xl" : "text-2xl"
+                  nav.isActive ? "text-blue-500 text-lg" : "text-lg"
                 }
               >
                 <RiUserFill />

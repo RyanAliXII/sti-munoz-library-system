@@ -13,7 +13,11 @@ type Account struct {
 	GivenName   string          `json:"givenName" db:"given_name" csv:"given_name"`
 	Surname     string          `json:"surname" db:"surname" csv:"surname"`
 	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
+	StudentNumber string 		`json:"studentNumber" db:"student_number" csv:"student_number"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
+	UserType string `json:"userType" db:"user_type"`
+	ProgramName string `json:"programName" db:"program_name"`
+	ProgramCode string `json:"programCode" db:"program_code"`
 	AccountMetadata AccountMetadata `json:"metadata" db:"metadata"`
 	IsActive 	 bool `json:"isActive" db:"is_active"`
 	IsDeleted 	 bool `json:"isDeleted" db:"is_deleted"`
@@ -78,5 +82,13 @@ func (meta *AccountMetadata) Scan(value interface{}) error {
 func (meta AccountMetadata) Value(value interface{}) (driver.Value, error) {
 	return meta, nil
 }
-
-
+type AccountActivation struct {
+	Email string `json:"email" csv:"email"`
+	GivenName string `json:"givenName" csv:"given_name"`
+	Surname string	`json:"surname" csv:"surname"`
+	StudentNumber string `json:"studentNumber" csv:"student_number"`
+	UserType int `json:"userType" csv:"user_type"`
+	Program string `json:"program" csv:"program"`
+	ProgramId int `json:"programId"`
+	ActiveUntil string `json:"activeUntil"`
+}

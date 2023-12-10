@@ -1,14 +1,14 @@
-import { ButtonClasses, PrimaryButton } from "@components/ui/button/Button";
-import Container, {
-  ContainerNoBackground,
-} from "@components/ui/container/Container";
+import Container from "@components/ui/container/Container";
 
+import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty } from "@definitions/types";
+import { toReadableDatetime } from "@helpers/datetime";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
+import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import {
   AiFillCheckCircle,
@@ -18,16 +18,15 @@ import {
 } from "react-icons/ai";
 import { MdRemoveCircle } from "react-icons/md";
 import { toast } from "react-toastify";
-import TimeAgo from "timeago-react";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
-import { Button, Table } from "flowbite-react";
-import TableContainer from "@components/ui/table/TableContainer";
+import SettleModal from "./SettleModal";
+import EditSettlementModal from "./EditSettlementModal";
+import HasAccess from "@components/auth/HasAccess";
 
 const PenaltyPage = () => {
-  const { Get, Patch } = useRequest();
-
+  const { Get } = useRequest();
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -43,6 +42,8 @@ const PenaltyPage = () => {
     open: openViewModal,
     close: closeViewModal,
   } = useSwitch();
+  const settleModal = useSwitch();
+  const editSettlement = useSwitch();
   const fetchPenalties = async () => {
     try {
       const response = await Get("/penalties/", {});
@@ -65,56 +66,38 @@ const PenaltyPage = () => {
     settledAt: "",
     description: "",
     amount: 0,
+    item: "",
   });
-  const queryClient = useQueryClient();
-  const updateSettlement = useMutation({
-    mutationFn: (body: { id: string; isSettled: boolean }) =>
-      Patch(
-        `/penalties/${body.id}/settlement`,
-        {},
-        {
-          params: {
-            settle: body.isSettled,
-          },
-        }
-      ),
-
-    onSuccess: () => {
-      toast.success("Penalty has been updated");
-      queryClient.invalidateQueries(["penalties"]);
-    },
-    onError: () => {
-      toast.error("Unknown error occured, Please try again later");
-    },
-  });
-
+  const initEditSettleMent = (penalty: Penalty) => {
+    editSettlement.open();
+    setSelectedPenalty(penalty);
+  };
   return (
     <>
       <Container>
         <div className="flex w-full justify-end py-4">
-          <Button
-            color="primary"
-            className="flex items-center gap-1"
-            onClick={openAddModal}
-          >
-            <AiOutlinePlus className="text-lg " /> Add Penalty
-          </Button>
+          <HasAccess requiredPermissions={["Penalty.Add"]}>
+            <Button
+              color="primary"
+              className="flex items-center gap-1"
+              onClick={openAddModal}
+            >
+              <AiOutlinePlus className="text-lg " /> Add Penalty
+            </Button>
+          </HasAccess>
         </div>
         <TableContainer>
           <Table>
             <Table.Head>
-              <Table.HeadCell>Created At</Table.HeadCell>
               <Table.HeadCell>Account</Table.HeadCell>
               <Table.HeadCell>Amount</Table.HeadCell>
               <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell>Created At</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y dark:divide-gray-700">
               {penalties?.map((penalty) => (
                 <Table.Row key={penalty.id}>
-                  <Table.Cell>
-                    <TimeAgo datetime={penalty.createdAt} />
-                  </Table.Cell>
                   <Table.Cell>
                     <div></div>
 
@@ -138,6 +121,9 @@ const PenaltyPage = () => {
                       </span>
                     )}
                   </Table.Cell>
+                  <Table.Cell>
+                    {toReadableDatetime(penalty.createdAt)}
+                  </Table.Cell>
                   <Table.Cell className="flex gap-2">
                     <Tippy content="View Penalty">
                       <Button
@@ -150,47 +136,47 @@ const PenaltyPage = () => {
                         <AiOutlineEye className="text-lg" />
                       </Button>
                     </Tippy>
-                    <Tippy content="Edit Penalty">
-                      <Button
-                        color="secondary"
-                        onClick={() => {
-                          setSelectedPenalty(penalty);
-                          openEditModal();
-                        }}
-                      >
-                        <AiOutlineEdit className="text-lg" />
-                      </Button>
-                    </Tippy>
-                    {penalty.isSettled && (
-                      <Tippy content="Mark as Unsettled">
-                        <Button
-                          color="failure"
-                          onClick={() => {
-                            updateSettlement.mutate({
-                              id: penalty.id ?? "",
-                              isSettled: false,
-                            });
-                          }}
-                        >
-                          <MdRemoveCircle className="text-lg" />
-                        </Button>
-                      </Tippy>
-                    )}
-                    {!penalty.isSettled && (
-                      <Tippy content="Mark as Settled">
-                        <Button
-                          color="success"
-                          onClick={() => {
-                            updateSettlement.mutate({
-                              id: penalty.id ?? "",
-                              isSettled: true,
-                            });
-                          }}
-                        >
-                          <AiFillCheckCircle className="text-lg" />
-                        </Button>
-                      </Tippy>
-                    )}
+                    <HasAccess requiredPermissions={["Penalty.Edit"]}>
+                      {!penalty.isSettled && (
+                        <Tippy content="Edit Penalty">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              setSelectedPenalty(penalty);
+                              openEditModal();
+                            }}
+                          >
+                            <AiOutlineEdit className="text-lg" />
+                          </Button>
+                        </Tippy>
+                      )}
+
+                      {penalty.isSettled && (
+                        <Tippy content="Edit Settlement">
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              initEditSettleMent(penalty);
+                            }}
+                          >
+                            <AiOutlineEdit className="text-lg" />
+                          </Button>
+                        </Tippy>
+                      )}
+
+                      {!penalty.isSettled && (
+                        <Tippy content="Mark as Settled">
+                          <Button
+                            color="success"
+                            onClick={() => {
+                              settleModal.open();
+                            }}
+                          >
+                            <AiFillCheckCircle className="text-lg" />
+                          </Button>
+                        </Tippy>
+                      )}
+                    </HasAccess>
                   </Table.Cell>
                 </Table.Row>
               ))}
@@ -203,6 +189,16 @@ const PenaltyPage = () => {
         isOpen={isEditModalOpen}
         closeModal={closeEditModal}
         penalty={selectedPenalty}
+      />
+      <EditSettlementModal
+        closeModal={editSettlement.close}
+        isOpen={editSettlement.isOpen}
+        formData={selectedPenalty}
+      />
+      <SettleModal
+        isOpen={settleModal.isOpen}
+        closeModal={settleModal.close}
+        formData={selectedPenalty}
       />
       <ViewPenaltyModal
         closeModal={closeViewModal}

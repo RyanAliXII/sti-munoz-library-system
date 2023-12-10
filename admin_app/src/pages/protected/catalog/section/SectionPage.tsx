@@ -1,6 +1,6 @@
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery } from "@tanstack/react-query";
-import { AiOutlineEdit } from "react-icons/ai";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 import "react-responsive-modal/styles.css";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import Container from "@components/ui/container/Container";
@@ -12,13 +12,20 @@ import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useDeleteCollection } from "@hooks/data-fetching/collection";
+import { toast } from "react-toastify";
+import HasAccess from "@components/auth/HasAccess";
 
 const SectionPage = () => {
   const [section, setSection] = useState<Section>({
-    hasOwnAccession: false,
+    isSubCollection: false,
     name: "",
     prefix: "",
     id: 0,
+    isDeleteable: false,
+    mainCollectionId: 0,
+    accessionTable: "",
   });
   const {
     isOpen: isAddModalOpen,
@@ -49,24 +56,47 @@ const SectionPage = () => {
     queryFn: fetchSections,
     queryKey: ["sections"],
   });
+  const queryClient = useQueryClient();
   const initEdit = (section: Section) => {
     setSection(section);
     openEditModal();
   };
+
+  const deleteConfirm = useSwitch();
+  const initDelete = (section: Section) => {
+    setSection(section);
+    deleteConfirm.open();
+  };
+  const onConfirmDelete = () => {
+    deleteCollection.mutate(section.id ?? 0);
+    deleteConfirm.close();
+  };
+  const deleteCollection = useDeleteCollection({
+    onSuccess: () => {
+      toast.success("Collection deleted.");
+      queryClient.invalidateQueries(["sections"]);
+      queryClient.invalidateQueries(["sectionsMain"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
   return (
     <>
       <Container>
         <div className="w-full flex justify-end pb-4 ">
-          <Button color="primary" onClick={openAddModal}>
-            New Section
-          </Button>
+          <HasAccess requiredPermissions={["Collection.Add"]}>
+            <Button color="primary" onClick={openAddModal}>
+              New Collection
+            </Button>
+          </HasAccess>
         </div>
         <LoadingBoundary isLoading={isLoading} isError={isError}>
           <TableContainer>
             <Table>
               <Table.Head>
-                <Table.HeadCell>Section</Table.HeadCell>
-                <Table.HeadCell>Different Accession</Table.HeadCell>
+                <Table.HeadCell>Collection</Table.HeadCell>
+                <Table.HeadCell>Sub-collection(Yes/No)</Table.HeadCell>
                 <Table.HeadCell>Current Counter</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
@@ -80,7 +110,7 @@ const SectionPage = () => {
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        {section.hasOwnAccession ? (
+                        {section.isSubCollection ? (
                           <span className="text-green-600"> Yes</span>
                         ) : (
                           <span className="text-gray-600">No</span>
@@ -88,26 +118,34 @@ const SectionPage = () => {
                       </Table.Cell>
                       <Table.Cell>{section.lastValue}</Table.Cell>
                       <Table.Cell className="p-2 flex gap-2 items-center">
-                        <Tippy content="Edit">
-                          <Button
-                            onClick={() => {
-                              initEdit(section);
-                            }}
-                            color="secondary"
-                            size="xs"
-                          >
-                            <AiOutlineEdit className="cursor-pointer text-xl" />
-                          </Button>
-                        </Tippy>
-                        {/* <Tippy content="Delete">
-                          <Button
-                            onClick={openEditModal}
-                            color="failure"
-                            size="xs"
-                          >
-                            <AiOutlineDelete className="cursor-pointer  text-xl" />
-                          </Button>
-                        </Tippy> */}
+                        <HasAccess requiredPermissions={["Collection.Edit"]}>
+                          <Tippy content="Edit">
+                            <Button
+                              onClick={() => {
+                                initEdit(section);
+                              }}
+                              color="secondary"
+                              size="xs"
+                            >
+                              <AiOutlineEdit className="cursor-pointer text-xl" />
+                            </Button>
+                          </Tippy>
+                        </HasAccess>
+                        <HasAccess requiredPermissions={["Collection.Delete"]}>
+                          {section.isDeleteable && (
+                            <Tippy content="Delete">
+                              <Button
+                                color="failure"
+                                size="xs"
+                                onClick={() => {
+                                  initDelete(section);
+                                }}
+                              >
+                                <AiOutlineDelete className="cursor-pointer  text-xl" />
+                              </Button>
+                            </Tippy>
+                          )}
+                        </HasAccess>
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -123,6 +161,13 @@ const SectionPage = () => {
         formData={section}
         isOpen={isEditModalOpen}
         closeModal={closeEditModal}
+      />
+      <DangerConfirmDialog
+        title="Delete Collection"
+        text="Are you sure you want to delete collection?"
+        close={deleteConfirm.close}
+        isOpen={deleteConfirm.isOpen}
+        onConfirm={onConfirmDelete}
       />
     </>
   );

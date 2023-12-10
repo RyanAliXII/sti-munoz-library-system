@@ -20,7 +20,7 @@ type BagRepository interface {
 	CheckAllItemsFromBag(accountId string) error
 	UncheckAllItemsFromBag(accountId string) error
 	DeleteAllCheckedItems(accountId string) error 
-	CheckoutCheckedItems(accountId string) error
+	CheckoutCheckedItems(accountId string) (string, error)
 }
 type Bag struct {
 	db * sqlx.DB
@@ -181,20 +181,20 @@ func (repo * Bag) DeleteAllCheckedItems(accountId string) error {
 	return err
 }
 
-func (repo * Bag) CheckoutCheckedItems(accountId string) error {
+func (repo * Bag) CheckoutCheckedItems(accountId string) (string, error) {
 
 	settings := repo.settingsRepo.Get()
 	if settings.DuePenalty.Value == 0 {
 		settingsErr := fmt.Errorf("due penalty value is 0")
 		logger.Error(settingsErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("DuePenaltySettings"))
-		return settingsErr
+		return "", settingsErr
 	}
 
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		transaction.Rollback()
 		logger.Error(transactErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("transactErr"))
-		return transactErr
+		return "", transactErr
 	}
 	query:= `
 	SELECT bag.id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number, bag.book_id, is_checked, bag.is_ebook, (CASE WHEN bb.accession_id is not null then false else true END) as is_available  FROM bag_view as bag
@@ -209,7 +209,7 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 	if err != nil {
 	
 		transaction.Rollback()
-		return err
+		return "", err
 	}
 	groupId := uuid.New().String()
 	physicalBooks := make([]model.BorrowedBook, 0)	
@@ -238,15 +238,14 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_book(accession_id, group_id, account_id, status_id, penalty_on_past_due ) VALUES(:accession_id, :group_id, :account_id, :status_id, :penalty_on_past_due)", physicalBooks)
 		if err != nil {
 			transaction.Rollback()
-			return err
+			return "",err
 		}
 	}
 	if len(ebooks) > 0 {
-		fmt.Println("EXECUTED")
 		_, err = transaction.NamedExec("INSERT INTO borrowing.borrowed_ebook(book_id, group_id, account_id, status_id ) VALUES(:book_id, :group_id, :account_id, :status_id)", ebooks)
 		if err != nil {
 			transaction.Rollback()
-			return err
+			return "",err
 		}
 	}
 
@@ -254,18 +253,18 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) error {
 	_, err = transaction.Exec(query, accountId)
 	if err != nil {
 		transaction.Rollback()
-		return err
+		return "",err
 	}
 	
 	query = `DELETE FROM circulation.ebook_bag  where account_id =  $1 and is_checked=true`
 	_, err = transaction.Exec(query, accountId)
 	if err != nil {
 		transaction.Rollback()
-		return err
+		return "",err
 	}
 
 	transaction.Commit()
-	return nil
+	return groupId,nil
 }
 
 

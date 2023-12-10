@@ -1,4 +1,10 @@
-import { Account, Book, BorrowedCopy, BorrowingTransaction } from "./types";
+import {
+  Account,
+  Book,
+  BorrowedCopy,
+  BorrowingTransaction,
+  GameLog,
+} from "./types";
 
 export const BookInitialValue: Book = {
   title: "",
@@ -9,7 +15,10 @@ export const BookInitialValue: Book = {
     name: "",
     id: 0,
     prefix: "",
-    hasOwnAccession: false,
+    accessionTable: "",
+    isDeleteable: false,
+    isSubCollection: false,
+    mainCollectionId: 0,
   },
   publisher: {
     name: "",
@@ -39,8 +48,11 @@ export const AccountInitialValue: Account = {
   givenName: "",
   surname: "",
   id: "",
+  programCode: "",
   isActive: false,
   isDeleted: false,
+  userType: "",
+  programName: "",
   metadata: {
     approvedBooks: 0,
     cancelledBooks: 0,
@@ -70,10 +82,13 @@ export const BorrowedCopyInitialValue: BorrowedCopy = {
 export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
     displayName: "",
+    programCode: "",
     email: "",
     givenName: "",
     surname: "",
     id: "",
+    userType: "",
+    programName: "",
     isActive: false,
     isDeleted: false,
     metadata: {
@@ -93,7 +108,7 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   isReturned: false,
 };
 
-export const GameLogInitialValue = {
+export const GameLogInitialValue: GameLog = {
   accountId: "",
   createdAt: "",
   client: AccountInitialValue,
@@ -104,4 +119,6 @@ export const GameLogInitialValue = {
   },
   gameId: "",
   id: "",
+  isLoggedOut: false,
+  loggedOutAt: "",
 };

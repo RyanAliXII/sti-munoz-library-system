@@ -12,6 +12,7 @@ import { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import NewDateSlotModal from "./NewDateSlotModal";
+import HasAccess from "@components/auth/HasAccess";
 
 const DateSlotPage = () => {
   const {
@@ -57,9 +58,11 @@ const DateSlotPage = () => {
   return (
     <Container>
       <div className="py-3">
-        <Button color="primary" onClick={openNewSlotModal}>
-          New Slot
-        </Button>
+        <HasAccess requiredPermissions={["DateSlot.Add"]}>
+          <Button color="primary" onClick={openNewSlotModal}>
+            New Slot
+          </Button>
+        </HasAccess>
       </div>
       <Table>
         <Table.Head>
@@ -74,16 +77,18 @@ const DateSlotPage = () => {
                 <Table.Cell>{formatDate(slot.date)}</Table.Cell>
                 <Table.Cell>{slot.timeSlotProfile.name}</Table.Cell>
                 <Table.Cell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      color="failure"
-                      onClick={() => {
-                        initDelete(slot);
-                      }}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </div>
+                  <HasAccess requiredPermissions={["DateSlot.Delete"]}>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        color="failure"
+                        onClick={() => {
+                          initDelete(slot);
+                        }}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </div>
+                  </HasAccess>
                 </Table.Cell>
               </Table.Row>
             );

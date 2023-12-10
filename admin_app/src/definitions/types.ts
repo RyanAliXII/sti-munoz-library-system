@@ -1,4 +1,5 @@
 import { OnlineBorrowStatus } from "@internal/borrow-status";
+import { Message } from "postcss";
 
 export type User = {
   firstname?: string;
@@ -36,7 +37,15 @@ export type Section = {
   name: string;
   prefix: string;
   lastValue?: number;
-  hasOwnAccession: boolean;
+  isSubCollection: boolean;
+  isDeleteable: boolean;
+  accessionTable: string;
+  mainCollectionId: number;
+};
+export type Item = {
+  id: string;
+  name: string;
+  type: string;
 };
 
 export interface Book {
@@ -122,9 +131,29 @@ export type GameLog = {
   id: string;
   gameId: string;
   accountId: string;
+  loggedOutAt: string;
+  isLoggedOut: boolean;
   client: Account;
   game: Game;
   createdAt: string;
+};
+export type Notification = {
+  id: string;
+  isRead: boolean;
+  message: string;
+  link: string;
+  createdAt: string;
+};
+
+export type DeviceLog = {
+  id: string;
+  deviceId: string;
+  accountId: string;
+  client: Account;
+  device: Device;
+  createdAt: string;
+  loggedOutAt: string;
+  isLoggedOut: boolean;
 };
 export type Reservation = {
   id: string;
@@ -160,6 +189,10 @@ export type Account = {
   email: string;
   isActive: boolean;
   isDeleted: boolean;
+  programName: string;
+  userType: string;
+  programCode: string;
+  studentNumber?: string;
   metadata: {
     totalPenalty: number;
     checkedOutBooks: number;
@@ -226,7 +259,6 @@ export type Organization = {
 };
 
 export type Permission = {
-  id: number;
   name: string;
   value: string;
   description: string;
@@ -235,7 +267,7 @@ export type Permission = {
 export type Role = {
   id?: number;
   name: string;
-  permissions: Permission[];
+  permissions: string[];
 };
 export type AccountRole = {
   account: Account;
@@ -255,14 +287,16 @@ export type OnlineBorrowedBook = {
   client: Account;
 };
 
-export interface SettingsField<T> {
+export interface SettingsField {
   id: string;
   label: string;
   description: string;
-  value: T;
+  type: "int" | "date" | "string" | "boolean";
+  value: any;
+  defaultValue: any;
 }
 export type Settings = {
-  "app.due-penalty": SettingsField<number>;
+  [id: string]: SettingsField;
 };
 
 export type Penalty = {
@@ -270,8 +304,12 @@ export type Penalty = {
   description: string;
   amount: number;
   accountId: string;
+  item: string;
   account: Account;
   isSettled: boolean;
+  referenceNumber?: string;
+  remarks?: string;
+  proof?: string;
   settledAt: string | null; //iso-time-string
   createdAt: string; //iso-time-string
 };
@@ -293,6 +331,10 @@ export type LibraryStats = {
   monthlyBorrowedSections: BorrowedSection[];
   weeklyBorrowedSections: BorrowedSection[];
 };
+export type Metadata = {
+  pages: number;
+  records: number;
+};
 export type WalkInLog = {
   date: string;
   walkIns: number;
@@ -306,6 +348,18 @@ export type ScannerAccount = {
   description: string;
   password?: string;
   username: string;
+};
+export type UserType = {
+  id: number;
+  name: string;
+  hasProgram: boolean;
+};
+export type UserProgramOrStrand = {
+  id: number;
+  name: string;
+  code: string;
+  userTypeId: number;
+  userType: UserType;
 };
 
 export type ClientLog = {

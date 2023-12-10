@@ -12,6 +12,7 @@ import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import EditAuditModal from "./EditAuditModal";
 import NewAuditModal from "./NewAuditModal";
+import HasAccess from "@components/auth/HasAccess";
 
 const AuditPage = () => {
   const {
@@ -52,12 +53,14 @@ const AuditPage = () => {
       <Container>
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           <div className="flex justify-end w-full py-4">
-            <Button color="primary" onClick={openNewAuditModal}>
-              <div className="flex gap-2">
-                <AiOutlinePlus />
-                <span>New Audit</span>
-              </div>
-            </Button>
+            <HasAccess requiredPermissions={["Audit.Access"]}>
+              <Button color="primary" onClick={openNewAuditModal}>
+                <div className="flex gap-2">
+                  <AiOutlinePlus />
+                  <span>New Audit</span>
+                </div>
+              </Button>
+            </HasAccess>
           </div>
           <Table>
             <Table.Head>
@@ -70,25 +73,27 @@ const AuditPage = () => {
                   <Table.Row key={audit.id}>
                     <Table.Cell>{audit.name}</Table.Cell>
                     <Table.Cell className="flex gap-2">
-                      <Tippy content="Scan Books">
-                        <Link to={`/inventory/audits/${audit.id}`}>
-                          <Button size="xs" color="primary">
-                            <AiOutlineScan className=" text-lg cursor-pointer"></AiOutlineScan>
+                      <HasAccess requiredPermissions={["Audit.Access"]}>
+                        <Tippy content="Scan Books">
+                          <Link to={`/inventory/audits/${audit.id}`}>
+                            <Button size="xs" color="primary">
+                              <AiOutlineScan className=" text-lg cursor-pointer"></AiOutlineScan>
+                            </Button>
+                          </Link>
+                        </Tippy>
+                        <Tippy content="Edit">
+                          <Button
+                            size="xs"
+                            color="secondary"
+                            onClick={() => {
+                              setEditModalFormData({ ...audit });
+                              openEditAuditModal();
+                            }}
+                          >
+                            <AiOutlineEdit className=" text-lg cursor-pointer"></AiOutlineEdit>
                           </Button>
-                        </Link>
-                      </Tippy>
-                      <Tippy content="Edit">
-                        <Button
-                          size="xs"
-                          color="secondary"
-                          onClick={() => {
-                            setEditModalFormData({ ...audit });
-                            openEditAuditModal();
-                          }}
-                        >
-                          <AiOutlineEdit className=" text-lg cursor-pointer"></AiOutlineEdit>
-                        </Button>
-                      </Tippy>
+                        </Tippy>
+                      </HasAccess>
                     </Table.Cell>
                   </Table.Row>
                 );

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/google/uuid"
@@ -77,6 +78,19 @@ func (repo * Borrowing)handleQueue(transaction * sqlx.Tx, bookId string, accessi
 	_, err = transaction.Exec("UPDATE borrowing.queue set dequeued_at = now() where id = $1", queue.Id)
 	if err != nil {
 		return  err
+	}
+	bookTitle := ""
+	err = transaction.Get(&bookTitle, "SELECT title from catalog.book where id = $1", bookId)
+	if err != nil {
+		return err
+	}
+	err = repo.notificationRepo.NotifyClient(model.ClientNotification{
+		Message: fmt.Sprintf(`You are up! The book, titled "%s", is already pending.`, bookTitle),
+		AccountId: queue.AccountId,
+		Link: "/borrowed-books?statusId=1",
+	})
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
 	}
 	return nil
 }
@@ -234,9 +248,9 @@ func (repo * Borrowing) MarkAsCancelled(id string, remarks string) error{
 	return nil
 }
 
-func(repo *Borrowing) CancelByIdAndAccountId(id string, accountId string) error {
+func(repo *Borrowing) CancelByIdAndAccountId(id string, remarks string, accountId string) error {
 	//cancel the borrowed book only if it is pending and approved.
-	remarks := "Cancelled by user."
+	
 	borrowedBook := model.BorrowedBook{}
 	
 	err := repo.db.Get(&borrowedBook, "SELECT book,accession_id,is_ebook from borrowed_book_all_view where id = $1  LIMIT 1", id)

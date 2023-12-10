@@ -17,9 +17,10 @@ type GameRepository interface{
 	UpdateGame(game model.Game) error
 	DeleteGame(id string) error 
 	Log(log model.GameLog) error
-	GetLogs()([]model.GameLog, error)
+	GetLogs(filter * GameLogFilter)([]model.GameLog, Metadata, error)
 	DeleteLog(id string)(error) 
 	UpdateLog(log model.GameLog)(error)
+	GameLogout(id string) error 
 }
 func NewGameRepository () GameRepository {
 	return &Game{

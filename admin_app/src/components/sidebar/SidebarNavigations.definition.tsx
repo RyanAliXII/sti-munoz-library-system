@@ -58,8 +58,8 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        text: "Section",
-        to: "/books/sections",
+        text: "Collections",
+        to: "/books/collections",
         requiredPermissions: ["Section.Access"],
         icon: SiBookstack,
         items: [],
@@ -89,14 +89,29 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     ],
   },
   {
-    text: "Client",
+    text: "Patron",
     to: "/clients",
+    isCollapse: true,
     icon: MdManageAccounts,
     items: [
       {
         text: "Account",
         requiredPermissions: ["Account.Access"],
         to: "/clients/accounts",
+        icon: MdAccountCircle,
+        items: [],
+      },
+      {
+        text: "User Group",
+        requiredPermissions: ["Account.Access"],
+        to: "/users/types",
+        icon: MdAccountCircle,
+        items: [],
+      },
+      {
+        text: "Program/Strands",
+        requiredPermissions: ["Account.Access"],
+        to: "/users/program-strand",
         icon: MdAccountCircle,
         items: [],
       },
@@ -115,16 +130,16 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/borrowing/requests",
         items: [],
       },
-      {
-        text: "Borrow Book",
-        to: "/borrowing/checkout",
-        requiredPermissions: [
-          "Borrowing.Access",
-          "Book.Access",
-          "Account.Access",
-        ],
-        items: [],
-      },
+      // {
+      //   text: "Borrow Book",
+      //   to: "/borrowing/checkout",
+      //   requiredPermissions: [
+      //     "Borrowing.Access",
+      //     "Book.Access",
+      //     "Account.Access",
+      //   ],
+      //   items: [],
+      // },
       {
         text: "Queues",
         to: "/borrowing/queues",

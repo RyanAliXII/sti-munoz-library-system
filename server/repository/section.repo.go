@@ -23,7 +23,8 @@ func (repo *SectionRepository) New(section model.Section) error {
 	}
 	const TABLE_PREFIX = "accession_"
 	var tableName string
-	if section.HasOwnAccession {
+
+	if section.MainCollectionId == 0 {
 		t := time.Now().Unix()
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
@@ -33,8 +34,15 @@ func (repo *SectionRepository) New(section model.Section) error {
 			return insertErr
 		}
 	} else {
-		tableName = "accession_main"
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1,$2,$3)", section.Name, tableName, section.Prefix)
+		collection := model.Section{}
+		err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 and main_collection_id is null LIMIT 1", section.MainCollectionId)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
+			transaction.Rollback()
+			return err
+		}
+		tableName := collection.AccessionTable
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id)VALUES($1,$2,$3,$4)", section.Name, tableName, section.Prefix, section.MainCollectionId)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
@@ -79,22 +87,67 @@ func (repo * SectionRepository)Update(section model.Section) error {
 func (repo *SectionRepository) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
 	selectErr := repo.db.Select(&sections, `
-	SELECT id, 
+	SELECT section.id, 
 	name,
 	prefix,
-	(case when accession_table = 'accession_main' then false else true end) 
-	as has_own_accession, last_value from catalog.section 
+	accession_table,
+	(case when (count(book.id) > 0) then false else true end) is_deleteable,
+	(case when main_collection_id is null then false else true end) 
+	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
-	ORDER BY created_at DESC`)
+	LEFT join catalog.book on section.id = book.section_id 
+	where section.deleted_at is null
+	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
 	}
 	return sections
 }
-func (repo *SectionRepository) GetOne(id int) model.Section {
-	var section model.Section
 
-	return section
+func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
+	section := model.Section{}
+	err := repo.db.Get(&section,`
+	SELECT section.id, 
+	name,
+	prefix,
+	accession_table,
+	(case when (count(book.id) > 0) then false else true end) is_deleteable,
+	(case when main_collection_id is null then false else true end) 
+	as is_sub_collection, last_value from catalog.section 
+	inner join accession.counter on accession_table = counter.accession
+	LEFT join catalog.book on section.id = book.section_id 
+	where section.deleted_at is null and section.id = $1
+	GROUP BY section.id, last_value ORDER BY section.created_at DESC LIMIT 1`, id)
+	
+	return section, err
+}
+func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
+	var sections []model.Section = make([]model.Section, 0)
+	selectErr := repo.db.Select(&sections, `
+	SELECT section.id, 
+	name,
+	prefix,
+	accession_table,
+	(case when (count(book.id) > 0) then false else true end) is_deleteable,
+	(case when main_collection_id is null then false else true end) 
+	as is_sub_collection, last_value from catalog.section 
+	inner join accession.counter on accession_table = counter.accession
+	LEFT join catalog.book on section.id = book.section_id
+	where main_collection_id is null and section.deleted_at is null
+	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
+	return sections, selectErr
+}
+
+func (repo * SectionRepository)Delete(id int) error {
+	section, err := repo.GetById(id)
+	if err != nil{
+		return err
+	}
+	if(!section.IsDeletable){
+		return fmt.Errorf("section is not deleteable")
+	}
+	_, err = repo.db.Exec("UPDATE catalog.section set deleted_at = NOW() where id = $1", id)
+	return err
 }
 func NewSectionRepository() SectionRepositoryInterface {
 	return &SectionRepository{
@@ -105,6 +158,8 @@ func NewSectionRepository() SectionRepositoryInterface {
 type SectionRepositoryInterface interface {
 	New(section model.Section) error
 	Get() []model.Section
-	GetOne(id int) model.Section
 	Update(section model.Section) error
+	GetMainCollections()([]model.Section, error )
+	GetById(id int)(model.Section, error)
+	Delete(id int) error
 }

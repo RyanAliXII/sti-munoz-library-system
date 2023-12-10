@@ -3,15 +3,14 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/acl"
+	"github.com/lib/pq"
 )
 
 type Role struct {
 	Id          int         `json:"id" db:"id"`
 	Name        string      `json:"name" db:"name"`
-	Permissions Permissions `json:"permissions" db:"permissions"`
+	Permissions pq.StringArray `json:"permissions" db:"permissions"`
 }
 
 
@@ -26,27 +25,27 @@ type Permission struct {
 	Value string `json:"value" `
 	Description string `json:"description"`
 }
-type Permissions []Permission
 
 
-func(p  * Permissions) ExtractValues() acl.PermissionsList {
-	list := acl.PermissionsList{}
-	for _, p := range *p{
-		list = append(list, p.Value)
-	} 
-	return list;
-}
 
-func (instance Permissions) Value() (driver.Value, error) {
-	return json.Marshal(instance)
-}
-func (instance *Permissions) Scan(value interface{}) error {
-    b, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
-	}
-	return json.Unmarshal(b, &instance)
-}
+// func(p  * Permissions) ExtractValues() acl.PermissionsList {
+// 	list := acl.PermissionsList{}
+// 	for _, p := range *p{
+// 		list = append(list, p.Value)
+// 	} 
+// 	return list;
+// }
+
+// func (instance Permissions) Value() (driver.Value, error) {
+// 	return json.Marshal(instance)
+// }
+// func (instance *Permissions) Scan(value interface{}) error {
+//     b, ok := value.([]byte)
+// 	if !ok {
+// 		return errors.New("type assertion to []byte failed")
+// 	}
+// 	return json.Unmarshal(b, &instance)
+// }
 
 func (instance *RoleJSON) Scan(value interface{}) error {
 	val, valid := value.([]byte)

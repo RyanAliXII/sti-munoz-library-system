@@ -148,7 +148,7 @@ const PublisherPage = () => {
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex gap-2">
-                          <HasAccess requiredPermissions={["Publisher.Access"]}>
+                          <HasAccess requiredPermissions={["Publisher.Edit"]}>
                             <Tippy content="Edit">
                               <Button
                                 size="xs"
@@ -162,7 +162,7 @@ const PublisherPage = () => {
                               </Button>
                             </Tippy>
                           </HasAccess>
-                          <HasAccess requiredPermissions={["Publisher.Access"]}>
+                          <HasAccess requiredPermissions={["Publisher.Delete"]}>
                             <Tippy content="Delete">
                               <Button
                                 size="xs"

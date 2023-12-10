@@ -16,4 +16,5 @@ func SectionRoutes(router *gin.RouterGroup) {
 	middlewares.ValidateBody[SectionBody],
 	controller.NewCategory)
 	router.PUT("/:id", middlewares.ValidateBody[UpdateSectionBody], controller.UpdateSection)
+	router.DELETE("/:id", controller.DeleteCollection)
 }

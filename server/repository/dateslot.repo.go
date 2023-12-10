@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
@@ -42,7 +40,7 @@ func (repo * DateSlot)NewSlots(dateSlots []model.DateSlot) error {
 			"profile_id": goqu.L("EXCLUDED.profile_id"),
 			"deleted_at": goqu.L("null"),}))
 	query, args, err := ds.ToSQL()
-	fmt.Println(query)
+	
 	if err != nil {
 		return err
 	}

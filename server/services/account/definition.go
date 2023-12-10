@@ -19,8 +19,6 @@ type AccountBody struct {
 type ProfilePictureBody struct{
 	Image *multipart.FileHeader `form:"image" binding:"required"`
 }
-
-
 type AccountSlice struct {
 	Accounts []model.Account `json:"accounts" validate:"required,dive"`
 }
@@ -42,3 +40,10 @@ func( filter * AccountFilter) ExtractFilter(ctx  * gin.Context){
 	}
 }
 
+
+
+type AccountsActivateBody struct {
+	AccountIds []string `json:"accountIds"`
+	ProgramId int  `json:"programId"`
+	UserTypeId int  `json:"userTypeId"`
+}

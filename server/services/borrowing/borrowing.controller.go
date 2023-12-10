@@ -35,6 +35,7 @@ type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
 	bookRepo repository.BookRepositoryInterface
 	settingsRepo repository.SettingsRepositoryInterface
+	notificationRepo repository.NotificationRepository
 }
 func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 	body := CheckoutBody{}
@@ -175,8 +176,8 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	}
 	nowTime := time.Now().In(loc)
 	nowDate := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 0, 0, 0, 0, nowTime.Location())
-	layout := "2006-01-02"
-	parsedTime, err := time.Parse(layout, dateStr)
+	
+	parsedTime, err := time.Parse(time.DateOnly, dateStr)
 	if err != nil {
 		return err
 	}
@@ -188,12 +189,18 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	return nil
 }
 func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
-	requests, err := ctrler.borrowingRepo.GetBorrowingRequests()
+	filter := NewBorrowingRequestFilter(ctx)
+	requests,metadata, err := ctrler.borrowingRepo.GetBorrowingRequests(&repository.BorrowingRequestFilter{
+		From: filter.From,
+		To: filter.To,
+		Filter: filter.Filter,
+	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowRequests": requests,
+		"metadata": metadata,
 	}, "Borrow requests fetched."))
 }
 func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
@@ -321,6 +328,20 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBookById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctx.JSON(httpresp.Success200(nil, "Status updated."))
+		return
+	}
+	err = ctrler.notificationRepo.NotifyClient(model.ClientNotification{
+		Message: fmt.Sprintf("The book you have borrowed titled %s is ready for pick-up.", borrowedBook.Book.Title ),
+		Link: "/borrowed-books?statusId=2",
+		AccountId: borrowedBook.Client.Id,
+	})
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
+	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){
@@ -335,12 +356,28 @@ func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gi
 
 func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context){
 	id := ctx.Param("id")
+	body := UpdateBorrowStatusBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	accountId := ctx.GetString("requestorId")
-	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, accountId)
+	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, body.Remarks, accountId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("Cancel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
+	}
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBookById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("getBorrowedBookErr"))
+		return
+	}
+	err = ctrler.notificationRepo.NotifyAdminsWithPermission(model.AdminNotification{
+	 Message: fmt.Sprintf(`%s %s has cancelled borrowing the book titled"%s".`, 
+	 borrowedBook.Client.GivenName, borrowedBook.Client.Surname, borrowedBook.Book.Title),  
+	 AccountId: borrowedBook.Client.Id,
+	 Link: fmt.Sprintf("/borrowing/requests/%s", borrowedBook.GroupId) ,
+	}, "BorrowedBook.Read")
+	if err != nil {
+		logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
@@ -357,7 +394,7 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		logger.Error(err.Error(), slimlog.Error("isValideDueDate"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
-	}
+}
 	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsCheckedOut"))
@@ -371,5 +408,6 @@ func NewBorrowingController () BorrowingController {
 		borrowingRepo: repository.NewBorrowingRepository(),
 		settingsRepo: repository.NewSettingsRepository(),
 		bookRepo: repository.NewBookRepository(),
+		notificationRepo : repository.NewNotificationRepository(),
 	}
 }

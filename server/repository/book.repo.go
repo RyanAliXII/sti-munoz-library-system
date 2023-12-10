@@ -45,7 +45,7 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	}
 
 	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table, (case when accession_table = 'accession_main' then false else true end) as has_own_accession from catalog.section where id = $1 ", book.Section.Id)
+	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table from catalog.section where id = $1 ", book.Section.Id)
 	if selectSectionErr != nil {
 		transaction.Rollback()
 		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
@@ -120,6 +120,7 @@ func (repo *BookRepository) Get(filter filter.Filter) []model.Book {
 	copies,
 	subject, 
 	ebook,
+	accession_table,
 	pages,
 	cost_price,
 	edition,
@@ -172,6 +173,7 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	description, 
 	copies, pages,
 	cost_price,
+	accession_table,
 	edition,
 	year_published, 
 	received_at, 
@@ -295,6 +297,7 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	isbn, 
 	description, 
 	pages,
+	accession_table,
 	ebook,
 	copies,
 	cost_price,
@@ -411,4 +414,5 @@ type BookRepositoryInterface interface {
 	GetEbookById(id string, ) (*minio.Object, error)
 	RemoveEbookById(id string, ) error
 	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
+	MigrateCollection(sectionId int, bookIds []string)error
 }

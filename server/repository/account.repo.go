@@ -51,6 +51,10 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("profile_picture"),
 		goqu.C("surname"),
 		goqu.C("metadata"),
+		goqu.C("program_name"),
+		goqu.C("user_type"),
+		goqu.C("program_code"),
+		goqu.C("student_number"),
 	 ).From(goqu.T("account_view"))
 
 
@@ -169,7 +173,7 @@ func (repo *AccountRepository) GetAccount(filter * filter.Filter) []model.Accoun
 	return accounts
 }
 func (repo *AccountRepository) GetAccountById(id string) (model.Account, error) {
-	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 and deleted_at is null and active_since is not null LIMIT 1`
+	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 and deleted_at is null and is_active LIMIT 1`
 	account := model.Account{}
 	err := repo.db.Get(&account, query, id)
 	return account, err
@@ -193,6 +197,10 @@ func (repo *AccountRepository) SearchAccounts(filter * AccountFilter) ([]model.A
 		goqu.C("profile_picture"),
 		goqu.C("surname"),
 		goqu.C("metadata"),
+		goqu.C("program_name"),
+		goqu.C("program_code"),
+		goqu.C("user_type"),
+		goqu.C("student_number"),
 	).From(goqu.T("account_view"))
 	
 	ds = ds.Where(
@@ -321,10 +329,11 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
 
 	role := model.Role{}
-	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name, COALESCE(permissions, '[]') as permissions from system.account as ac
+	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name,  COALESCE(ARRAY_AGG(role_permission.value),'{}') as permissions from system.account as ac
 		LEFT JOIN system.account_role as ar on ac.id = ar.account_id
 		LEFT JOIN system.role on ar.role_id = role.id
-		where ac.id = $1`
+		LEFT JOIN system.role_permission on role.id  = role_permission.role_id
+		where ac.id = $1 GROUP BY role.id, ac.id`
 
 	getErr := repo.db.Get(&role, query, accountId)
 	if getErr != nil {
@@ -335,21 +344,16 @@ func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role,
 func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 
 	accountRoles := make(model.AccountRoles, 0)
-	query := `SELECT json_build_object('id', account.id, 
-	'givenName', account.given_name,
-	 'surname', account.surname, 
-	'displayName',account.display_name,
-	 'email', account.email,
-	 'profilePicture', account.profile_picture
-	 ) as account,
-	 json_build_object(
-	   'id', role.id,
-	   'name', role.name,
-	   'permissions', role.permissions
-	 ) as role
-	from system.account_role
-	INNER JOIN system.account on account_role.account_id = account.id
-	INNER JOIN system.role on account_role.role_id = role.id`
+	query := `SELECT account.json_format as account,
+	json_build_object(
+	  'id', role.id,
+	  'name', role.name,
+	  'permissions', COALESCE(ARRAY_AGG(role_permission.value),'{}')
+	) as role
+   from system.account_role
+   INNER JOIN account_view as account on account_role.account_id = account.id
+   INNER JOIN system.role on account_role.role_id = role.id
+   INNER JOIN system.role_permission on role.id  = role_permission.role_id GROUP BY account.id, account_role.id, role.id, account.json_format`
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
@@ -408,24 +412,24 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	transaction.Commit()
 	return nil
 }
-func(repo * AccountRepository)ActivateAccounts(accountIds []string) error {
-	dialect := goqu.Dialect("postgres")
-	if len(accountIds) == 0 {
-		return nil
-	}
-	ds := dialect.Update(goqu.T("account").Schema("system"))
-	ds = ds.Set(goqu.Record{"active_since": goqu.L("now()")})
-	ds = ds.Where(goqu.ExOr{
-		"id" : accountIds,
-	}).Prepared(true)
-	query, args, err := ds.ToSQL()
-	if err != nil {
-		return err
-	}
-	_, err = repo.db.Exec(query, args...)
+// func(repo * AccountRepository)ActivateAccounts(accountIds []string) error {
+// 	dialect := goqu.Dialect("postgres")
+// 	if len(accountIds) == 0 {
+// 		return nil
+// 	}
+// 	ds := dialect.Update(goqu.T("account").Schema("system"))
+// 	ds = ds.Set(goqu.Record{"active_since": goqu.L("now()")})
+// 	ds = ds.Where(goqu.ExOr{
+// 		"id" : accountIds,
+// 	}).Prepared(true)
+// 	query, args, err := ds.ToSQL()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, err = repo.db.Exec(query, args...)
 	
-	return err
-}
+// 	return err
+// }
 
 func(repo * AccountRepository)DisableAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
@@ -499,9 +503,10 @@ type AccountRepositoryInterface interface {
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	GetAccountById(id string) (model.Account, error)
 	UpdateProfilePictureById(id string, image * multipart.FileHeader) error
-	ActivateAccounts(accountIds []string) error
 	DeleteAccounts(accountIds []string) error 
 	DisableAccounts(accountIds []string) error
 	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
 	RestoreAccounts(accountIds []string) error
+	ActivateAccountBulk(accounts []model.AccountActivation) error 
+	ActivateAccounts(accountIds []string,  userTypeId int, programId int, validUntil string) error 
 }

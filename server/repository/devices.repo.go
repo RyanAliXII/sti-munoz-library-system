@@ -16,6 +16,9 @@ type DeviceRepository interface {
 	UpdateDevice(device model.Device) error
 	DeleteDevice(id string )error
 	GetDeviceById(id string) (model.Device, error)
+	NewDeviceLog(log model.DeviceLog) error 
+	GetDeviceLogs(*DeviceLogFilter) ([]model.DeviceLog, Metadata, error)
+	DeviceLogout(id string) error 
 }
 func NewDevice()DeviceRepository{
 	return &Device{
@@ -53,5 +56,7 @@ func (repo * Device)GetDeviceById(id string) (model.Device, error){
 	err := repo.db.Get(&device,"SELECT id, name, description, available from services.device where deleted_at is null and id = $1 LIMIT 1", id)
 	return device, err
 }
+
+
 
 

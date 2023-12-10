@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"encoding/json"
+	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -18,35 +18,86 @@ type SystemRepository struct {
 }
 
 func (repo *SystemRepository) NewRole(role model.Role) error {
-	permissions, marshallErr := json.Marshal(role.Permissions)
-	if marshallErr != nil {
-		logger.Error(marshallErr.Error(), slimlog.Function("SystemRepository.NewRole"), slimlog.Error("marshallErr"))
-		return marshallErr
+	if len(role.Permissions) == 0 {
+		return fmt.Errorf("no permissions")
 	}
-	_, insertErr := repo.db.Exec("Insert into system.role(name, permissions) VALUES ($1, $2)", role.Name, permissions)
-
-	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("SystemRepository.NewRole"), slimlog.Error("insertErr"))
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
 	}
-	return insertErr
+	roleId := 0
+	err = transaction.Get(&roleId,"Insert into system.role(name) VALUES ($1) RETURNING id", role.Name)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	dialect := goqu.Dialect("postgres")
+	records := make([]goqu.Record, 0)
+	for _, p := range role.Permissions{
+		records = append(records, goqu.Record{
+			"value": p,
+			"role_id": roleId,
+		})
+	}
+	ds := dialect.Insert(goqu.T("role_permission").Schema("system")).Prepared(true).Rows(records)
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec(query, args...)
+	if err != nil {
+		transaction.Rollback()
+	}
+	transaction.Commit()
+	return err
 }
 func (repo *SystemRepository) UpdateRole(role model.Role) error {
-	permissions, marshallErr := json.Marshal(role.Permissions)
-	if marshallErr != nil {
-		logger.Error(marshallErr.Error(), slimlog.Function("SystemRepository.UpdateRole"), slimlog.Error("marshallErr"))
-		return marshallErr
+	if len(role.Permissions) == 0 {
+		return fmt.Errorf("no permissions")
 	}
-	_, updateErr := repo.db.Exec("UPDATE system.role SET name = $1, permissions = $2 where id = $3", role.Name, permissions, role.Id)
-
-	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function("SystemRepository.UpdateRole"), slimlog.Error("updateErr"))
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
 	}
-	return updateErr
+	_, err = repo.db.Exec("UPDATE system.role SET  name = $1 where id = $2", role.Name,  role.Id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec("Delete from system.role_permission where role_id = $1", role.Id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	dialect := goqu.Dialect("postgres")
+	records := make([]goqu.Record, 0)
+	for _, p := range role.Permissions{
+		records = append(records, goqu.Record{
+			"value": p,
+			"role_id": role.Id,
+		})
+	}
+	ds := dialect.Insert(goqu.T("role_permission").Schema("system")).Prepared(true).Rows(records)
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec(query, args...)
+	if err != nil {
+		transaction.Rollback()
+	}
+	transaction.Commit()
+	return err
 }
 func (repo *SystemRepository) GetRoles() []model.Role {
 
 	roles := make([]model.Role, 0)
-	selectErr := repo.db.Select(&roles, "Select id, name, permissions from system.role order by created_at desc")
+	selectErr := repo.db.Select(&roles, `Select role.id, name, COALESCE(ARRAY_AGG(role_permission.value),'{}') as permissions from system.role 
+	INNER JOIN system.role_permission on role.id = role_permission.role_id GROUP BY role.id order by role.created_at desc`)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("SystemRepository.GetRoles"), slimlog.Error("selectErr"))
 	}
@@ -78,19 +129,17 @@ func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error 
 func(repo * SystemRepository) GetAccountsWithAssignedRoles() model.AccountRoles{
 
 	accountRoles := make(model.AccountRoles, 0)
-	query := `SELECT json_build_object('id', account.id, 
-	'givenName', account.given_name,
-	 'surname', account.surname, 
-	'displayName',account.display_name,
-	 'email', account.email) as account,
-	 json_build_object(
-	   'id', role.id,
-	   'name', role.name,
-	   'permissions', role.permissions
-	 ) as role
-	from system.account_role
-	INNER JOIN system.account on account_role.account_id = account.id
-	INNER JOIN system.role on account_role.role_id = role.id`
+	query := `SELECT account.json_format as account,
+	json_build_object(
+	  'id', role.id,
+	  'name', role.name,
+	  'permissions', COALESCE(ARRAY_AGG(role_permission.value),'{}')
+	) as role
+   from system.account_role
+   INNER JOIN account_view as account on account_role.account_id = account.id
+   INNER JOIN system.role on account_role.role_id = role.id
+   INNER JOIN system.role_permission on role.id  = role_permission.role_id GROUP BY account.id, account_role.id, role.id, account.json_format`
+	
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
@@ -114,6 +163,19 @@ func NewSystemRepository() SystemRepositoryInterface {
 		db: db,
 	}
 }
+func(repo * SystemRepository) GetUserWithPermission(permission string) ([]model.AccountJSON, error){
+	accounts := make([]model.AccountJSON, 0)
+	query := `SELECT 
+	account.json_format as account
+    from system.account_role
+    INNER JOIN account_view as account on account_role.account_id = account.id
+    INNER JOIN system.role on account_role.role_id = role.id
+    INNER JOIN system.role_permission on role.id  = role_permission.role_id 
+	where value = $1
+  `
+  err := repo.db.Select(&accounts, query, permission)
+  return accounts, err
+}
 
 type SystemRepositoryInterface interface {
 	NewRole(role model.Role) error
@@ -122,5 +184,5 @@ type SystemRepositoryInterface interface {
 	AssignRole(accountRoles model.AccountRoles) error
 	GetAccountsWithAssignedRoles() model.AccountRoles
 	RemoveRoleAssignment(roleId int , accountId string)error
-	
+	GetUserWithPermission(permission string) ([]model.AccountJSON, error)
 }

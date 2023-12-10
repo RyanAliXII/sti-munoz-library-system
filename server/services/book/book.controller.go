@@ -60,7 +60,14 @@ func (ctrler * BookController) HandleGetBooks(ctx * gin.Context) {
 }	
 func (ctrler *BookController) getBooksAdmin(ctx *gin.Context) {
 	var books []model.Book = make([]model.Book, 0)
+	f := BookFilter{}
+	err := ctx.ShouldBindQuery(&f)
+
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+	}
 	filter := filter.ExtractFilter(ctx)
+
 	if len(filter.Keyword) > 0 {
 		books = ctrler.bookRepository.Search(filter)
 		metadata, metaErr := ctrler.recordMetadataRepo.GetBookSearchMetadata(filter) 
@@ -219,4 +226,5 @@ type BookControllerInterface interface {
 	GetEbookById(ctx * gin.Context)
 	RemoveEbookById(ctx * gin.Context)
 	UpdateEbookById(ctx * gin.Context)
+	MigrateCollection(ctx * gin.Context) 
 }

@@ -293,10 +293,8 @@ const BookEditForm = () => {
             />
           </FieldRow>
           <FieldRow
-            label="Section"
+            label="Collection"
             isRequired
-            fieldDetails="This refers to the book section or collection the book will be
-                added."
             ref={registerFormGroup("section.value")}
           >
             <CustomSelect

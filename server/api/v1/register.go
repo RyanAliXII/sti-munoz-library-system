@@ -13,9 +13,12 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/item"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/notification"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reports"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reservation"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/timeslot"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/user"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
@@ -52,4 +55,7 @@ func RegisterAPIV1(router *gin.Engine) {
 	dateslot.DateSlotRoutes(grp.Group("/date-slots"))
 	reservation.ReservationRoutes(grp.Group("/reservations"))
 	reports.ReportRoutes(grp.Group("/reports"))
+	user.UserRoutes(grp.Group("/users"))
+	item.ItemRoutes(grp.Group("/items"))
+	notification.NotificationRoutes(grp.Group("/notifications"))
 }

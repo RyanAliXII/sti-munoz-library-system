@@ -23,6 +23,14 @@ func(repo * SettingsRepository) Get()model.SettingsValue{
 
 	return settings.Value
 }
+func(repo * SettingsRepository)UpdateSettings(settings model.SettingsValue)error{
+	jsonBytes, err := settings.ToBytes()
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec("UPDATE system.settings set value = $1",  jsonBytes)
+	return err 
+}
 func NewSettingsRepository ()  SettingsRepositoryInterface{
 
 	return &SettingsRepository{
@@ -33,5 +41,5 @@ func NewSettingsRepository ()  SettingsRepositoryInterface{
 
 type SettingsRepositoryInterface interface {
 	Get() model.SettingsValue
-
+	UpdateSettings(settings model.SettingsValue)error
 }

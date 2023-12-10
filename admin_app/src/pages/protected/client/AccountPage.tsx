@@ -1,35 +1,35 @@
-import Container from "@components/ui/container/Container";
-import useDebounce from "@hooks/useDebounce";
-import { CustomInput } from "@components/ui/form/Input";
-import { useSwitch } from "@hooks/useToggle";
-import { useQueryClient } from "@tanstack/react-query";
-import { BaseSyntheticEvent, ChangeEvent, useReducer, useState } from "react";
-import { TbFileImport } from "react-icons/tb";
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
-import "@uppy/core/dist/style.css";
-import "@uppy/dashboard/dist/style.css";
 import CustomPagination from "@components/pagination/CustomPagination";
+import Container from "@components/ui/container/Container";
 import {
   ConfirmDialog,
   DangerConfirmDialog,
   WarningConfirmDialog,
 } from "@components/ui/dialog/Dialog";
+import { CustomInput } from "@components/ui/form/Input";
 import TableContainer from "@components/ui/table/TableContainer";
+import { Account } from "@definitions/types";
 import {
   useAccount,
   useAccountActivation,
-  useAccountDeletion,
   useAccountDisablement,
-  useAccountRestoration,
 } from "@hooks/data-fetching/account";
+import useDebounce from "@hooks/useDebounce";
+import { useSwitch } from "@hooks/useToggle";
+import { useQueryClient } from "@tanstack/react-query";
+import "@uppy/core/dist/style.css";
+import "@uppy/dashboard/dist/style.css";
 import { Button, Checkbox, Dropdown } from "flowbite-react";
+import { BaseSyntheticEvent, ChangeEvent, useReducer, useState } from "react";
+import { MdFilterList } from "react-icons/md";
+import { TbFileImport } from "react-icons/tb";
 import { toast } from "react-toastify";
 import { useSearchParamsState } from "react-use-search-params-state";
 import AccountTable from "./AccountTable";
+import ActivateModal from "./ActivateModal";
 import ImportAccountModal from "./ImportAccountModal";
 import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
-import { MdFilterList } from "react-icons/md";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -37,7 +37,7 @@ const AccountPage = () => {
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
     deleted: { type: "boolean", default: false },
-    active: { type: "boolean", default: false },
+    active: { type: "boolean", default: true },
     disabled: { type: "boolean", default: false },
   });
   const {
@@ -49,7 +49,6 @@ const AccountPage = () => {
   const queryClient = useQueryClient();
   const { isFetching, isError, data } = useAccount({
     filter: filterParams,
-
     onSuccess: (data) => {
       setTotalPages(data?.pages ?? 1);
     },
@@ -63,42 +62,16 @@ const AccountPage = () => {
   };
   const [selectedAccountIds, dispatchAccountIdSelection] = useReducer(
     selectedAccountIdsReducer,
-    new Set<string>([])
+    new Map<string, Account>()
   );
 
-  const activateAccounts = useAccountActivation({
-    onSuccess: () => {
-      toast.success("Account/s have been activated.");
-      dispatchAccountIdSelection({
-        payload: {},
-        type: "unselect-all",
-      });
-      queryClient.invalidateQueries(["accounts"]);
-    },
-    onSettled: () => {
-      closeConfirmActivateDialog();
-    },
-  });
-  const deleteAccounts = useAccountDeletion({
-    onSuccess: () => {
-      toast.success("Account/s have been deleted.");
-      dispatchAccountIdSelection({
-        payload: {},
-        type: "unselect-all",
-      });
-      queryClient.invalidateQueries(["accounts"]);
-    },
-    onSettled: () => {
-      closeConfirmDeleteDialog();
-    },
-  });
   const disableAccounts = useAccountDisablement({
     onSuccess: () => {
       toast.success("Account/s have been disabled.");
-      dispatchAccountIdSelection({
-        payload: {},
-        type: "unselect-all",
-      });
+      // dispatchAccountIdSelection({
+      //   payload: {},
+      //   type: "unselect-all",
+      // });
       queryClient.invalidateQueries(["accounts"]);
     },
     onSettled: () => {
@@ -106,25 +79,11 @@ const AccountPage = () => {
     },
   });
 
-  const restoreAccounts = useAccountRestoration({
-    onSuccess: () => {
-      toast.success("Account/s have been disabled.");
-      dispatchAccountIdSelection({
-        payload: {},
-        type: "unselect-all",
-      });
-      queryClient.invalidateQueries(["accounts"]);
-    },
-    onSettled: () => {
-      closeConfirmRestoreDialog();
-    },
-  });
-
   const isActivateButtonDisabled = selectedAccountIds.size === 0;
   const isDeleteButtonDisabled = selectedAccountIds.size === 0;
   const isClearSelectionButtonDisabled = selectedAccountIds.size === 0;
   const isDisableButtonDisabled = selectedAccountIds.size === 0;
-  const isRestoreButtonDisabled = selectedAccountIds.size === 0;
+
   const {
     isOpen: isConfirmActivateDialogOpen,
     close: closeConfirmActivateDialog,
@@ -146,18 +105,18 @@ const AccountPage = () => {
     close: closeConfirmRestoreDialog,
     open: openConfirmRestoreDialog,
   } = useSwitch();
-
+  const activateModal = useSwitch();
   const onConfirmDelete = () => {
-    deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+    // deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const onConfirmActivate = () => {
-    activateAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+    // activateAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const onConfirmDisable = () => {
-    disableAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+    // disableAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const onConfirmRestore = () => {
-    restoreAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+    // restoreAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const clearAllSelection = () => {
     dispatchAccountIdSelection({ type: "unselect-all", payload: {} });
@@ -167,6 +126,10 @@ const AccountPage = () => {
     const name = event.target.name;
     const isChecked = event.target.checked;
     setFilterParams({ [name]: isChecked, page: 1 });
+  };
+
+  const initActivate = () => {
+    activateModal.open();
   };
   return (
     <>
@@ -197,16 +160,6 @@ const AccountPage = () => {
                 />
                 <div className="text-sm">Disabled</div>
               </div>
-
-              <div className="p-2 flex gap-2 items-center">
-                <Checkbox
-                  color="primary"
-                  name="deleted"
-                  checked={filterParams?.deleted}
-                  onChange={handleFilterSelection}
-                />
-                <div className="text-sm">Deleted</div>
-              </div>
             </Dropdown>
             <CustomInput
               type="text"
@@ -223,8 +176,9 @@ const AccountPage = () => {
               Clear all selection
             </Button>
           </div>
-          <HasAccess requiredPermissions={["Account.Access"]}>
-            <div className="flex gap-2">
+
+          <div className="flex gap-2">
+            <HasAccess requiredPermissions={["Account.Edit"]}>
               <Dropdown
                 color="secondary"
                 label="Actions"
@@ -236,7 +190,7 @@ const AccountPage = () => {
               >
                 <Dropdown.Item
                   disabled={isActivateButtonDisabled}
-                  onClick={openConfirmActivateDialog}
+                  onClick={initActivate}
                 >
                   Activate
                 </Dropdown.Item>
@@ -246,19 +200,9 @@ const AccountPage = () => {
                 >
                   Disabled
                 </Dropdown.Item>
-                <Dropdown.Item
-                  disabled={isDeleteButtonDisabled}
-                  onClick={openConfirmDeleteDialog}
-                >
-                  Delete
-                </Dropdown.Item>
-                <Dropdown.Item
-                  disabled={isRestoreButtonDisabled}
-                  onClick={openConfirmRestoreDialog}
-                >
-                  Restore
-                </Dropdown.Item>
               </Dropdown>
+            </HasAccess>
+            <HasAccess requiredPermissions={["Account.Add"]}>
               <Button
                 color="primary"
                 onClick={() => {
@@ -268,14 +212,14 @@ const AccountPage = () => {
                 <TbFileImport className="text-lg" />
                 Import
               </Button>
-            </div>
-          </HasAccess>
+            </HasAccess>
+          </div>
         </div>
         <TableContainer>
           <LoadingBoundaryV2
             isLoading={isFetching}
             isError={isError}
-            contentLoadDelay={150}
+            contentLoadDelay={50}
           >
             <AccountTable
               selectedAccountIds={selectedAccountIds}
@@ -299,44 +243,49 @@ const AccountPage = () => {
           </LoadingBoundaryV2>
         </TableContainer>
       </Container>
-      <HasAccess requiredPermissions={["Account.Access"]}>
-        <ConfirmDialog
-          key="activate"
-          close={closeConfirmActivateDialog}
-          isOpen={isConfirmActivateDialogOpen}
-          title="Account Activation"
-          text="Are you want to activate selected accounts?"
-          onConfirm={onConfirmActivate}
-        />
-        <ConfirmDialog
-          key="restore"
-          close={closeConfirmRestoreDialog}
-          isOpen={isConfirmRestoreDialogOpen}
-          title="Account Restoration"
-          text="Are you sure want to restore account?"
-          onConfirm={onConfirmRestore}
-        />
-        <WarningConfirmDialog
-          close={closeConfirmDisabledDialog}
-          isOpen={isConfirmDisableDialogOpen}
-          title="Account Disablement"
-          text="Are you want to disabled selected accounts?"
-          onConfirm={onConfirmDisable}
-        />
 
-        <DangerConfirmDialog
-          close={closeConfirmDeleteDialog}
-          isOpen={isConfirmDeleteDialogOpen}
-          title="Account Deletion"
-          text="Are you want to delete selected accounts?"
-          onConfirm={onConfirmDelete}
-        />
+      <ConfirmDialog
+        key="activate"
+        close={closeConfirmActivateDialog}
+        isOpen={isConfirmActivateDialogOpen}
+        title="Account Activation"
+        text="Are you want to activate selected accounts?"
+        onConfirm={onConfirmActivate}
+      />
+      <ConfirmDialog
+        key="restore"
+        close={closeConfirmRestoreDialog}
+        isOpen={isConfirmRestoreDialogOpen}
+        title="Account Restoration"
+        text="Are you sure want to restore account?"
+        onConfirm={onConfirmRestore}
+      />
+      <WarningConfirmDialog
+        close={closeConfirmDisabledDialog}
+        isOpen={isConfirmDisableDialogOpen}
+        title="Account Disablement"
+        text="Are you want to disabled selected accounts?"
+        onConfirm={onConfirmDisable}
+      />
 
-        <ImportAccountModal
-          closeModal={closeImportModal}
-          isOpen={isImportModalOpen}
-        />
-      </HasAccess>
+      <DangerConfirmDialog
+        close={closeConfirmDeleteDialog}
+        isOpen={isConfirmDeleteDialogOpen}
+        title="Account Deletion"
+        text="Are you want to delete selected accounts?"
+        onConfirm={onConfirmDelete}
+      />
+
+      <ImportAccountModal
+        closeModal={closeImportModal}
+        isOpen={isImportModalOpen}
+      />
+      <ActivateModal
+        dispatchSelection={dispatchAccountIdSelection}
+        selectedAccounts={selectedAccountIds}
+        closeModal={activateModal.close}
+        isOpen={activateModal.isOpen}
+      />
     </>
   );
 };

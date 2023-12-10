@@ -8,10 +8,12 @@ import (
 type Section struct {
 	Id              int    `json:"id" db:"id"`
 	Name            string `json:"name" db:"name"`
-	HasOwnAccession bool   `json:"hasOwnAccession" db:"has_own_accession"`
+	IsSubCollection bool   `json:"isSubCollection" db:"is_sub_collection"`
 	Prefix 			string `json:"prefix" db:"prefix"`
 	LastValue 		int `json:"lastValue" db:"last_value"`
 	AccessionTable  string `json:"accessionTable" db:"accession_table"`
+	MainCollectionId int `json:"mainCollectionId" db:"main_collection_id"`
+	IsDeletable bool `json:"isDeleteable" db:"is_deleteable"`
 }
 type SectionJSON struct {
 	Section

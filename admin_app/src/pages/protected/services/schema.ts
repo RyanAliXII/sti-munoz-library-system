@@ -16,6 +16,15 @@ export const LogGameValidation = object({
   gameId: string().required("Game is required.").uuid("Game is required."),
 });
 
+export const LogDeviceValidation = object({
+  accountId: string()
+    .required("Client is required.")
+    .uuid("Client is required."),
+  deviceId: string()
+    .required("Device is required.")
+    .uuid("Device is required."),
+});
+
 export const DeviceValidation = object({
   name: string()
     .required("Name is required.")

@@ -1,6 +1,7 @@
 package borrowing
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -14,6 +15,8 @@ import (
 
 type BorrowingQueue struct {
 	queueRepo repository.BorrowingQueueRepository
+	notificatinRepo repository.NotificationRepository
+	accountRepo repository.AccountRepositoryInterface
 }
 type BorrowingQueueController interface {
 	Queue( * gin.Context)
@@ -23,11 +26,14 @@ type BorrowingQueueController interface {
 	UpdateQueueItems(ctx * gin.Context)
 	DequeueItem(ctx * gin.Context) 
 	GetInactiveQueueItems(ctx * gin.Context)
+	
 }
 
 func NewBorrowingQueue()BorrowingQueueController{
 	return &BorrowingQueue{
      queueRepo: repository.NewBorrowingQueue(),
+	 notificatinRepo: repository.NewNotificationRepository(),
+	 accountRepo: repository.NewAccountRepository(),
 	}
 }
 
@@ -55,11 +61,20 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
+	account, err := ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(accountId)
+	if err != nil {
+		logger.Error(err.Error())
+	} 
+	err = ctrler.notificatinRepo.NotifyAdminsWithPermission(model.AdminNotification{
+		Message: fmt.Sprintf("%s %s has queued to a book.", account.GivenName, account.Surname),
+		AccountId: account.Id,
+		Link: fmt.Sprintf("/borrowing/queues/%s", body.BookId),
+	}, "Queue.Read")
+	if err != nil {
+		logger.Error(err.Error())
+	}
 	ctx.JSON(httpresp.Success200(nil, "Added to queue successfully."))
 }
-
-
-
 func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {
 	app := ctx.GetString("requestorApp")
 	if app == azuread.ClientAppClientId{

@@ -169,10 +169,10 @@ const AuthorPage = () => {
             </Table.Body>
           </Table>
         </div>
-        <HasAccess requiredPermissions={["Author.Access"]}>
+        <HasAccess requiredPermissions={["Author.Add"]}>
           <AddAuthorModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
         </HasAccess>
-        <HasAccess requiredPermissions={["Author.Access"]}>
+        <HasAccess requiredPermissions={["Author.Edit"]}>
           <EditAuthorModal
             isOpen={isEditModalOpen}
             formData={selectedRow}
@@ -222,14 +222,14 @@ const AuthorTableRow: React.FC<AuthorTableRowType> = ({
         <div>{author.name}</div>
       </Table.Cell>
       <Table.Cell className="p-2 flex gap-2 items-center">
-        <HasAccess requiredPermissions={["Author.Access"]}>
+        <HasAccess requiredPermissions={["Author.Edit"]}>
           <Tippy content="Edit Author">
             <Button size="xs" color="secondary" onClick={openEditModal}>
               <AiOutlineEdit className="cursor-pointer  text-xl" />
             </Button>
           </Tippy>
         </HasAccess>
-        <HasAccess requiredPermissions={["Author.Access"]}>
+        <HasAccess requiredPermissions={["Author.Edit"]}>
           <Tippy content="Delete Author">
             <Button size="xs" color="failure" onClick={openDialog}>
               <AiOutlineDelete className="cursor-pointer  text-xl" />

@@ -13,6 +13,10 @@ const userInitialData: Account = {
   displayName: "",
   email: "",
   givenName: "",
+  programCode: "",
+  programName: "",
+  userType: "",
+  studentNumber: "",
   surname: "",
   id: " ",
   isActive: false,
@@ -60,14 +64,22 @@ export const AuthProvider = ({ children }: BaseProps) => {
       });
 
       const user = await fetchLoggedInUserData(tokens.accessToken);
-      const accountData: Omit<Account, "metadata" | "isActive" | "isDeleted"> =
-        {
-          id: user.data.id,
-          displayName: user.data.displayName,
-          email: user.data.mail,
-          givenName: user.data.givenName,
-          surname: user.data.surname,
-        };
+      const accountData: Omit<
+        Account,
+        | "metadata"
+        | "isActive"
+        | "isDeleted"
+        | "programCode"
+        | "programName"
+        | "studentNumber"
+        | "userType"
+      > = {
+        id: user.data.id,
+        displayName: user.data.displayName,
+        email: user.data.mail,
+        givenName: user.data.givenName,
+        surname: user.data.surname,
+      };
       await verifyAccount(accountData);
       await getPermissions();
 
@@ -88,7 +100,16 @@ export const AuthProvider = ({ children }: BaseProps) => {
     return response;
   };
   const verifyAccount = async (
-    account: Omit<Account, "metadata" | "isActive" | "isDeleted">
+    account: Omit<
+      Account,
+      | "metadata"
+      | "isActive"
+      | "isDeleted"
+      | "programCode"
+      | "programName"
+      | "studentNumber"
+      | "userType"
+    >
   ) => {
     const tokens = await msalClient.acquireTokenSilent({
       scopes: [apiScope("LibraryServer.Access")],

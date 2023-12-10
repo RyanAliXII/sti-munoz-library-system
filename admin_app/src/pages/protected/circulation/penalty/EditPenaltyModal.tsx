@@ -1,44 +1,55 @@
 import ClientSearchBox from "@components/ClientSearchBox";
 import { CustomInput } from "@components/ui/form/Input";
 
-import { Account, ModalProps, Penalty } from "@definitions/types";
+import { Account, Item, ModalProps, Penalty } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
-import { Button, Modal, Textarea } from "flowbite-react";
+import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { MdRemoveCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
 import { EditPenaltyValidation } from "./schema";
+import { useSwitch } from "@hooks/useToggle";
+import ItemSearchBox from "@components/ItemSearchBox";
 
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
 }
 const EditPenaltyModal = (props: EditPenaltyModalProps) => {
   const { Put } = useRequest();
-
-  const { form, handleFormInput, errors, validate, setForm, resetForm } =
-    useForm<{
-      id: string;
-      accountId: string;
-      description: string;
-      amount: number;
-    }>({
-      initialFormData: {
-        id: "",
-        accountId: "",
-        description: "",
-        amount: 0,
-      },
-      schema: EditPenaltyValidation,
-    });
+  const {
+    form,
+    handleFormInput,
+    errors,
+    validate,
+    setForm,
+    resetForm,
+    removeFieldError,
+  } = useForm<{
+    id: string;
+    accountId: string;
+    description: string;
+    amount: number;
+    item: string;
+  }>({
+    initialFormData: {
+      id: "",
+      accountId: "",
+      item: "",
+      description: "",
+      amount: 0,
+    },
+    schema: EditPenaltyValidation,
+  });
 
   useEffect(() => {
     if (props.isOpen) {
-      console.log(props.penalty);
+      itemInput.open();
       setForm({
         id: props.penalty.id ?? "",
+        item: props.penalty.item,
         accountId: props.penalty.accountId,
         description: props.penalty.description,
         amount: props.penalty.amount,
@@ -76,6 +87,11 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
       resetForm();
     },
   });
+  const itemInput = useSwitch();
+  const onSelectItem = (item: Item) => {
+    removeFieldError("item");
+    setForm((it) => ({ ...it, item: item.name }));
+  };
 
   return (
     <Modal show={props.isOpen} onClose={props.closeModal} dismissible>
@@ -134,13 +150,50 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
               </div>
             </div>
           )}
+
+          <div className="mt-1">
+            {!itemInput.isOpen && (
+              <div>
+                <ItemSearchBox
+                  label="Select item"
+                  setItem={onSelectItem}
+                  className={`w-full mb-2`}
+                />
+                <div className="h-2 flex items-center">
+                  <small className="text-red-500 ml-1 py-2">
+                    {errors?.item}
+                  </small>
+                </div>
+              </div>
+            )}
+
+            {itemInput.isOpen && (
+              <div className="flex-1">
+                <CustomInput
+                  value={form.item}
+                  name="item"
+                  onChange={handleFormInput}
+                  label="Item"
+                  placeholder="Enter Item name"
+                  error={errors?.item}
+                />
+              </div>
+            )}
+
+            <div className="mt-2">
+              <Button
+                color="primary"
+                outline
+                onClick={() => {
+                  itemInput.set(!itemInput.isOpen);
+                }}
+              >
+                {itemInput.isOpen ? "Select Item" : "Enter Item"}
+              </Button>
+            </div>
+          </div>
           <div className="mt-3">
-            <label
-              htmlFor="description"
-              className="text-sm text-gray-500 ml-0.5"
-            >
-              Description
-            </label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               name="description"
               value={form.description}

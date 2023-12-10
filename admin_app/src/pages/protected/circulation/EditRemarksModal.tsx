@@ -1,11 +1,11 @@
 import { LighButton, PrimaryButton } from "@components/ui/button/Button";
-
 import { TextAreaClasses } from "@components/ui/form/Input";
 import { BorrowedBook, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
+import { Button, Label, Modal, Textarea } from "flowbite-react";
 
 import React, { FormEvent, useEffect } from "react";
-import Modal from "react-responsive-modal";
+import { FaSave } from "react-icons/fa";
 
 interface RemarksModalProps extends ModalProps {
   onConfirm: ({}: { remarks: string }) => void;
@@ -35,40 +35,36 @@ export const EditRemarksModal: React.FC<RemarksModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Modal
-      focusTrapped={false}
-      open={isOpen}
-      onClose={closeModal}
-      center
-      showCloseIcon={false}
-      classNames={{ modal: "w-11/12 md:w-5/12 lg:w-5/12 xl:w-3/12 rounded" }}
-      containerId="dueDateInputOverlay"
-      modalId="dueDateInputModal"
-    >
-      <form onSubmit={onSubmit}>
-        <div className="w-full  mt-2">
-          <div className="px-2 mb-4">
-            <h1 className="text-xl font-medium">Edit Remarks</h1>
-          </div>
-          <div className="mb-3">
-            <div>
-              <label>Remarks</label>
-              <textarea
-                value={form.remarks}
-                name="remarks"
-                onChange={handleFormInput}
-                className={TextAreaClasses.DefaultClasslist}
-              ></textarea>
+    <Modal show={isOpen} onClose={closeModal} size="lg" dismissible>
+      <Modal.Header>Edit Remarks</Modal.Header>
+      <Modal.Body>
+        <form onSubmit={onSubmit}>
+          <div className="w-full ">
+            <div className="mb-3">
+              <div>
+                <Label>Remarks</Label>
+                <Textarea
+                  value={form.remarks}
+                  name="remarks"
+                  onChange={handleFormInput}
+                  className={TextAreaClasses.DefaultClasslist}
+                />
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <Button color="primary" type="submit">
+                <div className="flex gap-1 items-center">
+                  <FaSave />
+                  Save
+                </div>
+              </Button>
+              <Button color="gray" onClick={closeModal} type="button">
+                Cancel
+              </Button>
             </div>
           </div>
-          <div className="flex gap-1 mt-2 p-2">
-            <PrimaryButton>Save</PrimaryButton>
-            <LighButton onClick={closeModal} type="button">
-              Cancel
-            </LighButton>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Modal.Body>
     </Modal>
   );
 };

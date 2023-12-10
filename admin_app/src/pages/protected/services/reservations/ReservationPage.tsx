@@ -95,7 +95,7 @@ const ReservationPage = () => {
         <Table>
           <Table.Head>
             <Table.HeadCell>Created At</Table.HeadCell>
-            <Table.HeadCell>Client</Table.HeadCell>
+            <Table.HeadCell>Patron</Table.HeadCell>
             <Table.HeadCell>Device</Table.HeadCell>
             <Table.HeadCell>Reservation Date</Table.HeadCell>
             <Table.HeadCell>Status</Table.HeadCell>

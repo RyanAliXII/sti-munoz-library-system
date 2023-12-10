@@ -1,3 +1,4 @@
+import HasAccess from "@components/auth/HasAccess";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import TableContainer from "@components/ui/table/TableContainer";
 import { BorrowingQueueItem } from "@definitions/types";
@@ -83,36 +84,40 @@ const ActiveQueueItemsTable: FC<QueueItemsTableProps> = ({
                 <Table.Cell>{ordinal(idx + 1)}</Table.Cell>
                 <Table.Cell>
                   <div className="flex gap-2">
-                    <Tippy content="Move Up">
+                    <HasAccess requiredPermissions={["Queue.Edit"]}>
+                      <Tippy content="Move Up">
+                        <Button
+                          color="primary"
+                          outline
+                          onClick={() => {
+                            moveUp(idx, item);
+                          }}
+                        >
+                          <FaArrowUp />
+                        </Button>
+                      </Tippy>
+                      <Tippy content="Move Down">
+                        <Button
+                          color="primary"
+                          outline
+                          onClick={() => {
+                            moveDown(idx, item);
+                          }}
+                        >
+                          <FaArrowDown />
+                        </Button>
+                      </Tippy>
+                    </HasAccess>
+                    <HasAccess requiredPermissions={["Queue.Delete"]}>
                       <Button
-                        color="primary"
-                        outline
+                        color="failure"
                         onClick={() => {
-                          moveUp(idx, item);
+                          initDequeue(item.id ?? "");
                         }}
                       >
-                        <FaArrowUp />
+                        Remove
                       </Button>
-                    </Tippy>
-                    <Tippy content="Move Down">
-                      <Button
-                        color="primary"
-                        outline
-                        onClick={() => {
-                          moveDown(idx, item);
-                        }}
-                      >
-                        <FaArrowDown />
-                      </Button>
-                    </Tippy>
-                    <Button
-                      color="failure"
-                      onClick={() => {
-                        initDequeue(item.id ?? "");
-                      }}
-                    >
-                      Remove
-                    </Button>
+                    </HasAccess>
                   </div>
                 </Table.Cell>
               </Table.Row>

@@ -18,7 +18,7 @@ const ProfileDropdown = () => {
     <div className="flex items-center relative text-left">
       <button className="flex items-center" onClick={toggle}>
         <img
-          className="rounded-full w-10 h-10"
+          className="rounded-full w-8 lg:w-10 lg:h-10"
           onError={({ currentTarget }) => {
             currentTarget.onerror = null;
             currentTarget.src = avatarUrl;
@@ -27,32 +27,7 @@ const ProfileDropdown = () => {
           alt="profile-image"
         ></img>
       </button>
-      <div>
-        {/* <button
-          type="button"
-          onClick={() => {
-            toggle();
-          }}
-          className="flex justify-center rounded-md  bg-white px-1 py-1 text-sm font-medium text-gray-700 "
-          id="menu-button"
-          aria-expanded="true"
-          aria-haspopup="true"
-        >
-          <svg
-            className="h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button> */}
-      </div>
+      <div></div>
       <div
         className={
           visible

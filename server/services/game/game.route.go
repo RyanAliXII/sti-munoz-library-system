@@ -17,4 +17,5 @@ func GameRoutes(router * gin.RouterGroup) {
 	router.GET("/logs", middlewares.BlockRequestFromClientApp, ctrler.GetGameLogs)
 	router.DELETE("/logs/:id", middlewares.BlockRequestFromClientApp, ctrler.DeleteGameLog)
 	router.PUT("/logs/:id", middlewares.BlockRequestFromClientApp, ctrler.UpdateGameLog)
-}
+	router.PATCH("/logs/:id/logout", middlewares.BlockRequestFromClientApp, ctrler.LogoutGame)
+} 
