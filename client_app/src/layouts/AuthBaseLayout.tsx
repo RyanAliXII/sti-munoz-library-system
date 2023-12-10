@@ -13,6 +13,7 @@ import { ImBooks } from "react-icons/im";
 import { IoIosNotifications } from "react-icons/io";
 import { RiFileList2Fill, RiUserFill } from "react-icons/ri";
 import { Link, NavLink } from "react-router-dom";
+import TimeAgo from "timeago-react";
 const AuthBaseLayout = ({ children }: BaseProps) => {
   const { data: notifications } = useNotifications();
   const queryClient = useQueryClient();
@@ -96,15 +97,33 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
               )}
             </div>
             <ul className="menu dropdown-content z-[1] p-2 shadow bg-base-100 rounded-box w-80 mt-4">
-              {notifications?.slice(0, 5).map((n) => {
+              {notifications?.slice(0, 2).map((n) => {
                 return (
                   <li className="border-b" key={n.id}>
-                    <div className="text-gray-700">{n.message}</div>
+                    <Link
+                      to={n.link}
+                      className={`py-5 rounded flex-col items-start ${
+                        n.link.length === 0 ? "pointer-events-none" : ""
+                      }`}
+                    >
+                      <div className="text-gray-700 text-sm">{n.message}</div>
+                      <TimeAgo
+                        className="text-blue-500 text-sm"
+                        datetime={n.createdAt}
+                      />
+                    </Link>
                   </li>
                 );
               })}
-
-              <Link to={"/notifications"}></Link>
+              <li className="text-gray-900 p-0">
+                <Link
+                  to="/notifications"
+                  className="underline underline-offset-1"
+                >
+                  View Notifications
+                </Link>
+              </li>
+              ;
             </ul>
           </div>
         </div>

@@ -20,6 +20,7 @@ export type ClientNotification = {
   id: string;
   message: string;
   isRead: boolean;
+  createdAt: string;
   link: string;
 };
 export type Author = {
