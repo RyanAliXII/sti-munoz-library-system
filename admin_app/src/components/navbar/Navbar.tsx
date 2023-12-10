@@ -1,7 +1,11 @@
 import { useMsal } from "@azure/msal-react";
 import { useAuthContext } from "@contexts/AuthContext";
 import { useSidebarState } from "@contexts/SiderbarContext";
-import { useNotifications } from "@hooks/data-fetching/notification";
+import {
+  useNotifications,
+  useNotificationsRead,
+} from "@hooks/data-fetching/notification";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Avatar,
   Badge,
@@ -32,6 +36,17 @@ const NavbarHeader: FC = function () {
   );
   avatarUrl.searchParams.set("name", `${user.givenName} ${user.surname}`);
   const { data: notifications } = useNotifications();
+  const queryClient = useQueryClient();
+  const notificationsRead = useNotificationsRead({
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+    },
+  });
+  const isAllRead = notifications?.every((n) => n.isRead);
+  const notificationTotal = notifications?.reduce((a, r) => {
+    if (!r.isRead) a++;
+    return a;
+  }, 0);
   return (
     <Navbar fluid>
       <div className="w-full p-3 lg:px-5 lg:pl-3">
@@ -83,27 +98,33 @@ const NavbarHeader: FC = function () {
               color=""
               className="border-none bg-none"
               label={
-                <div className="flex border-none">
+                <div
+                  className="flex border-none"
+                  onClick={() => {
+                    if (!isAllRead) notificationsRead.mutate({});
+                  }}
+                >
                   <IoIosNotifications className="text-xl"></IoIosNotifications>
-                  <Badge color="primary" className="text-xs">
-                    {notifications?.length ?? 0}
-                  </Badge>
+                  {!isAllRead && (
+                    <Badge color="primary" className="text-xs">
+                      {notificationTotal}
+                    </Badge>
+                  )}
                 </div>
               }
             >
               {notifications?.slice(0, 10)?.map((n) => {
                 return (
-                  <>
+                  <div key={n.id}>
                     <Dropdown.Item
                       className="py-5 rounded b "
-                      key={n.id}
                       to={n.link}
                       as={Link}
                     >
                       {n.message}
                     </Dropdown.Item>
                     <Dropdown.Divider />
-                  </>
+                  </div>
                 );
               })}
               <div className="px-5 pb-2">

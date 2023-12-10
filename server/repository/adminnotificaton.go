@@ -68,3 +68,8 @@ func (repo * Notification)GetAdminNotificationByAccountId(accountId string) ([]m
 	order by admin_notification.created_at desc`, accountId)
 	return notifications, err
 }
+
+func (repo * Notification)MarkAdminNotificationsAsRead(accountId string) ( error) {
+	_, err := repo.db.Exec("Update messaging.admin_notification set is_read = true where account_id = $1", accountId)
+	return  err
+}

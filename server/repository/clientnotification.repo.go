@@ -22,7 +22,7 @@ func(repo * Notification)NotifyClient(notif model.ClientNotification) error {
 		transaction.Rollback()
 		return err
 	}
-	fmt.Println(notif)
+	
 	_, err = transaction.Exec("INSERT INTO messaging.client_notification(notification_id, account_id, is_read, link) VALUES($1, $2, $3, $4)", 
 	notifId, notif.AccountId, notif.IsRead, notif.Link)
 	if err != nil {
@@ -46,4 +46,8 @@ func (repo * Notification)GetClientNotificationByAccountId(accountId string) ([]
 	where account_id = $1 
 	order by client_notification.created_at desc`, accountId)
 	return notifications, err
+}
+func (repo * Notification)MarkClientNotificationsAsRead(accountId string) ( error) {
+	_, err := repo.db.Exec("Update messaging.client_notification set is_read = true where account_id = $1", accountId)
+	return  err
 }

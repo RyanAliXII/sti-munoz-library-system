@@ -66,7 +66,6 @@ func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *
 			return
 			
 		case d := <-notificationBroadcaster.Message():
-		
 			writeErr := connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
 				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.ClientWriter"), slimlog.Error("writeErr"))

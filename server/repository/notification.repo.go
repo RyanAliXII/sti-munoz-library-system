@@ -19,6 +19,8 @@ type NotificationRepository interface {
 		GetAdminNotificationByAccountId(accountId string) ([]model.AdminNotification, error)
 		GetClientNotificationByAccountId(accountId string) ([]model.ClientNotification, error)
 		NotifyClient(notif model.ClientNotification) error
+		MarkAdminNotificationsAsRead(accountId string)( error) 
+		MarkClientNotificationsAsRead(accountId string) ( error) 
 }
 func(repo *  Notification) getUserWithPermission(permission string) ([]model.AccountJSON, error){
 	accounts := make([]model.AccountJSON, 0)

@@ -15,6 +15,7 @@ import { isBefore } from "date-fns";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { useSwitch } from "@hooks/useToggle";
 import { toast } from "react-toastify";
+import RemarksModal from "@components/ui/dialog/RemarksModal";
 const BorrowedBooksPage = () => {
   const [searchParams, setSearchParam] = useSearchParams();
   const { Get, Patch } = useRequest();
@@ -52,8 +53,13 @@ const BorrowedBooksPage = () => {
   const queryClient = useQueryClient();
 
   const cancelRequest = useMutation({
-    mutationFn: () =>
-      Patch(`/borrowing/borrowed-books/${selectedBorrowedBookId}/cancellation`),
+    mutationFn: (remarks: string) =>
+      Patch(
+        `/borrowing/borrowed-books/${selectedBorrowedBookId}/cancellation`,
+        {
+          remarks: remarks,
+        }
+      ),
     onSuccess: () => {
       toast.success("Request has been cancelled.");
       queryClient.invalidateQueries(["borrowedBooks"]);
@@ -280,14 +286,14 @@ const BorrowedBooksPage = () => {
           })}
         </LoadingBoundary>
       </div>
-      <DangerConfirmDialog
-        close={closeCanceConfirm}
-        isOpen={isCancelConfirmOpen}
-        title="Cancel Request!"
-        onConfirm={() => {
-          cancelRequest.mutate();
+
+      <RemarksModal
+        title="Cancel Book Borrowing"
+        onProceed={(remarks) => {
+          cancelRequest.mutate(remarks);
         }}
-        text="Are you sure you want to cancel borrow request?"
+        closeModal={closeCanceConfirm}
+        isOpen={isCancelConfirmOpen}
       />
     </div>
   );

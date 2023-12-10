@@ -19,6 +19,7 @@ export interface EditModalProps<T> extends ModalProps {
 export type ClientNotification = {
   id: string;
   message: string;
+  isRead: boolean;
   link: string;
 };
 export type Author = {

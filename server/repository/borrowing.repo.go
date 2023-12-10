@@ -23,12 +23,13 @@ type BorrowingRepository interface {
 	MarkAsCancelled(id string, remarks string) error
 	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
 	UpdateRemarks(id string, remarks string) error 
-	CancelByIdAndAccountId(id string, accountId string) error
+	CancelByIdAndAccountId(id string, remarks string, accountId string) error
 	GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error)
 	GetBorrowedBookById(id string) (model.BorrowedBook, error)
 }
 type Borrowing struct{
 	db * sqlx.DB
+	notificationRepo NotificationRepository
 }
 type BorrowingRequestFilter struct {
     From string
@@ -180,5 +181,6 @@ func(repo *Borrowing)UpdateRemarks(id string, remarks string) error {
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
 		db: db.Connect(),
+		notificationRepo: NewNotificationRepository(),
 	}
 }

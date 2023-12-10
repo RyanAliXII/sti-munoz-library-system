@@ -1,6 +1,6 @@
 import { ClientNotification } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { useQuery } from "@tanstack/react-query";
+import { MutationOptions, useMutation, useQuery } from "@tanstack/react-query";
 
 export const useNotifications = () => {
   const { Get } = useRequest();
@@ -9,12 +9,34 @@ export const useNotifications = () => {
       const { data: response } = await Get("/notifications", {});
       return response.data?.notifications ?? [];
     } catch (error) {
-      console.error(error);
       return [];
     }
   };
   return useQuery<ClientNotification[]>({
     queryFn: fetchNotifications,
     queryKey: ["notifications"],
+  });
+};
+
+export const useNotificationsRead = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, unknown, unknown>) => {
+  const { Patch } = useRequest();
+  return useMutation({
+    mutationFn: () =>
+      Patch(
+        `/notifications/read`,
+        {},
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
   });
 };

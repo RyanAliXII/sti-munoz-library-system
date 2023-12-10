@@ -333,7 +333,7 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
 	}
 	err = ctrler.notificationRepo.NotifyClient(model.ClientNotification{
-		Message: fmt.Sprintf("The Book you have borrowed titled %s is ready for pick-up.", borrowedBook.Book.Title ),
+		Message: fmt.Sprintf("The book you have borrowed titled %s is ready for pick-up.", borrowedBook.Book.Title ),
 		AccountId: borrowedBook.Client.Id,
 	})
 	if err != nil {
@@ -353,8 +353,10 @@ func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gi
 
 func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context){
 	id := ctx.Param("id")
+	body := UpdateBorrowStatusBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	accountId := ctx.GetString("requestorId")
-	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, accountId)
+	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, body.Remarks, accountId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("Cancel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

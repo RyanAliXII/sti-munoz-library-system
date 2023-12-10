@@ -206,6 +206,7 @@ const BorrowedBooksViewPage = () => {
                 <Table.HeadCell>Book Type</Table.HeadCell>
                 <Table.HeadCell>Status</Table.HeadCell>
                 <Table.HeadCell>Penalty</Table.HeadCell>
+                <Table.HeadCell>Remarks</Table.HeadCell>
                 <Table.HeadCell>Created At</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
@@ -213,9 +214,6 @@ const BorrowedBooksViewPage = () => {
                 {borrowedBooks?.map((borrowedBook) => {
                   return (
                     <Table.Row key={borrowedBook.id}>
-                      <Table.Cell>
-                        {new Date(borrowedBook.createdAt).toDateString()}
-                      </Table.Cell>
                       <Table.Cell className="font-bold flex items-center gap-2">
                         {borrowedBook.book.covers?.[0] ? (
                           <img
@@ -270,7 +268,10 @@ const BorrowedBooksViewPage = () => {
                           </span>
                         )}
                       </Table.Cell>
-
+                      <Table.Cell>{borrowedBook.remarks}</Table.Cell>
+                      <Table.Cell>
+                        {new Date(borrowedBook.createdAt).toDateString()}
+                      </Table.Cell>
                       <Table.Cell>
                         <HasAccess requiredPermissions={["BorrowedBook.Edit"]}>
                           <div className="flex gap-2">
@@ -283,6 +284,7 @@ const BorrowedBooksViewPage = () => {
                                 >
                                   <Button
                                     color="success"
+                                    isProcessing={updateRemarks.isLoading}
                                     onClick={() => {
                                       setSelectedBorrowedBook(
                                         borrowedBook.book
@@ -302,6 +304,7 @@ const BorrowedBooksViewPage = () => {
                               >
                                 <Button
                                   color="primary"
+                                  isProcessing={updateRemarks.isLoading}
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
@@ -317,6 +320,7 @@ const BorrowedBooksViewPage = () => {
                               <Tippy content="Checkout book.">
                                 <Button
                                   color="primary"
+                                  isProcessing={updateRemarks.isLoading}
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
@@ -333,6 +337,7 @@ const BorrowedBooksViewPage = () => {
                               <Tippy content="Edit due date.">
                                 <Button
                                   color="primary"
+                                  isProcessing={updateRemarks.isLoading}
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBook(borrowedBook);
@@ -350,6 +355,7 @@ const BorrowedBooksViewPage = () => {
                               !borrowedBook.isEbook && (
                                 <Tippy content="Mark borrowed book as unreturned.">
                                   <Button
+                                    isProcessing={updateRemarks.isLoading}
                                     color="warning"
                                     onClick={() => {
                                       setSelectedBorrowedBook(
@@ -370,6 +376,7 @@ const BorrowedBooksViewPage = () => {
                               <Tippy content="Cancel Request">
                                 <Button
                                   color="failure"
+                                  isProcessing={updateRemarks.isLoading}
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
                                     setBorrowedBookId(borrowedBook.id ?? "");
@@ -388,10 +395,8 @@ const BorrowedBooksViewPage = () => {
                                 BorrowStatus.Unreturned) &&
                               !borrowedBook.isEbook && (
                                 <Tippy content="Edit Remarks">
-                                  <button
-                                    className={
-                                      ButtonClasses.PrimaryOutlineButtonClasslist
-                                    }
+                                  <Button
+                                    color="primary"
                                     onClick={() => {
                                       setSelectedBorrowedBook(
                                         borrowedBook.book
@@ -402,7 +407,7 @@ const BorrowedBooksViewPage = () => {
                                     }}
                                   >
                                     <AiOutlineEdit />
-                                  </button>
+                                  </Button>
                                 </Tippy>
                               )}
                           </div>

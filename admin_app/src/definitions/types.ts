@@ -139,6 +139,7 @@ export type GameLog = {
 };
 export type Notification = {
   id: string;
+  isRead: boolean;
   message: string;
   link: string;
 };

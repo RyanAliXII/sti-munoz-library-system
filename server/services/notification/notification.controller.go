@@ -13,6 +13,8 @@ type Notification struct {
 }
 type NotificationController interface {
 	GetNotifications(ctx * gin.Context)
+	MarkAsRead(ctx * gin.Context)
+	
 }
 func NewNotificationController() NotificationController {
 	return &Notification{
@@ -45,7 +47,26 @@ func (ctrler *Notification) GetNotifications(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"notifications": []string{},
-	}, "Notifications fetched."))
-
-	
+	}, "Notifications fetched."))	
 } 
+func (ctrler * Notification)MarkAsRead(ctx * gin.Context) {
+	accountId := ctx.GetString("requestorId")
+	app := ctx.GetString("requestorApp")
+	if app == azuread.AdminAppClientId{
+		err := ctrler.notificationRepo.MarkAdminNotificationsAsRead(accountId)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		ctx.JSON(httpresp.Success200(gin.H{}, "Notifications read."))
+		return
+	}
+	if app == azuread.ClientAppClientId{
+	 err := ctrler.notificationRepo.MarkClientNotificationsAsRead(accountId)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		ctx.JSON(httpresp.Success200(nil, "Notifications read."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Notifications read."))	
+}
