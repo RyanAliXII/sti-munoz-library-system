@@ -18,7 +18,10 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       sourceOfFund: "",
       ebook: "",
       section: {
-        hasOwnAccession: false,
+        accessionTable: "",
+        isDeleteable: false,
+        isSubCollection: false,
+        mainCollectionId: 0,
         name: "",
         prefix: "",
         id: 0,

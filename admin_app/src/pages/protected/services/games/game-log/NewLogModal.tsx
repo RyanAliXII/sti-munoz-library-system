@@ -21,7 +21,12 @@ const NewLogModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
     removeErrors,
     removeFieldError,
     resetForm,
-  } = useForm<Omit<GameLog, "id" | "client" | "game" | "createdAt">>({
+  } = useForm<
+    Omit<
+      GameLog,
+      "id" | "client" | "game" | "createdAt" | "loggedOutAt" | "isLoggedOut"
+    >
+  >({
     initialFormData: {
       accountId: "",
       gameId: "",
