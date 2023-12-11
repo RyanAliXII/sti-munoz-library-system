@@ -87,6 +87,8 @@ type Accession struct {
 	IsCheckedOut bool     `json:"isCheckedOut" db:"is_checked_out"`
 	IsAvailable  bool     `json:"isAvailable" db:"is_available"`
 	IsWeeded     bool `json:"isWeeded" db:"is_weeded"`
+	IsMissing    bool `json:"isMissing" db:"is_missing"`
+	Remarks     string `json:"remarks" db:"remarks"`
 	Book         BookJSON `json:"book" db:"book"`
 }
 

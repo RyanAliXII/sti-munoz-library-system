@@ -83,7 +83,9 @@ export type Accession = {
   number: number;
   copyNumber: number;
   isAvailable: boolean;
-  isWeeded: false;
+  isWeeded: boolean;
+  isMissing: boolean;
+  remarks: string;
 };
 
 export interface DetailedAccession extends Accession {

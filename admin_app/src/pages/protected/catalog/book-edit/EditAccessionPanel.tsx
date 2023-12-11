@@ -17,8 +17,7 @@ import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
-import { FaTimes } from "react-icons/fa";
-import { GiRecycle } from "react-icons/gi";
+import { FaQuestion, FaTimes, FaUndo } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
@@ -26,6 +25,7 @@ import { number, object } from "yup";
 enum Action {
   Weed = 1,
   Recirculate = 2,
+  Missing = 3,
 }
 type NewCopiesBody = {
   copies: number;
@@ -50,7 +50,7 @@ const EditAccessionPanel = () => {
   } = useSwitch();
   const { Patch } = useRequest();
   const queryClient = useQueryClient();
-
+  const [action, setAction] = useState<Action>(1);
   const { errors, handleFormInput, validate, removeFieldError } =
     useForm<NewCopiesBody>({
       initialFormData: {
@@ -145,7 +145,7 @@ const EditAccessionPanel = () => {
                 <Table.HeadCell>Accession Number</Table.HeadCell>
                 <Table.HeadCell>Copy Number</Table.HeadCell>
                 <Table.HeadCell>Status</Table.HeadCell>
-
+                <Table.HeadCell>Remarks</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y dark:divide-gray-700">
@@ -155,30 +155,54 @@ const EditAccessionPanel = () => {
                       <Table.Cell>{accession.number}</Table.Cell>
                       <Table.Cell>{accession.copyNumber}</Table.Cell>
                       <Table.Cell>
-                        {accession.isWeeded ? (
-                          <span className="text-red-400">Weeded</span>
+                        {accession.isWeeded || accession.isMissing ? (
+                          <span className="text-red-400">
+                            {accession.isWeeded ? "Weeded" : "Missing"}
+                          </span>
                         ) : (
                           <span className="text-green-500">Active</span>
                         )}
                       </Table.Cell>
-
                       <Table.Cell>
-                        {!accession.isWeeded && (
-                          <Tippy content="Weed book">
-                            <Button
-                              size={"xs"}
-                              color="failure"
-                              onClick={() => {
-                                setSelectedAccession(accession?.id ?? "");
-                                openWeedingDialog();
-                              }}
-                            >
-                              <FaTimes className="text-lg" />
-                            </Button>
-                          </Tippy>
+                        {accession.isWeeded || accession.isMissing ? (
+                          <span>{accession.remarks}</span>
+                        ) : (
+                          "N/A"
                         )}
-                        {accession.isWeeded && (
-                          <Tippy content="Re-circulate book">
+                      </Table.Cell>
+                      <Table.Cell>
+                        {!accession.isWeeded && !accession.isMissing && (
+                          <div className="flex gap-2">
+                            <Tippy content="Weed book">
+                              <Button
+                                size={"xs"}
+                                color="failure"
+                                onClick={() => {
+                                  setSelectedAccession(accession?.id ?? "");
+                                  setAction(Action.Weed);
+                                  openWeedingDialog();
+                                }}
+                              >
+                                <FaTimes className="text-lg" />
+                              </Button>
+                            </Tippy>
+                            <Tippy content="Mark as Missing ">
+                              <Button
+                                size={"xs"}
+                                color="warning"
+                                onClick={() => {
+                                  setSelectedAccession(accession?.id ?? "");
+                                  setAction(Action.Missing);
+                                  openWeedingDialog();
+                                }}
+                              >
+                                <FaQuestion className="text-lg" />
+                              </Button>
+                            </Tippy>
+                          </div>
+                        )}
+                        {(accession.isWeeded || accession.isMissing) && (
+                          <Tippy content="Undo Weeding/Missing">
                             <Button
                               size={"xs"}
                               color="success"
@@ -187,7 +211,7 @@ const EditAccessionPanel = () => {
                                 openRecirculateConfirmation();
                               }}
                             >
-                              <GiRecycle className="text-lg" />
+                              <FaUndo />
                             </Button>
                           </Tippy>
                         )}
@@ -204,14 +228,14 @@ const EditAccessionPanel = () => {
         key={"forWeeding"}
         close={closeWeedingDialog}
         isOpen={isWeedingDialogOpen}
-        title="Weeding Remarks"
+        title="Missing/Weeding Remarks"
         label="Remarks"
-        placeholder="Reason for weeding the book"
+        placeholder=""
         proceedBtnText="Save"
         onProceed={(text) => {
           closeWeedingDialog();
           updateAccessionStatus.mutate({
-            action: Action.Weed,
+            action: action,
             remarks: text,
           });
         }}
@@ -250,12 +274,12 @@ const EditAccessionPanel = () => {
         key={"forRecirculate"}
         close={closeRecirculateConfirmation}
         isOpen={isReculateConfirmationOpen}
-        title="Re-circulate book copy!"
+        title="Undo Book Status"
         onConfirm={() => {
           closeRecirculateConfirmation();
           updateAccessionStatus.mutate({ action: Action.Recirculate });
         }}
-        text="Are you sure you want to re-circulate this book? This copy will be available again?"
+        text="Are you sure you want to undo this book status? This copy will be available again?"
       />
     </Container>
   );

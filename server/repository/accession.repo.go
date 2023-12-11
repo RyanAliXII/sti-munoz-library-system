@@ -15,6 +15,7 @@ type AccessionRepository interface {
 	WeedAccession(id string, remarks string) error
 	Recirculate(id string) error
 	SearchAccession(filter filter.Filter) []model.Accession
+	MarkAsMissing(id string, remarks string) error
 	
 }
 type Accession struct {
@@ -76,7 +77,9 @@ func (repo *Accession) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.
 	query := `
 	SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	accession.book_id,
+	accession.remarks,
 	(CASE WHEN accession.weeded_at is null then false else true END) as is_weeded,
+	(CASE WHEN accession.missing_at is null then false else true END) as is_missing,
 	(CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
 	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
 	FROM catalog.accession
@@ -98,8 +101,12 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 	_,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = NOW(), remarks = $1 where id = $2", remarks, id)
 	 return err
   }
+  func (repo *Accession)MarkAsMissing(id string, remarks string) error{
+	_,err := repo.db.Exec("UPDATE catalog.accession SET missing_at = NOW(), remarks = $1 where id = $2", remarks, id)
+	 return err
+  }
   func (repo *Accession)Recirculate(id string) error{
-	  _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null, remarks = '' where id = $1", id)
+	  _,err := repo.db.Exec("UPDATE catalog.accession SET weeded_at = null,  missing_at = null, remarks = '' where id = $1", id)
 	   return err
   }
   func (repo *Accession) GetAccessionsByBookId(id string) []model.Accession {

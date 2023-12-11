@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS catalog.accession
+ADD COLUMN missing_at TIMESTAMPTZ;

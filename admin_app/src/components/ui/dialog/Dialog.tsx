@@ -142,7 +142,6 @@ export const PromptTextAreaDialog = ({
               }}
             ></Textarea>
           </div>
-          {/* <Input label={label} placeholder={placeholder}></Input> */}
         </div>
         <div className="flex gap-2 h-30 p-2 w-full justify-end">
           <Button

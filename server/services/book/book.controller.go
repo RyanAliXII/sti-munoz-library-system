@@ -1,7 +1,6 @@
 package book
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -85,8 +84,6 @@ func (ctrler *BookController) getBooksClient(ctx *gin.Context) {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-		
-	fmt.Println(f)
 	books, metadata := ctrler.bookRepository.GetClientBookView(&repository.BookFilter{
 		Filter: f.Filter,
 		FromYearPublished: f.FromYearPublished,
