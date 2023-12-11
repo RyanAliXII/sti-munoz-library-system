@@ -53,6 +53,8 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("metadata"),
 		goqu.C("program_name"),
 		goqu.C("user_type"),
+		goqu.C("program"),
+		goqu.C("user_group"),
 		goqu.C("program_code"),
 		goqu.C("student_number"),
 	 ).From(goqu.T("account_view"))
@@ -508,5 +510,5 @@ type AccountRepositoryInterface interface {
 	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
 	RestoreAccounts(accountIds []string) error
 	ActivateAccountBulk(accounts []model.AccountActivation) error 
-	ActivateAccounts(accountIds []string,  userTypeId int, programId int, validUntil string) error 
+	ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error
 }

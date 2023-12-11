@@ -25,6 +25,7 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 				"program_id" : account.ProgramId,
 				"active_until" : account.ActiveUntil,
 				"student_number": account.StudentNumber,
+				"type_id" : goqu.L("null"),
 			})
 			
 			
@@ -33,6 +34,7 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 				"type_id" : account.UserType, 
 				"active_until" : account.ActiveUntil,
 				"student_number" : account.StudentNumber,
+				"program_id" : goqu.L("null"),
 			})
 		}
 		ds = ds.Where(goqu.L("email =  ? OR LOWER(CONCAT(given_name, surname)) = ?", account.Email, name))
@@ -50,23 +52,29 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 	transaction.Commit()
 	return nil;
 }
-func (repo * AccountRepository)ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string) error {
+func (repo * AccountRepository)ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error {
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Update(goqu.T("account").Schema("system")).Prepared(true)
+	record := goqu.Record{}
+	if(len(accountIds) == 1){
+		record["student_number"] = studentNumber
+		
+	}
+	
 	if(programId > 0 ){
-		ds = ds.Set(goqu.Record{
-			"program_id": programId,
-			"active_until" : activeUntil,
-		})
+		record["program_id"] = programId
+		record["active_until"] = activeUntil
+		record["type_id"] = goqu.L("null")
+		ds = ds.Set(record)
 			
 	}else{
-		ds = ds.Set(goqu.Record{
-			"user_type_id": userTypeId,
-		})
+		record["type_id"] = userTypeId
+		record["active_until"] = activeUntil
+		record["program_id"] = goqu.L("null")
+		ds = ds.Set(record)
 	}
 	ds = ds.Where(goqu.ExOr{
 		"id" :  accountIds,
-		"active_until" : activeUntil,
 	})
 	query, args, err := ds.ToSQL()
 	if err != nil {

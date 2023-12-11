@@ -256,9 +256,23 @@ student_number,
 type_id,
 program_id,
 active_until,
+(CASE 
+    WHEN program_id IS NOT NULL THEN user_program.user_group
+    ELSE JSONB_BUILD_OBJECT(
+        'id', COALESCE(user_type.id, 0),
+        'name', COALESCE(user_type.name, ''),
+        'hasProgram', COALESCE(user_type.has_program, false)
+    )
+END) AS user_group,
+
+JSONB_BUILD_OBJECT(
+    'id', COALESCE(user_program.id, 0),
+    'name', COALESCE(user_program.name, ''),
+    'code', COALESCE(user_program.code, '')
+) AS program,
 (case when active_until is not null and active_until > date(now() at time zone 'PHT') then true else false end) as is_active,
 (case when program_id is null and type_id is null then '' else 
-(case when program_id is not null then user_program.program_type else user_type.name end) end) as user_type,
+(case when program_id is not null then user_program.user_type else user_type.name end) end) as user_type,
 (case when user_program.code is null then '' else user_program.code end) as program_code,
 (case when user_program.name is null then '' else user_program.name end) as program_name,
 (case when deleted_at is null then false else true end) as is_deleted,
@@ -272,7 +286,7 @@ jsonb_build_object('id', account.id,
     'programName', (case when user_program.name is null then '' else user_program.name end), 
     'programCode', (case when user_program.code is null then '' else user_program.code end),
     'userType', (case when program_id is null and type_id is null then '' else 
-    (case when program_id is not null then user_program.program_type else user_type.name end) end)
+    (case when program_id is not null then user_program.user_type else user_type.name end) end)
 ) as json_format,
 jsonb_build_object( 
 	'totalPenalty', COALESCE(penalty_tbl.total, 0),
@@ -286,8 +300,12 @@ jsonb_build_object(
 FROM system.account
 LEFT JOIN system.user_type on account.type_id = user_type.id
 LEFT JOIN (
-	SELECT user_program.id,user_program.name, code, user_type.name as program_type from system.user_program
-	INNER JOIN system.user_type on user_type_id  =  user_type.id
+	SELECT user_program.id,user_program.name, code, user_type.name as user_type, JSONB_BUILD_OBJECT(
+	'id', user_type.id,
+	'name', user_type.name,
+	'hasProgram', user_type.has_program
+) as user_group   from system.user_program
+INNER JOIN system.user_type on user_type_id  =  user_type.id
 ) as user_program on program_id = user_program.id
 LEFT JOIN
 (SELECT penalty.account_id, 

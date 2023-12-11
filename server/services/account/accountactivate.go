@@ -128,7 +128,9 @@ func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.Accoun
 		(*accounts)[idx].ActiveUntil = settings.AccountValidity.Value
 		if(account.UserType != 0 && !isAccountTypeExists){
 			messages = append(messages, fmt.Sprintf("User type is invalid on row: %d with value: %d", idx + 1, account.UserType))
+			continue
 		}
+		
 		if(account.UserType == 0) {
 			program, isProgramExists := programsMap[account.Program]
 			if(!isProgramExists){
@@ -158,7 +160,8 @@ func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
 			return
 		}
 		settings := ctrler.settingsRepo.Get()
-		err = ctrler.accountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value)
+		fmt.Println(body)
+		err = ctrler.accountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value, body.StudentNumber)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("account activation error"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

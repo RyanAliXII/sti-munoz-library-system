@@ -39,3 +39,27 @@ func (instance *UserTypeJSON) Scan(value interface{}) error {
 func (copy  UserTypeJSON) Value(value interface{}) (driver.Value, error) {
 	return copy, nil
 }
+
+
+type UserProgramOrStrandJSON struct {
+	UserProgramOrStrand
+}
+func (instance *UserProgramOrStrandJSON) Scan(value interface{}) error {
+	val, valid := value.([]byte)
+	INITIAL_DATA_ON_ERROR := UserProgramOrStrandJSON{
+		UserProgramOrStrand: UserProgramOrStrand{},
+	}
+	if valid {
+		unmarshalErr := json.Unmarshal(val, instance)
+		if unmarshalErr != nil {
+			*instance = INITIAL_DATA_ON_ERROR
+		}
+	} else {
+		*instance = INITIAL_DATA_ON_ERROR
+	}
+	return nil
+
+}
+func (copy  UserProgramOrStrand) Value(value interface{}) (driver.Value, error) {
+	return copy, nil
+}

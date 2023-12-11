@@ -46,4 +46,5 @@ type AccountsActivateBody struct {
 	AccountIds []string `json:"accountIds"`
 	ProgramId int  `json:"programId"`
 	UserTypeId int  `json:"userTypeId"`
+	StudentNumber string `json:"studentNumber"`
 }

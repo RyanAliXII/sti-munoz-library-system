@@ -194,6 +194,8 @@ export type Account = {
   programName: string;
   userType: string;
   programCode: string;
+  program?: UserProgramOrStrand;
+  userGroup: UserType;
   studentNumber?: string;
   metadata: {
     totalPenalty: number;

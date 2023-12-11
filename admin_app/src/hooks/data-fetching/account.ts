@@ -11,6 +11,7 @@ type ActivateAccountData = {
   accountIds: string[];
   programId: number;
   userTypeId: number;
+  studentNumber?: string;
 };
 
 export const useAccountActivation = ({

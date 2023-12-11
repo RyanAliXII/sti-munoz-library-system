@@ -122,28 +122,14 @@ const ReservationPage = () => {
       <PromptTextAreaDialog
         close={cancelConfirm.close}
         isOpen={cancelConfirm.isOpen}
-        label="Cancellation remarks"
-        placeholder="it can be cancellations reasons."
+        label="Remarks"
+        placeholder=""
         proceedBtnText="Save"
-        title="Cancel Reservation"
+        title="Reservation Remarks"
         submitButtonsProps={{
-          color: "failure",
+          color: "primary ",
         }}
         onProceed={onConfirmCancel}
-      />
-      <WarningConfirmDialog
-        title="Mark as missed"
-        text="Are you sure you want to mark reservation as missed?"
-        close={missedConfirm.close}
-        isOpen={missedConfirm.isOpen}
-        onConfirm={onConfirmMissed}
-      />
-      <ConfirmDialog
-        title="Mark as attended"
-        text="Are you sure you want to mark reservation as attended?"
-        close={attendedConfirm.close}
-        isOpen={attendedConfirm.isOpen}
-        onConfirm={onConfirmAttended}
       />
       <EditRemarksModal
         isOpen={editRemarksModal.isOpen}

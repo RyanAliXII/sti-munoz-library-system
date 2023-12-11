@@ -15,6 +15,8 @@ type Account struct {
 	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
 	StudentNumber string 		`json:"studentNumber" db:"student_number" csv:"student_number"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
+	Program UserProgramOrStrandJSON `json:"program" db:"program"`
+	UserGroup UserTypeJSON `json:"userGroup" db:"user_group"`
 	UserType string `json:"userType" db:"user_type"`
 	ProgramName string `json:"programName" db:"program_name"`
 	ProgramCode string `json:"programCode" db:"program_code"`
