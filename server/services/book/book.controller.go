@@ -1,12 +1,12 @@
 package book
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -80,29 +80,22 @@ func (ctrler *BookController) getBooksAdmin(ctx *gin.Context) {
 }
 func (ctrler *BookController) getBooksClient(ctx *gin.Context) {
 	var books []model.Book = make([]model.Book, 0)
-	filter := filter.ExtractFilter(ctx)
+	f := NewBookFilter(ctx)
+	err := ctx.ShouldBindQuery(&f)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+		
+	fmt.Println(f)
+	books, metadata := ctrler.bookRepository.GetClientBookView(&repository.BookFilter{
+		Filter: f.Filter,
+		FromYearPublished: f.FromYearPublished,
+		ToYearPublished: f.ToYearPublished,
+		Tags: f.Tags,
+		Collections: f.Collections,
+		MainCollections: f.MainCollections,
+	})
 	
-	if len(filter.Keyword) > 0 {
-		books = ctrler.bookRepository.SearchClientView(filter)
-		metadata, metaErr := ctrler.recordMetadataRepo.GetClientBookSearchMetadata(filter)
-		if metaErr != nil {
-			logger.Error(metaErr.Error(), slimlog.Error("GetBookSearchMetadataErr"))
-			 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-			 return
-		}
-		ctx.JSON(httpresp.Success200(gin.H{
-			"books": books,
-			"metadata": metadata, 
-		}, "Books fetched."))
-		return 
-	}
-	books = ctrler.bookRepository.GetClientBookView(filter)
-	metadata, metaErr := ctrler.recordMetadataRepo.GetClientBookMetadata(filter.Limit)
-	if metaErr != nil {
-		logger.Error(metaErr.Error(), slimlog.Error("GetBookMetadataErr"))
-		 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		 return
-	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"books": books,
 		"metadata": metadata, 

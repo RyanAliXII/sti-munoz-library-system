@@ -74,7 +74,9 @@ export type Publisher = {
 export type Section = {
   id?: number;
   name: string;
-  hasOwnAccession: boolean;
+  isSubCollection: boolean;
+  isDeleteable: boolean;
+  accessionTable: string;
 };
 
 export interface Book {

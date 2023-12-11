@@ -220,29 +220,66 @@ func(repo * BookRepository)buildBookFilters(ds * goqu.SelectDataset, filters * B
 	ds = ds.Where(sectionFilter)
 	return ds, nil
 }
-func (repo *BookRepository) GetClientBookView(filter filter.Filter) []model.Book {
+func (repo *BookRepository) GetClientBookView(filter * BookFilter) ([]model.Book, Metadata) {
 	var books []model.Book = make([]model.Book, 0)
-	query := `SELECT id, 
-	title, 
-	isbn, 
-	description, 
-	copies,
-	subject, 
-	pages,
-	edition,
-	year_published, 
-	received_at,
-	ebook, 
-	ddc, 
-	author_number, 
-	created_at, 
-	section, publisher, authors, accessions, covers FROM client_book_view
-	ORDER BY created_at DESC LIMIT $1  OFFSET $2`
-	selectErr := repo.db.Select(&books, query, filter.Limit, filter.Offset)
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(
+		goqu.C("id"),
+		goqu.C("title"),
+		goqu.C("isbn"),
+		goqu.C("description"),
+		goqu.C("copies"),
+		goqu.C("subject"),
+		goqu.C("ebook"),
+		goqu.C("accession_table"),
+		goqu.C("pages"),
+		goqu.C("cost_price"),
+		goqu.C("edition"),
+		goqu.C("edition"),
+		goqu.C("search_tags"),
+		goqu.C("year_published"),
+		goqu.C("received_at"),
+		goqu.C("ddc"),
+		goqu.C("author_number"),
+		goqu.C("created_at"),
+		goqu.C("section"),
+		goqu.C("publisher"),
+		goqu.C("authors"),
+		goqu.C("accessions"),
+		goqu.C("covers"),
+	).Prepared(true).From(goqu.T("client_book_view"))
+	
+	ds , err := repo.buildBookFilters(ds, filter)
+	ds = ds.Order(exp.NewOrderedExpression(goqu.I("created_at"), exp.DescSortDir, exp.NoNullsSortType)).
+	Limit(uint(filter.Limit)).
+	Offset(uint(filter.Offset))
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	query, args, err := ds.ToSQL()
+
+	if err != nil {
+		logger.Error(err.Error())
+		return books, Metadata{}
+	}
+	selectErr := repo.db.Select(&books, query, args...)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetClientBookView"), slimlog.Error("SelectErr"))
 	}
-	return books
+
+	ds, err  = repo.buildClientBookMetadataQuery(filter)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	query, _, err = ds.ToSQL()
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	metadata := Metadata{}
+	repo.db.Get(&metadata, query)
+	return books, metadata
 }
 func (repo *BookRepository) GetOne(id string) model.Book {
 	var book model.Book = model.Book{}
@@ -444,6 +481,15 @@ func(repo *BookRepository)buildBookMetadataQuery(filters * BookFilter)(*goqu.Sel
 	ds, err  := repo.buildBookFilters(ds,  filters)
 	return ds, err
 }
+func(repo *BookRepository)buildClientBookMetadataQuery(filters * BookFilter)(*goqu.SelectDataset, error) {
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filters.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("client_book_view"))
+	ds, err  := repo.buildBookFilters(ds,  filters)
+	return ds, err
+}
 func (repo * BookRepository)AddBookCopies(id string, copies int) error{
 	if copies == 0 { 
 		return nil
@@ -495,7 +541,7 @@ type BookRepositoryInterface interface {
 	AddBookCopies(id string, copies int) error
 	DeleteBookCoversByBookId(bookId string) error 
 	ImportBooks(books []model.BookImport, sectionId int) error
-	GetClientBookView(filter filter.Filter) []model.Book
+	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
 	AddEbook(id string, eBook * multipart.FileHeader) error

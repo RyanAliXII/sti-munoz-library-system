@@ -169,6 +169,7 @@ const BookPage = () => {
   ) => {
     setFilterParams({
       tags: values.map((v) => v.value),
+      page: 1,
     });
   };
 
@@ -185,16 +186,19 @@ const BookPage = () => {
     setFilterParams({
       collections: [...collections],
       mainC: [...main],
+      page: 1,
     });
   };
   const handleFrom = (date: Date) => {
     setFilterParams({
       fromYearPublished: date.getFullYear(),
+      page: 1,
     });
   };
   const handleTo = (date: Date) => {
     setFilterParams({
       toYearPublished: date.getFullYear(),
+      page: 1,
     });
   };
   const resetFilter = () => {
