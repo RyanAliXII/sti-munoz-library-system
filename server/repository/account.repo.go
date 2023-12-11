@@ -139,7 +139,7 @@ func (repo * AccountRepository)buildMetadataQuery( filter * AccountFilter)(strin
 	return query, err
 }
 
-func (repo * AccountRepository)buildSearchMetadataQuery( filter * AccountFilter)(string, error){
+func (repo * AccountRepository)buildSearchMetadataQuery(filter * AccountFilter)(string, error){
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),

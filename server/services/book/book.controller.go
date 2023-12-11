@@ -60,35 +60,19 @@ func (ctrler * BookController) HandleGetBooks(ctx * gin.Context) {
 }	
 func (ctrler *BookController) getBooksAdmin(ctx *gin.Context) {
 	var books []model.Book = make([]model.Book, 0)
-	f := BookFilter{}
+	f := NewBookFilter(ctx)
 	err := ctx.ShouldBindQuery(&f)
-
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		logger.Error(err.Error())
 	}
-	filter := filter.ExtractFilter(ctx)
-
-	if len(filter.Keyword) > 0 {
-		books = ctrler.bookRepository.Search(filter)
-		metadata, metaErr := ctrler.recordMetadataRepo.GetBookSearchMetadata(filter) 
-		if metaErr != nil {
-			logger.Error(metaErr.Error(), slimlog.Error("GetBookSearchMetadataErr"))
-			 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-			 return
-		}
-		ctx.JSON(httpresp.Success200(gin.H{
-			"books": books,
-			"metadata": metadata, 
-		}, "Books fetched."))
-		return 
-	}
-	books = ctrler.bookRepository.Get(filter)
-	metadata, metaErr := ctrler.recordMetadataRepo.GetBookMetadata(filter.Limit)
-	if metaErr != nil {
-		logger.Error(metaErr.Error(), slimlog.Error("GetBookMetadataErr"))
-		 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		 return
-	}
+	books, metadata := ctrler.bookRepository.Get(&repository.BookFilter{
+		 Filter: f.Filter,
+		 FromYearPublished: f.FromYearPublished,
+		 ToYearPublished: f.ToYearPublished,
+		 Tags: f.Tags,
+		 Collections: f.Collections,
+		 MainCollections: f.MainCollections,
+	})
 	ctx.JSON(httpresp.Success200(gin.H{
 		"books": books,
 		"metadata": metadata, 
