@@ -48,3 +48,7 @@ type AccountsActivateBody struct {
 	UserTypeId int  `json:"userTypeId"`
 	StudentNumber string `json:"studentNumber"`
 }
+type AccountsDeactivateBody struct {
+	AccountIds []string `json:"accountIds"`
+	
+}

@@ -297,4 +297,5 @@ type AccountControllerInterface interface {
 	RestoreAccounts(ctx * gin.Context)
 	ActivateBulk (ctx * gin.Context)
 	ActivateAccounts(ctx * gin.Context)
+	DeactiveAccounts(ctx * gin.Context)
 }

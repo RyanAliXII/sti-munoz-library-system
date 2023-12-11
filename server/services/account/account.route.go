@@ -21,7 +21,7 @@ func ClientRoutes(router *gin.RouterGroup) {
 	ctrler.GetAccountRoles)
 	router.PATCH("/activation", ctrler.ActivateAccounts)
 	router.PATCH("/deletion", ctrler.DeleteAccounts)
-	router.PATCH("/disablement", ctrler.DisableAccounts)
+	router.PATCH("/deactivation", ctrler.DeactiveAccounts)
 	router.PATCH("/restoration", ctrler.RestoreAccounts)
 	router.PUT("/bulk/activation", ctrler.ActivateBulk)
 }

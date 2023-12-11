@@ -84,3 +84,21 @@ func (repo * AccountRepository)ActivateAccounts(accountIds []string,  userTypeId
 	
 	return err
 }
+
+func (repo * AccountRepository)DeactiveAccounts(accountIds []string) error {
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Update(goqu.T("account").Schema("system")).Prepared(true).Set(goqu.Record{
+		"active_until" : goqu.L("null"),
+	})
+	ds = ds.Where(goqu.ExOr{
+		"id" :  accountIds,
+	})
+	query, args, err := ds.ToSQL()
+	
+	if err != nil {
+		return err
+	}
+	_, err = repo.db.Exec(query, args...)
+	
+	return err
+}

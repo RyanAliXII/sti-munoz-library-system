@@ -62,12 +62,12 @@ export const useAccountDisablement = ({
   onSuccess,
   onSettled,
   onError,
-}: MutationOptions<any, unknown, ActivateAccountData, unknown>) => {
+}: MutationOptions<any, unknown, { accountIds: string[] }, unknown>) => {
   const { Patch } = useRequest();
   return useMutation({
     mutationFn: ({ accountIds }) =>
       Patch(
-        "/accounts/disablement",
+        "/accounts/deactivation",
         {
           accountIds: accountIds,
         },

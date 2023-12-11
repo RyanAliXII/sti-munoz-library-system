@@ -511,4 +511,5 @@ type AccountRepositoryInterface interface {
 	RestoreAccounts(accountIds []string) error
 	ActivateAccountBulk(accounts []model.AccountActivation) error 
 	ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error
+	DeactiveAccounts(accountIds []string) error
 }

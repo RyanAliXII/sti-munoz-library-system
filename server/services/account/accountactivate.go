@@ -160,7 +160,7 @@ func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
 			return
 		}
 		settings := ctrler.settingsRepo.Get()
-		fmt.Println(body)
+		
 		err = ctrler.accountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value, body.StudentNumber)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("account activation error"))
@@ -168,4 +168,22 @@ func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
 			return
 		}
 		ctx.JSON(httpresp.Success200(nil, "Account Activated."))
+}
+
+
+func (ctrler * AccountController)DeactiveAccounts(ctx * gin.Context) {
+	body := AccountsDeactivateBody{}
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.accountRepository.DeactiveAccounts(body.AccountIds)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("account activation error"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Account Deactivated."))
 }
