@@ -45,6 +45,7 @@ export const EditUserProgramModal: FC<EditUserProgramModalProps> = ({
         hasProgram: false,
         id: 0,
         name: "",
+        maxAllowedBorrowedBooks: 0,
       },
     },
     schema: UserProgramValidation,

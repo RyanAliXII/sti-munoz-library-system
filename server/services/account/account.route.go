@@ -12,6 +12,7 @@ func ClientRoutes(router *gin.RouterGroup) {
 	middlewares.BlockRequestFromClientApp,
 	ctrler.GetAccounts)
 	router.GET("/:id",ctrler.GetAccountById)
+	router.GET("/stats",ctrler.GetAccountStats)
 	router.PUT("/:id/profile-pictures", ctrler.UpdateProfilePicture)
 	router.POST("/bulk", 
 	middlewares.BlockRequestFromClientApp,

@@ -14,6 +14,7 @@ const UserTypePage = () => {
     hasProgram: false,
     id: 0,
     name: "",
+    maxAllowedBorrowedBooks: 0,
   });
   const newTypeModal = useSwitch();
   const editTypeModal = useSwitch();
@@ -33,6 +34,7 @@ const UserTypePage = () => {
           <Table.Head>
             <Table.HeadCell>Id</Table.HeadCell>
             <Table.HeadCell>Name</Table.HeadCell>
+            <Table.HeadCell>Max Allowed Borrowed Books</Table.HeadCell>
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y dark:divide-gray-700">
@@ -41,6 +43,7 @@ const UserTypePage = () => {
                 <Table.Row key={t.id}>
                   <Table.Cell>{t.id}</Table.Cell>
                   <Table.Cell>{t.name}</Table.Cell>
+                  <Table.Cell>{t.maxAllowedBorrowedBooks}</Table.Cell>
                   <Table.Cell>
                     <Button
                       color="primary"

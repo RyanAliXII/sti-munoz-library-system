@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import noData from "@assets/images/no-data.svg";
+import { useAccountStats } from "@hooks/data-fetching/account";
 const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
@@ -26,6 +27,7 @@ const BagPage = () => {
       return [];
     }
   };
+  const { data: stats } = useAccountStats();
   const {
     isOpen: isConfirmDeleteDialogOpen,
     close: closeConfirmDeleteDialog,

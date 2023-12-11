@@ -5,6 +5,10 @@ export const UserTypeValidation = object({
     .required("Name is required.")
     .max(50, "Name should cannot exceed 50 characters."),
   hasProgram: boolean().required("This field is required."),
+  maxAllowedBorrowedBooks: number()
+    .required("Max allowed borrowed books is required.")
+    .min(0, "Max allowed borrowed book cannot be less than 1")
+    .typeError("Max allowed borrowed book should be an valid integer."),
 });
 
 export const UserProgramValidation = object({

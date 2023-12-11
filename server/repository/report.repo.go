@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
@@ -48,7 +50,7 @@ func (repo * Report)GenerateReport(start string, end string)(model.ReportData, e
 	) as borrowed_books,
 	(
 		
-		SELECT COUNT(1) FROM borrowing.borrowed_book where status_id = 5 
+		SELECT COUNT(1) FROM borrowing.borrowed_book where status_id = 6 
 		and date(borrowed_book.created_at at time zone 'PHT') between $1 and $2 
 	) as unreturned_books
 	`
@@ -68,7 +70,83 @@ func (repo * Report)GetBorrowedSection (start string, end string)([]model.Borrow
 	err := repo.db.Select(&borrowedSection, query, start, end)
 	return borrowedSection, err
 }
+func(repo *Report)GetWeeklyWalkIns(from string, to string){
+	query := `
+	SELECT id,name, COALESCE( JSON_AGG(JSON_BUILD_OBJECT('date',stats.dt, 'walkIns', stats.walk_ins )),'[]') FROM system.user_type
+	LEFT JOIN (
+		SELECT
+		date_trunc('week', client_log.created_at at time zone 'PHT') AS dt,
+		account_view.type_id,
+		count(1) AS walk_ins
+	FROM
+		system.client_log
+	INNER JOIN
+		account_view ON client_log.client_id = account_view.id 
+	WHERE
+		date(client_log.created_at at time zone 'PHT') BETWEEN '2023-11-01' AND '2023-12-01'
+	-- Change the type_id based on the user type you're interested in
+	GROUP BY
+		dt,  account_view.type_id
+	ORDER BY
+		dt ASC
+	) as stats on user_type.id = stats.type_id
+	GROUP BY user_type.id
+	
+	`
+	fmt.Println(query)
+}
 
+func(repo *Report)GetDailyWalkIns(from string, to string){
+	query := `
+	SELECT id,name, COALESCE( JSON_AGG(JSON_BUILD_OBJECT('date',stats.dt, 'walkIns', stats.walk_ins )),'[]') FROM system.user_type
+	LEFT JOIN (
+		SELECT
+		date_trunc('day', client_log.created_at at time zone 'PHT') AS dt,
+		account_view.type_id,
+		count(1) AS walk_ins
+	FROM
+		system.client_log
+	INNER JOIN
+		account_view ON client_log.client_id = account_view.id 
+	WHERE
+		date(client_log.created_at at time zone 'PHT') BETWEEN '2023-11-01' AND '2023-12-01'
+	-- Change the type_id based on the user type you're interested in
+	GROUP BY
+		dt,  account_view.type_id
+	ORDER BY
+		dt ASC
+	) as stats on user_type.id = stats.type_id
+	GROUP BY user_type.id
+	
+	`
+	fmt.Println(query)
+}
+
+func(repo *Report)GetMothlyWalkIns(from string, to string){
+	query := `
+	SELECT id,name, COALESCE( JSON_AGG(JSON_BUILD_OBJECT('date',stats.dt, 'walkIns', stats.walk_ins )),'[]') FROM system.user_type
+	LEFT JOIN (
+		SELECT
+		date_trunc('month', client_log.created_at at time zone 'PHT') AS dt,
+		account_view.type_id,
+		count(1) AS walk_ins
+	FROM
+		system.client_log
+	INNER JOIN
+		account_view ON client_log.client_id = account_view.id 
+	WHERE
+		date(client_log.created_at at time zone 'PHT') BETWEEN '2023-11-01' AND '2023-12-01'
+	-- Change the type_id based on the user type you're interested in
+	GROUP BY
+		dt,  account_view.type_id
+	ORDER BY
+		dt ASC
+	) as stats on user_type.id = stats.type_id
+	GROUP BY user_type.id
+	
+	`
+	fmt.Println(query)
+}
 func (repo *Report) GetGameLogsData(start string, end string)([]model.GameData, error) {
 
 	data := make([]model.GameData, 0)
@@ -97,11 +175,21 @@ func (repo * Report)GetDeviceLogsData(start string, end string)([]model.DeviceDa
 func (repo * Report)GetWalkInLogs(start string, end string)([]model.WalkInLog, error){
 	logs := make([]model.WalkInLog, 0)
 	query := `
-	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
-	from system.client_log
-	where date(client_log.created_at at time zone 'PHT')  between $1 and $2 
-	GROUP BY date(client_log.created_at at time zone 'PHT')
-	ORDER BY date(client_log.created_at at time zone 'PHT') asc
+	SELECT
+    date_trunc('day', client_log.created_at at time zone 'PHT') AS week,
+   
+    count(1) AS walk_ins_weekly
+FROM
+    system.client_log
+INNER JOIN
+    account_view ON client_log.client_id = account_view.id 
+WHERE
+    date(client_log.created_at at time zone 'PHT') BETWEEN '2023-11-01' AND '2023-12-01'
+    AND account_view.type_id = 2 
+GROUP BY
+    week,  account_view.type_id
+ORDER BY
+    week ASC;
 	`
 	err := repo.db.Select(&logs, query, start, end)
 	return logs, err

@@ -9,6 +9,7 @@ type UserType struct {
 	Id int `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
 	HasProgram bool `json:"hasProgram" db:"has_program"`
+	MaxAllowedBorrowedBooks int `json:"maxAllowedBorrowedBooks" db:"max_allowed_borrowed_books"`
 }
 type UserProgramOrStrand struct {
 	Id int `json:"id" db:"id"`

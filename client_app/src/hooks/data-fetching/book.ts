@@ -2,7 +2,7 @@ import { BookInitialValue } from "@definitions/defaults";
 import { Book, BookStatus } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 type UseBookViewData = {
   book: Book;

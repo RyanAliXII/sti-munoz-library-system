@@ -26,6 +26,11 @@ type Account struct {
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
 }
+type AccountStats struct{
+	MaxAllowedBorrowedBooks int `json:"maxAllowedBorrowedBooks" db:"max_allowed_borrowed_books"`
+	TotalBorrowedBooks int `json:"totalBorrowedBooks" db:"total_borrowed_books"`
+	IsAllowedToBorrow bool `json:"isAllowedToBorrow" db:"is_allowed_to_borrow"`
+}
 
 type AccountJSON struct {
 	Account

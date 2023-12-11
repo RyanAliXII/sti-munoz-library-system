@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS device_log;
+DROP TABLE IF EXISTS services.device_log;

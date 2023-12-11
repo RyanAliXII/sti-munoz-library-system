@@ -356,6 +356,7 @@ export type ScannerAccount = {
 export type UserType = {
   id: number;
   name: string;
+  maxAllowedBorrowedBooks: number;
   hasProgram: boolean;
 };
 export type UserProgramOrStrand = {

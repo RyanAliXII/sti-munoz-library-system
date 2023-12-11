@@ -79,6 +79,12 @@ export type Section = {
   accessionTable: string;
 };
 
+export type AccountStats = {
+  maxAllowedBorrowedBooks: number;
+  isAllowedToBorrow: boolean;
+  totalBorrowedBooks: number;
+};
+
 export interface Book {
   id?: string;
   title: string;

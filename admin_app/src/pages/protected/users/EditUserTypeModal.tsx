@@ -20,6 +20,7 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
       initialFormData: {
         id: 0,
         name: "",
+        maxAllowedBorrowedBooks: 0,
         hasProgram: false,
       },
       schema: UserTypeValidation,
@@ -64,6 +65,15 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
               onChange={handleFormInput}
             />
           </div>
+          <div className="pb-2">
+            <CustomInput
+              label="Max Allow Borrowed Books"
+              name="maxAllowedBorrowedBooks"
+              value={form.maxAllowedBorrowedBooks}
+              error={errors?.maxAllowedBorrowedBooks}
+              onChange={handleFormInput}
+            />
+          </div>
           <div className="pb-2 flex gap-2 items-center">
             <Label>Has program or strand</Label>
             <Checkbox
@@ -73,6 +83,7 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
               onChange={handleFormInput}
             />
           </div>
+
           <div className="py-2">
             <Button color="primary" type="submit">
               <div className="flex items-center gap-2">
