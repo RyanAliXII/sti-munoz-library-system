@@ -7,7 +7,6 @@ import msalConfig from "./definitions/configs/msal/msal.config";
 import "./assets/css/tailwind.css";
 import "react-responsive-modal/styles.css";
 import { useEffect } from "react";
-
 import pages from "./pages/Pages";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
