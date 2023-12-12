@@ -26,6 +26,7 @@ func main() {
 
 	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
 	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
+
 	SCANNER_APP := os.Getenv("SCANNER_APP_URL")
 	browser, err  := browser.NewBrowser()
 	if err != nil {
@@ -41,7 +42,7 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{ADMIN_APP, CLIENT_APP, SCANNER_APP},
+		AllowOrigins:     []string{ADMIN_APP, CLIENT_APP, SCANNER_APP, "*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "x-xsrf-token", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
