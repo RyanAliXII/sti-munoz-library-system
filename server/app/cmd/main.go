@@ -42,7 +42,7 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger())
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{ADMIN_APP, CLIENT_APP, SCANNER_APP,"https://main.d3g5c992zsvti5.amplifyapp.com" },
+		AllowOrigins:     []string{ADMIN_APP, CLIENT_APP, SCANNER_APP,"https://main.d3g5c992zsvti5.amplifyapp.com", "https://main.d3tflazqjkbxin.amplifyapp.com" },
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "x-xsrf-token", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
