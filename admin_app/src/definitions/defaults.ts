@@ -45,6 +45,12 @@ export const BookInitialValue: Book = {
 export const AccountInitialValue: Account = {
   displayName: "",
   email: "",
+  userGroup: {
+    hasProgram: false,
+    id: 0,
+    maxAllowedBorrowedBooks: 0,
+    name: "",
+  },
   givenName: "",
   surname: "",
   id: "",
@@ -77,10 +83,17 @@ export const BorrowedCopyInitialValue: BorrowedCopy = {
   penalty: 0,
   client: AccountInitialValue,
   isAvailable: false,
+  isMissing: false,
 };
 
 export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
+    userGroup: {
+      hasProgram: false,
+      id: 0,
+      maxAllowedBorrowedBooks: 0,
+      name: "",
+    },
     displayName: "",
     programCode: "",
     email: "",

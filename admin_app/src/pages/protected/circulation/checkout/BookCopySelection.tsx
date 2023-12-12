@@ -150,6 +150,8 @@ const BookCopySelectionModal = ({
           number: accession.number,
           isCheckedOut: false,
           dueDate: dateValue,
+          isMissing: accession.isMissing,
+          remarks: accession.remarks,
         },
       ]);
     } else {
