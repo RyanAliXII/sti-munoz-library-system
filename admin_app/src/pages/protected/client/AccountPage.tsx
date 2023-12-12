@@ -30,6 +30,7 @@ import AccountTable from "./AccountTable";
 import ActivateModal from "./ActivateModal";
 import ImportAccountModal from "./ImportAccountModal";
 import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
+import { Link } from "react-router-dom";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -68,10 +69,10 @@ const AccountPage = () => {
   const disableAccounts = useAccountDisablement({
     onSuccess: () => {
       toast.success("Account/s have been disabled.");
-      // dispatchAccountIdSelection({
-      //   payload: {},
-      //   type: "unselect-all",
-      // });
+      dispatchAccountIdSelection({
+        payload: {},
+        type: "unselect-all",
+      });
       queryClient.invalidateQueries(["accounts"]);
     },
     onSettled: () => {
@@ -105,6 +106,7 @@ const AccountPage = () => {
     close: closeConfirmRestoreDialog,
     open: openConfirmRestoreDialog,
   } = useSwitch();
+
   const activateModal = useSwitch();
   const onConfirmDelete = () => {
     // deleteAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
@@ -113,7 +115,10 @@ const AccountPage = () => {
     // activateAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
   };
   const onConfirmDisable = () => {
-    // disableAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
+    const ids = Array.from(selectedAccountIds.keys()).map((k) => k);
+    disableAccounts.mutate({
+      accountIds: ids,
+    });
   };
   const onConfirmRestore = () => {
     // restoreAccounts.mutate({ accountIds: Array.from(selectedAccountIds) });
@@ -128,8 +133,32 @@ const AccountPage = () => {
     setFilterParams({ [name]: isChecked, page: 1 });
   };
 
+  const singleActivateModal = useSwitch();
+  const singleDisableModal = useSwitch();
+  const [singleAccount, setSingleAccount] = useState<Map<string, Account>>(
+    new Map<string, Account>()
+  );
   const initActivate = () => {
     activateModal.open();
+  };
+  const initActivateSingle = (account: Account) => {
+    const m = new Map();
+    m.set(account.id, account);
+    setSingleAccount(m);
+    singleActivateModal.open();
+  };
+  const initDeactivateSingle = (account: Account) => {
+    const m = new Map();
+    m.set(account.id, account);
+    setSingleAccount(m);
+    singleDisableModal.open();
+  };
+  const onConfirmSingleDisabled = () => {
+    singleDisableModal.close();
+    const ids = Array.from(singleAccount.keys()).map((k) => k);
+    disableAccounts.mutate({
+      accountIds: ids,
+    });
   };
   return (
     <>
@@ -212,6 +241,9 @@ const AccountPage = () => {
                 <TbFileImport className="text-lg" />
                 Import
               </Button>
+              <Button as={Link} to={"/clients/accounts/bulk-activate"}>
+                Activate accounts
+              </Button>
             </HasAccess>
           </div>
         </div>
@@ -223,6 +255,8 @@ const AccountPage = () => {
           >
             <AccountTable
               selectedAccountIds={selectedAccountIds}
+              initActivate={initActivateSingle}
+              initDeactivate={initDeactivateSingle}
               dispatchSelection={dispatchAccountIdSelection}
               accounts={data?.accounts ?? []}
             />
@@ -285,6 +319,21 @@ const AccountPage = () => {
         selectedAccounts={selectedAccountIds}
         closeModal={activateModal.close}
         isOpen={activateModal.isOpen}
+      />
+      <ActivateModal
+        key={"single"}
+        dispatchSelection={dispatchAccountIdSelection}
+        selectedAccounts={singleAccount}
+        closeModal={singleActivateModal.close}
+        isOpen={singleActivateModal.isOpen}
+      />
+      <WarningConfirmDialog
+        key={"singleDisable"}
+        close={singleDisableModal.close}
+        isOpen={singleDisableModal.isOpen}
+        title="Account Disablement"
+        text="Are you want to disabled selected accounts?"
+        onConfirm={onConfirmSingleDisabled}
       />
     </>
   );

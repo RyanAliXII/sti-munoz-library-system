@@ -156,7 +156,7 @@ func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 		transaction.Rollback()
 		return err
 	}
-	_, err = transaction.Exec("UPDATE catalog.accession SET weeded_at = now(), remarks = 'Borrowed and not returned.' where id = $1", borrowedBook.AccessionId)
+	_, err = transaction.Exec("UPDATE catalog.accession SET missing_at = now(), remarks = 'Borrowed and not returned.' where id = $1", borrowedBook.AccessionId)
 	if err != nil {
 		transaction.Rollback()
 		return err

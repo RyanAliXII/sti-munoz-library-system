@@ -71,6 +71,7 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 	const (
 		weed = 1
 		recirculate = 2
+		missing = 3
 	)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("convErr"))
@@ -80,6 +81,8 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 		case weed: 
 			ctrler.handleWeeding(id, ctx);
 			return
+	case missing:
+			ctrler.handleMarkAsMissing(id, ctx)
 		case recirculate: 
 			ctrler.handleRecirculation(id, ctx)
 			return 
@@ -91,6 +94,17 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
     body := WeedingBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
     err := ctrler.accessionRepo.WeedAccession(id, body.Remarks)
+    if err != nil {
+	 logger.Error(err.Error(), slimlog.Error("weedingErr"))
+	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	 return
+   }
+	ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
+ }
+ func(ctrler * BookController) handleMarkAsMissing (id string, ctx * gin.Context ){
+    body := WeedingBody{}
+	ctx.ShouldBindBodyWith(&body, binding.JSON)
+    err := ctrler.accessionRepo.MarkAsMissing(id, body.Remarks)
     if err != nil {
 	 logger.Error(err.Error(), slimlog.Error("weedingErr"))
 	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

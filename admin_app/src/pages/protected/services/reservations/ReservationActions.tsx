@@ -43,24 +43,24 @@ const ReservationActions: FC<ReservationTableRowProps> = ({
     );
   }
 
-  if (reservation.statusId === ReservationStatus.Attended) {
-    return (
-      <div className="flex gap-2">
-        <Button color="warning" onClick={initMissed}>
-          Missed
-        </Button>
-      </div>
-    );
-  }
-  if (reservation.statusId === ReservationStatus.Missed) {
-    return (
-      <div className="flex gap-2">
-        <Button color="success" onClick={initAttended}>
-          Attended
-        </Button>
-      </div>
-    );
-  }
+  // if (reservation.statusId === ReservationStatus.Attended) {
+  //   return (
+  //     <div className="flex gap-2">
+  //       <Button color="warning" onClick={initMissed}>
+  //         Missed
+  //       </Button>
+  //     </div>
+  //   );
+  // }
+  // if (reservation.statusId === ReservationStatus.Missed) {
+  //   return (
+  //     <div className="flex gap-2">
+  //       <Button color="success" onClick={initAttended}>
+  //         Attended
+  //       </Button>
+  //     </div>
+  //   );
+  // }
   return (
     <div className="flex gap-2">
       <Button color="primary" onClick={initEditRemarks}>

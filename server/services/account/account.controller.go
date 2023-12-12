@@ -273,6 +273,17 @@ func (ctrler * AccountController)RestoreAccounts(ctx * gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accounts restored."))
 }
+
+func (ctrler * AccountController)GetAccountStats(ctx * gin.Context) {
+	requestorId := ctx.GetString("requestorId")
+	stats, err := ctrler.accountRepository.GetAccountStatsById(requestorId)
+	if err != nil{
+		logger.Error(err.Error(), slimlog.Error("getStatsErr"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"stats": stats,
+	}, "Accounts restored."))
+}
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{
 		accountRepository: repository.NewAccountRepository(),
@@ -297,4 +308,6 @@ type AccountControllerInterface interface {
 	RestoreAccounts(ctx * gin.Context)
 	ActivateBulk (ctx * gin.Context)
 	ActivateAccounts(ctx * gin.Context)
+	DeactiveAccounts(ctx * gin.Context)
+	GetAccountStats(ctx * gin.Context)
 }

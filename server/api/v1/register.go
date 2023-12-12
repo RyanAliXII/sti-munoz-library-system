@@ -17,6 +17,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/notification"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reports"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reservation"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/searchtag"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/timeslot"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/user"
 
@@ -58,4 +59,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	user.UserRoutes(grp.Group("/users"))
 	item.ItemRoutes(grp.Group("/items"))
 	notification.NotificationRoutes(grp.Group("/notifications"))
+	searchtag.SearchTagRoutes(grp.Group("/search-tags"))
 }

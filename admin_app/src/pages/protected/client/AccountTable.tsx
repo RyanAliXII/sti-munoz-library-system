@@ -1,5 +1,5 @@
 import { Account } from "@definitions/types";
-import { Avatar, Badge, Checkbox, Table } from "flowbite-react";
+import { Avatar, Badge, Button, Checkbox, Table } from "flowbite-react";
 import React, { ChangeEvent, Dispatch, useMemo } from "react";
 import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
 
@@ -7,11 +7,15 @@ type AccountTableProps = {
   accounts: Account[];
   selectedAccountIds: Map<string, Account>;
   dispatchSelection: Dispatch<SelectedAccountIdsAction>;
+  initActivate: (account: Account) => void;
+  initDeactivate: (account: Account) => void;
 };
 const AccountTable: React.FC<AccountTableProps> = ({
   accounts,
   selectedAccountIds,
   dispatchSelection,
+  initActivate,
+  initDeactivate,
 }) => {
   const selectedAccountIdsCache = useMemo<Map<string, string>>(() => {
     const map = new Map<string, string>();
@@ -80,6 +84,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
         <Table.HeadCell>Email</Table.HeadCell>
         <Table.HeadCell>User Group</Table.HeadCell>
         <Table.HeadCell>Status</Table.HeadCell>
+        <Table.HeadCell>Status</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y dark:divide-gray-700">
         {accounts?.map((account) => {
@@ -135,6 +140,28 @@ const AccountTable: React.FC<AccountTableProps> = ({
               </Table.Cell>
               <Table.Cell>
                 <StatusBadge account={account}></StatusBadge>
+              </Table.Cell>
+              <Table.Cell>
+                {!account.isActive && (
+                  <Button
+                    color="success"
+                    onClick={() => {
+                      initActivate(account);
+                    }}
+                  >
+                    Activate
+                  </Button>
+                )}
+                {account.isActive && (
+                  <Button
+                    color="warning"
+                    onClick={() => {
+                      initDeactivate(account);
+                    }}
+                  >
+                    Disable
+                  </Button>
+                )}
               </Table.Cell>
             </Table.Row>
           );

@@ -15,6 +15,8 @@ type Account struct {
 	Email       string          `json:"email" db:"email" csv:"email" validate:"required"`
 	StudentNumber string 		`json:"studentNumber" db:"student_number" csv:"student_number"`
 	ProfilePicture string 		`json:"profilePicture" db:"profile_picture"`
+	Program UserProgramOrStrandJSON `json:"program" db:"program"`
+	UserGroup UserTypeJSON `json:"userGroup" db:"user_group"`
 	UserType string `json:"userType" db:"user_type"`
 	ProgramName string `json:"programName" db:"program_name"`
 	ProgramCode string `json:"programCode" db:"program_code"`
@@ -23,6 +25,11 @@ type Account struct {
 	IsDeleted 	 bool `json:"isDeleted" db:"is_deleted"`
 	CreatedAt   db.NullableTime `json:"-" db:"created_at"`
 	UpdatedAt   db.NullableTime `json:"-" db:"updated_at"`
+}
+type AccountStats struct{
+	MaxAllowedBorrowedBooks int `json:"maxAllowedBorrowedBooks" db:"max_allowed_borrowed_books"`
+	TotalBorrowedBooks int `json:"totalBorrowedBooks" db:"total_borrowed_books"`
+	IsAllowedToBorrow bool `json:"isAllowedToBorrow" db:"is_allowed_to_borrow"`
 }
 
 type AccountJSON struct {

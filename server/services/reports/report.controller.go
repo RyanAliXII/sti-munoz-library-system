@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
@@ -33,27 +35,45 @@ func NewReportController () ReportController {
 	}
 }
 func(ctrler * Report)NewReport(ctx * gin.Context){
-	body := ReportFilter{}
+	body := NewReportBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	
-	
-	err := body.Validate()
+	fmt.Println(body)
+
+	u, err := url.Parse("http://localhost:5200/renderer/reports")
+	query  := u.Query()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("validateErr"))
-		ctx.JSON(httpresp.Success200(nil, "Unknown error occured."))
+		logger.Error(err.Error())
 	}
-	browser, err := browser.NewBrowser()
+	
+	query.Set("clientStatsEnabled", strconv.FormatBool(body.ClientStatistics.Enabled))
+	query.Set("clientStatsFrequency", body.ClientStatistics.Frequency)
+	query.Set("clientStatsFrom", body.ClientStatistics.From)
+	query.Set("clientStatsTo", body.ClientStatistics.To)
+	query.Set("borrowedBooksEnabled", strconv.FormatBool(body.BorrowedBooks.Enabled))
+	query.Set("borrowedBooksFrom", body.BorrowedBooks.From)
+	query.Set("borrowedBooksTo", body.BorrowedBooks.To)
+	query.Set("gameStatsEnabled", strconv.FormatBool(body.GameStatistics.Enabled))
+	query.Set("gameStatsFrom", body.GameStatistics.From)
+	query.Set("gameStatsTo", body.GameStatistics.To)
+	query.Set("deviceStatsEnabled", strconv.FormatBool(body.DeviceStatistics.Enabled))
+	query.Set("deviceStatsFrom", body.DeviceStatistics.From)
+	query.Set("deviceStatsTo", body.DeviceStatistics.To)
+	u.RawQuery = query.Encode()
+
+    browser, err := browser.NewBrowser()
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/renderer/reports?from=%s&to=%s", body.From, body.To))
+	page, err := browser.Goto(u.String())
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GotoErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
+	
+	
 	err = page.WaitLoad()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))

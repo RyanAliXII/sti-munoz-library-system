@@ -17,10 +17,12 @@ import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { boolean, number, object } from "yup";
 import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
+import { CustomInput } from "@components/ui/form/Input";
 
 type ActivateForm = {
   userType: UserType;
   program: Omit<UserProgramOrStrand, "userType">;
+  studentNumber: string;
 };
 interface ActivateModalProps extends ModalProps {
   selectedAccounts: Map<string, Account>;
@@ -41,6 +43,7 @@ const ActivateModal: FC<ActivateModalProps> = ({
     removeFieldError,
     setErrors,
     resetForm,
+    handleFormInput,
   } = useForm<ActivateForm>({
     initialFormData: {
       program: {
@@ -54,6 +57,7 @@ const ActivateModal: FC<ActivateModalProps> = ({
         id: 0,
         name: "",
       },
+      studentNumber: "",
     },
     schema: object({
       userType: object({
@@ -79,10 +83,14 @@ const ActivateModal: FC<ActivateModalProps> = ({
   });
   const handleUserGroupSelection = (newValue: SingleValue<UserType>) => {
     removeFieldError("userType.id");
-    setForm((prev) => ({ ...prev, userType: newValue as UserType }));
+    setForm((prev) => ({
+      ...prev,
+      userType: newValue as UserType,
+      program: { code: "", id: 0, name: "", userTypeId: 0 },
+    }));
   };
   const handleProgramSelection = (
-    newValue: SingleValue<UserProgramOrStrand>
+    newValue: SingleValue<Omit<UserProgramOrStrand, "userType">>
   ) => {
     removeFieldError("program.id");
     setForm((prev) => ({ ...prev, program: newValue as UserProgramOrStrand }));
@@ -90,8 +98,8 @@ const ActivateModal: FC<ActivateModalProps> = ({
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     try {
       event.preventDefault();
-      const form = await validate();
-      if (form?.userType.hasProgram && form.program.id === 0) {
+      const parsedForm = await validate();
+      if (parsedForm?.userType.hasProgram && parsedForm.program.id === 0) {
         setErrors({
           program: {
             id: "Program is required.",
@@ -99,11 +107,14 @@ const ActivateModal: FC<ActivateModalProps> = ({
         });
         return;
       }
-      if (!form) return;
+
+      if (!parsedForm) return;
+
       activateAccounts.mutate({
         accountIds: Array.from(selectedAccounts.keys()),
-        programId: form?.program.id,
-        userTypeId: form?.userType.id,
+        programId: parsedForm?.program.id,
+        userTypeId: parsedForm?.userType.id,
+        studentNumber: parsedForm?.studentNumber,
       });
       closeModal();
     } catch (error) {
@@ -111,7 +122,19 @@ const ActivateModal: FC<ActivateModalProps> = ({
     }
   };
   useModalToggleListener(isOpen, () => {
-    if (isOpen) return;
+    if (isOpen) {
+      if (selectedAccounts.size === 1) {
+        const account = selectedAccounts.entries().next().value[1];
+
+        setForm((f) => ({
+          ...f,
+          studentNumber: account.studentNumber,
+          program: account.program,
+          userType: account.userGroup,
+        }));
+      }
+      return;
+    }
     resetForm();
   });
   return (
@@ -123,6 +146,7 @@ const ActivateModal: FC<ActivateModalProps> = ({
             <CustomSelect
               error={errors?.userType?.id}
               options={userTypes ?? []}
+              value={form.userType}
               onChange={handleUserGroupSelection}
               getOptionLabel={(t) => t.name}
               getOptionValue={(t) => t.id.toString()}
@@ -136,10 +160,19 @@ const ActivateModal: FC<ActivateModalProps> = ({
                 error={errors?.program?.id}
                 label="Program/Strand"
                 options={programs ?? []}
+                value={form.program}
                 getOptionLabel={(p) => p.name}
                 getOptionValue={(p) => p.id.toString()}
               />
             </div>
+          )}
+          {selectedAccounts.size === 1 && form.userType.hasProgram && (
+            <CustomInput
+              name="studentNumber"
+              onChange={handleFormInput}
+              label="Student number"
+              value={form.studentNumber ?? ""}
+            />
           )}
           <div className="p">
             <Button color="primary" type="submit">

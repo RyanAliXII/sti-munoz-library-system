@@ -67,12 +67,12 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
-      <Modal.Header>Edit Section</Modal.Header>
+      <Modal.Header>Edit Collection</Modal.Header>
       <Modal.Body>
         <form onSubmit={submit}>
           <div className="w-full py-1">
             <CustomInput
-              label="Section name"
+              label="Collection name"
               error={errors?.name}
               type="text"
               name="name"
@@ -82,7 +82,7 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
           </div>
           <div className="w-full py-1">
             <CustomInput
-              label="Section Prefix"
+              label="Collection Prefix"
               error={errors?.prefix}
               type="text"
               name="prefix"

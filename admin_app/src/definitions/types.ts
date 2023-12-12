@@ -83,7 +83,9 @@ export type Accession = {
   number: number;
   copyNumber: number;
   isAvailable: boolean;
-  isWeeded: false;
+  isWeeded: boolean;
+  isMissing: boolean;
+  remarks: string;
 };
 
 export interface DetailedAccession extends Accession {
@@ -192,6 +194,8 @@ export type Account = {
   programName: string;
   userType: string;
   programCode: string;
+  program?: UserProgramOrStrand;
+  userGroup: UserType;
   studentNumber?: string;
   metadata: {
     totalPenalty: number;
@@ -352,6 +356,7 @@ export type ScannerAccount = {
 export type UserType = {
   id: number;
   name: string;
+  maxAllowedBorrowedBooks: number;
   hasProgram: boolean;
 };
 export type UserProgramOrStrand = {

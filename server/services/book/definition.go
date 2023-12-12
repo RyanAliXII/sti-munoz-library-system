@@ -5,6 +5,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/gin-gonic/gin"
 )
 
 type MetadataInt struct {
@@ -63,6 +64,30 @@ type MigrateBody struct {
 
 type BookFilter struct {
 	filter.Filter
+	FromYearPublished int `form:"fromYearPublished"`
+	ToYearPublished int `form:"toYearPublished"`
 	Tags []string `form:"tags[]"`
-	Collection []string `form:"collections[]"`
+	Collections []int `form:"collections[]"`
+	MainCollections []string `form:"mainC[]"`
+}
+
+func NewBookFilter(ctx * gin.Context) *BookFilter{
+	filter := &BookFilter{}
+	err := ctx.BindQuery(&filter)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	filter.Filter.ExtractFilter(ctx)
+
+	// _, err  = time.Parse(time.DateOnly, filter.From)
+	// if err != nil {
+	// 	filter.From = ""
+	// 	filter.To = ""
+	// }
+	// _, err = time.Parse(time.DateOnly, filter.To)
+	// if(err != nil){
+	// 	filter.From = ""
+	// 	filter.To = ""
+	// }
+	return filter
 }

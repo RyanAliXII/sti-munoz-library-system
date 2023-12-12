@@ -70,12 +70,12 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { data: collections } = useMainCollections();
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
-      <Modal.Header>New Section</Modal.Header>
+      <Modal.Header>New Collection</Modal.Header>
       <Modal.Body className="overflow-visible">
         <form onSubmit={submit}>
           <div className="w-full">
             <CustomInput
-              label="Section name"
+              label="Collection name"
               error={errors?.name}
               type="text"
               name="name"
@@ -85,7 +85,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="w-full pt-1">
             <CustomInput
-              label="Section Prefix"
+              label="Collection Prefix"
               error={errors?.prefix}
               type="text"
               name="prefix"

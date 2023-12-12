@@ -53,6 +53,8 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 		goqu.C("metadata"),
 		goqu.C("program_name"),
 		goqu.C("user_type"),
+		goqu.C("program"),
+		goqu.C("user_group"),
 		goqu.C("program_code"),
 		goqu.C("student_number"),
 	 ).From(goqu.T("account_view"))
@@ -139,7 +141,7 @@ func (repo * AccountRepository)buildMetadataQuery( filter * AccountFilter)(strin
 	return query, err
 }
 
-func (repo * AccountRepository)buildSearchMetadataQuery( filter * AccountFilter)(string, error){
+func (repo * AccountRepository)buildSearchMetadataQuery(filter * AccountFilter)(string, error){
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),
@@ -487,6 +489,22 @@ func(repo * AccountRepository)RestoreAccounts(accountIds []string) error {
 	_, err = repo.db.Exec(query, args...)
 	return err
 }
+
+func (repo * AccountRepository) GetAccountStatsById(accountId string)(model.AccountStats, error ){
+	accountStats := model.AccountStats{}
+	query := `
+		SELECT  COUNT(bbv.id) as total_borrowed_books, max_allowed_borrowed_books, COUNT(bbv.id) < max_allowed_borrowed_books as is_allowed_to_borrow  FROM account_view 
+		LEFT JOIN borrowed_book_all_view as bbv on account_view.id = bbv.account_id 
+		and (bbv.status_id = 1 or bbv.status_id = 2 or bbv.status_id = 3)
+		where is_active and account_view.id = $1
+		GROUP BY account_view.id,max_allowed_borrowed_books	
+	`
+	err := repo.db.Get(&accountStats, query, accountId )
+	return accountStats, err
+}
+
+
+
 func NewAccountRepository() AccountRepositoryInterface {
 	return &AccountRepository{
 		db: postgresdb.GetOrCreateInstance(),
@@ -508,5 +526,7 @@ type AccountRepositoryInterface interface {
 	GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error)
 	RestoreAccounts(accountIds []string) error
 	ActivateAccountBulk(accounts []model.AccountActivation) error 
-	ActivateAccounts(accountIds []string,  userTypeId int, programId int, validUntil string) error 
+	ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error
+	DeactiveAccounts(accountIds []string) error
+	GetAccountStatsById(accountId string)(model.AccountStats, error )
 }

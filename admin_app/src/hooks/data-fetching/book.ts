@@ -31,7 +31,11 @@ export const useMigrateCollection = ({
 type BookFilter = {
   page: number;
   keyword: string;
-  tags: [];
+  tags: string[];
+  collections: number[];
+  mainC: string[];
+  fromYearPublished: number;
+  toYearPublished: number;
 };
 type UseBookData = {
   books: Book[];
@@ -57,6 +61,10 @@ export const useBooks = ({
           page: filter?.page ?? 0,
           keyword: filter?.keyword ?? "",
           tags: filter?.tags ?? [],
+          collections: filter?.collections ?? [],
+          mainC: filter?.mainC ?? [],
+          fromYearPublished: filter?.fromYearPublished ?? 0,
+          toYearPublished: filter?.toYearPublished ?? 0,
         },
       });
 

@@ -1,6 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import Modal, { ModalProps } from "react-responsive-modal";
-import Select from "react-select/dist/declarations/src/Select";
 
 interface BookTypeSelectionProps extends ModalProps {
   onSelect: (selectedType: "physical" | "ebook") => void;
@@ -8,6 +7,7 @@ interface BookTypeSelectionProps extends ModalProps {
 const BookTypeSelectionModal = ({
   onClose,
   open,
+
   onSelect,
 }: BookTypeSelectionProps) => {
   const [selected, setSelected] = useState<"ebook" | "physical">("physical");

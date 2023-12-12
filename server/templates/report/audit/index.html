@@ -14,68 +14,32 @@
     div {
       break-inside: avoid;
     }
-    .catalog-card {
-      min-height: 3in;
-      width: 5in;
-      border: 1px dotted black;
-      margin: 10px auto;
-      font-family: "Roboto", sans-serif;
-    }
-    .roboto {
-      font-family: "Roboto", sans-serif;
-    }
-    .ddc-cutter {
-      padding: 25px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .author-list {
-      max-width: 280px;
-    }
-    .card-content-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .card-content {
-      width: fit-content;
-      max-width: 300px;
-    }
-    .main-text {
-      font-size: medium;
-    }
-    .text {
-      font-size: smaller;
-      word-spacing: 2px;
-    }
-    .text-small {
-      font-size: x-small;
-    }
-    .call-numbers {
-      width: 3in;
-      width: 5in;
-      gap: 15px;
-      margin: auto;
-    }
-    .call-number {
-      width: 0.9in;
-      height: 1.3in;
-      padding: 10px;
-      border: 1px dotted black;
-    }
-    .item {
-      margin-top: 5px;
-      align-items: center;
-      gap: 5px;
-      display: flex;
-    }
+
     .headers {
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
+    }
+    @media print {
+      table {
+        page-break-after: always;
+      }
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+      td {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+      thead {
+        display: table-header-group;
+      }
+      tfoot {
+        display: table-footer-group;
+      }
     }
   </style>
   <body>

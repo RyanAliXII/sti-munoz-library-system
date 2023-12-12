@@ -85,7 +85,7 @@ const ReservationPage = () => {
     updateStatus.mutate({
       id: reservation.id,
       remarks,
-      statusId: ReservationStatus.Cancelled,
+      statusId: 0,
     });
   };
 
@@ -119,18 +119,7 @@ const ReservationPage = () => {
           </Table.Body>
         </Table>
       </TableContainer>
-      <PromptTextAreaDialog
-        close={cancelConfirm.close}
-        isOpen={cancelConfirm.isOpen}
-        label="Cancellation remarks"
-        placeholder="it can be cancellations reasons."
-        proceedBtnText="Save"
-        title="Cancel Reservation"
-        submitButtonsProps={{
-          color: "failure",
-        }}
-        onProceed={onConfirmCancel}
-      />
+
       <WarningConfirmDialog
         title="Mark as missed"
         text="Are you sure you want to mark reservation as missed?"
@@ -144,6 +133,18 @@ const ReservationPage = () => {
         close={attendedConfirm.close}
         isOpen={attendedConfirm.isOpen}
         onConfirm={onConfirmAttended}
+      />
+      <PromptTextAreaDialog
+        close={cancelConfirm.close}
+        isOpen={cancelConfirm.isOpen}
+        label="Remarks"
+        placeholder=""
+        proceedBtnText="Save"
+        title="Reservation Remarks"
+        submitButtonsProps={{
+          color: "primary ",
+        }}
+        onProceed={onConfirmCancel}
       />
       <EditRemarksModal
         isOpen={editRemarksModal.isOpen}

@@ -1,6 +1,6 @@
 import DatePicker, { ReactDatePickerProps } from "react-datepicker";
 import { InputClasses } from "./Input";
-
+import "react-datepicker/dist/react-datepicker.css";
 interface CustomDatePickerProps extends ReactDatePickerProps {
   label?: string;
   error?: any;

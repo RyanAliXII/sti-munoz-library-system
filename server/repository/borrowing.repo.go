@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -147,7 +149,8 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 }
 func (repo * Borrowing) GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error) {
 	borrowedBook := model.BorrowedBook{}
-	err := repo.db.Get(&borrowedBook, "SELECT * FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
+	err := repo.db.Get(&borrowedBook, "SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook,created_at FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
+	fmt.Println(id)
 	if err != nil {
 		return borrowedBook, err
 	}
