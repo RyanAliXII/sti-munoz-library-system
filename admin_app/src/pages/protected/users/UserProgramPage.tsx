@@ -1,16 +1,15 @@
 import Container from "@components/ui/container/Container";
+import TableContainer from "@components/ui/table/TableContainer";
+import { UserProgramOrStrand } from "@definitions/types";
 import {
   useUserPrograms,
-  useUserTypes,
   useUserTypesWithPrograms,
 } from "@hooks/data-fetching/user";
-import { Button, Table } from "flowbite-react";
-import NewUserProgramModal from "./NewUserProgramModal";
 import { useSwitch } from "@hooks/useToggle";
-import TableContainer from "@components/ui/table/TableContainer";
+import { Button, Table } from "flowbite-react";
 import { useState } from "react";
-import { UserProgramOrStrand } from "@definitions/types";
 import EditUserProgramModal from "./EditUserProgramModal";
+import NewUserProgramModal from "./NewUserProgramModal";
 
 const UserProgramPage = () => {
   const { data: programs } = useUserPrograms({});
@@ -23,6 +22,7 @@ const UserProgramPage = () => {
       hasProgram: false,
       id: 0,
       name: "",
+      maxAllowedBorrowedBooks: 0,
     },
   });
   const newProgramModal = useSwitch();

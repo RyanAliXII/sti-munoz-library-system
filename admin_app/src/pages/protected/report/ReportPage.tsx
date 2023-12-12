@@ -4,8 +4,8 @@ import TableContainer from "@components/ui/table/TableContainer";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation } from "@tanstack/react-query";
-import { format, isValid, parse } from "date-fns";
-import { Button, Checkbox, Select, Table } from "flowbite-react";
+import { format } from "date-fns";
+import { Button, Checkbox, Table } from "flowbite-react";
 
 import { ChangeEvent, MouseEventHandler } from "react";
 import { toast } from "react-toastify";
@@ -14,10 +14,7 @@ type ReportConfigKeys =
   | "borrowedBooks"
   | "gameStatistics"
   | "deviceStatistics";
-// type GenerateReportForm = {
-//   from: string;
-//   to: string;
-// };
+
 const ReportPage = () => {
   const { Post } = useRequest();
   const generateReport = useMutation({
@@ -65,7 +62,7 @@ const ReportPage = () => {
     },
   });
 
-  const onSubmit = (event: MouseEventHandler<HTMLButtonElement>) => {
+  const onSubmit = () => {
     // for (const [key, value] of Object.entries(reportConfig)) {
     //   if (value.enabled) {
     //     try {

@@ -55,6 +55,7 @@ const ActivateModal: FC<ActivateModalProps> = ({
       userType: {
         hasProgram: false,
         id: 0,
+        maxAllowedBorrowedBooks: 0,
         name: "",
       },
       studentNumber: "",

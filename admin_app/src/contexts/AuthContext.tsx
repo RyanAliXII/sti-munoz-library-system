@@ -16,6 +16,12 @@ const userInitialData: Account = {
   programCode: "",
   programName: "",
   userType: "",
+  userGroup: {
+    hasProgram: false,
+    id: 0,
+    maxAllowedBorrowedBooks: 0,
+    name: "",
+  },
   studentNumber: "",
   surname: "",
   id: " ",
@@ -73,6 +79,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
         | "programName"
         | "studentNumber"
         | "userType"
+        | "userGroup"
       > = {
         id: user.data.id,
         displayName: user.data.displayName,
@@ -109,6 +116,7 @@ export const AuthProvider = ({ children }: BaseProps) => {
       | "programName"
       | "studentNumber"
       | "userType"
+      | "userGroup"
     >
   ) => {
     const tokens = await msalClient.acquireTokenSilent({
