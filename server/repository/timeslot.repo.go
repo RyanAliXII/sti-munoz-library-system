@@ -47,13 +47,14 @@ func (repo * TimeSlot)DeleteSlot(timeSlot model.TimeSlot)(error){
 func(repo * TimeSlot)GetTimeSlotBasedOnDateAndDevice(profileId string, dateSlotId string, deviceId string)([]model.TimeSlot, error){
 	slots := make([]model.TimeSlot, 0)
 	err := repo.db.Select(&slots, `
-	SELECT time_slot.id, to_char(time_slot.start_time, 'HH:MM:SS') as start_time, to_char(time_slot.end_time, 'HH:MM:SS') as end_time, COUNT(rv.id) as booked FROM services.time_slot 
+	SELECT time_slot.id, to_char(time_slot.start_time, 'HH24:MI:SS') as start_time, to_char(time_slot.end_time, 'HH24:MI:SS') as end_time, COUNT(rv.id) as booked FROM services.time_slot 
 	LEFT JOIN 
 	reservation_view as rv on time_slot.id = rv.time_slot_id 
 	and rv.status_id = 1 and device_id = $1 and date_slot_id = $2 
 	where 
 	time_slot.profile_id = $3 and deleted_at is null
 	GROUP BY time_slot.id, time_slot.id, time_slot.start_time, time_slot.end_time
+	ORDER BY time_slot.start_time ASC
 	`,deviceId, dateSlotId, profileId)
 	
 	return slots, err

@@ -1,27 +1,27 @@
 import Container from "@components/ui/container/Container";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import TableContainer from "@components/ui/table/TableContainer";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { Button, Checkbox, Datepicker, Select, Table } from "flowbite-react";
-import { ChangeEvent, FormEvent, useState } from "react";
-import { toast } from "react-toastify";
+import { format, isValid, parse } from "date-fns";
+import { Button, Checkbox, Select, Table } from "flowbite-react";
 
-type GenerateReportForm = {
-  from: string;
-  to: string;
-};
+import { ChangeEvent, MouseEventHandler } from "react";
+import { toast } from "react-toastify";
+type ReportConfigKeys =
+  | "clientStatistics"
+  | "borrowedBooks"
+  | "gameStatistics"
+  | "deviceStatistics";
+// type GenerateReportForm = {
+//   from: string;
+//   to: string;
+// };
 const ReportPage = () => {
-  const { setForm, form } = useForm<GenerateReportForm>({
-    initialFormData: {
-      from: "",
-      to: "",
-    },
-  });
   const { Post } = useRequest();
   const generateReport = useMutation({
-    mutationFn: (form: GenerateReportForm) =>
+    mutationFn: (form: any) =>
       Post("/reports", form, {
         responseType: "blob",
       }),
@@ -34,59 +34,114 @@ const ReportPage = () => {
       a.click();
     },
   });
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    generateReport.mutate(form);
-  };
-
-  const [reportConfig, setReportConfig] = useState({
-    clientStatistics: {
-      enabled: false,
-      from: "",
-      to: "",
-    },
-    borrowedBooks: {
-      enabled: false,
-      from: "",
-      to: "",
-    },
-    gameStatistics: {
-      enabled: false,
-      from: "",
-      to: "",
-    },
-    deviceStatistics: {
-      enabled: false,
-      from: "",
-      to: "",
+  const {
+    form: reportConfig,
+    setErrors,
+    setForm,
+    errors,
+  } = useForm({
+    initialFormData: {
+      clientStatistics: {
+        enabled: false,
+        frequency: "",
+        from: "2023-12-12",
+        to: "2023-12-12",
+      },
+      borrowedBooks: {
+        enabled: false,
+        from: "2023-12-12",
+        to: "2023-12-12",
+      },
+      gameStatistics: {
+        enabled: false,
+        from: "2023-12-12",
+        to: "2023-12-12",
+      },
+      deviceStatistics: {
+        enabled: false,
+        from: "2023-12-12",
+        to: "2023-12-12",
+      },
     },
   });
+
+  const onSubmit = (event: MouseEventHandler<HTMLButtonElement>) => {
+    // for (const [key, value] of Object.entries(reportConfig)) {
+    //   if (value.enabled) {
+    //     try {
+    //       const parsedFrom = parse(value.from, "yyyy-MM-dd", new Date());
+    //       let errs = {};
+    //       if (!isValid(parsedFrom)) {
+    //         errs = { ...errs, [`${key}.from`]: "Invalid date" };
+    //       }
+    //       const parsedTo = parse(value.to, "yyyy-MM-dd", new Date());
+    //       if (!isValid(parsedTo)) {
+    //         errs = { ...errs, [`${key}.from`]: "Invalid date" };
+    //       }
+    //       setErrors({ ...errs });
+    //     } catch (err) {
+    //       console.error(err);
+    //     }
+    //   }
+    // }
+    generateReport.mutate(reportConfig);
+  };
+
   const handleConfigSelect = (
     event: ChangeEvent<HTMLInputElement>,
-    key:
-      | "clientStatistics"
-      | "borrowedBooks"
-      | "gameStatistics"
-      | "deviceStatistics"
+    key: ReportConfigKeys
   ) => {
     const isChecked = event.target.checked;
-    setReportConfig((prev) => ({
+
+    const config = reportConfig[key];
+    setForm((prev) => ({
       ...prev,
       [key]: {
+        ...config,
         enabled: isChecked,
       },
     }));
   };
 
-  const handleDateSelection = () => {};
-
+  const handleFrom = (d: Date, key: ReportConfigKeys) => {
+    const from = format(d, "yyyy-MM-dd");
+    const config = reportConfig[key];
+    setForm((prev) => ({
+      ...prev,
+      [key]: {
+        ...config,
+        from: from,
+      },
+    }));
+  };
+  const handleTo = (d: Date, key: ReportConfigKeys) => {
+    const from = format(d, "yyyy-MM-dd");
+    const config = reportConfig[key];
+    setForm((prev) => ({
+      ...prev,
+      [key]: {
+        ...config,
+        to: from,
+      },
+    }));
+  };
+  const handleFrequency = (value: string, key: ReportConfigKeys) => {
+    const config = reportConfig[key];
+    setForm((prev) => ({
+      ...prev,
+      [key]: {
+        ...config,
+        frequency: value,
+      },
+    }));
+  };
   return (
     <Container>
       <TableContainer>
         <Table>
           <Table.Head>
             <Table.HeadCell>Report</Table.HeadCell>
-            <Table.HeadCell>Frequency</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
             <Table.HeadCell>From</Table.HeadCell>
             <Table.HeadCell>To</Table.HeadCell>
           </Table.Head>
@@ -95,6 +150,7 @@ const ReportPage = () => {
               <Table.Cell>
                 <div className="flex gap-2">
                   <Checkbox
+                    checked={reportConfig.clientStatistics.enabled}
                     color="primary"
                     onChange={(event) => {
                       handleConfigSelect(event, "clientStatistics");
@@ -105,23 +161,41 @@ const ReportPage = () => {
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Select disabled={!reportConfig.clientStatistics.enabled}>
+                  {/* <Select
+                    value={reportConfig.clientStatistics.frequency}
+                    disabled={!reportConfig.clientStatistics.enabled}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      handleFrequency(value, "clientStatistics");
+                    }}
+                  >
+                    <option value=""></option>
                     <option value="day">Daily</option>
                     <option value="week">Weekly</option>
                     <option value="month">Monthly</option>
-                  </Select>
+                  </Select> */}
                 </div>
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.clientStatistics.from)}
+                    onChange={(d) => {
+                      if (d) handleFrom(d, "clientStatistics");
+                    }}
+                    error={errors?.["clientStatistics.from"]}
                     disabled={!reportConfig.clientStatistics.enabled}
                   />
                 </div>
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.clientStatistics.to)}
+                    onChange={(d) => {
+                      if (d) handleTo(d, "clientStatistics");
+                    }}
+                    error={errors?.["clientStatistics.to"]}
                     disabled={!reportConfig.clientStatistics.enabled}
                   />
                 </div>
@@ -150,12 +224,24 @@ const ReportPage = () => {
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker disabled={!reportConfig.borrowedBooks.enabled} />
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.borrowedBooks.from)}
+                    onChange={(date) => {
+                      if (date) handleFrom(date, "borrowedBooks");
+                    }}
+                    disabled={!reportConfig.borrowedBooks.enabled}
+                  />
                 </div>
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker disabled={!reportConfig.borrowedBooks.enabled} />
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.borrowedBooks.to)}
+                    onChange={(date) => {
+                      if (date) handleTo(date, "borrowedBooks");
+                    }}
+                    disabled={!reportConfig.borrowedBooks.enabled}
+                  />
                 </div>
               </Table.Cell>
             </Table.Row>
@@ -182,12 +268,24 @@ const ReportPage = () => {
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker disabled={!reportConfig.gameStatistics.enabled} />
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.gameStatistics.from)}
+                    onChange={(date) => {
+                      if (date) handleFrom(date, "gameStatistics");
+                    }}
+                    disabled={!reportConfig.gameStatistics.enabled}
+                  />
                 </div>
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker disabled={!reportConfig.gameStatistics.enabled} />
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.gameStatistics.to)}
+                    onChange={(date) => {
+                      if (date) handleTo(date, "gameStatistics");
+                    }}
+                    disabled={!reportConfig.gameStatistics.enabled}
+                  />
                 </div>
               </Table.Cell>
             </Table.Row>
@@ -214,14 +312,22 @@ const ReportPage = () => {
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.deviceStatistics.from)}
+                    onChange={(date) => {
+                      if (date) handleFrom(date, "deviceStatistics");
+                    }}
                     disabled={!reportConfig.deviceStatistics.enabled}
                   />
                 </div>
               </Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2">
-                  <Datepicker
+                  <CustomDatePicker
+                    selected={new Date(reportConfig.deviceStatistics.to)}
+                    onChange={(date) => {
+                      if (date) handleTo(date, "deviceStatistics");
+                    }}
                     disabled={!reportConfig.deviceStatistics.enabled}
                   />
                 </div>
@@ -230,7 +336,7 @@ const ReportPage = () => {
           </Table.Body>
         </Table>
       </TableContainer>
-      <Button type="submit" color="primary" className="mt-2">
+      <Button onClick={onSubmit} color="primary" className="mt-2">
         Generate Report
       </Button>
     </Container>

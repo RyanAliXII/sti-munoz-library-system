@@ -16,6 +16,7 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import noData from "@assets/images/no-data.svg";
 import { useAccountStats } from "@hooks/data-fetching/account";
+import { is } from "date-fns/locale";
 const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
@@ -87,6 +88,7 @@ const BagPage = () => {
       toast.error("Unknown error occured, Please try again later.");
     },
   });
+
   const deleteCheckedItems = useMutation({
     mutationFn: () => Delete("/bag/checklist", {}),
     onSuccess: () => {
@@ -116,11 +118,20 @@ const BagPage = () => {
       queryClient.invalidateQueries(["bagItems"]);
       toast.success("Book has been checked out.");
       navigate("/borrowed-books?status=pending");
+      queryClient.invalidateQueries(["accountStats"]);
     },
     onError: () => {
       toast.error("Unknown error occured, Please try again later.");
     },
   });
+  const totalSelectedItem =
+    bagItems?.reduce((a, i) => {
+      if (i.isChecked) a++;
+      return a;
+    }, 0) ?? 0;
+
+  const totalItems =
+    (stats?.totalBorrowedBooks ?? 0) + (totalSelectedItem ?? 0);
 
   return (
     <>
@@ -130,6 +141,30 @@ const BagPage = () => {
           maxWidth: "800px",
         }}
       >
+        {totalItems >= (stats?.maxAllowedBorrowedBooks ?? 0) && (
+          <div className="px-2">
+            <div className="alert alert-warning shadow-lg mt-5 text-sm">
+              <div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="stroke-current flex-shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <span>
+                  You have exceeded the maximum amount of book you can borrow.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         {(bagItems?.length ?? 0) > 0 && (
           <div className="w-full h-16 border p-5 flex justify-between mt-1 rounded">
             <div className="flex h-full items-center gap-2">
@@ -156,15 +191,18 @@ const BagPage = () => {
               </span>
             </div>
             <div className="flex h-full items-center gap-2">
-              <button
-                className="text-xs lg:text-sm p-2 bg-primary text-white rounded disabled:opacity-50"
-                disabled={!hasSelectedItems}
-                onClick={() => {
-                  openConfirmCheckoutDialog();
-                }}
-              >
-                Checkout
-              </button>
+              {totalItems <= (stats?.maxAllowedBorrowedBooks ?? 0) &&
+                stats?.isAllowedToBorrow && (
+                  <button
+                    className="text-xs lg:text-sm p-2 bg-primary text-white rounded disabled:opacity-50"
+                    disabled={!hasSelectedItems}
+                    onClick={() => {
+                      openConfirmCheckoutDialog();
+                    }}
+                  >
+                    Checkout
+                  </button>
+                )}
               <button
                 className="text-xs lg:text-sm p-2 bg-error text-white rounded disabled:opacity-50"
                 disabled={!hasSelectedItems ?? false}

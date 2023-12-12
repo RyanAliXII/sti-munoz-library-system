@@ -20,8 +20,6 @@ import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { ReservationValidation } from "./schema";
-import { MdRemoveDone } from "react-icons/md";
-import { time } from "console";
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];

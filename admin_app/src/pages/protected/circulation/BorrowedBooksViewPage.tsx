@@ -370,9 +370,8 @@ const BorrowedBooksViewPage = () => {
                                 </Tippy>
                               )}
                             {(borrowedBook.statusId === BorrowStatus.Pending ||
-                              borrowedBook.statusId === BorrowStatus.Approved ||
                               borrowedBook.statusId ===
-                                BorrowStatus.CheckedOut) && (
+                                BorrowStatus.Approved) && (
                               <Tippy content="Cancel Request">
                                 <Button
                                   color="failure"

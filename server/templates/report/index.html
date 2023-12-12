@@ -14,6 +14,9 @@
     div {
       break-inside: avoid;
     }
+    .page-break {
+      page-break-after: always;
+    }
     .catalog-card {
       min-height: 3in;
       width: 5in;
@@ -89,7 +92,8 @@
           <span>{{.to}}</span>
         </p>
       </div>
-      <div class="mt-5">
+      {{if .config.ClientStatsEnabled }}
+      <div class="mt-5 page-break">
         <h5>Client Statistics</h5>
         <table class="table">
           <thead>
@@ -109,11 +113,12 @@
             </tr>
           </tbody>
         </table>
-        <div>
+        <!-- <div>
           <div style="width: 800px"><canvas id="myChart"></canvas></div>
-        </div>
+        </div> -->
       </div>
-      <div class="mt-5">
+      {{end}} {{if .config.BorrowedBooksEnabled }}
+      <div class="mt-5 page-break">
         <h5>Borrowed Books</h5>
         <table class="table">
           <thead>
@@ -125,11 +130,11 @@
           <tbody>
             <tr>
               <td scope="row">Borrowed Books</td>
-              <td scope="row">{{ .reportData.BorrowedBooks}}</td>
+              <td scope="row">{{ .borrowing.BorrowedBooks}}</td>
             </tr>
             <tr>
               <td scope="row">Unreturned Books</td>
-              <td scope="row">{{.reportData.UnreturnedBooks}}</td>
+              <td scope="row">{{.borrowing.UnreturnedBooks}}</td>
             </tr>
             {{range $borrowedSection := .borrowedSections}}
             <tr>
@@ -141,7 +146,8 @@
         </table>
         <!-- <div><canvas id="gamePieCtx"></canvas></div> -->
       </div>
-      <div class="mt-5" style="page-break-before: always">
+      {{end}} {{if .config.GameStatsEnabled }}
+      <div class="mt-5 page-break">
         <h5>Game Statistics</h5>
         <table class="table">
           <thead>
@@ -166,7 +172,7 @@
           </div>
         </div>
       </div>
-
+      {{end}} {{if .config.DeviceStatsEnabled }}
       <div class="mt-5">
         <h5>Device Statistics</h5>
         <table class="table">
@@ -191,6 +197,7 @@
             <canvas id="devicePieCtx"></canvas>
           </div>
         </div>
+        {{end}}
       </div>
     </main>
   </body>
@@ -208,6 +215,7 @@
     const deviceLogs = JSON.parse("{{.deviceLogJSON}}") ?? [];
     const gameLogs = JSON.parse("{{.gameLogJSON}}") ?? [];
     const walkInLogs = JSON.parse("{{.walkInLogsJSON}}") ?? [];
+    const labels = JSON.parse("{{.walkInLabels}}") ?? [];
 
     const ctx = document.getElementById("myChart");
     const gamePieCtx = document.getElementById("gamePieCtx");
@@ -216,14 +224,14 @@
       type: "bar",
       animation: false,
       data: {
-        labels: walkInLogs.map((log) => toReadableDate(log.date)),
-        datasets: [
-          {
-            label: "Client Statistics",
-            data: walkInLogs.map((log) => log.walkIns),
+        labels: labels.map((l) => l.label),
+        datasets: walkInLogs.map((walkIn) => {
+          return {
+            label: walkIn.userGroup,
+            data: walkIn.logs.map((l) => l.count),
             borderWidth: 1,
-          },
-        ],
+          };
+        }),
       },
       options: {
         animation: false,

@@ -36,9 +36,10 @@ const CatalogBookView = () => {
   });
   const isEbook = (bookView?.book.ebook.length ?? 0) > 0;
   const isAddToBagDisable =
-    !bookView?.status.isAvailable ||
-    bookView?.status.isAlreadyBorrowed ||
-    bookView.status.isAlreadyInBag;
+    (!bookView?.status.isAvailable ||
+      bookView?.status.isAlreadyBorrowed ||
+      bookView.status.isAlreadyInBag) &&
+    bookView?.book.ebook.length === 0;
   const isPlaceHoldDisable =
     bookView?.status.isAlreadyBorrowed ||
     bookView?.status.isInQueue ||

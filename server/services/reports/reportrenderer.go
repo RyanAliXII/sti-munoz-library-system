@@ -2,35 +2,57 @@ package reports
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
 )
 
 
-
+type ReportConfigBody struct {
+	ClientStatsEnabled     bool   `form:"clientStatsEnabled"`
+	ClientStatsFrequency   string `form:"clientStatsFrequency"`
+	ClientStatsFrom        string `form:"clientStatsFrom"`
+	ClientStatsTo          string `form:"clientStatsTo"`
+	BorrowedBooksEnabled   bool   `form:"borrowedBooksEnabled"`
+	BorrowedBooksFrom      string `form:"borrowedBooksFrom"`
+	BorrowedBooksTo        string `form:"borrowedBooksTo"`
+	GameStatsEnabled       bool   `form:"gameStatsEnabled"`
+	GameStatsFrom          string `form:"gameStatsFrom"`
+	GameStatsTo            string `form:"gameStatsTo"`
+	DeviceStatsEnabled     bool   `form:"deviceStatsEnabled"`
+	DeviceStatsFrom        string `form:"deviceStatsFrom"`
+	DeviceStatsTo          string `form:"deviceStatsTo"`
+}
 func (ctrler  * Report)RenderReport(ctx * gin.Context){
-	reportFilter := ReportFilter{}
-	err := ctx.ShouldBindQuery(&reportFilter)
+	reportBody := ReportConfigBody{}
+	ctx.ShouldBindQuery(&reportBody)
+	fmt.Println(reportBody)
+
+
+	walkIns,labels, err := ctrler.reportRepo.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-		return
+		logger.Error(err.Error())
 	}
-	err = reportFilter.Validate()
-	
+	walkInLabels, err  := json.Marshal(labels)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
-		ctx.JSON(httpresp.Fail400(nil, "ValidationErr"))
-		return
+		logger.Error(err.Error())
+	}
+	walkInsJSON, err  := json.Marshal(walkIns)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	fmt.Println(walkIns)
+
+	reportFilter := ReportFilter{
+		From: reportBody.ClientStatsFrom,
+		To: reportBody.ClientStatsTo,
 	}
 	reportData, err := ctrler.reportRepo.GenerateReport(reportFilter.From, reportFilter.To)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	gameLogData, err := ctrler.reportRepo.GetGameLogsData(reportFilter.From, reportFilter.To)
+	gameLogData, err := ctrler.reportRepo.GetGameLogsData(reportBody.GameStatsFrom, reportBody.GameStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -38,15 +60,8 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	walkInLogs, err := ctrler.reportRepo.GetWalkInLogs(reportFilter.From, reportFilter.To)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	walkInLogsJSON, err  := json.Marshal(walkInLogs)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	deviceLogData, err := ctrler.reportRepo.GetDeviceLogsData(reportFilter.From, reportFilter.To)
+
+	deviceLogData, err := ctrler.reportRepo.GetDeviceLogsData(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -54,7 +69,8 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	borrowedSections, err := ctrler.reportRepo.GetBorrowedSection(reportFilter.From, reportFilter.To)
+	borrowedBooks, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportFilter.To)
+	borrowedSections, err := ctrler.reportRepo.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportFilter.To)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -65,10 +81,13 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		"deviceLogData" : deviceLogData,
 		"gameLogJSON": string(gameLogJSON),
 		"deviceLogJSON" : string(deviceLogJSON),
-		"walkInLogsJSON": string(walkInLogsJSON),
+		"walkInLogsJSON": string(walkInsJSON),
 		"borrowedSections": borrowedSections,
+		"borrowing": borrowedBooks, 
 		"from": reportFilter.From,
 		"to": reportFilter.To,
+		"walkInLabels": string(walkInLabels),
+		"config": reportBody,
 	})
 }
 
@@ -80,4 +99,5 @@ func (ctrler  * Report)RenderAuditReport(ctx * gin.Context){
 	ctx.HTML(http.StatusOK, "report/audit/index", gin.H{
 		"auditedBooks": audited,
 	})
+
 }

@@ -10,7 +10,7 @@ import DashboardComponent from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { Alert, Button, Label } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import BulkActivateErrorModal from "./BulkActivateErrorModal";
 const uppy = new Uppy({
@@ -33,16 +33,13 @@ const BulkActivatePage = () => {
   const { instance: msalInstance } = useMsal();
   const [isInvalidActivationDate, setIsInvalidActivationDate] = useState(false);
   const [messages, setMessages] = useState<string[]>([]);
+  const navigate = useNavigate();
   useEffect(() => {
     uppy.on("upload-error", (file, err, response) => {
       const messages = response?.body?.data?.errors?.messages;
       if (messages) {
         setMessages(messages ?? []);
       }
-    });
-
-    uppy.on("upload-success", () => {
-      toast.success("Accounts activated.");
     });
   }, []);
 
@@ -75,6 +72,7 @@ const BulkActivatePage = () => {
     try {
       setMessages([]);
       await uppy.upload();
+      navigate("/clients/accounts");
     } finally {
       uppy.cancelAll();
     }

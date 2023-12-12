@@ -85,7 +85,7 @@ const ReservationPage = () => {
     updateStatus.mutate({
       id: reservation.id,
       remarks,
-      statusId: ReservationStatus.Cancelled,
+      statusId: 0,
     });
   };
 
@@ -119,6 +119,21 @@ const ReservationPage = () => {
           </Table.Body>
         </Table>
       </TableContainer>
+
+      <WarningConfirmDialog
+        title="Mark as missed"
+        text="Are you sure you want to mark reservation as missed?"
+        close={missedConfirm.close}
+        isOpen={missedConfirm.isOpen}
+        onConfirm={onConfirmMissed}
+      />
+      <ConfirmDialog
+        title="Mark as attended"
+        text="Are you sure you want to mark reservation as attended?"
+        close={attendedConfirm.close}
+        isOpen={attendedConfirm.isOpen}
+        onConfirm={onConfirmAttended}
+      />
       <PromptTextAreaDialog
         close={cancelConfirm.close}
         isOpen={cancelConfirm.isOpen}

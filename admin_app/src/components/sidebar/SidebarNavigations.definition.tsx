@@ -43,13 +43,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         icon: GiBookshelf,
         requiredPermissions: ["Book.Access", "Section.Access"],
       },
-      {
-        text: "Accession",
-        to: "/books/accessions",
-        icon: Bs123,
-        requiredPermissions: ["Book.Access"],
-        items: [],
-      },
+      // {
+      //   text: "Accession",
+      //   to: "/books/accessions",
+      //   icon: Bs123,
+      //   requiredPermissions: ["Book.Access"],
+      //   items: [],
+      // },
       {
         text: "Author",
         to: "/books/authors",
@@ -193,6 +193,11 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Reservation",
         to: "/services/reservations",
+        items: [],
+      },
+      {
+        text: "Device Logs",
+        to: "/services/devices/logs",
         items: [],
       },
     ],

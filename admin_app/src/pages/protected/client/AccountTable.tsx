@@ -84,6 +84,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
         <Table.HeadCell>Email</Table.HeadCell>
         <Table.HeadCell>User Group</Table.HeadCell>
         <Table.HeadCell>Status</Table.HeadCell>
+        <Table.HeadCell>Status</Table.HeadCell>
       </Table.Head>
       <Table.Body className="divide-y dark:divide-gray-700">
         {accounts?.map((account) => {

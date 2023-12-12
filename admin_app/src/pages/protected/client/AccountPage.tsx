@@ -30,6 +30,7 @@ import AccountTable from "./AccountTable";
 import ActivateModal from "./ActivateModal";
 import ImportAccountModal from "./ImportAccountModal";
 import { selectedAccountIdsReducer } from "./selected-account-ids-reducer";
+import { Link } from "react-router-dom";
 
 const AccountPage = () => {
   const [totalPages, setTotalPages] = useState(1);
@@ -239,6 +240,9 @@ const AccountPage = () => {
               >
                 <TbFileImport className="text-lg" />
                 Import
+              </Button>
+              <Button as={Link} to={"/clients/accounts/bulk-activate"}>
+                Activate accounts
               </Button>
             </HasAccess>
           </div>

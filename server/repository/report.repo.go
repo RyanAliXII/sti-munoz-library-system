@@ -22,8 +22,9 @@ type ReportRepository interface{
 	GetGameLogsData(start string, end string)([]model.GameData, error)
 	GetDeviceLogsData(start string, end string)([]model.DeviceData, error) 
 	GetWalkInLogs(start string, end string)([]model.WalkInLog, error)
+	GetWalkIns(from string, to string, frequency string)([]model.WalkInData,[]model.WalkInLabel, error)
 	GetBorrowedSection (start string, end string)([]model.BorrowedSection, error)
-	
+	GetBorrowingReportData(start string, end string)(model.ReportData, error) 
 }
 
 func (repo * Report)GenerateReport(start string, end string)(model.ReportData, error){
@@ -57,6 +58,20 @@ func (repo * Report)GenerateReport(start string, end string)(model.ReportData, e
 	err := repo.db.Get(&data, query, start, end)
 	return data,err
 
+}
+func (repo * Report)GetBorrowingReportData(start string, end string)(model.ReportData, error) {
+	data := model.ReportData{}
+	query := `SELECT (
+		
+		SELECT COUNT(1) FROM borrowing.borrowed_book where status_id = 4 or status_id = 3 
+		and date(borrowed_book.created_at at time zone 'PHT') between $1 and $2 
+	) as borrowed_books,
+	(
+		SELECT COUNT(1) FROM borrowing.borrowed_book where status_id = 6 
+		and date(borrowed_book.created_at at time zone 'PHT') between $1 and $2 
+	) as unreturned_books`
+	err := repo.db.Get(&data, query, start, end)
+	return data,err
 }
 func (repo * Report)GetBorrowedSection (start string, end string)([]model.BorrowedSection, error) {
 	borrowedSection := make([]model.BorrowedSection, 0)
@@ -96,12 +111,21 @@ func(repo *Report)GetWeeklyWalkIns(from string, to string){
 	fmt.Println(query)
 }
 
-func(repo *Report)GetDailyWalkIns(from string, to string){
-	query := `
-	SELECT id,name, COALESCE( JSON_AGG(JSON_BUILD_OBJECT('date',stats.dt, 'walkIns', stats.walk_ins )),'[]') FROM system.user_type
+func(repo *Report)GetWalkIns(from string, to string, frequency string)([]model.WalkInData,[]model.WalkInLabel, error){
+	data := make([]model.WalkInData, 0)
+	labels := make([]model.WalkInLabel, 0)
+	query := fmt.Sprintf(`
+	SELECT name as user_group, 
+	COALESCE(
+        JSON_AGG(
+            JSON_BUILD_OBJECT('date', stats.dt, 'count', stats.walk_ins)
+            ORDER BY stats.dt ASC
+        ) FILTER (WHERE stats.dt IS NOT NULL),
+        '[]'
+    ) AS logs FROM system.user_type
 	LEFT JOIN (
 		SELECT
-		date_trunc('day', client_log.created_at at time zone 'PHT') AS dt,
+		date(date_trunc('%s', client_log.created_at at time zone 'PHT')) AS dt,
 		account_view.type_id,
 		count(1) AS walk_ins
 	FROM
@@ -109,7 +133,7 @@ func(repo *Report)GetDailyWalkIns(from string, to string){
 	INNER JOIN
 		account_view ON client_log.client_id = account_view.id 
 	WHERE
-		date(client_log.created_at at time zone 'PHT') BETWEEN '2023-11-01' AND '2023-12-01'
+		date(client_log.created_at at time zone 'PHT') BETWEEN $1 AND $2
 	-- Change the type_id based on the user type you're interested in
 	GROUP BY
 		dt,  account_view.type_id
@@ -118,8 +142,28 @@ func(repo *Report)GetDailyWalkIns(from string, to string){
 	) as stats on user_type.id = stats.type_id
 	GROUP BY user_type.id
 	
-	`
-	fmt.Println(query)
+	`,  frequency)
+	err := repo.db.Select(&data, query, from, to)
+	fmt.Println(data)
+	if err != nil {
+		return data, labels, err
+	}
+	err = repo.db.Select(&labels, `
+	SELECT
+	date(date_trunc('day', client_log.created_at AT TIME ZONE 'PHT')) AS label
+	FROM
+		system.client_log
+
+	WHERE
+		date(client_log.created_at AT TIME ZONE 'PHT') BETWEEN $1 AND $2
+	GROUP BY
+		label
+	ORDER BY
+		label ASC
+
+	`, from, to)
+
+	return  data,labels, err
 }
 
 func(repo *Report)GetMothlyWalkIns(from string, to string){

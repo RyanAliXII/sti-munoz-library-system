@@ -47,6 +47,12 @@ const CLIENT_INITIAL_DATA: Account = {
   id: "",
   isActive: false,
   isDeleted: false,
+  userGroup: {
+    hasProgram: false,
+    id: 0,
+    maxAllowedBorrowedBooks: 0,
+    name: "",
+  },
   metadata: {
     approvedBooks: 0,
     cancelledBooks: 0,
