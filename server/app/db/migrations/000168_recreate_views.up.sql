@@ -149,9 +149,9 @@ INNER JOIN borrowing.borrow_status as bs on be.status_id = bs.id;
 
 
 CREATE OR REPLACE VIEW borrowed_book_all_view as 
-((SELECT id, group_id,client,account_id,book, status, status_id, accession_id, number,copy_number,  penalty, due_date, remarks, false as is_ebook, account_search_vector, created_at  from borrowed_book_view ) 
+((SELECT id, group_id,client,account_id,book, status, status_id, accession_id, number,book_id, copy_number,  penalty, due_date, remarks, false as is_ebook, account_search_vector, created_at  from borrowed_book_view ) 
 	UNION ALL 
-(SELECT id, group_id,client,account_id, book, status, status_id, '00000000-0000-0000-0000-000000000000', 0,0,0.00, due_date, '', true as is_ebook, account_search_vector, created_at
+(SELECT id, group_id,client,account_id, book, status, status_id, '00000000-0000-0000-0000-000000000000', 0, book_id,0,0.00, due_date, '', true as is_ebook, account_search_vector, created_at
 FROM borrowed_ebook_view));
 
 

@@ -2,9 +2,9 @@ package reports
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,14 +27,9 @@ type ReportConfigBody struct {
 func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	reportBody := ReportConfigBody{}
 	ctx.ShouldBindQuery(&reportBody)
-	fmt.Println(reportBody)
+	
 
-
-	walkIns,labels, err := ctrler.reportRepo.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	walkInLabels, err  := json.Marshal(labels)
+	walkIns, err := ctrler.reportRepo.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -42,13 +37,17 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	fmt.Println(walkIns)
-
+	clientStats, err := ctrler.reportRepo.GetClientStats(reportBody.ClientStatsFrom, reportBody.ClientStatsTo)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	walkInsTable := generateClientWalkInsTable(walkIns)
+	
 	reportFilter := ReportFilter{
 		From: reportBody.ClientStatsFrom,
 		To: reportBody.ClientStatsTo,
 	}
-	reportData, err := ctrler.reportRepo.GenerateReport(reportFilter.From, reportFilter.To)
+	reportData, err := ctrler.reportRepo.GetBorrowingReportData(reportFilter.From, reportFilter.To)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -70,10 +69,14 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		logger.Error(err.Error())
 	}
 	borrowedBooks, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportFilter.To)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 	borrowedSections, err := ctrler.reportRepo.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportFilter.To)
 	if err != nil {
 		logger.Error(err.Error())
 	}
+	generateClientWalkInsTable(walkIns)
 	reportFilter.ToReadableDate()
 	ctx.HTML(http.StatusOK, "report/index", gin.H{
 		"reportData": reportData,
@@ -82,13 +85,31 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		"gameLogJSON": string(gameLogJSON),
 		"deviceLogJSON" : string(deviceLogJSON),
 		"walkInLogsJSON": string(walkInsJSON),
+		"walkIns": walkIns,
+		"clientStats": clientStats,
 		"borrowedSections": borrowedSections,
 		"borrowing": borrowedBooks, 
 		"from": reportFilter.From,
 		"to": reportFilter.To,
-		"walkInLabels": string(walkInLabels),
 		"config": reportBody,
+		"walkInsTable": walkInsTable,
 	})
+}
+
+func generateClientWalkInsTable (walkIns []model.WalkInData)(map[string][]int){
+	m := make(map[string][]int, 0)
+	if (len(walkIns) > 0){
+		root := walkIns[0]
+		for outer, l := range root.Logs{
+			list := make([]int, 0)
+			for _, w := range walkIns {
+				list = append(list,w.Logs[outer].Count)
+			}
+			m[l.Date] = list
+		}
+		return m		
+	}
+	return m
 }
 
 

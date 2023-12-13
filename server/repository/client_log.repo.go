@@ -64,13 +64,7 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 	ds := dialect.Select(
 		goqu.C("id").Table("client_log"),
 		goqu.C("created_at").Table("client_log"),
-		goqu.L(`
-		json_build_object(
-		'id', account.id, 
-		'givenName', account.given_name,
-		'surname', account.surname, 
-		'displayName',account.display_name,
-		'email', account.email)`).As("client"),
+		goqu.C("json_format").Table("account").As("client"),
 		goqu.L(`
 		json_build_object(
 		'id', scanner_account.id, 
@@ -79,7 +73,7 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 		)`).As("scanner"),
 	).
 	From(goqu.T("client_log").Schema("system").As("client_log")).
-	InnerJoin(goqu.T("account").Schema("system"), goqu.On(goqu.Ex{
+	InnerJoin(goqu.T("account_view").As("account"), goqu.On(goqu.Ex{
 		"client_log.client_id" : goqu.I("account.id"),
 	})).
 	InnerJoin(goqu.T("scanner_account").Schema("system"), goqu.On(goqu.Ex{
@@ -91,7 +85,7 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 	Limit(uint(filter.Limit)).
 	Offset(uint(filter.Offset))
 	query, args, err :=  ds.ToSQL()
-	fmt.Println(query)
+	
 	if err != nil {
 		return clientLogs, meta, err
 	}

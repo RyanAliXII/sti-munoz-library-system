@@ -194,6 +194,7 @@ export type Account = {
   programName: string;
   userType: string;
   programCode: string;
+  profilePicture?: string;
   program?: UserProgramOrStrand;
   userGroup: UserType;
   studentNumber?: string;

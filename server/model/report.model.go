@@ -13,6 +13,11 @@ type ReportData struct{
 
 }
 
+type ClientStatsData struct {
+	WalkIns int `json:"walkIns" db:"walk_ins"`
+	AverageWalkIns int `json:"averageWalkIns" db:"avg_walk_ins"`
+}
+
 type GameData struct {
 	Name string `json:"name" db:"name"`
 	Total int `json:"total" db:"total"`

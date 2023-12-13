@@ -2,6 +2,7 @@ import { Account } from "@definitions/types";
 import { Avatar, Badge, Button, Checkbox, Table } from "flowbite-react";
 import React, { ChangeEvent, Dispatch, useMemo } from "react";
 import { SelectedAccountIdsAction } from "./selected-account-ids-reducer";
+import { buildAvatar } from "@helpers/avatar";
 
 type AccountTableProps = {
   accounts: Account[];
@@ -88,18 +89,8 @@ const AccountTable: React.FC<AccountTableProps> = ({
       </Table.Head>
       <Table.Body className="divide-y dark:divide-gray-700">
         {accounts?.map((account) => {
-          const url = new URL(
-            "https://ui-avatars.com/api/&background=2563EB&color=fff"
-          );
-          url.searchParams.set(
-            "name",
-            `${account.givenName} ${account.surname}`
-          );
           const isChecked = selectedAccountIds.has(account.id ?? "");
-          const name =
-            account.givenName.length + account.surname.length === 0
-              ? "Unnamed"
-              : `${account.givenName} ${account.surname}`;
+          const avatarUrl = buildAvatar(account);
           return (
             <Table.Row key={account.id}>
               <Table.Cell>
@@ -118,12 +109,12 @@ const AccountTable: React.FC<AccountTableProps> = ({
               </Table.Cell>
               <Table.Cell>
                 <div className="h-10">
-                  <Avatar img={url.toString()} rounded></Avatar>
+                  <Avatar img={avatarUrl} rounded></Avatar>
                 </div>
               </Table.Cell>
               <Table.Cell>
                 <div className="text-base font-semibold text-gray-900 dark:text-white">
-                  {name}
+                  {account.givenName} {account.surname}
                 </div>
                 <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
                   {account.displayName}
