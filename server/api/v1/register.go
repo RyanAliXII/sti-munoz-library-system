@@ -9,6 +9,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
 	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/content"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/dateslot"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
@@ -60,4 +61,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	item.ItemRoutes(grp.Group("/items"))
 	notification.NotificationRoutes(grp.Group("/notifications"))
 	searchtag.SearchTagRoutes(grp.Group("/search-tags"))
+	content.ContentRoutes(grp.Group("/contents"))
 }

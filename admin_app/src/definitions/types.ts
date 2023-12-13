@@ -183,6 +183,10 @@ export type TimeSlotProfile = {
   name: string;
   timeSlots?: TimeSlot[];
 };
+export type ExtrasContent = {
+  value: string;
+  id: number;
+};
 export type Account = {
   id?: string;
   displayName: string;

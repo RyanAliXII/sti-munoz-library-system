@@ -6,6 +6,28 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  .no-tailwindcss-base {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: revert;
+      font-weight: revert;
+    }
+    table {
+      border: revert;
+    }
+    ol,
+    ul {
+      list-style: revert;
+      margin: revert;
+      padding: revert;
+    }
+  }
+}
 .react-datepicker {
   @apply bg-gray-50 dark:bg-gray-700 border-none text-gray-900 dark:text-white;
 }

@@ -3,16 +3,22 @@ import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import CustomPagination from "@components/pagination/CustomPagination";
 import Container from "@components/ui/container/Container";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import CustomDatePicker from "@components/ui/form/CustomDatePicker";
+import CustomSelect from "@components/ui/form/CustomSelect";
 import { Book, Section } from "@definitions/types";
 import { useBooks, useMigrateCollection } from "@hooks/data-fetching/book";
+import { useCollections } from "@hooks/data-fetching/collection";
+import { useSearchTags } from "@hooks/data-fetching/search-tag";
 import useDebounce from "@hooks/useDebounce";
 import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Checkbox, Dropdown, Label, TextInput } from "flowbite-react";
-import { ChangeEvent, useEffect, useMemo, useReducer, useState } from "react";
+import { Button, Dropdown, Label, TextInput } from "flowbite-react";
+import { ChangeEvent, useMemo, useReducer, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
+import { MdFilterList } from "react-icons/md";
 import { TbDatabaseImport } from "react-icons/tb";
 import { Link } from "react-router-dom";
+import { MultiValue } from "react-select";
 import { toast } from "react-toastify";
 import { useSearchParamsState } from "react-use-search-params-state";
 import { BookPrintablesModal } from "./BookPrintablesModal";
@@ -20,13 +26,6 @@ import BookTable from "./BookTable";
 import ImportBooksModal from "./ImportBooksModal";
 import MigrateModal from "./MigrateModal";
 import { bookSelectionReducer } from "./bookselection-reducer";
-import { MdFilterList } from "react-icons/md";
-import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-import CustomSelect from "@components/ui/form/CustomSelect";
-import { useCollections } from "@hooks/data-fetching/collection";
-import { useSearchTags } from "@hooks/data-fetching/search-tag";
-import { MultiValue, SingleValue } from "react-select";
-import { values } from "lodash";
 
 const BookPage = () => {
   const {
