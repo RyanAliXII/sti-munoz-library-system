@@ -7,7 +7,10 @@ export type User = {
   id: string;
   image?: Blob;
 };
-
+export type ExtrasContent = {
+  value: string;
+  id: number;
+};
 export interface ModalProps {
   isOpen: boolean;
   closeModal: () => void;

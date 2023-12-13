@@ -27,7 +27,7 @@ const ReservationPage = lazy(
   () => import("./protected/reservation/ReservationPage")
 );
 const QueuePage = lazy(() => import("./protected/queues/QueuePage"));
-
+const FAQsPage = lazy(() => import("./protected/faqs/FAQsPage"));
 const pages = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -118,6 +118,14 @@ const pages = createBrowserRouter(
           element={
             <Suspense fallback={<Loader />}>
               <NotificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/faqs"
+          element={
+            <Suspense fallback={<Loader />}>
+              <FAQsPage />
             </Suspense>
           }
         />
