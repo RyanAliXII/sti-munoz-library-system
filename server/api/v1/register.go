@@ -13,6 +13,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/dateslot"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services/extras"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/item"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/notification"
@@ -62,4 +63,5 @@ func RegisterAPIV1(router *gin.Engine) {
 	notification.NotificationRoutes(grp.Group("/notifications"))
 	searchtag.SearchTagRoutes(grp.Group("/search-tags"))
 	content.ContentRoutes(grp.Group("/contents"))
+	extras.ExtrasRoutes(grp.Group("/"))
 }

@@ -51,5 +51,5 @@ func (ctrler * Extras)GetFAQsContent(ctx  * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"content": content,
-	}, "FAQs updated."))
+	}, "FAQs fetched."))
 }

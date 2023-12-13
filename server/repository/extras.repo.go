@@ -19,7 +19,7 @@ func NewExtrasRepository() ExtrasRepository{
 	}
 }
 func (repo * Extras)UpdateFAQsContent(content model.ExtrasContent) error {
-	_, err := repo.db.Exec("UPDATE system.extras SET value = $1 where id = $2", content.Value, content.Id)
+	_, err := repo.db.Exec("UPDATE system.extras SET value = $1 where id = 1", content.Value)
 	return err
 }
 func (repo * Extras)GetFAQsContent() (model.ExtrasContent,error) {

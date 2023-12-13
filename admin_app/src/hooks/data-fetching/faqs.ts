@@ -1,6 +1,11 @@
 import { ExtrasContent } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
 export const useFAQs = ({
   onSuccess,
@@ -25,7 +30,33 @@ export const useFAQs = ({
     queryFn: fetchFAQs,
     onSuccess: onSuccess,
     onError: onError,
+    refetchOnWindowFocus: false,
     queryKey: ["faqs"],
     onSettled,
+  });
+};
+
+export const useEditFAQs = ({
+  onSuccess,
+  onSettled,
+  onError,
+}: MutationOptions<any, unknown, string, unknown>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (value: string) =>
+      Put(
+        `/faqs`,
+        {
+          value,
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      ),
+    onSuccess: onSuccess,
+    onError: onError,
+    onSettled: onSettled,
   });
 };
