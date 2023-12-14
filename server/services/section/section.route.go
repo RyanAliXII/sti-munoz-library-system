@@ -13,6 +13,6 @@ func SectionRoutes(router *gin.RouterGroup) {
 	router.GET("/", 
 	controller.GetCategories)
 	router.POST("/", controller.NewCategory)
-	router.PUT("/:id", middlewares.ValidateBody[UpdateSectionBody], controller.UpdateSection)
+	router.PUT("/:id", controller.UpdateSection)
 	router.DELETE("/:id", controller.DeleteCollection)
 }

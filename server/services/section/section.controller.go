@@ -68,6 +68,12 @@ func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("BindErr"))
 	}
+	fieldsErr, err := section.ValidateUpdate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("collection update error"))
+		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldsErr}, "Validation error."),)
+		return 
+	}
 	err = ctrler.sectionRepository.Update(section)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateErr"))

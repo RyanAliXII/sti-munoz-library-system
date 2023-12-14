@@ -13,6 +13,8 @@ import useModalToggleListener from "@hooks/useModalToggleListener";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { useMainCollections } from "@hooks/data-fetching/collection";
 import { SingleValue } from "react-select";
+import { AxiosError } from "axios";
+import { StatusCodes } from "http-status-codes";
 
 const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const FORM_DEFAULT_VALUES: Omit<
@@ -24,13 +26,21 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
 
     mainCollectionId: 0,
   };
-  const { form, errors, handleFormInput, validate, resetForm, setForm } =
-    useForm<
-      Omit<Section, "isDeleteable" | "isSubCollection" | "accessionTable">
-    >({
-      initialFormData: FORM_DEFAULT_VALUES,
-      schema: SectionSchema,
-    });
+  const {
+    form,
+    errors,
+    setErrors,
+    handleFormInput,
+    validate,
+    resetForm,
+    removeErrors,
+    setForm,
+  } = useForm<
+    Omit<Section, "isDeleteable" | "isSubCollection" | "accessionTable">
+  >({
+    initialFormData: FORM_DEFAULT_VALUES,
+    schema: SectionSchema,
+  });
 
   const queryClient = useQueryClient();
   const { Post } = useRequest();
@@ -40,12 +50,18 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       toast.success("New section added");
       queryClient.invalidateQueries(["sections"]);
       resetForm();
-    },
-    onError: (error) => {
-      console.error(error);
-    },
-    onSettled: () => {
       closeModal();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+
+          return;
+        }
+      }
     },
   });
 
@@ -59,7 +75,10 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     }
   };
   useModalToggleListener(isOpen, () => {
-    if (!isOpen) resetForm();
+    if (!isOpen) {
+      resetForm();
+      removeErrors();
+    }
   });
   const handleCollectionSelection = (newValue: SingleValue<Section>) => {
     setForm((collection) => ({

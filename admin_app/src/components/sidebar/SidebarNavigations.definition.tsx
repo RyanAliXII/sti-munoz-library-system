@@ -37,6 +37,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     isCollapse: false,
     items: [
       {
+        text: "Collections",
+        to: "/books/collections",
+        requiredPermissions: ["Section.Access"],
+        icon: SiBookstack,
+        items: [],
+      },
+      {
         text: "Book",
         to: "/books",
         items: [],
@@ -50,18 +57,12 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       //   requiredPermissions: ["Book.Access"],
       //   items: [],
       // },
+
       {
         text: "Author",
         to: "/books/authors",
         requiredPermissions: ["Author.Access"],
         icon: TfiWrite,
-        items: [],
-      },
-      {
-        text: "Collections",
-        to: "/books/collections",
-        requiredPermissions: ["Section.Access"],
-        icon: SiBookstack,
         items: [],
       },
       {
