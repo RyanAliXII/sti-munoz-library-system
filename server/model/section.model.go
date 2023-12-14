@@ -3,7 +3,13 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	validation "github.com/go-ozzo/ozzo-validation"
 )
+
+
 
 type Section struct {
 	Id              int    `json:"id" db:"id"`
@@ -14,6 +20,30 @@ type Section struct {
 	AccessionTable  string `json:"accessionTable" db:"accession_table"`
 	MainCollectionId int `json:"mainCollectionId" db:"main_collection_id"`
 	IsDeletable bool `json:"isDeleteable" db:"is_deleteable"`
+	Model
+}
+
+func (section * Section) ValidateSection () (validation.Errors, error) {
+		fieldsErrs, err :=  section.Model.Validate(section, 
+			validation.Field(&section.Name, validation.Required.Error("Name is required."), 
+			 validation.Length(1, 150).Error("Name should be atleast 1 to 150 characters."),
+			 validation.By(func(value interface{}) error {
+					name, isString  := value.(string)
+					if !isString {
+						return errors.New("invalid name")
+					}
+
+					db := db.Connect()
+					isExists := true
+					err := db.Get(&isExists, "SELECT EXISTS (SELECT name from catalog.section where name = $1)", name)
+					if err != nil || isExists {
+						return errors.New("collection name already exists")
+					}
+					return nil
+			})),
+			validation.Field(&section.Prefix, validation.Required.Error("Prefix is required.")),
+		)
+		return fieldsErrs, err
 }
 type SectionJSON struct {
 	Section
