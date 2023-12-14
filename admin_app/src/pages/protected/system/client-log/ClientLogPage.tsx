@@ -3,12 +3,20 @@ import CustomPagination from "@components/pagination/CustomPagination";
 import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
 import { ClientLog } from "@definitions/types";
-import { toReadableDate } from "@helpers/datetime";
+import { buildAvatar } from "@helpers/avatar";
+import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Button, Datepicker, Dropdown, Label, Table } from "flowbite-react";
+import {
+  Avatar,
+  Button,
+  Datepicker,
+  Dropdown,
+  Label,
+  Table,
+} from "flowbite-react";
 import { TextInput } from "flowbite-react";
 import { ChangeEvent, useState } from "react";
 import { MdFilterList } from "react-icons/md";
@@ -110,29 +118,46 @@ const ClientLogPage = () => {
           <Table>
             <Table.Head>
               <Table.HeadCell>Created At</Table.HeadCell>
-              <Table.HeadCell>Client</Table.HeadCell>
-              <Table.HeadCell>Scanner</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
+              <Table.HeadCell>Client</Table.HeadCell>
+              <Table.HeadCell>User Group</Table.HeadCell>
+              <Table.HeadCell>Scanner</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y dark:divide-gray-700">
               {clientLogs?.map((log) => {
+                const avatarUrl = buildAvatar(log.client);
                 return (
                   <Table.Row key={log.id}>
+                    <Table.Cell>{toReadableDatetime(log.createdAt)}</Table.Cell>
                     <Table.Cell>
-                      {new Date(log.createdAt).toLocaleString(undefined, {
-                        month: "long",
-                        day: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </Table.Cell>
-                    <Table.Cell>{log.client.displayName}</Table.Cell>
-                    <Table.Cell>
-                      {log.scanner.username} - {log.scanner.description}
+                      <div className="h-10">
+                        <Avatar img={avatarUrl} rounded></Avatar>
+                      </div>
                     </Table.Cell>
                     <Table.Cell>
-                      <TimeAgo datetime={log.createdAt} />
+                      <div className="text-base font-semibold text-gray-900 dark:text-white">
+                        {log.client.givenName} {log.client.surname}
+                      </div>
+                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        {log.client.studentNumber}
+                      </div>
+                    </Table.Cell>
+
+                    <Table.Cell>
+                      <div className="text-base font-semibold text-gray-900 dark:text-white">
+                        {log.client.userType}
+                      </div>
+                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        {log.client.programCode}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="text-base font-semibold text-gray-900 dark:text-white">
+                        {log.scanner.description}
+                      </div>
+                      <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        {log.scanner.username}
+                      </div>
                     </Table.Cell>
                   </Table.Row>
                 );

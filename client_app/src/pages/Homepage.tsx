@@ -1,4 +1,4 @@
-import HeaderIcon from "@assets/images/library-icon.svg";
+import HeaderIcon from "@assets/images/sti-logo.png";
 import { AiFillCalendar } from "react-icons/ai";
 import { Link } from "react-router-dom";
 
@@ -31,12 +31,14 @@ const Homepage = () => {
   }, []);
   return (
     <>
-      <header className="h-16 border-b w-100 flex justify-between font-INTER">
-        <img
-          src={HeaderIcon}
-          alt="library-logo"
-          className="w-12 lg:w-14 ml-3"
-        />
+      <header className="h-20 border-b w-100 flex justify-between font-INTER">
+        <div className="ml-2 flex items-center">
+          <div className="avatar">
+            <div className="w-10 lg:w-14 rounded-full">
+              <img src={HeaderIcon} alt="header-icon" />
+            </div>
+          </div>
+        </div>
         <nav className="h-full justify-self-end hidden md:block">
           <ul className="list-none flex gap-2 h-full items-center ">
             {/* <li>

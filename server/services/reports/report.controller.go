@@ -2,7 +2,6 @@ package reports
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -15,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/ysmood/gson"
+	"go.uber.org/zap"
 )
 
 
@@ -37,8 +37,7 @@ func NewReportController () ReportController {
 func(ctrler * Report)NewReport(ctx * gin.Context){
 	body := NewReportBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	fmt.Println(body)
-
+	
 	u, err := url.Parse("http://localhost:5200/renderer/reports")
 	query  := u.Query()
 	if err != nil {
@@ -58,8 +57,9 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 	query.Set("deviceStatsEnabled", strconv.FormatBool(body.DeviceStatistics.Enabled))
 	query.Set("deviceStatsFrom", body.DeviceStatistics.From)
 	query.Set("deviceStatsTo", body.DeviceStatistics.To)
-	u.RawQuery = query.Encode()
-
+	cfg := query.Encode()
+	u.RawQuery = cfg
+	logger.Info("Generating reports", zap.String("config",cfg))
     browser, err := browser.NewBrowser()
 	if err != nil {
 		logger.Error(err.Error())

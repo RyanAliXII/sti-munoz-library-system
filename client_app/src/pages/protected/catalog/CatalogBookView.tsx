@@ -150,11 +150,11 @@ const CatalogBookView = () => {
                 <span>By {authors?.join(",")} </span>
               )}
             </div>
-            <p
+            <div
               dangerouslySetInnerHTML={{
                 __html: bookView?.book?.description ?? "",
               }}
-            ></p>
+            ></div>
             <div className="mt-5">
               <h2 className="text-lg font-bold">Overview</h2>
               <div className="w-full h-20 flex gap-2 items-center p-2">

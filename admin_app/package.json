@@ -21,6 +21,7 @@
     "axios": "^1.2.2",
     "chart.js": "^4.4.0",
     "date-fns": "^2.30.0",
+    "dom": "^0.0.3",
     "downshift": "^7.2.0",
     "flowbite": "^2.0.0",
     "flowbite-react": "^0.6.4",
@@ -29,6 +30,7 @@
     "jspdf": "^2.5.1",
     "lodash": "^4.17.21",
     "ordinal": "^1.0.3",
+    "purify": "^3.5.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-datepicker": "^4.8.0",
@@ -50,6 +52,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@types/dompurify": "^3.0.5",
     "@types/jsonpack": "^1.1.2",
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.26",

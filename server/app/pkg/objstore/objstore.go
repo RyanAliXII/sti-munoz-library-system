@@ -74,7 +74,8 @@ func createBucketPolicy(client * minio.Client) error{
 				"Resource": [
 					"arn:aws:s3:::sti.munoz.edsa.library/covers/*",
 					"arn:aws:s3:::sti.munoz.edsa.library/profile-pictures/*",
-					"arn:aws:s3:::sti.munoz.edsa.library/payment-proof/*"
+					"arn:aws:s3:::sti.munoz.edsa.library/payment-proof/*",
+					"arn:aws:s3:::sti.munoz.edsa.library/contents/*"
 				]
 			}
 		]

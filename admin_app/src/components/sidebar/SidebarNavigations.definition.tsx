@@ -115,6 +115,12 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         icon: MdAccountCircle,
         items: [],
       },
+      {
+        requiredPermissions: ["ClientLog.Access"],
+        to: "/system/client-logs",
+        text: "Patron Logs",
+        items: [],
+      },
     ],
   },
 
@@ -232,15 +238,16 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         text: "Scanner Accounts",
         items: [],
       },
-      {
-        requiredPermissions: ["ClientLog.Access"],
-        to: "/system/client-logs",
-        text: "Client Logs",
-        items: [],
-      },
+
       {
         to: "/system/settings",
         text: "Settings",
+        items: [],
+        requiredPermissions: ["Settings.Access"],
+      },
+      {
+        to: "/faqs",
+        text: "FAQs",
         items: [],
         requiredPermissions: ["Settings.Access"],
       },
