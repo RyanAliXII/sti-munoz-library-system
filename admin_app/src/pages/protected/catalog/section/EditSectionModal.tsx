@@ -5,11 +5,12 @@ import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "flowbite-react";
-import { BaseSyntheticEvent } from "react";
+import { BaseSyntheticEvent, useState } from "react";
 import { toast } from "react-toastify";
 import { EditSectionSchema } from "../schema";
 import { AxiosError } from "axios";
 import { StatusCodes } from "http-status-codes";
+import { generatePrefixBasedOnText } from "@helpers/prefix";
 
 const EditSectionModal: React.FC<EditModalProps<Section>> = ({
   isOpen,
@@ -78,8 +79,17 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
       removeErrors();
       return;
     }
-    setForm(formData);
+    setForm(() => ({ ...formData }));
   });
+  const [prefixSuggestions, setPrefixSuggestions] = useState<string[]>([]);
+  const handleCollectionNameBlur = () => {
+    const suggestions = generatePrefixBasedOnText(form.name);
+    setPrefixSuggestions(suggestions);
+  };
+  const handleClick = (s: string) => {
+    setForm((prev) => ({ ...prev, prefix: s }));
+    setPrefixSuggestions([]);
+  };
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
       <Modal.Header>Edit Collection</Modal.Header>
@@ -93,6 +103,7 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
               name="name"
               value={form.name}
               onChange={handleFormInput}
+              onBlur={handleCollectionNameBlur}
             />
           </div>
           <div className="w-full py-1">
@@ -104,10 +115,33 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
               value={form.prefix}
               onChange={handleFormInput}
             />
+            {prefixSuggestions.length > 0 && (
+              <div>
+                <div>
+                  <small>Prefix Suggestions:</small>
+                </div>
+                <div className="flex gap-2">
+                  {prefixSuggestions.map((s) => {
+                    return (
+                      <Button
+                        key={s}
+                        color="light"
+                        pill
+                        onClick={() => {
+                          handleClick(s);
+                        }}
+                      >
+                        {s}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="w-full py-1">
             <CustomInput
-              label="Accession counter"
+              label="Accession number"
               error={errors?.lastValue}
               type="number"
               name="lastValue"
@@ -115,7 +149,6 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
               onChange={handleFormInput}
             />
           </div>
-
           <div className="flex gap-2 mt-4">
             <Button
               color="primary"

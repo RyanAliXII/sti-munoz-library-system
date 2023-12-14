@@ -28,6 +28,7 @@ type BorrowingRepository interface {
 	CancelByIdAndAccountId(id string, remarks string, accountId string) error
 	GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error)
 	GetBorrowedBookById(id string) (model.BorrowedBook, error)
+	MarkAsReturnedWithAddtionalPenalty(id string, returnedBook model.ReturnBook) error
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -159,7 +160,7 @@ func (repo * Borrowing) GetBorrowedEBookByIdAndStatus (id string, status int)(mo
 func (repo * Borrowing) GetBorrowedBooksView (id string, status int)(model.BorrowedBook, error) {
 	borrowedBook := model.BorrowedBook{}
 	err := repo.db.Get(&borrowedBook, "SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook,created_at FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
-	fmt.Println(id)
+	
 	if err != nil {
 		return borrowedBook, err
 	}

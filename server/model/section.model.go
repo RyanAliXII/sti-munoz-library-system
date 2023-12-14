@@ -50,7 +50,7 @@ func (section * Section) ValidateSection () (validation.Errors, error) {
 }
 func (section * Section) ValidateUpdate() (validation.Errors, error) {
 	return section.Model.Validate(section, 
-		validation.Field(section.Name, validation.Required.Error("Name is required."), 
+		validation.Field(&section.Name, validation.Required.Error("Name is required."), 
 		validation.Length(1, 150).Error("Name should be atleast 1 to 150 characters."),
 		validation.By(func(value interface{}) error {
 				name, isString  := value.(string)

@@ -32,6 +32,7 @@ import { Button } from "flowbite-react";
 import CreatableSelect from "react-select/creatable";
 import AddAuthorModal from "./AddAuthorModal";
 import AddPublisherModal from "./AddPublisherModal";
+import { useBeforeUnload } from "react-router-dom";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -202,7 +203,10 @@ const BookAddForm = () => {
   const handleDescriptionInput = (content: string, editor: any) => {
     setFieldValue("description", content);
   };
-
+  useBeforeUnload((event) => {
+    event.preventDefault();
+    return "Are you you want to navigate away to this page? All work you have done will be lost?";
+  });
   useEffect(() => {
     return () => {
       uppy.cancelAll();

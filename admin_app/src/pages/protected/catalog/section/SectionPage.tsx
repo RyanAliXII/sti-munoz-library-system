@@ -97,7 +97,7 @@ const SectionPage = () => {
               <Table.Head>
                 <Table.HeadCell>Collection</Table.HeadCell>
                 <Table.HeadCell>Sub-collection(Yes/No)</Table.HeadCell>
-                <Table.HeadCell>Current Counter</Table.HeadCell>
+                <Table.HeadCell>Accession Number</Table.HeadCell>
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y dark:divide-gray-700">

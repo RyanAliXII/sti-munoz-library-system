@@ -26,6 +26,7 @@ import { AiOutlineEdit } from "react-icons/ai";
 import EditDueDateModal from "./EditDueDateModal";
 import EditRemarksModal from "./EditRemarksModal";
 import HasAccess from "@components/auth/HasAccess";
+import ReturnBookModal from "./ReturnBookModal";
 const BorrowedBooksViewPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -132,6 +133,7 @@ const BorrowedBooksViewPage = () => {
       status: BorrowStatus;
       remarks: string;
       dueDate?: string;
+      hasAdditionalPenalty?: boolean;
     }) =>
       Patch(
         `/borrowing/borrowed-books/${borrowedBookId}/status`,
@@ -289,6 +291,7 @@ const BorrowedBooksViewPage = () => {
                                       setSelectedBorrowedBook(
                                         borrowedBook.book
                                       );
+                                      setBorrowedBook(borrowedBook);
                                       setBorrowedBookId(borrowedBook.id ?? "");
                                       openReturnRemarkPrompt();
                                     }}
@@ -361,6 +364,7 @@ const BorrowedBooksViewPage = () => {
                                       setSelectedBorrowedBook(
                                         borrowedBook.book
                                       );
+                                      setBorrowedBook(borrowedBook);
                                       setBorrowedBookId(borrowedBook.id ?? "");
                                       openUnreturnedRemarkPrompt();
                                     }}
@@ -420,15 +424,11 @@ const BorrowedBooksViewPage = () => {
           </TableContainer>
         </LoadingBoundary>
       </Container>
-      <PromptTextAreaDialog
+      <ReturnBookModal
         key={"forReturn"}
-        close={closeReturnRemarkPrompt}
+        closeModal={closeReturnRemarkPrompt}
         isOpen={isReturnRemarkPromptOpen}
-        label="Remarks"
-        proceedBtnText="Save"
-        title="Return Remarks"
-        placeholder="Eg. Returned with no damage or Damage."
-        onProceed={onConfirmReturn}
+        borrowedBook={borrowedBook}
       />
 
       <PromptTextAreaDialog

@@ -1,6 +1,9 @@
 package model
 
-import "github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	validation "github.com/go-ozzo/ozzo-validation"
+)
 
 
 type BorrowedBook struct {
@@ -59,3 +62,22 @@ type BookStatus struct {
 	IsAlreadyInBag bool `json:"isAlreadyInBag" db:"is_already_in_bag"`	
 	IsInQueue bool `json:"isInQueue" db:"is_in_queue"`
 }
+
+type ReturnBook struct {
+	Remarks string `json:"remarks"`
+	HasAdditionaPenalty bool `json:"hasAdditionalPenalty"`
+	PenaltyDescription string `json:"penaltyDescription"`
+	PenaltyAmount float64 `json:"penaltyAmount"`
+	Model
+}
+
+func (m * ReturnBook)Validate() (validation.Errors, error){
+	fieldRules := make([]*validation.FieldRules,0)
+	if(m.HasAdditionaPenalty){
+		fieldRules = append(fieldRules, validation.Field(&m.PenaltyDescription, validation.Required.Error("Description is required.")))
+		fieldRules = append(fieldRules, validation.Field(&m.PenaltyAmount, validation.Required.Error("Amount is required."), validation.Min(float64(0)).Error("Amount cannot be less than or equal 0")))
+	}
+
+	return m.Model.Validate(m, fieldRules...)
+}
+

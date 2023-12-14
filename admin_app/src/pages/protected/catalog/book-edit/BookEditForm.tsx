@@ -21,7 +21,7 @@ import XHRUpload from "@uppy/xhr-upload";
 import { HttpStatusCode } from "axios";
 import { format, isValid } from "date-fns";
 import { Button } from "flowbite-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
 import { MultiValue, SingleValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { toast } from "react-toastify";
@@ -227,7 +227,10 @@ const BookEditForm = () => {
       uppy.cancelAll();
     };
   }, []);
-
+  useBeforeUnload((event) => {
+    event.preventDefault();
+    return "Are you you want to navigate away to this page? All work you have done will be lost?";
+  });
   return (
     <>
       <form onSubmit={submit}>

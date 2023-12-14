@@ -1,20 +1,19 @@
+import CustomSelect from "@components/ui/form/CustomSelect";
 import { CustomInput } from "@components/ui/form/Input";
 import { ModalProps, Section } from "@definitions/types";
-import { useForm } from "@hooks/useForm";
-import Tippy from "@tippyjs/react";
-import { Button, Checkbox, Modal } from "flowbite-react";
-import { AiOutlineInfoCircle } from "react-icons/ai";
-import { SectionSchema } from "../schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRequest } from "@hooks/useRequest";
-import { toast } from "react-toastify";
-import { BaseSyntheticEvent } from "react";
-import useModalToggleListener from "@hooks/useModalToggleListener";
-import CustomSelect from "@components/ui/form/CustomSelect";
+import { generatePrefixBasedOnText } from "@helpers/prefix";
 import { useMainCollections } from "@hooks/data-fetching/collection";
-import { SingleValue } from "react-select";
+import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
+import { useRequest } from "@hooks/useRequest";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { Button, Modal } from "flowbite-react";
 import { StatusCodes } from "http-status-codes";
+import { BaseSyntheticEvent, useState } from "react";
+import { SingleValue } from "react-select";
+import { toast } from "react-toastify";
+import { SectionSchema } from "../schema";
 
 const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const FORM_DEFAULT_VALUES: Omit<
@@ -41,7 +40,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     initialFormData: FORM_DEFAULT_VALUES,
     schema: SectionSchema,
   });
-
+  const [prefixSuggestions, setPrefixSuggestions] = useState<string[]>([]);
   const queryClient = useQueryClient();
   const { Post } = useRequest();
   const mutation = useMutation({
@@ -86,7 +85,17 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       mainCollectionId: newValue?.id ?? 0,
     }));
   };
+
   const { data: collections } = useMainCollections();
+
+  const handleCollectionNameBlur = () => {
+    const suggestions = generatePrefixBasedOnText(form.name);
+    setPrefixSuggestions(suggestions);
+  };
+  const handleClick = (s: string) => {
+    setForm((prev) => ({ ...prev, prefix: s }));
+    setPrefixSuggestions([]);
+  };
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
       <Modal.Header>New Collection</Modal.Header>
@@ -100,6 +109,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               name="name"
               value={form.name}
               onChange={handleFormInput}
+              onBlur={handleCollectionNameBlur}
             />
           </div>
           <div className="w-full pt-1">
@@ -111,6 +121,30 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               value={form.prefix}
               onChange={handleFormInput}
             />
+
+            {prefixSuggestions.length > 0 && (
+              <div>
+                <div>
+                  <small>Prefix Suggestions:</small>
+                </div>
+                <div className="flex gap-2">
+                  {prefixSuggestions.map((s) => {
+                    return (
+                      <Button
+                        key={s}
+                        color="light"
+                        pill
+                        onClick={() => {
+                          handleClick(s);
+                        }}
+                      >
+                        {s}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="w-full pt-1">
