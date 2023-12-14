@@ -26,6 +26,8 @@ import BookTable from "./BookTable";
 import ImportBooksModal from "./ImportBooksModal";
 import MigrateModal from "./MigrateModal";
 import { bookSelectionReducer } from "./bookselection-reducer";
+import PreviewModal from "./PreviewModal";
+import { BookInitialValue } from "@definitions/defaults";
 
 const BookPage = () => {
   const {
@@ -33,8 +35,9 @@ const BookPage = () => {
     open: openPrintablesModal,
     isOpen: isPrintablesModalOpen,
   } = useSwitch();
-
+  const [book, setBook] = useState<Book>({ ...BookInitialValue });
   const [totalPages, setTotalPages] = useState(1);
+  const previewModal = useSwitch();
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
@@ -211,6 +214,10 @@ const BookPage = () => {
       toYearPublished: new Date().getFullYear(),
     });
   };
+  const previewBook = (book: Book) => {
+    setBook(book);
+    previewModal.open();
+  };
   return (
     <>
       <Container>
@@ -286,10 +293,13 @@ const BookPage = () => {
                 </Button>
               </div>
             </Dropdown>
-            {isSelectionsSameAccessionTable &&
-              bookSelections.books.size > 0 && (
-                <Button onClick={migrate}>Migrate</Button>
-              )}
+
+            <HasAccess requiredPermissions={["Book.Edit"]}>
+              {isSelectionsSameAccessionTable &&
+                bookSelections.books.size > 0 && (
+                  <Button onClick={migrate}>Migrate</Button>
+                )}
+            </HasAccess>
           </div>
 
           <div className="flex gap-2">
@@ -313,6 +323,7 @@ const BookPage = () => {
         </div>
         <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
           <BookTable
+            previewBook={previewBook}
             books={bookData?.books ?? []}
             bookSelections={bookSelections}
             onSelect={onSelect}
@@ -354,6 +365,11 @@ const BookPage = () => {
         title="Collection Migration"
         onConfirm={onConfirmMigrate}
         text="The system detected that the current collection is not related nor sub-collection of selected collection. This will result in accession number regeneration. Are you sure you want to proceed?"
+      />
+      <PreviewModal
+        book={book}
+        closeModal={previewModal.close}
+        isOpen={previewModal.isOpen}
       />
     </>
   );

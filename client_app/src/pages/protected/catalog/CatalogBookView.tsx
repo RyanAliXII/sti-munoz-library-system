@@ -197,7 +197,7 @@ const CatalogBookView = () => {
                     <div>{bookView?.book?.isbn}</div>
                   </div>
                 )}
-                {bookView?.book?.isbn.length > 0 && (
+                {bookView?.book?.ddc.length > 0 && (
                   <div className="grid grid-cols-2">
                     <div>DDC</div>
                     <div>{bookView?.book?.ddc}</div>
