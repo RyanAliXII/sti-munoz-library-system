@@ -1,5 +1,6 @@
 import Container from "@components/ui/container/Container";
 import { useEditFAQs, useFAQs } from "@hooks/data-fetching/faqs";
+import { useEditPolicy, usePolicy } from "@hooks/data-fetching/policy";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,7 +10,7 @@ import { Button, Tabs } from "flowbite-react";
 import { FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
-const FAQsPage = () => {
+const PolicyPage = () => {
   const { form, setForm } = useForm({
     initialFormData: {
       content: "",
@@ -27,12 +28,13 @@ const FAQsPage = () => {
     const { data } = response;
     return data?.location ?? "";
   };
-  useFAQs({
+  usePolicy({
     onSuccess: (data) => {
       setForm({ content: data.value });
     },
   });
-  const editFAQs = useEditFAQs({
+
+  const editPolicy = useEditPolicy({
     onSuccess: () => {
       toast.success("FAQs updated.");
     },
@@ -42,7 +44,7 @@ const FAQsPage = () => {
   });
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    editFAQs.mutate(form.content);
+    editPolicy.mutate(form.content);
   };
   const sanitizedHtmlContent = DOMpurify.sanitize(form.content);
   return (
@@ -104,4 +106,4 @@ const FAQsPage = () => {
   );
 };
 
-export default FAQsPage;
+export default PolicyPage;

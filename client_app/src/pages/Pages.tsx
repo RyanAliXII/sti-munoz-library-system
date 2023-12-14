@@ -9,6 +9,7 @@ import PublicRoutes from "@components/auth/PublicRoutes";
 import { Suspense, lazy } from "react";
 import Loader from "@components/Loader";
 import NotificationPage from "./protected/notifications/NotificationPage";
+import PolicyPage from "./protected/policy/PolicyPage";
 const Login = lazy(() => import("./Login"));
 const Homepage = lazy(() => import("./Homepage"));
 const Search = lazy(() => import("./protected/Search"));
@@ -126,6 +127,14 @@ const pages = createBrowserRouter(
           element={
             <Suspense fallback={<Loader />}>
               <FAQsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/policy"
+          element={
+            <Suspense fallback={<Loader />}>
+              <PolicyPage />
             </Suspense>
           }
         />

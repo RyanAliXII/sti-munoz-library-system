@@ -8,4 +8,6 @@ func ExtrasRoutes (router * gin.RouterGroup){
 
 	router.PUT("/faqs", ctrler.UpdateFAQsPage )
 	router.GET("/faqs", ctrler.GetFAQsContent)
+	router.PUT("/policy", ctrler.UpdatePolicyPage )
+	router.GET("/policy", ctrler.GetPolicyContent)
 }

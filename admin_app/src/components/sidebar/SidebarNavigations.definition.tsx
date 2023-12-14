@@ -246,6 +246,12 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         requiredPermissions: ["Settings.Access"],
       },
       {
+        to: "/faqs",
+        text: "FAQs",
+        items: [],
+        requiredPermissions: ["Settings.Access"],
+      },
+      {
         to: "/reports",
         text: "Reports",
         items: [],

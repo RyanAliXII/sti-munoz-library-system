@@ -88,6 +88,7 @@ const BulkActivatePage = lazy(
   () => import("./protected/client/BulkActivatePage")
 );
 const FaqsPage = lazy(() => import("./protected/faqs/FAQsPage"));
+const PolicyPage = lazy(() => import("./protected/policy/PolicyPage"));
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -461,6 +462,17 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <FaqsPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/policy"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <PolicyPage />
             </PermissionGate>
           </Suspense>
         }

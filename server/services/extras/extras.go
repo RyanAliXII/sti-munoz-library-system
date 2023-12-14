@@ -14,9 +14,11 @@ type Extras struct{
 	extrasRepo repository.ExtrasRepository
 }
 type ExtrasController interface{
-	UpdateLibraryPolicPage (ctx * gin.Context) 
+	UpdatePolicyPage(ctx  * gin.Context)
 	UpdateFAQsPage (ctx  * gin.Context)
 	GetFAQsContent(ctx  * gin.Context)
+	GetPolicyContent(ctx * gin.Context)
+	
 }
 func NewExtrasController() ExtrasController {
 	return &Extras{
@@ -52,4 +54,32 @@ func (ctrler * Extras)GetFAQsContent(ctx  * gin.Context){
 	ctx.JSON(httpresp.Success200(gin.H{
 		"content": content,
 	}, "FAQs fetched."))
+}
+
+func (ctrler * Extras)UpdatePolicyPage(ctx  * gin.Context){
+	content :=  model.ExtrasContent{}
+
+	err := ctx.ShouldBindBodyWith(&content, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.extrasRepo.UpdatePolicyContent(content)
+	if err != nil{ 
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	ctx.JSON(httpresp.Success200(nil, "Policy updated."))
+}
+
+func (ctrler * Extras)GetPolicyContent(ctx  * gin.Context){
+	content, err := ctrler.extrasRepo.GetPolicyContent()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"content": content,
+	}, "Policy fetched."))
 }

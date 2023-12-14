@@ -20,6 +20,16 @@
     table {
       border: revert;
     }
+    img,
+    svg,
+    video,
+    canvas,
+    audio,
+    iframe,
+    embed,
+    object {
+      display: initial;
+    }
     ol,
     ul {
       list-style: revert;
