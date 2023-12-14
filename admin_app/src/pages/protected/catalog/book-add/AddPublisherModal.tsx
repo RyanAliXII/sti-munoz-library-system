@@ -12,12 +12,14 @@ import { CustomInput } from "@components/ui/form/Input";
 import { Button, Modal } from "flowbite-react";
 import { useBookAddFormContext } from "./BookAddFormContext";
 import useModalToggleListener from "@hooks/useModalToggleListener";
+import { AxiosError } from "axios";
+import { StatusCodes } from "http-status-codes";
 
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   const { setFieldValue } = useBookAddFormContext();
-  const { errors, form, validate, handleFormInput, resetForm } =
+  const { errors, form, validate, handleFormInput, setErrors, resetForm } =
     useForm<Publisher>({
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
@@ -33,14 +35,17 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       if (data?.publisher?.name && data?.publisher?.id) {
         setFieldValue("publisher", data?.publisher);
       }
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
-      resetForm();
       closeModal();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
   useModalToggleListener(isOpen, () => {

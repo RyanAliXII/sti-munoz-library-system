@@ -21,10 +21,16 @@ type AuthorController struct {
 func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 	var author model.Author= model.Author{}
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
+	fieldErr, err := author.ValidateNew()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("Validation error"))
+		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
+		return
+	}
 	newAuthor, insertErr := ctrler.authorRepository.New(author)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
-		return
+		return	
 	}
 	ctrler.recordMetadataRepository.InvalidateAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{
@@ -75,6 +81,13 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 	if bindingErr != nil {
 		logger.Error(bindingErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
+	}
+	author.Id = id
+	fieldErr, err := author.ValidateUpdate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("Validation error"))
+		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
+		return
 	}
 	updateErr := ctrler.authorRepository.Update(id, author)
 	if updateErr != nil {

@@ -1,18 +1,19 @@
+import { CustomInput } from "@components/ui/form/Input";
 import { ModalProps, Publisher } from "@definitions/types";
-import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { Button, Modal } from "flowbite-react";
+import { StatusCodes } from "http-status-codes";
 import { BaseSyntheticEvent } from "react";
 import { toast } from "react-toastify";
 import { PublisherSchema } from "../schema";
-import { CustomInput } from "@components/ui/form/Input";
-import useModalToggleListener from "@hooks/useModalToggleListener";
-import { Button, Modal } from "flowbite-react";
 import { useBookEditFormContext } from "./BookEditFormContext";
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput, resetForm } =
+  const { errors, form, validate, handleFormInput, resetForm, setErrors } =
     useForm<Publisher>({
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
@@ -29,14 +30,17 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       if (data?.publisher?.id) {
         setBookEditForm((prev) => ({ ...prev, publisher: data.publisher }));
       }
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
-      resetForm();
       closeModal();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
 
@@ -50,7 +54,9 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     }
   };
   useModalToggleListener(isOpen, () => {
-    resetForm();
+    if (!isOpen) {
+      resetForm();
+    }
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible={true} size={"lg"}>

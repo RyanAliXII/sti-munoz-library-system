@@ -10,11 +10,19 @@ import { toast } from "react-toastify";
 import { CreateAuthorSchema } from "../schema";
 import { ADD_AUTHOR_INITIAL_FORM } from "./AuthorPage";
 import useModalToggleListener from "@hooks/useModalToggleListener";
+import { AxiosError } from "axios";
+import { StatusCodes } from "http-status-codes";
 
 const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { form, errors, validate, handleFormInput, resetForm } = useForm<
-    Omit<Author, "id">
-  >({
+  const {
+    form,
+    errors,
+    validate,
+    handleFormInput,
+    resetForm,
+    setErrors,
+    removeErrors,
+  } = useForm<Omit<Author, "id">>({
     initialFormData: ADD_AUTHOR_INITIAL_FORM,
     schema: CreateAuthorSchema,
   });
@@ -34,18 +42,25 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     onSuccess: () => {
       toast.success("New author has been added.");
       queryClient.invalidateQueries(["authors"]);
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
       closeModal();
-      resetForm();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
   useModalToggleListener(isOpen, () => {
-    resetForm();
+    if (!isOpen) {
+      resetForm();
+      removeErrors();
+      return;
+    }
   });
   return (
     <Modal show={isOpen} onClose={closeModal} size="lg" dismissible>

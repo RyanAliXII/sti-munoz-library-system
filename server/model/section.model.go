@@ -49,8 +49,8 @@ func (section * Section) ValidateSection () (validation.Errors, error) {
 		return fieldsErrs, err
 }
 func (section * Section) ValidateUpdate() (validation.Errors, error) {
-	fieldsErrs, err :=  section.Model.Validate(section, 
-		validation.Field(&section.Name, validation.Required.Error("Name is required."), 
+	return section.Model.Validate(section, 
+		validation.Field(section.Name, validation.Required.Error("Name is required."), 
 		validation.Length(1, 150).Error("Name should be atleast 1 to 150 characters."),
 		validation.By(func(value interface{}) error {
 				name, isString  := value.(string)
@@ -73,7 +73,7 @@ func (section * Section) ValidateUpdate() (validation.Errors, error) {
 		validation.Min(0).Error("Counter must be atleast 0.")),
 		validation.Field(&section.Prefix, validation.Required.Error("Prefix is required."),validation.Length(1, 6).Error("Prefix should be atleast 1 to 6 characters."),),
 	)
-	return fieldsErrs, err
+	
 }
 type SectionJSON struct {
 	Section

@@ -1,9 +1,7 @@
 import { object, string, array, number } from "yup";
 import isISBN from "validator/lib/isISBN";
 export const CreateAuthorSchema = object().shape({
-  name: string()
-    .max(100, "Name should not exceed 100 characters.")
-    .required("Name is required."),
+  name: string(),
 });
 export const SectionSchema = object().shape({
   name: string(),
@@ -18,9 +16,7 @@ export const EditSectionSchema = object().shape({
 });
 //
 export const PublisherSchema = object().shape({
-  name: string()
-    .max(150, "Character should not exceed 150")
-    .required("Publisher name is required"),
+  name: string(),
 });
 export const SourceofFundSchema = object().shape({
   name: string()

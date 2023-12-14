@@ -1,0 +1,2 @@
+ALTER TABLE catalog.publisher
+DROP CONSTRAINT publisher_name_deleted_at_unique_idx 

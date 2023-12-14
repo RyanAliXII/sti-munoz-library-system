@@ -336,9 +336,7 @@ const BookEditForm = () => {
               />
               <Button
                 type="button"
-                outline
-                gradientDuoTone="primaryToPrimary"
-                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400 self-start ml-2 text-sm"
+                color="primary"
                 onClick={() => {
                   openAddPublisherModal();
                 }}
