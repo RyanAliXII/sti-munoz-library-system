@@ -1,5 +1,10 @@
-import { useState } from "react";
-import { Account, Book, DetailedAccession } from "@definitions/types";
+import { useCallback, useMemo, useState } from "react";
+import {
+  Account,
+  Book,
+  CheckoutAccession,
+  DetailedAccession,
+} from "@definitions/types";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@hooks/useForm";
 import Container from "@components/ui/container/Container";
@@ -19,10 +24,10 @@ import Tippy from "@tippyjs/react";
 import { format } from "date-fns";
 import { Avatar, Button, Table } from "flowbite-react";
 import { MdOutlineRemoveCircle } from "react-icons/md";
-
-export interface CheckoutAccession extends DetailedAccession {
-  dueDate: string;
-}
+import { useSettings } from "@hooks/data-fetching/settings";
+import { useAccessionByScanning } from "@hooks/data-fetching/accession";
+import { useDeviceScanner } from "@hooks/useDeviceScanner";
+import { parse, v4 } from "uuid";
 
 export type BorrowedEbook = {
   bookTitle: string;
@@ -184,6 +189,80 @@ const CheckoutPage = () => {
     "name",
     `${checkout.client.givenName} ${checkout.client.surname}`
   );
+  const { data: settings } = useSettings({});
+  const [accessionId, setAccessionId] = useState("");
+
+  const checkedOutAccessions = useMemo(
+    () =>
+      checkout.accessions.reduce((prev, accession) => {
+        prev.set(accession.id ?? "", accession);
+        return prev;
+      }, new Map<string, CheckoutAccession>()),
+    [checkout.accessions]
+  );
+
+  const handleScan = (text: string) => {
+    try {
+      parse(text);
+      if (checkedOutAccessions.has(text)) return;
+      setAccessionId(text);
+    } catch {}
+  };
+  useDeviceScanner({
+    onScan: handleScan,
+  });
+
+  const getDueDate = () => {
+    const settingField = settings?.["app.days-to-due-date"];
+    const Sunday = 0;
+    const Saturday = 6;
+    const today = new Date();
+    if (!settingField) return today;
+
+    if (settingField.value <= 0) return today;
+    const duedate = today;
+    duedate.setDate(duedate.getDate() + settingField.value);
+    if (duedate.getDay() === Sunday) {
+      duedate.setDate(today.getDate() + 1);
+    }
+    if (duedate.getDay() === Saturday) {
+      duedate.setDate(today.getDate() + 2);
+    }
+    return duedate;
+  };
+
+  useAccessionByScanning({
+    queryKey: ["accession", accessionId],
+    onSuccess: (accession) => {
+      setAccessionId("");
+      if (!accession.id) return;
+      if (accession.id.length < 0) return;
+
+      if (accession.isMissing) {
+        toast.info(
+          "The system detected that the book is already marked as missing."
+        );
+        return;
+      }
+
+      if (accession.isCheckedOut) {
+        toast.info("The system detected that the book is already checked out.");
+        return;
+      }
+      if (accession.isWeeded) {
+        toast.info(
+          "The system detected that the book is already marked as weeded."
+        );
+        return;
+      }
+
+      const dueDate = format(getDueDate(), "yyyy-MM-dd");
+      setForm((prev) => ({
+        ...prev,
+        accessions: [...prev.accessions, { ...accession, dueDate: dueDate }],
+      }));
+    },
+  });
   return (
     <>
       <Container>
@@ -261,7 +340,6 @@ const CheckoutPage = () => {
                           onChange={(date) => {
                             if (!date) return;
                             const dateValue = format(date, "yyyy-MM-dd");
-                            console.log(dateValue);
                             setForm((prev) => ({
                               ...prev,
                               accessions: prev.accessions.map((a) => {
@@ -370,6 +448,7 @@ const CheckoutPage = () => {
       />
       <BookCopySelectionModal
         book={selectedBook}
+        settings={settings ?? {}}
         closeModal={closeCopySelection}
         isOpen={isCopySelectionOpen}
         updateEbooksToBorrow={updateEbooksToBorrow}

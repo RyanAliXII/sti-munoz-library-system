@@ -14,8 +14,6 @@ import { useSearchParamsState } from "react-use-search-params-state";
 
 const AccessionPage = () => {
   const { Get } = useRequest();
-
-  const [searchKeyword, setSearchKeyword] = useState<string>("");
   const searchDebounce = useDebounce();
   const [totalPages, setTotalPages] = useState(1);
   const [filterParams, setFilterParams] = useSearchParamsState({

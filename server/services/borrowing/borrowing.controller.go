@@ -30,6 +30,7 @@ type BorrowingController interface {
 	GetBorrowedBookByAccountId(ctx * gin.Context)
 	GetEbookByBorrowedBookId(ctx * gin.Context)
 	UpdateRemarks(ctx * gin.Context)
+	GetBorrowedBookByAccessionId(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -73,6 +74,22 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		"groupId":  grpId,
 	}, "Book has been borrowed"))
 	
+}
+func (ctrler * Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
+	accessionId := ctx.Param("accessionId")
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBooksByAccessionId(accessionId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		if err == sql.ErrNoRows {
+			ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			return
+		}
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowedBook": borrowedBook,
+	}, "OK"))
 }
 func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
 

@@ -22,7 +22,7 @@ func BorrowingRoutes(r * gin.RouterGroup){
 
 	r.GET("/borrowed-books", 
 	ctrler.GetBorrowedBookByAccountId)
-
+	r.GET("/borrowed-books/accessions/:accessionId", ctrler.GetBorrowedBookByAccessionId)
 	r.GET("/ebooks/:id", ctrler.GetEbookByBorrowedBookId)
 
 	r.GET("/requests/:id", 

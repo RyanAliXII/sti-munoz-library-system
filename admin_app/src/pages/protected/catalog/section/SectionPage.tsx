@@ -8,7 +8,7 @@ import { Section } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import TableContainer from "@components/ui/table/TableContainer";
 import Tippy from "@tippyjs/react";
-import { Button, Table } from "flowbite-react";
+import { Accordion, Button, Table } from "flowbite-react";
 import { useState } from "react";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
@@ -105,7 +105,7 @@ const SectionPage = () => {
                   return (
                     <Table.Row key={section.id}>
                       <Table.Cell>
-                        <div className=" text-gray-900 dark:text-white font-semibold">
+                        <div className="text-gray-900 dark:text-white font-semibold ">
                           {section.name}
                         </div>
                       </Table.Cell>

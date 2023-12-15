@@ -1,6 +1,7 @@
 package book
 
 import (
+	"database/sql"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -64,6 +65,20 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accessions successfully fetched for specific book."))
+}
+func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
+	id := ctx.Param("id")
+	accession, err := ctrler.accessionRepo.GetAccessionsById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		if err == sql.ErrNoRows {
+			ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			return
+		}
+		ctx.JSON(httpresp.Fail400(nil, "unknown erorr occured"))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{"accession": accession}, "OK"))
 }
  func (ctrler *  BookController) UpdateAccessionStatus(ctx * gin.Context) {
 	id := ctx.Param("id")

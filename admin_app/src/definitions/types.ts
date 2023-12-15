@@ -94,6 +94,10 @@ export interface DetailedAccession extends Accession {
   book: Book;
 }
 
+export interface CheckoutAccession extends DetailedAccession {
+  dueDate: string;
+}
+
 export type Audit = {
   id?: string;
   name: string;

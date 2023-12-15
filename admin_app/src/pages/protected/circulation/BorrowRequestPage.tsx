@@ -22,6 +22,8 @@ import { format } from "date-fns";
 import useDebounce from "@hooks/useDebounce";
 import { MdFilterList } from "react-icons/md";
 import HasAccess from "@components/auth/HasAccess";
+import { useSwitch } from "@hooks/useToggle";
+import ReturnScanModal from "./ReturnScanModal";
 
 const BorrowRequestPage = () => {
   const [pages, setPages] = useState(1);
@@ -81,6 +83,7 @@ const BorrowRequestPage = () => {
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     debounceSearch(search, event.target.value, 500);
   };
+  const returnScanModal = useSwitch();
   return (
     <>
       <Container>
@@ -120,11 +123,16 @@ const BorrowRequestPage = () => {
                 </Button>
               </Dropdown>
             </div>
-            <HasAccess requiredPermissions={["BorrowedBook.Add"]}>
-              <Button color="primary" to="/borrowing/checkout" as={Link}>
-                Checkout Book
-              </Button>
-            </HasAccess>
+            <div className="flex gap-2">
+              <HasAccess requiredPermissions={["BorrowedBook.Add"]}>
+                <Button color="primary" to="/borrowing/checkout" as={Link}>
+                  Checkout Book
+                </Button>
+              </HasAccess>
+              <HasAccess requiredPermissions={["BorrowedBook.Edit"]}>
+                <Button onClick={returnScanModal.open}>Scan and Return</Button>
+              </HasAccess>
+            </div>
           </div>
         </div>
         <TableContainer>
@@ -175,6 +183,11 @@ const BorrowRequestPage = () => {
             />
           </div>
         </TableContainer>
+
+        <ReturnScanModal
+          closeModal={returnScanModal.close}
+          isOpen={returnScanModal.isOpen}
+        />
       </Container>
     </>
   );
