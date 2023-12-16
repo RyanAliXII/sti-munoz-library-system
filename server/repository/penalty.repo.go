@@ -176,7 +176,6 @@ func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty) error {
 	return nil
 }
 
-
 type PenaltyRepositoryInterface interface{
 	GetPenalties()[]model.Penalty
 	UpdatePenaltySettlement(id string, isSettle bool) error
@@ -184,4 +183,8 @@ type PenaltyRepositoryInterface interface{
 	UpdatePenalty(penalty model.Penalty ) error
 	MarkAsSettled(id string, fileHeader * multipart.FileHeader, remarks string) error
 	UpdateSettlement(id string, fileHeader * multipart.FileHeader, remarks string) error
+	NewPenaltyClassification (class model.PenaltyClassification)(error)
+	GetPenaltyClassifications()([]model.PenaltyClassification, error)
+	UpdatePenaltyClassification (class model.PenaltyClassification)(error)
+	DeletePenaltyClassification(id string) error 
 }

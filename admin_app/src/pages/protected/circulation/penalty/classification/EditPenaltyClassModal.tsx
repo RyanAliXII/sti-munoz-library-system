@@ -1,5 +1,9 @@
 import { CustomInput } from "@components/ui/form/Input";
-import { ModalProps, PenaltyClassification } from "@definitions/types";
+import {
+  EditModalProps,
+  ModalProps,
+  PenaltyClassification,
+} from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { PerformanceMark } from "perf_hooks";
@@ -8,13 +12,20 @@ import { FaSave } from "react-icons/fa";
 import { PenaltyClassificationSchema } from "../schema";
 import { error } from "console";
 import FieldError from "@components/ui/form/FieldError";
-import { useNewPenaltyClass } from "@hooks/data-fetching/penalty";
+import {
+  useEditPenaltyClass,
+  useNewPenaltyClass,
+} from "@hooks/data-fetching/penalty";
 import { StatusCodes } from "http-status-codes";
 import { toast } from "react-toastify";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useQueryClient } from "@tanstack/react-query";
 
-const NewPenaltyClassModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
+const EditPenaltyClassModal: FC<EditModalProps<PenaltyClassification>> = ({
+  isOpen,
+  closeModal,
+  formData,
+}) => {
   const {
     form,
     handleFormInput,
@@ -23,8 +34,10 @@ const NewPenaltyClassModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     setErrors,
     resetForm,
     removeErrors,
-  } = useForm<Omit<PenaltyClassification, "id">>({
+    setForm,
+  } = useForm<PenaltyClassification>({
     initialFormData: {
+      id: "",
       description: "",
       name: "",
       amount: 0,
@@ -36,13 +49,13 @@ const NewPenaltyClassModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
     try {
       const parsedForm = await validate();
       if (!parsedForm) return;
-      newPenaltyClass.mutate(parsedForm);
+      editPenaltyClass.mutate(parsedForm);
     } catch (error) {}
   };
   const queryClient = useQueryClient();
-  const newPenaltyClass = useNewPenaltyClass({
+  const editPenaltyClass = useEditPenaltyClass({
     onSuccess: () => {
-      toast.success("Penalty classification added");
+      toast.success("Penalty classification updated.");
       resetForm();
       queryClient.invalidateQueries(["penaltyClasses"]);
       closeModal();
@@ -65,10 +78,11 @@ const NewPenaltyClassModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
       resetForm();
       return;
     }
+    setForm(formData);
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
-      <Modal.Header>New Classification</Modal.Header>
+      <Modal.Header>Edit Classification</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div className="pb-2">
@@ -113,4 +127,4 @@ const NewPenaltyClassModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
   );
 };
 
-export default NewPenaltyClassModal;
+export default EditPenaltyClassModal;

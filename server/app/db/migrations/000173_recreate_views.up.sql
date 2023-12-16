@@ -352,7 +352,7 @@ SELECT reservation.id, reservation.date_slot_id,
 	date_slot.date as reservation_date,
 	time_slot.start_time as reservation_time,
 	(reservation_status.description) as status,
-	account.json_format as client,
+	account.json_format as client,	
 	JSONB_BUILD_OBJECT(
 	'id', date_slot.id ,
 	'date', date_slot.date

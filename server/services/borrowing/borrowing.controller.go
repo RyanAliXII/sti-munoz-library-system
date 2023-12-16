@@ -32,6 +32,7 @@ type BorrowingController interface {
 	UpdateRemarks(ctx * gin.Context)
 	GetBorrowedBookByAccessionId(ctx * gin.Context)
 	ReturnBorrowedBooksBulk(ctx * gin.Context)
+	
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository

@@ -1,12 +1,13 @@
 import Container from "@components/ui/container/Container";
 
+import HasAccess from "@components/auth/HasAccess";
 import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty } from "@definitions/types";
 import { toReadableDatetime } from "@helpers/datetime";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
@@ -16,14 +17,11 @@ import {
   AiOutlineEye,
   AiOutlinePlus,
 } from "react-icons/ai";
-import { MdRemoveCircle } from "react-icons/md";
-import { toast } from "react-toastify";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
-import ViewPenaltyModal from "./ViewPenaltyModal";
-import SettleModal from "./SettleModal";
 import EditSettlementModal from "./EditSettlementModal";
-import HasAccess from "@components/auth/HasAccess";
+import SettleModal from "./SettleModal";
+import ViewPenaltyModal from "./ViewPenaltyModal";
 
 const PenaltyPage = () => {
   const { Get } = useRequest();
