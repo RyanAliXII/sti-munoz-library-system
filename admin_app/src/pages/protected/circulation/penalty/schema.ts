@@ -19,3 +19,8 @@ export const EditPenaltyValidation = object({
     .typeError("Invalid amount value."),
   description: string().required("Description is required."),
 });
+export const PenaltyClassificationSchema = object({
+  name: string(),
+  amount: number().typeError("Invalid amount value."),
+  describe: string(),
+});

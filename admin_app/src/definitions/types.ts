@@ -97,6 +97,12 @@ export interface DetailedAccession extends Accession {
 export interface CheckoutAccession extends DetailedAccession {
   dueDate: string;
 }
+export type PenaltyClassification = {
+  id: string;
+  name: string;
+  description: string;
+  amount: number;
+};
 
 export type Audit = {
   id?: string;
