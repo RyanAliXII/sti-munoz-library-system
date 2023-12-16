@@ -69,7 +69,7 @@
         <div>
           <div style="width: 800px"><canvas id="myChart"></canvas></div>
         </div>
-
+        <!-- 
         <table class="table mt-5">
           <thead>
             <tr>
@@ -89,11 +89,11 @@
             </tr>
             {{end}}
           </tbody>
-        </table>
+        </table> -->
       </div>
       {{end}} {{if .config.BorrowedBooksEnabled }}
       <div class="mt-5 page-break">
-        <h5>Borrowed Books</h5>
+        <h5>Book Circulation</h5>
         <table class="table">
           <thead>
             <tr>
@@ -112,7 +112,7 @@
             </tr>
           </tbody>
         </table>
-        <h6>Borrowed Books Per Collection</h6>
+        <h6 class="mt-4">Borrowed Book Per Collection</h6>
         <div>
           <table class="table ml-10">
             <thead>
@@ -126,6 +126,44 @@
               <tr>
                 <td scope="row">{{$borrowedSection.Name}}</td>
                 <td scope="row">{{$borrowedSection.Total}}</td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+        <h6 class="mt-4">Borrowed Books</h6>
+        <div>
+          <table class="table ml-10" style="table-layout: fixed">
+            <thead>
+              <tr>
+                <th scope="col" style="max-width: 200px">Title</th>
+                <th scope="col">Client</th>
+                <th scope="col">User Group</th>
+                <th scope="col">Datetime</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range $borrowedBook := .borrowedBooks}}
+              <tr>
+                <td scope="row">{{$borrowedBook.Book.Title}}</td>
+                <td scope="row">
+                  <div>
+                    <div class="font-weight-bold">
+                      {{$borrowedBook.Client.GivenName}}
+                      {{$borrowedBook.Client.Surname}}
+                    </div>
+                    <div>{{$borrowedBook.Client.StudentNumber}}</div>
+                  </div>
+                </td>
+                <td scope="row">
+                  <div>
+                    <div class="font-weight-bold">
+                      {{$borrowedBook.Client.UserType}}
+                    </div>
+                    <div>{{$borrowedBook.Client.ProgramCode}}</div>
+                  </div>
+                </td>
+                <td>{{$borrowedBook.GetReadableDate}}</td>
               </tr>
               {{end}}
             </tbody>
@@ -150,6 +188,10 @@
             </tr>
 
             {{end}}
+            <tr>
+              <th>Total</th>
+              <th>{{len .gameLogs}}</th>
+            </tr>
           </tbody>
         </table>
         <div class="d-flex justify-content-center mt-2">
@@ -157,11 +199,43 @@
             <canvas id="gamePieCtx"></canvas>
           </div>
         </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Game</th>
+              <th>Patron</th>
+              <th>User Group</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $gameLog := .gameLogs}}
+            <tr>
+              <td>{{$gameLog.Game.Name}}</td>
+              <td>
+                <div>
+                  <div class="font-weight-bold">
+                    {{$gameLog.Client.GivenName}} {{$gameLog.Client.Surname}}
+                  </div>
+                  <div>{{$gameLog.Client.StudentNumber}}</div>
+                </div>
+              </td>
+              <td scope="row">
+                <div>
+                  <div class="font-weight-bold">
+                    {{$gameLog.Client.UserType}}
+                  </div>
+                  <div>{{$gameLog.Client.ProgramCode}}</div>
+                </div>
+              </td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
       </div>
       {{end}} {{if .config.DeviceStatsEnabled }}
       <div class="mt-5 page-break">
         <h5>Device Statistics</h5>
-        <table class="table">
+        <table class="table ml-5">
           <thead>
             <tr>
               <th scope="col"></th>
@@ -169,20 +243,57 @@
             </tr>
           </thead>
           <tbody>
-            {{range $deviceData:= .deviceLogData}}
+            {{range $deviceData:= .deviceLogsGrouped}}
             <tr>
               <td scope="row">{{$deviceData.Name}}</td>
               <td scope="row">{{$deviceData.Total}}</td>
             </tr>
-
             {{end}}
           </tbody>
         </table>
-        <div class="d-flex justify-content-center mt-2">
+        <div
+          class="d-flex flex-column align-items-center justify-content-center mt-2"
+        >
           <div style="width: 400px">
             <canvas id="devicePieCtx"></canvas>
           </div>
         </div>
+
+        <table class="table mt-5">
+          <thead>
+            <tr>
+              <th>Device</th>
+              <th>Patron</th>
+              <th>User Group</th>
+              <th>Datetime</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $deviceLog := .deviceLogs}}
+            <tr>
+              <td>{{$deviceLog.Device.Name}}</td>
+              <td>
+                <div>
+                  <div class="font-weight-bold">
+                    {{$deviceLog.Client.GivenName}}
+                    {{$deviceLog.Client.Surname}}
+                  </div>
+                  <div>{{$deviceLog.Client.StudentNumber}}</div>
+                </div>
+              </td>
+              <td scope="row">
+                <div>
+                  <div class="font-weight-bold">
+                    {{$deviceLog.Client.UserType}}
+                  </div>
+                  <div>{{$deviceLog.Client.ProgramCode}}</div>
+                </div>
+              </td>
+              <td scope="row">{{$deviceLog.GetReadableDate}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
         {{end}}
       </div>
     </main>
@@ -198,7 +309,7 @@
         year: "numeric",
       });
     };
-    const deviceLogs = JSON.parse("{{.deviceLogJSON}}") ?? [];
+    const deviceLogs = JSON.parse("{{.deviceLogsGroupedJSON}}") ?? [];
     const gameLogs = JSON.parse("{{.gameLogJSON}}") ?? [];
     const walkInLogs = JSON.parse("{{.walkInLogsJSON}}") ?? [];
 
@@ -258,7 +369,7 @@
         labels: deviceLogs.map((d) => d.name),
         datasets: [
           {
-            label: "Device Statistics",
+            label: "Reserved Device",
             data: deviceLogs.map((d) => d.total),
             backgroundColor: [
               "rgb(255, 99, 132)",

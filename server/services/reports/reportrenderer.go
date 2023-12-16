@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +29,6 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	reportBody := ReportConfigBody{}
 	ctx.ShouldBindQuery(&reportBody)
 	
-
 	walkIns, err := ctrler.reportRepo.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
 	if err != nil {
 		logger.Error(err.Error())
@@ -43,14 +43,26 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	}
 	walkInsTable := generateClientWalkInsTable(walkIns)
 	
-	reportFilter := ReportFilter{
-		From: reportBody.ClientStatsFrom,
-		To: reportBody.ClientStatsTo,
-	}
-	reportData, err := ctrler.reportRepo.GetBorrowingReportData(reportFilter.From, reportFilter.To)
+	
+	borrowingReportData, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
+	borrowingData, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	borrowedBooks, err := ctrler.reportRepo.GetBorrowedBooks(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	
+	borrowedSections, err := ctrler.reportRepo.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+
 	gameLogData, err := ctrler.reportRepo.GetGameLogsData(reportBody.GameStatsFrom, reportBody.GameStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
@@ -60,39 +72,38 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		logger.Error(err.Error())
 	}
 
-	deviceLogData, err := ctrler.reportRepo.GetDeviceLogsData(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
+	gameLogs, err := ctrler.reportRepo.GetGameLogs(reportBody.GameStatsFrom, reportBody.GameStatsTo)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("gameLogsErr"))
+	}
+	deviceLogsGrouped, err := ctrler.reportRepo.GetDeviceLogsData(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	deviceLogJSON, err  := json.Marshal(deviceLogData)
+	deviceLogsGroupedJSON, err  := json.Marshal(deviceLogsGrouped)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	borrowedBooks, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportFilter.To)
+	deviceLogs, err := ctrler.reportRepo.GetDeviceLogs(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	borrowedSections, err := ctrler.reportRepo.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportFilter.To)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	generateClientWalkInsTable(walkIns)
-	reportFilter.ToReadableDate()
 	ctx.HTML(http.StatusOK, "report/index", gin.H{
-		"reportData": reportData,
+		"reportData": borrowingReportData,
 		"gameLogData": gameLogData,
-		"deviceLogData" : deviceLogData,
+		"deviceLogsGrouped" : deviceLogsGrouped,
 		"gameLogJSON": string(gameLogJSON),
-		"deviceLogJSON" : string(deviceLogJSON),
+		"deviceLogsGroupedJSON" : string(deviceLogsGroupedJSON),
+		"deviceLogs": deviceLogs,
 		"walkInLogsJSON": string(walkInsJSON),
 		"walkIns": walkIns,
 		"clientStats": clientStats,
 		"borrowedSections": borrowedSections,
-		"borrowing": borrowedBooks, 
-		"from": reportFilter.From,
-		"to": reportFilter.To,
+		"borrowing": borrowingData, 
+		"borrowedBooks": borrowedBooks,
 		"config": reportBody,
 		"walkInsTable": walkInsTable,
+		"gameLogs": gameLogs,
 	})
 }
 

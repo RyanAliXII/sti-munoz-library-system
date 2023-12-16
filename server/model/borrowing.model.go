@@ -25,6 +25,11 @@ type BorrowedBook struct {
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
+func (d * BorrowedBook)GetReadableDate() string{
+	layout := "January 02, 2006 03:04 PM"
+	return d.CreatedAt.Format(layout)
+}
+
 type BorrowedEBook struct {
 	Id string `json:"id" db:"id"`
 	Book BookJSON `json:"book" db:"book"`

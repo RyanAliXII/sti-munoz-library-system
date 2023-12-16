@@ -23,6 +23,10 @@ type ReportRepository interface{
 	GetWalkIns(from string, to string, frequency string)([]model.WalkInData, error)
 	GetBorrowedSection (start string, end string)([]model.BorrowedSection, error)
 	GetBorrowingReportData(start string, end string)(model.ReportData, error) 
+	GetBorrowedBooks(start string, end string)([]model.BorrowedBook, error)
+	GetGameLogs(start string, end string)([]model.GameLog, error)
+	GetDeviceReservationData(start string, end string)([]model.DeviceData, error)
+	GetDeviceLogs(start string, end string)([]model.DeviceLogReport, error)
 }
 
 func (repo * Report)GetClientStats(start string, end string)(model.ClientStatsData, error){
@@ -72,6 +76,7 @@ func (repo * Report)GetBorrowedSection (start string, end string)([]model.Borrow
 	err := repo.db.Select(&borrowedSection, query, start, end)
 	return borrowedSection, err
 }
+
 func(repo *Report)GetWalkIns(from string, to string, frequency string)([]model.WalkInData, error){
 	data := make([]model.WalkInData, 0)
 	query := `
@@ -105,7 +110,13 @@ func(repo *Report)GetWalkIns(from string, to string, frequency string)([]model.W
 	
 	return  data, err
 }
-
+func (repo * Report)GetBorrowedBooks(start string, end string)([]model.BorrowedBook, error) {
+	borrowedBooks := make([]model.BorrowedBook, 0) 
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook, created_at 
+	FROM borrowed_book_all_view where date(created_at at time zone 'PHT') between $1 and $2 and (status_id = 3 or status_id = 4) order by created_at asc`
+	err := repo.db.Select(&borrowedBooks, query, start, end)
+	return borrowedBooks, err
+}
 
 
 func (repo *Report) GetGameLogsData(start string, end string)([]model.GameData, error) {
@@ -120,18 +131,62 @@ func (repo *Report) GetGameLogsData(start string, end string)([]model.GameData, 
 	err := repo.db.Select(&data, query,start, end)
 	return data, err
 }
-func (repo * Report)GetDeviceLogsData(start string, end string)([]model.DeviceData, error){
+func (repo * Report)GetGameLogs(start string, end string)([]model.GameLog, error){
+	gameLogs := make([]model.GameLog, 0)
+	query := `
+	SELECT "game_log"."id", "game_id", "logged_out_at", (CASE WHEN logged_out_at IS NULL THEN FALSE ELSE TRUE END) AS "is_logged_out", 
+	account.json_format AS "client", 
+	json_build_object(
+	  'id', game.id, 
+	  'name', game.name, 
+	  'description', game.description
+	) AS "game", 
+	"game_log"."created_at" 
+	FROM "services"."game_log" 
+	INNER JOIN "account_view" AS account ON ("game_log"."account_id" = "account"."id") 
+	INNER JOIN "services"."game" ON ("game_log"."game_id" = "game"."id") 
+	WHERE DATE(game_log.created_at AT TIME ZONE 'PHT') BETWEEN $1 AND $2
+	ORDER BY "game_log"."created_at";
+	`
+	err := repo.db.Select(&gameLogs, query, start, end)
+	return gameLogs, err
+}
+func (repo * Report)GetDeviceReservationData(start string, end string)([]model.DeviceData, error){
 	data := make([]model.DeviceData, 0)
 	query := `
 	SELECT device.name, COUNT(1) as total
 	FROM services.reservation 
 	INNER JOIN services.device on device_id = device.id
-	where date(reservation.created_at at time zone 'PHT') between $1 and $2 and status_id = 2
+	where date(reservation.created_at at time zone 'PHT') between $1 and $2
 	GROUP BY device_id,device.name ORDER BY COUNT(1) DESC
 	`
 	err := repo.db.Select(&data, query,start, end)
 	return data, err
 }
+func (repo * Report)GetDeviceLogsData(start string, end string)([]model.DeviceData, error){
+	data := make([]model.DeviceData, 0)
+	query := `
+	WITH cte_device_logs as  (
+		SELECT device.id,device.name, COUNT(1) as total
+		FROM services.device_log
+		INNER JOIN services.device on device_id = device.id
+		where date(device_log.created_at at time zone 'PHT') between $1 and $2
+		GROUP BY device.id, device_id,device.name ORDER BY COUNT(1) DESC
+	),
+	cte_reservations as (SELECT device.id, device.name, COUNT(1) as total
+	FROM services.reservation 
+	INNER JOIN services.device on device_id = device.id
+	where date(reservation.created_at at time zone 'PHT') between $1 and $2
+	GROUP BY device.id,device_id,device.name ORDER BY COUNT(1) DESC)
+	
+	SELECT device.name, (cdl.total + ctr.total) as total FROM services.device
+		LEFT JOIN cte_device_logs as cdl on  device.id = cdl.id
+		LEFT JOIN cte_reservations as ctr on device.id = ctr.id
+	`
+	err := repo.db.Select(&data, query,start, end)
+	return data, err
+}
+
 
 func (repo * Report)GetWalkInLogs(start string, end string)([]model.WalkInLog, error){
 	logs := make([]model.WalkInLog, 0)
@@ -154,4 +209,24 @@ ORDER BY
 	`
 	err := repo.db.Select(&logs, query, start, end)
 	return logs, err
+}
+func(repo * Report)GetDeviceLogs(start string, end string)([]model.DeviceLogReport, error){
+	deviceLogReports := make([]model.DeviceLogReport,0)
+	query := `
+	WITH cte_device_logs as (
+		(SELECT client, device, CONCAT(reservation_date,' ', reservation_time)::timestamp as event_time FROM reservation_view
+		UNION ALL
+		SELECT account.json_format as client, jsonb_build_object(
+					'id',device.id, 
+					'name', device.name, 
+					'available', device.available,
+					'description', device.description) as device, (device_log.created_at at time zone 'PHT')  as event_time FROM services.device_log 
+		INNER JOIN services.device on device_log.device_id = device.id
+		INNER JOIN account_view as account on device_log.account_id = account.id)
+		
+		)
+		SELECT * FROM cte_device_logs where date(event_time) between $1 and $2	order by event_time asc
+	`
+	err := repo.db.Select(&deviceLogReports, query, start, end)
+	return deviceLogReports, err 
 }

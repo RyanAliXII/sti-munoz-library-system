@@ -1,5 +1,5 @@
 import { BookInitialValue } from "@definitions/defaults";
-import { Accession, CheckoutAccession } from "@definitions/types";
+import { CheckoutAccession } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   QueryFunction,

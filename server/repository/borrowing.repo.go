@@ -177,7 +177,7 @@ func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.Bor
 
 func (repo * Borrowing)GetBorrowedBooksByAccessionId(accessionId string)(model.BorrowedBook, error){
 	borrowedBook := model.BorrowedBook{} 
-	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook, created_at FROM borrowed_book_view where status_id = 3 and accession_id = $1 order by created_at desc LIMIT 1`
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, created_at FROM borrowed_book_view where status_id = 3 and accession_id = $1 order by created_at desc LIMIT 1`
 	err := repo.db.Get(&borrowedBook, query, accessionId)
 	return borrowedBook, err
 }

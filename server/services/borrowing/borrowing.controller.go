@@ -31,6 +31,7 @@ type BorrowingController interface {
 	GetEbookByBorrowedBookId(ctx * gin.Context)
 	UpdateRemarks(ctx * gin.Context)
 	GetBorrowedBookByAccessionId(ctx * gin.Context)
+	ReturnBorrowedBooksBulk(ctx * gin.Context)
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -90,6 +91,26 @@ func (ctrler * Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowedBook": borrowedBook,
 	}, "OK"))
+}
+func (ctrler * Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
+	body := ReturnBulkBody{}
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	for _, b := range body.BorrowedBookIds{
+		err := ctrler.borrowingRepo.MarkAsReturned(b, body.Remarks)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error(err.Error()))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+			return
+		}
+		
+	}
+	ctx.JSON(httpresp.Success200(nil, "OK"))
+
 }
 func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
 
