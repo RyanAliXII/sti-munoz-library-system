@@ -320,9 +320,11 @@ export type Settings = {
 
 export type Penalty = {
   id?: string;
+  classification: PenaltyClassification;
   description: string;
   amount: number;
   accountId: string;
+  classId: string;
   item: string;
   account: Account;
   isSettled: boolean;

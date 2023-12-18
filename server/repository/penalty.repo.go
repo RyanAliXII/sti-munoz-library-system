@@ -35,14 +35,16 @@ func(repo * PenaltyRepository) GetPenalties()[]model.Penalty{
 	query := `
 	SELECT penalty.id, 
 	description,account_id, 
-	to_char(penalty.created_at, 'YYYYMMDDHH24MISS') as reference_number,
+	reference_number,
 	item, amount,settled_at,
 	proof,
 	remarks,
-	 penalty.created_at, account.json_format as account,
-		(case when settled_at is not null then true else false end) as is_settled
-		FROM borrowing.penalty inner join account_view as account on penalty.account_id = account.id
-		ORDER BY created_at DESC`
+	classification,
+	class_id,
+	penalty.created_at, account,
+	is_settled
+	FROM penalty_view as penalty inner join account_view as account on penalty.account_id = account.id
+	ORDER BY created_at DESC`
 	
 	selectErr := repo.db.Select(&penalties, query)
 	if selectErr != nil {
@@ -158,6 +160,15 @@ func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
 	query := `
     INSERT INTO borrowing.penalty (description, account_id, amount, item) VALUES ($1, $2, $3, $4)
     `
+	if(len(penalty.ClassId) > 0){
+		query = `INSERT INTO borrowing.penalty (account_id, item, class_id) VALUES ($1, $2, $3)`
+		_,insertErr := repo.db.Exec(query, penalty.AccountId, penalty.Item, penalty.ClassId)
+		if insertErr != nil {
+			logger.Error(insertErr.Error(), slimlog.Function("PenaltyRepository.AddPenalty"), slimlog.Error("inserErr"))
+			return insertErr
+		}
+		return nil
+	}
     _,insertErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Item)
     if insertErr != nil {
         logger.Error(insertErr.Error(), slimlog.Function("PenaltyRepository.AddPenalty"), slimlog.Error("inserErr"))
@@ -166,8 +177,20 @@ func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
 	return nil
 }
 func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty) error {
+	
 	query := `
-   		 UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3, item = $4  where id = $5`
+   		 UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3, item = $4, class_id = null  where id = $5`
+	
+	if(penalty.ClassId != "00000000-0000-0000-0000-000000000000"){
+		query = `
+		UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3, item = $4, class_id= $5  where id = $6`
+		_,updateErr := repo.db.Exec(query, "", penalty.AccountId, 0, penalty.Item,penalty.ClassId, penalty.Id )
+		if updateErr != nil {
+			logger.Error(updateErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenalty"), slimlog.Error("updateErr"))
+			return updateErr
+		}
+		return nil
+	}
     _,updateErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Item, penalty.Id)
     if updateErr != nil {
         logger.Error(updateErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenalty"), slimlog.Error("updateErr"))

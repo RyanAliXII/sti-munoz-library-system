@@ -13,6 +13,7 @@ import { FC, SVGProps } from "react";
 import { FiBookOpen, FiSettings } from "react-icons/fi";
 import { Bs123 } from "react-icons/bs";
 import { GiBookshelf } from "react-icons/gi";
+import { FaMoneyBillWave } from "react-icons/fa";
 
 export type SidebarNavItem = {
   to: string;
@@ -157,15 +158,28 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         ],
         items: [],
       },
+    ],
+  },
+  {
+    text: "Penalty",
+    to: "/fees",
+    isCollapse: true,
+    icon: FaMoneyBillWave,
+    items: [
       {
         text: "Penalties",
-        to: "/borrowing/penalties",
-        requiredPermissions: ["Penalty.Access", "Account.Access"],
+        to: "/penalties",
         items: [],
+        requiredPermissions: [],
+      },
+      {
+        text: "Classifications",
+        items: [],
+        requiredPermissions: [],
+        to: "/penalties/classifications",
       },
     ],
   },
-
   {
     text: "Services",
     to: "/services",
@@ -249,6 +263,12 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         to: "/faqs",
         text: "FAQs",
+        items: [],
+        requiredPermissions: ["Settings.Access"],
+      },
+      {
+        to: "/policy",
+        text: "Policy",
         items: [],
         requiredPermissions: ["Settings.Access"],
       },

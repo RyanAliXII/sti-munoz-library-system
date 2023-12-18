@@ -297,7 +297,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/borrowing/penalties"
+        path="/penalties"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Penalty.Read"]}>

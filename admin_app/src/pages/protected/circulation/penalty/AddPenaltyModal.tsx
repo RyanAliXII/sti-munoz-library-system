@@ -1,18 +1,27 @@
 import ClientSearchBox from "@components/ClientSearchBox";
 import { CustomInput } from "@components/ui/form/Input";
-import { Account, Item, ModalProps } from "@definitions/types";
+import {
+  Account,
+  Item,
+  ModalProps,
+  PenaltyClassification,
+} from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 
+import ItemSearchBox from "@components/ItemSearchBox";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { usePenaltyClasses } from "@hooks/data-fetching/penalty";
 import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
 import { BaseSyntheticEvent, useState } from "react";
 import { MdRemoveCircleOutline } from "react-icons/md";
+import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { AddPenaltyValidation } from "./schema";
-import ItemSearchBox from "@components/ItemSearchBox";
-import { useSwitch } from "@hooks/useToggle";
+import { PenaltyForm } from "./PenaltyPage";
 
 const AddPenaltyModal = (props: ModalProps) => {
   const { Post } = useRequest();
@@ -24,17 +33,19 @@ const AddPenaltyModal = (props: ModalProps) => {
     setForm,
     resetForm,
     removeFieldError,
-  } = useForm<{
-    accountId: string;
-    description: string;
-    amount: number;
-    item: string;
-  }>({
+  } = useForm<PenaltyForm>({
     initialFormData: {
       item: "",
       accountId: "",
       description: "",
       amount: 0,
+      classId: "",
+      classification: {
+        amount: 0,
+        description: "",
+        id: "",
+        name: "",
+      },
     },
     schema: AddPenaltyValidation,
   });
@@ -71,6 +82,34 @@ const AddPenaltyModal = (props: ModalProps) => {
   const onSelectItem = (item: Item) => {
     removeFieldError("item");
     setForm((it) => ({ ...it, item: item.name }));
+  };
+  const { data: penaltyClasses } = usePenaltyClasses({});
+  const handlePenaltyClassSelection = (
+    penaltyClass: SingleValue<PenaltyClassification>
+  ) => {
+    if (!penaltyClass) {
+      setForm((prev) => ({
+        ...prev,
+        classId: "",
+        description: "",
+        amount: 0,
+        classification: {
+          amount: 0,
+          description: "",
+          id: "",
+          name: "",
+        },
+      }));
+
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      classId: penaltyClass.id,
+      description: penaltyClass.description,
+      amount: penaltyClass.amount,
+      classification: penaltyClass,
+    }));
   };
   if (!props.isOpen) return null;
   return (
@@ -172,8 +211,21 @@ const AddPenaltyModal = (props: ModalProps) => {
             </div>
           </div>
           <div className="mt-3">
+            <Label htmlFor="description">Penalty Classification</Label>
+            <CustomSelect
+              value={form.classification}
+              onChange={handlePenaltyClassSelection}
+              options={penaltyClasses}
+              isClearable
+              getOptionLabel={(penaltyClass) => penaltyClass.name}
+              getOptionValue={(penaltyClass) => penaltyClass.id}
+            />
+          </div>
+
+          <div className="mt-3">
             <Label htmlFor="description">Description</Label>
             <Textarea
+              disabled={form.classId.length > 0}
               name="description"
               value={form.description}
               onChange={handleFormInput}
@@ -187,8 +239,10 @@ const AddPenaltyModal = (props: ModalProps) => {
               {errors?.description}
             </small>
           </div>
+
           <div>
             <CustomInput
+              disabled={form.classId.length > 0}
               value={form.amount}
               error={errors?.amount}
               type="number"

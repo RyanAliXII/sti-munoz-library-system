@@ -3,7 +3,7 @@ import Container from "@components/ui/container/Container";
 import HasAccess from "@components/auth/HasAccess";
 import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
-import { Penalty } from "@definitions/types";
+import { Penalty, PenaltyClassification } from "@definitions/types";
 import { toReadableDatetime } from "@helpers/datetime";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
@@ -22,7 +22,15 @@ import EditPenaltyModal from "./EditPenaltyModal";
 import EditSettlementModal from "./EditSettlementModal";
 import SettleModal from "./SettleModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
-
+export type PenaltyForm = {
+  id?: string;
+  item: string;
+  accountId: string;
+  description: string;
+  amount: number;
+  classId: string;
+  classification: PenaltyClassification;
+};
 const PenaltyPage = () => {
   const { Get } = useRequest();
   const {
@@ -58,6 +66,13 @@ const PenaltyPage = () => {
   const [selectedPenalty, setSelectedPenalty] = useState<Penalty>({
     id: "",
     account: AccountInitialValue,
+    classId: "",
+    classification: {
+      amount: 0,
+      description: "",
+      id: "",
+      name: "",
+    },
     accountId: "",
     createdAt: "",
     isSettled: false,
