@@ -21,6 +21,12 @@ type PublisherController struct {
 func (ctrler *PublisherController) NewPublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
+	fieldErrs, err  := publisher.ValidateNew()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("new publisher validation"))
+		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErrs}, "Validation error."))
+		return
+	}
 	publisher,insertErr := ctrler.publisherRepository.New(publisher)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
@@ -64,9 +70,15 @@ func (ctrler *PublisherController) GetPublishers(ctx *gin.Context) {
 }
 func (ctrler *PublisherController) UpdatePublisher(ctx *gin.Context) {
 	id := ctx.Param("id")
-	
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
+	publisher.Id = id
+	fieldErrs, err  := publisher.ValidateUpdate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("new publisher validation"))
+		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErrs}, "Validation error."))
+		return
+	}
 	updateErr := ctrler.publisherRepository.Update(id, publisher)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, updateErr.Error()))

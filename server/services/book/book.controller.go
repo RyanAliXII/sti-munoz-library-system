@@ -200,5 +200,6 @@ type BookControllerInterface interface {
 	GetEbookById(ctx * gin.Context)
 	RemoveEbookById(ctx * gin.Context)
 	UpdateEbookById(ctx * gin.Context)
-	MigrateCollection(ctx * gin.Context) 
+	MigrateCollection(ctx * gin.Context)
+	GetAccessionById (ctx * gin.Context) 
 }

@@ -1,5 +1,4 @@
 import { Author, ModalProps, PersonAuthor } from "@definitions/types";
-import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,7 +8,9 @@ import { CreateAuthorSchema } from "../schema";
 
 import { CustomInput } from "@components/ui/form/Input";
 
+import { AxiosError } from "axios";
 import { Button, Modal } from "flowbite-react";
+import { StatusCodes } from "http-status-codes";
 import { useBookAddFormContext } from "./BookAddFormContext";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<PersonAuthor, "id"> = {
@@ -39,14 +40,13 @@ const AuthorForm = ({
   closeModal: () => void;
   isOpen: boolean;
 }) => {
-  const { form, errors, validate, handleFormInput, resetForm } = useForm<
-    Omit<Author, "id">
-  >({
-    initialFormData: {
-      name: "",
-    },
-    schema: CreateAuthorSchema,
-  });
+  const { form, errors, validate, handleFormInput, resetForm, setErrors } =
+    useForm<Omit<Author, "id">>({
+      initialFormData: {
+        name: "",
+      },
+      schema: CreateAuthorSchema,
+    });
 
   const { setForm: setAddBookForm } = useBookAddFormContext();
   const queryClient = useQueryClient();
@@ -73,14 +73,17 @@ const AuthorForm = ({
           authors: [...prev.authors, author],
         }));
       }
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
       closeModal();
-      resetForm();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
 

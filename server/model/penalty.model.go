@@ -14,5 +14,7 @@ type Penalty struct {
 	Account         AccountJSON     `json:"account" db:"account"`
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 	SettledAt db.NullableTime `json:"settledAt" db:"settled_at"`
+	ClassId string `json:"classId" db:"class_id"`
+	Classification PenaltyClassificationJSON `json:"classification" db:"classification"`
 	IsSettled bool `json:"isSettled" db:"is_settled"`
 }

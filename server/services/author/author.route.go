@@ -15,12 +15,10 @@ func AuthorRoutes(router *gin.RouterGroup) {
 	controller.GetAuthors)
 
 	router.POST("/",
-	middlewares.BlockRequestFromClientApp,
-	middlewares.ValidateBody[AuthorBody], controller.NewAuthor)
+	middlewares.BlockRequestFromClientApp, controller.NewAuthor)
 	
 	router.PUT("/:id/", 
 	middlewares.BlockRequestFromClientApp,
-	middlewares.ValidateBody[AuthorBody], 
 	controller.UpdateAuthor)
 
 	router.DELETE("/:id/",

@@ -1,7 +1,13 @@
 import ClientSearchBox from "@components/ClientSearchBox";
 import { CustomInput } from "@components/ui/form/Input";
 
-import { Account, Item, ModalProps, Penalty } from "@definitions/types";
+import {
+  Account,
+  Item,
+  ModalProps,
+  Penalty,
+  PenaltyClassification,
+} from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +19,10 @@ import { toast } from "react-toastify";
 import { EditPenaltyValidation } from "./schema";
 import { useSwitch } from "@hooks/useToggle";
 import ItemSearchBox from "@components/ItemSearchBox";
+import { usePenaltyClasses } from "@hooks/data-fetching/penalty";
+import { PenaltyForm } from "./PenaltyPage";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { SingleValue } from "react-select";
 
 interface EditPenaltyModalProps extends ModalProps {
   penalty: Penalty;
@@ -27,15 +37,16 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
     setForm,
     resetForm,
     removeFieldError,
-  } = useForm<{
-    id: string;
-    accountId: string;
-    description: string;
-    amount: number;
-    item: string;
-  }>({
+  } = useForm<PenaltyForm>({
     initialFormData: {
       id: "",
+      classId: "",
+      classification: {
+        amount: 0,
+        description: "",
+        id: "",
+        name: "",
+      },
       accountId: "",
       item: "",
       description: "",
@@ -53,6 +64,8 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
         accountId: props.penalty.accountId,
         description: props.penalty.description,
         amount: props.penalty.amount,
+        classId: props.penalty.classId,
+        classification: props.penalty.classification,
       });
       setSelectedAccount(props.penalty.account);
     }
@@ -67,13 +80,36 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
     }
   };
 
+  const handlePenaltyClassSelection = (
+    penaltyClass: SingleValue<PenaltyClassification>
+  ) => {
+    if (!penaltyClass) {
+      setForm((prev) => ({
+        ...prev,
+        classId: "00000000-0000-0000-0000-000000000000",
+        description: "",
+        amount: 0,
+        classification: {
+          amount: 0,
+          description: "",
+          id: "",
+          name: "",
+        },
+      }));
+
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      classId: penaltyClass.id,
+      description: penaltyClass.description,
+      amount: penaltyClass.amount,
+      classification: penaltyClass,
+    }));
+  };
+
   const updatePenalty = useMutation({
-    mutationFn: (body: {
-      id: string;
-      accountId: string;
-      description: string;
-      amount: number;
-    }) => Put(`/penalties/${body.id}`, body, {}),
+    mutationFn: (body: PenaltyForm) => Put(`/penalties/${body.id}`, body, {}),
     onSuccess: () => {
       toast.success("Penalty has been updated.");
       queryClient.invalidateQueries(["penalties"]);
@@ -92,7 +128,7 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
     removeFieldError("item");
     setForm((it) => ({ ...it, item: item.name }));
   };
-
+  const { data: penaltyClasses } = usePenaltyClasses({});
   return (
     <Modal show={props.isOpen} onClose={props.closeModal} dismissible>
       <Modal.Header>Edit Penalty</Modal.Header>
@@ -193,30 +229,45 @@ const EditPenaltyModal = (props: EditPenaltyModalProps) => {
             </div>
           </div>
           <div className="mt-3">
+            <Label htmlFor="description">Penalty Classification</Label>
+            <CustomSelect
+              value={form.classification}
+              onChange={handlePenaltyClassSelection}
+              options={penaltyClasses}
+              isClearable
+              getOptionLabel={(penaltyClass) => penaltyClass.name}
+              getOptionValue={(penaltyClass) => penaltyClass.id}
+            />
+          </div>
+
+          <div className="mt-3">
             <Label htmlFor="description">Description</Label>
             <Textarea
+              disabled={form.classId != "00000000-0000-0000-0000-000000000000"}
               name="description"
               value={form.description}
               onChange={handleFormInput}
               className={
                 errors?.description
-                  ? "w-full resize-none h-52 mt-1 focus:outline-none border p-3 border-red-500"
-                  : "w-full resize-none h-52 mt-1 focus:outline-none border p-3 "
+                  ? "w-full resize-none mt-1 focus:outline-none border p-3 border-red-500"
+                  : "w-full resize-none  mt-1 focus:outline-none border p-3 "
               }
-            ></Textarea>
+            />
             <small className="text-red-500 ml-0.5 ">
               {errors?.description}
             </small>
           </div>
+
           <div>
             <CustomInput
+              disabled={form.classId != "00000000-0000-0000-0000-000000000000"}
               value={form.amount}
               error={errors?.amount}
               type="number"
               label="Amount"
               name="amount"
               onChange={handleFormInput}
-            ></CustomInput>
+            />
           </div>
           <div className="flex gap-1 mt-5">
             <Button

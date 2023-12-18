@@ -1,13 +1,9 @@
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
-
-import { BorrowedBook, ModalProps } from "@definitions/types";
+import { BorrowedBook, ModalProps, Settings } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
-
 import { format, isBefore, isEqual, isMatch } from "date-fns";
 import { Button, Modal } from "flowbite-react";
-
 import React, { FormEvent, useEffect } from "react";
-
 import { object, string } from "yup";
 
 interface DueDateInputModelProps extends ModalProps {
@@ -59,6 +55,7 @@ export const EditDueDateModal: React.FC<DueDateInputModelProps> = ({
       onConfirmDate(result);
     } catch {}
   };
+
   useEffect(() => {
     if (!borrowedBook) return;
     setForm({ date: borrowedBook.dueDate });

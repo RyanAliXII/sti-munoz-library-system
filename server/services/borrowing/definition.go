@@ -73,3 +73,8 @@ func NewBorrowingRequestFilter(ctx * gin.Context) *BorrowingRequestFilter{
 	}
 	return filter
 }
+
+type ReturnBulkBody struct {
+	BorrowedBookIds []string `json:"borrowedBookIds"`
+	Remarks string `json:"remarks"`
+}

@@ -12,10 +12,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-
-
-
-
 type PenaltyController struct{
 	penaltyRepo  repository.PenaltyRepositoryInterface
 }
@@ -94,8 +90,6 @@ func (ctrler * PenaltyController)UpdatePenalty( ctx * gin.Context){
 }
 
 
-
-
 func NewPenaltyController() PenaltyControllerInterface {
 
 	return &PenaltyController{
@@ -109,4 +103,8 @@ type PenaltyControllerInterface interface {
 	UpdatePenaltySettlement(ctx *gin.Context)
 	AddPenalty( ctx * gin.Context)
 	UpdatePenalty( ctx * gin.Context)
+	NewClassfication(ctx * gin.Context) 
+	GetPenaltyClasses(ctx * gin.Context)
+	UpdatePenaltyClass(ctx * gin.Context)
+	DeletePenaltyClass(ctx * gin.Context)
 }

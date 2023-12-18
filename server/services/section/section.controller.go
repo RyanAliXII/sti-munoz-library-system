@@ -20,7 +20,22 @@ type SectionController struct {
 func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
 	var body model.Section
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	ctrler.sectionRepository.New(body)
+	fields, err := body.ValidateSection()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("validation error."))
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors": fields,
+		}, "Validation error."))
+		return 
+	}	
+	err = ctrler.sectionRepository.New(body)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("New collection error"))
+		ctx.JSON(httpresp.Fail500(gin.H{
+			"errors": fields,
+		}, "Validation error."))
+		return
+	}
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "model.Section created."))
 }
 func (ctrler *SectionController)GetCategories(ctx *gin.Context) {
@@ -52,6 +67,12 @@ func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 	err = ctx.ShouldBindBodyWith(&section, binding.JSON)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("BindErr"))
+	}
+	fieldsErr, err := section.ValidateUpdate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("collection update error"))
+		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldsErr}, "Validation error."),)
+		return 
 	}
 	err = ctrler.sectionRepository.Update(section)
 	if err != nil {

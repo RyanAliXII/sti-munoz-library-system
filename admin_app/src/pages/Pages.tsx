@@ -89,6 +89,10 @@ const BulkActivatePage = lazy(
 );
 const FaqsPage = lazy(() => import("./protected/faqs/FAQsPage"));
 const PolicyPage = lazy(() => import("./protected/policy/PolicyPage"));
+const PenaltyClassPage = lazy(
+  () =>
+    import("./protected/circulation/penalty/classification/PenaltyClassPage")
+);
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -293,7 +297,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/borrowing/penalties"
+        path="/penalties"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Penalty.Read"]}>
@@ -473,6 +477,17 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate>
               <PolicyPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/penalties/classifications"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate>
+              <PenaltyClassPage />
             </PermissionGate>
           </Suspense>
         }

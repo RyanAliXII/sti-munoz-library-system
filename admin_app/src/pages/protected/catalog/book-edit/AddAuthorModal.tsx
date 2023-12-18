@@ -10,6 +10,8 @@ import { CreateAuthorSchema } from "../schema";
 import { CustomInput } from "@components/ui/form/Input";
 import { Button, Modal } from "flowbite-react";
 import { useBookEditFormContext } from "./BookEditFormContext";
+import { StatusCodes } from "http-status-codes";
+import { AxiosError } from "axios";
 
 export const ADD_AUTHOR_INITIAL_FORM: Omit<Author, "id"> = {
   name: "",
@@ -27,12 +29,11 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
 };
 
 const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
-  const { form, errors, validate, handleFormInput, resetForm } = useForm<
-    Omit<Author, "id">
-  >({
-    initialFormData: ADD_AUTHOR_INITIAL_FORM,
-    schema: CreateAuthorSchema,
-  });
+  const { form, errors, validate, handleFormInput, resetForm, setErrors } =
+    useForm<Omit<Author, "id">>({
+      initialFormData: ADD_AUTHOR_INITIAL_FORM,
+      schema: CreateAuthorSchema,
+    });
   const { setForm: setBookEditForm } = useBookEditFormContext();
   const queryClient = useQueryClient();
   const submit = async (event: BaseSyntheticEvent) => {
@@ -58,14 +59,17 @@ const AuthorForm = ({ closeModal }: { closeModal: () => void }) => {
           authors: [...prev.authors, author],
         }));
       }
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
       closeModal();
-      resetForm();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
   return (

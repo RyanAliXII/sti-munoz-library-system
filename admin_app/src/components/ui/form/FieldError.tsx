@@ -7,7 +7,7 @@ const FieldError: FC<FieldErrorProps> = ({ error }) => {
   if (!error) {
     return null;
   }
-  return <div className="text-sm text-red-500">{error}</div>;
+  return <div className="text-xs text-red-500">{error}</div>;
 };
 
 export default FieldError;

@@ -1,15 +1,10 @@
 import "react-responsive-modal/styles.css";
-
 import Container from "@components/ui/container/Container";
-
 import React, { ChangeEvent, useState } from "react";
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { Author } from "@definitions/types";
 import { AiOutlineDelete, AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import { toast } from "react-toastify";
-
 import HasAccess from "@components/auth/HasAccess";
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
@@ -17,14 +12,10 @@ import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import AddAuthorModal from "./AddAuthorModal";
 import EditAuthorModal from "./EditAuthorModal";
-
 import Tippy from "@tippyjs/react";
-
 import { CustomInput } from "@components/ui/form/Input";
 import { ErrorMsg } from "@definitions/var";
-
 import useDebounce from "@hooks/useDebounce";
-
 import CustomPagination from "@components/pagination/CustomPagination";
 import { Button, Table } from "flowbite-react";
 import { useSearchParamsState } from "react-use-search-params-state";
@@ -128,7 +119,7 @@ const AuthorPage = () => {
   });
   return (
     <Container>
-      <HasAccess requiredPermissions={["Author.Access"]}>
+      <HasAccess requiredPermissions={["Author.Add"]}>
         <div className="w-full flex justify-between py-5">
           <CustomInput
             type="text"

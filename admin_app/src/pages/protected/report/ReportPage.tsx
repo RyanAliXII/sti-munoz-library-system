@@ -3,12 +3,13 @@ import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import TableContainer from "@components/ui/table/TableContainer";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Button, Checkbox, Table } from "flowbite-react";
-
-import { ChangeEvent, MouseEventHandler } from "react";
+import { ChangeEvent, useState } from "react";
 import { toast } from "react-toastify";
+import ReportPreviewModal from "./ReportPreviewModal";
 type ReportConfigKeys =
   | "clientStatistics"
   | "borrowedBooks"
@@ -17,6 +18,8 @@ type ReportConfigKeys =
 
 const ReportPage = () => {
   const { Post } = useRequest();
+  const reportPreview = useSwitch();
+  const [reportUrl, setReportUrl] = useState<string>("");
   const generateReport = useMutation({
     mutationFn: (form: any) =>
       Post("/reports", form, {
@@ -25,10 +28,8 @@ const ReportPage = () => {
     onSuccess: (response) => {
       toast.success("Report has been generated.");
       const url = URL.createObjectURL(response.data);
-      const a = document.createElement("a");
-      a.download = "report.pdf";
-      a.href = url;
-      a.click();
+      setReportUrl(url);
+      reportPreview.open();
     },
   });
   const {
@@ -336,6 +337,11 @@ const ReportPage = () => {
       <Button onClick={onSubmit} color="primary" className="mt-2">
         Generate Report
       </Button>
+      <ReportPreviewModal
+        url={reportUrl}
+        isOpen={reportPreview.isOpen}
+        closeModal={reportPreview.close}
+      />
     </Container>
   );
 };

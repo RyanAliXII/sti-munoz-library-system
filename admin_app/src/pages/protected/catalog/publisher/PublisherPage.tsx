@@ -200,10 +200,10 @@ const PublisherPage = () => {
         </LoadingBoundaryV2>
       </Container>
 
-      <HasAccess requiredPermissions={["Publisher.Access"]}>
+      <HasAccess requiredPermissions={["Publisher.Add"]}>
         <AddPublisherModal closeModal={closeAddModal} isOpen={isAddModalOpen} />
       </HasAccess>
-      <HasAccess requiredPermissions={["Publisher.Access"]}>
+      <HasAccess requiredPermissions={["Publisher.Edit"]}>
         <EditPublisherModal
           closeModal={closeEditModal}
           isOpen={isEditModalOpen}

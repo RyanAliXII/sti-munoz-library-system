@@ -43,7 +43,7 @@ var controller BookControllerInterface = NewBookController()
 	router.GET("/accessions", 
 	middlewares.BlockRequestFromClientApp,
 	controller.GetAccession)
-   
+    router.GET("/accessions/:id", middlewares.BlockRequestFromClientApp, controller.GetAccessionById)
 	router.GET("/:id/accessions",
 	controller.GetAccessionByBookId)
 
