@@ -1,12 +1,14 @@
 import {
   Accession,
   Book,
+  CheckoutAccession,
   DetailedAccession,
   ModalProps,
+  Settings,
 } from "@definitions/types";
 import { useEffect, useMemo, useState } from "react";
 
-import { BorrowedEbook, CheckoutAccession, CheckoutForm } from "./CheckoutPage";
+import { BorrowedEbook, CheckoutForm } from "./CheckoutPage";
 
 import LoadingBoundary from "@components/loader/LoadingBoundary";
 import { useRequest } from "@hooks/useRequest";
@@ -20,6 +22,7 @@ interface BookCopySelectionProps extends ModalProps {
   updateAccessionsToBorrow: (accesions: CheckoutAccession[]) => void;
   updateEbooksToBorrow: (ebooks: BorrowedEbook[]) => void;
   form: CheckoutForm;
+  settings: Settings;
 }
 const BookCopySelectionModal = ({
   closeModal,
@@ -28,6 +31,7 @@ const BookCopySelectionModal = ({
   updateAccessionsToBorrow,
   updateEbooksToBorrow,
   form,
+  settings,
 }: BookCopySelectionProps) => {
   const [selectedAccessions, setSelectedAccessions] = useState<
     CheckoutAccession[]
@@ -130,14 +134,33 @@ const BookCopySelectionModal = ({
       ),
     [selectedEbooks]
   );
+
+  const getDueDate = () => {
+    const settingField = settings["app.days-to-due-date"];
+    const Sunday = 0;
+    const Saturday = 6;
+    const today = new Date();
+    if (!settingField) return today;
+
+    if (settingField.value <= 0) return today;
+    const duedate = today;
+    duedate.setDate(duedate.getDate() + settingField.value);
+    if (duedate.getDay() === Sunday) {
+      duedate.setDate(today.getDate() + 1);
+    }
+    if (duedate.getDay() === Saturday) {
+      duedate.setDate(today.getDate() + 2);
+    }
+    return duedate;
+  };
   const handleCheckonRowClick = (accession: Accession) => {
     if (
       !selectedAccessionCopiesCache.hasOwnProperty(
         `${book.id}_${accession.number}`
       )
     ) {
-      const date = getDate5DaysFromNow();
-      const dateValue = format(date, "yyyy-MM-dd");
+      const dateValue = format(getDueDate(), "yyyy-MM-dd");
+
       setSelectedAccessions((prevSelected) => [
         ...prevSelected,
         {

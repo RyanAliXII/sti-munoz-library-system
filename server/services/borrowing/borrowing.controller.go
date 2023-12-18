@@ -30,6 +30,9 @@ type BorrowingController interface {
 	GetBorrowedBookByAccountId(ctx * gin.Context)
 	GetEbookByBorrowedBookId(ctx * gin.Context)
 	UpdateRemarks(ctx * gin.Context)
+	GetBorrowedBookByAccessionId(ctx * gin.Context)
+	ReturnBorrowedBooksBulk(ctx * gin.Context)
+	
 }
 type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
@@ -73,6 +76,42 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		"groupId":  grpId,
 	}, "Book has been borrowed"))
 	
+}
+func (ctrler * Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
+	accessionId := ctx.Param("accessionId")
+	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBooksByAccessionId(accessionId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		if err == sql.ErrNoRows {
+			ctx.JSON(httpresp.Fail404(nil, "Not found"))
+			return
+		}
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+		return
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"borrowedBook": borrowedBook,
+	}, "OK"))
+}
+func (ctrler * Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
+	body := ReturnBulkBody{}
+	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	for _, b := range body.BorrowedBookIds{
+		err := ctrler.borrowingRepo.MarkAsReturned(b, body.Remarks)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error(err.Error()))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
+			return
+		}
+		
+	}
+	ctx.JSON(httpresp.Success200(nil, "OK"))
+
 }
 func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
 
@@ -279,7 +318,7 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	 body := UpdateBorrowStatusBody{}
 	 // bind to body if status id is not checkout.
 	 if  statusId != status.BorrowStatusCheckedOut {
-		err =  ctx.Bind(&body)
+		err =  ctx.ShouldBindBodyWith(&body, binding.JSON)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("BindErr"))
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
@@ -307,12 +346,37 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	
 }
 func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Context){
-	err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
+	returnBody := model.ReturnBook{}
+	err := ctx.ShouldBindBodyWith(&returnBody, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return 
+		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctx.JSON(httpresp.Fail400(nil, "bindErr"))
+		return
 	}
+	fieldErr, err := returnBody.Validate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("ValidationErr"))
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors": fieldErr,
+		}, "Validation error"))
+		return
+	}
+	if !returnBody.HasAdditionaPenalty {
+		err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+	}else{
+		err := ctrler.borrowingRepo.MarkAsReturnedWithAddtionalPenalty(id, returnBody)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+	}
+	
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Context){

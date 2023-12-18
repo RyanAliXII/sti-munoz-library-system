@@ -16,6 +16,7 @@ type AccessionRepository interface {
 	Recirculate(id string) error
 	SearchAccession(filter filter.Filter) []model.Accession
 	MarkAsMissing(id string, remarks string) error
+	GetAccessionsById(id string) (model.Accession, error)
 	
 }
 type Accession struct {
@@ -114,14 +115,14 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 	  query := `
 	  SELECT accession.id, accession.number, copy_number, book.json_format as book,
 	  accession.book_id,
-	  (CASE WHEN bb.accession_id is not null then false else true END)as is_checked_out,
+	  (CASE WHEN bb.accession_id is not null then true else false END)as is_checked_out,
 	  (CASE WHEN bb.accession_id is not null then false else true END) as is_available
 	  FROM catalog.accession
 	  as accession 
 	  INNER JOIN book_view as book on accession.book_id = book.id 
 	  LEFT JOIN borrowing.borrowed_book
 	  as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
-	  WHERE book.id = $1 and weeded_at is null
+	  WHERE book.id = $1 and weeded_at is null and missing_at is null
 	  ORDER BY copy_number
 	  `
 	  selectAccessionErr := repo.db.Select(&accessions, query, id)
@@ -130,6 +131,26 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 		  return accessions
 	  }
 	  return accessions
+}
+
+func (repo *Accession) GetAccessionsById(id string) (model.Accession, error) {
+	accession :=model.Accession{}
+	query := `
+	SELECT accession.id, accession.number, copy_number, book.json_format as book,
+	accession.book_id,
+	(CASE WHEN bb.accession_id is not null then true else false END)as is_checked_out,
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
+	FROM catalog.accession
+	as accession 
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	LEFT JOIN borrowing.borrowed_book
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
+	WHERE accession.id = $1 and weeded_at is null and missing_at is null
+	ORDER BY copy_number
+	LIMIT 1
+	`
+	err := repo.db.Get(&accession, query, id)
+	return accession, err
 }
 func NewAccessionRepository () AccessionRepository{
 	return &Accession{

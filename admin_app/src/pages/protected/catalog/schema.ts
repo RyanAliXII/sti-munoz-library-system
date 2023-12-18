@@ -1,28 +1,22 @@
 import { object, string, array, number } from "yup";
 import isISBN from "validator/lib/isISBN";
 export const CreateAuthorSchema = object().shape({
-  name: string()
-    .max(100, "Name should not exceed 100 characters.")
-    .required("Name is required."),
+  name: string(),
 });
 export const SectionSchema = object().shape({
-  name: string().required("Name is required field"),
-  prefix: string().required("Prefix is required field"),
+  name: string(),
+  prefix: string(),
 });
 export const EditSectionSchema = object().shape({
-  name: string().required("Name is required field"),
-  prefix: string().required("Prefix is required field"),
+  name: string(),
+  prefix: string(),
   lastValue: number()
     .integer("Counter value should be integer.")
-    .required("Counter value is required field")
-    .min(0, "Counter value should be equal or greater than zero.")
     .typeError("Counter value should be numeric."),
 });
 //
 export const PublisherSchema = object().shape({
-  name: string()
-    .max(150, "Character should not exceed 150")
-    .required("Publisher name is required"),
+  name: string(),
 });
 export const SourceofFundSchema = object().shape({
   name: string()

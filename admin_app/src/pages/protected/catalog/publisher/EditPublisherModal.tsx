@@ -8,6 +8,8 @@ import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { Button, Modal } from "flowbite-react";
 import { CustomInput } from "@components/ui/form/Input";
+import { AxiosError } from "axios";
+import { StatusCodes } from "http-status-codes";
 
 interface EditModalProps<T> extends ModalProps {
   formData: T;
@@ -18,7 +20,7 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
   closeModal,
   formData,
 }) => {
-  const { errors, form, setForm, validate, handleFormInput } =
+  const { errors, form, setForm, validate, handleFormInput, setErrors } =
     useForm<Publisher>({
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
@@ -35,13 +37,17 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
     onSuccess: () => {
       toast.success("Publisher has been updated.");
       queryClient.invalidateQueries(["publishers"]);
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.Update);
-      console.error(error);
-    },
-    onSettled: () => {
       closeModal();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
 
@@ -60,7 +66,7 @@ const EditPublisherModal: React.FC<EditModalProps<Publisher>> = ({
     <Modal onClose={closeModal} show={isOpen} size={"lg"} dismissible>
       <Modal.Header>
         <div>
-          <h1 className="text-xl font-medium">New Publisher</h1>
+          <h1 className="text-xl font-medium">Edit Publisher</h1>
         </div>
       </Modal.Header>
       <Modal.Body>

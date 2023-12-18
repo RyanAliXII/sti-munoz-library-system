@@ -29,7 +29,7 @@ const EbookPanel = () => {
 
   const { data: eBookUrl } = useQuery({
     queryFn: fetchEbook,
-    queryKey: ["eBook", book],
+    queryKey: ["eBook"],
     refetchOnWindowFocus: false,
   });
 

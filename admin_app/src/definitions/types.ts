@@ -94,6 +94,16 @@ export interface DetailedAccession extends Accession {
   book: Book;
 }
 
+export interface CheckoutAccession extends DetailedAccession {
+  dueDate: string;
+}
+export type PenaltyClassification = {
+  id: string;
+  name: string;
+  description: string;
+  amount: number;
+};
+
 export type Audit = {
   id?: string;
   name: string;
@@ -182,6 +192,10 @@ export type TimeSlotProfile = {
   id: string;
   name: string;
   timeSlots?: TimeSlot[];
+};
+export type ExtrasContent = {
+  value: string;
+  id: number;
 };
 export type Account = {
   id?: string;
@@ -306,9 +320,11 @@ export type Settings = {
 
 export type Penalty = {
   id?: string;
+  classification: PenaltyClassification;
   description: string;
   amount: number;
   accountId: string;
+  classId: string;
   item: string;
   account: Account;
   isSettled: boolean;

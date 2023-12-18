@@ -26,6 +26,10 @@ import { AiOutlineEdit } from "react-icons/ai";
 import EditDueDateModal from "./EditDueDateModal";
 import EditRemarksModal from "./EditRemarksModal";
 import HasAccess from "@components/auth/HasAccess";
+import ReturnBookModal from "./ReturnBookModal";
+import { useSettings } from "@hooks/data-fetching/settings";
+import { format } from "date-fns";
+
 const BorrowedBooksViewPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -132,6 +136,7 @@ const BorrowedBooksViewPage = () => {
       status: BorrowStatus;
       remarks: string;
       dueDate?: string;
+      hasAdditionalPenalty?: boolean;
     }) =>
       Patch(
         `/borrowing/borrowed-books/${borrowedBookId}/status`,
@@ -178,6 +183,25 @@ const BorrowedBooksViewPage = () => {
     "https://ui-avatars.com/api/&background=2563EB&color=fff"
   );
   url.searchParams.set("name", `${client.givenName} ${client.surname}`);
+  const { data: settings } = useSettings({});
+  const getDueDate = () => {
+    const settingField = settings?.["app.days-to-due-date"];
+    const Sunday = 0;
+    const Saturday = 6;
+    const today = new Date();
+    if (!settingField) return today;
+
+    if (settingField.value <= 0) return today;
+    const duedate = today;
+    duedate.setDate(duedate.getDate() + settingField.value);
+    if (duedate.getDay() === Sunday) {
+      duedate.setDate(today.getDate() + 1);
+    }
+    if (duedate.getDay() === Saturday) {
+      duedate.setDate(today.getDate() + 2);
+    }
+    return duedate;
+  };
   return (
     <>
       <Container className="px-4 py-6">
@@ -289,6 +313,7 @@ const BorrowedBooksViewPage = () => {
                                       setSelectedBorrowedBook(
                                         borrowedBook.book
                                       );
+                                      setBorrowedBook(borrowedBook);
                                       setBorrowedBookId(borrowedBook.id ?? "");
                                       openReturnRemarkPrompt();
                                     }}
@@ -323,6 +348,11 @@ const BorrowedBooksViewPage = () => {
                                   isProcessing={updateRemarks.isLoading}
                                   onClick={() => {
                                     setSelectedBorrowedBook(borrowedBook.book);
+                                    const dueDate = getDueDate();
+                                    setBorrowedBook({
+                                      ...borrowedBook,
+                                      dueDate: format(dueDate, "yyyy-MM-dd"),
+                                    });
                                     setBorrowedBookId(borrowedBook.id ?? "");
                                     openEditDueDateModal();
                                   }}
@@ -361,6 +391,11 @@ const BorrowedBooksViewPage = () => {
                                       setSelectedBorrowedBook(
                                         borrowedBook.book
                                       );
+                                      const dueDate = getDueDate();
+                                      setBorrowedBook({
+                                        ...borrowedBook,
+                                        dueDate: format(dueDate, "yyyy-MM-dd"),
+                                      });
                                       setBorrowedBookId(borrowedBook.id ?? "");
                                       openUnreturnedRemarkPrompt();
                                     }}
@@ -420,15 +455,11 @@ const BorrowedBooksViewPage = () => {
           </TableContainer>
         </LoadingBoundary>
       </Container>
-      <PromptTextAreaDialog
+      <ReturnBookModal
         key={"forReturn"}
-        close={closeReturnRemarkPrompt}
+        closeModal={closeReturnRemarkPrompt}
         isOpen={isReturnRemarkPromptOpen}
-        label="Remarks"
-        proceedBtnText="Save"
-        title="Return Remarks"
-        placeholder="Eg. Returned with no damage or Damage."
-        onProceed={onConfirmReturn}
+        borrowedBook={borrowedBook}
       />
 
       <PromptTextAreaDialog

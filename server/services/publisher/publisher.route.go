@@ -15,12 +15,11 @@ func PublisherRoutes(router *gin.RouterGroup) {
 
 	router.POST("/", 
 	middlewares.BlockRequestFromClientApp,
-	middlewares.ValidateBody[PublisherBody], 
 	controller.NewPublisher)
 	
 	router.PUT("/:id/", 
 	middlewares.BlockRequestFromClientApp,
-	middlewares.ValidateBody[PublisherBody], 
+	
 	controller.UpdatePublisher)
 
 	router.DELETE("/:id/",

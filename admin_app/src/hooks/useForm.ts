@@ -87,7 +87,7 @@ export const useForm = <T extends object>({
     } catch (error) {
       if (error instanceof ValidationError) {
         const errorObject = processSchemaError(error);
-        setErrors({ ...errorObject });
+        setErrors((prev: any) => ({ ...prev, ...errorObject }));
         throw new Error("Validation failed: " + JSON.stringify(errorObject));
       }
     }

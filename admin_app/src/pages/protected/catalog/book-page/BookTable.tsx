@@ -3,7 +3,7 @@ import { Book } from "@definitions/types";
 import Tippy from "@tippyjs/react";
 import { Button, Checkbox, Table } from "flowbite-react";
 import { ChangeEvent, FC } from "react";
-import { AiOutlineEdit, AiOutlinePrinter } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlineEye, AiOutlinePrinter } from "react-icons/ai";
 import { Link } from "react-router-dom";
 
 type BookTableProps = {
@@ -13,11 +13,13 @@ type BookTableProps = {
   };
   onSelect: (event: ChangeEvent<HTMLInputElement>, book: Book) => void;
   setBookForPrintingAndOpenModal: (book: Book) => void;
+  previewBook: (book: Book) => void;
 };
 const BookTable: FC<BookTableProps> = ({
   books,
   bookSelections,
   onSelect,
+  previewBook,
   setBookForPrintingAndOpenModal,
 }) => {
   return (
@@ -68,6 +70,18 @@ const BookTable: FC<BookTableProps> = ({
                         }}
                       >
                         <AiOutlinePrinter className="text-lg cursor-pointer " />
+                      </Button>
+                    </Tippy>
+
+                    <Tippy content="Preview">
+                      <Button
+                        color="primary"
+                        outline
+                        onClick={() => {
+                          previewBook(book);
+                        }}
+                      >
+                        <AiOutlineEye className="text-lg cursor-pointer " />
                       </Button>
                     </Tippy>
                     <HasAccess requiredPermissions={["Book.Edit"]}>

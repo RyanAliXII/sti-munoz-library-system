@@ -41,6 +41,7 @@ services:
       SCANNER_APP_DOMAIN: ${SCANNER_APP_DOMAIN}
       JWT_SECRET: ${JWT_SECRET}
       SERVER_URL: ${SERVER_URL}
+      S3_URL: ${S3_URL}
     depends_on:
       - postgres
       - rabbitmq

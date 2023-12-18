@@ -8,10 +8,12 @@ import { ErrorMsg } from "@definitions/var";
 import { useForm } from "@hooks/useForm";
 import { Button, Modal } from "flowbite-react";
 import { CustomInput } from "@components/ui/form/Input";
+import { AxiosError } from "axios";
+import { StatusCodes } from "http-status-codes";
 
 const PUBLISHER_FORM_DEFAULT_VALUES = { name: "" };
 const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const { errors, form, validate, handleFormInput, resetForm } =
+  const { errors, form, validate, handleFormInput, resetForm, setErrors } =
     useForm<Publisher>({
       initialFormData: PUBLISHER_FORM_DEFAULT_VALUES,
       schema: PublisherSchema,
@@ -24,14 +26,17 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     onSuccess: () => {
       toast.success("New publisher has been added.");
       queryClient.invalidateQueries(["publishers"]);
-    },
-    onError: (error) => {
-      toast.error(ErrorMsg.New);
-      console.error(error);
-    },
-    onSettled: () => {
-      resetForm();
       closeModal();
+    },
+    onError: (error: AxiosError<any, any>) => {
+      const status = error.response?.status;
+      const { data } = error.response?.data;
+      if (status === StatusCodes.BAD_REQUEST) {
+        if (data?.errors) {
+          setErrors(data?.errors);
+          return;
+        }
+      }
     },
   });
 

@@ -22,13 +22,14 @@ func BorrowingRoutes(r * gin.RouterGroup){
 
 	r.GET("/borrowed-books", 
 	ctrler.GetBorrowedBookByAccountId)
-
+	r.GET("/borrowed-books/accessions/:accessionId", ctrler.GetBorrowedBookByAccessionId)
 	r.GET("/ebooks/:id", ctrler.GetEbookByBorrowedBookId)
 
 	r.GET("/requests/:id", 
 	middlewares.BlockRequestFromClientApp,
 	ctrler.GetBorrowedBooksByGroupId)
 	r.PATCH("/borrowed-books/:id/status", middlewares.BlockRequestFromClientApp, ctrler.UpdateBorrowingStatus)
+	r.PATCH("/borrowed-books/return/bulk", middlewares.BlockRequestFromClientApp, ctrler.ReturnBorrowedBooksBulk)
 	r.PATCH("/borrowed-books/:id/remarks", middlewares.BlockRequestFromClientApp, ctrler.UpdateRemarks)
 	r.PATCH("/borrowed-books/:id/cancellation", ctrler.HandleCancellationByIdAndAccountId)
 	r.POST("/queues", middlewares.ValidateBody[QueueBody], queueCtrler.Queue)

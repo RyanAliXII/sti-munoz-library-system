@@ -1,5 +1,5 @@
 import { isBefore, isEqual, isMatch } from "date-fns";
-import { array, number, object, string } from "yup";
+import { array, bool, number, object, string } from "yup";
 export const CheckoutSchemaValidation = object().shape({
   client: object().shape({
     id: string()
@@ -42,4 +42,11 @@ export const CheckoutSchemaValidation = object().shape({
         }),
     })
   ),
+});
+
+export const ReturnBookSchema = object({
+  remarks: string(),
+  hasAdditionalPenalty: bool(),
+  penaltyDescription: string(),
+  penaltyAmount: number().typeError("Penalty should be numeric"),
 });

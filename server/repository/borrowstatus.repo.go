@@ -21,16 +21,39 @@ func (repo * Borrowing)handlePenaltyCreation(id string, transaction * sqlx.Tx) e
 	}
 	if borrowedBook.Penalty > 0 {
 		borrowedDate := fmt.Sprintf("%s %d %d", borrowedBook.CreatedAt.Month(), borrowedBook.CreatedAt.Day(), borrowedBook.CreatedAt.Year())
-		description := fmt.Sprintf(`
-You have borrowed a book in the library on %s. The book "%s"  was due on %s. Unfortunately, it has  been returned late, incurring a late fee of %.2f.
-Please settle the fee in the cashier. Thank you.`,borrowedDate, borrowedBook.Book.Title, borrowedBook.DueDate, borrowedBook.Penalty)
-		_, err = transaction.Exec("INSERT INTO borrowing.penalty(description, account_id, amount) VALUES($1, $2 ,$3 )", description, borrowedBook.AccountId, borrowedBook.Penalty )
+		description := fmt.Sprintf(`Late return of book, Due date: %s`, borrowedDate)
+		_, err = transaction.Exec("INSERT INTO borrowing.penalty(,description, account_id, amount, item) VALUES($1, $2 ,$3, $4 )", description, borrowedBook.AccountId, borrowedBook.Penalty, borrowedBook.Book.Title )
 		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
+
+func (repo * Borrowing)handlePenaltyCreationWithAdditionalFee(id string, additionalDesc string, additionalAmount float64, transaction * sqlx.Tx) error{
+	
+	borrowedBook := model.BorrowedBook{}
+	err := transaction.Get(&borrowedBook,"SELECT id, account_id, penalty, book, accession_id, due_date, created_at FROM borrowed_book_view where id = $1", id)
+	if err != nil {
+		return err
+	}
+	if borrowedBook.Penalty > 0 || additionalAmount > 0 {
+		borrowedDate := fmt.Sprintf("%s %d %d", borrowedBook.CreatedAt.Month(), borrowedBook.CreatedAt.Day(), borrowedBook.CreatedAt.Year())
+		description := ""
+		if(borrowedBook.Penalty > 0 ){
+			description = fmt.Sprintf(`Late return of book + %s, Due date: %s`, additionalDesc, borrowedDate)
+		}else{
+			description  = 	additionalDesc
+		}
+		total := borrowedBook.Penalty + additionalAmount
+		_, err = transaction.Exec("INSERT INTO borrowing.penalty(description, account_id, amount, item) VALUES($1, $2 ,$3, $4 )", description, borrowedBook.AccountId, total, borrowedBook.Book.Title )
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 
 func (repo * Borrowing)handleQueue(transaction * sqlx.Tx, bookId string, accessionId string) error{
 	queue := model.BorrowingQueue{}
@@ -128,6 +151,41 @@ func (repo * Borrowing) MarkAsReturned(id string, remarks string) error {
     transaction.Commit() 
 	return nil
 }
+func (repo * Borrowing) MarkAsReturnedWithAddtionalPenalty(id string, returnedBook model.ReturnBook) error {
+	//Mark the book as returned if the book status is checked out. The status id for checked out is 3.
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+
+	borrowedBook := model.BorrowedBook{}
+	err = repo.db.Get(&borrowedBook, "SELECT id, book, accession_id from borrowed_book_view where id = $1", id)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	//if has a penalty, insert the penalty in penalty table
+	err = repo.handlePenaltyCreationWithAdditionalFee(id, returnedBook.PenaltyDescription, returnedBook.PenaltyAmount, transaction)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	query := "UPDATE borrowing.borrowed_book SET status_id = $1, remarks = $2 where id = $3 and status_id = $4"
+	_, err = transaction.Exec(query, status.BorrowStatusReturned, returnedBook.Remarks ,id, status.BorrowStatusCheckedOut)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	err = repo.handleQueue(transaction, borrowedBook.Book.Id, borrowedBook.AccessionId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+    transaction.Commit() 
+	return nil
+}
+
 
 func (repo * Borrowing) MarkAsUnreturned(id string, remarks string) error {
 	//Mark the book as unreturned if the book status is checked out. The status id for checked out is 3.

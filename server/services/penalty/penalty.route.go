@@ -24,4 +24,8 @@ func PenaltyRoutes (router * gin.RouterGroup){
 	router.PUT("/:id",  
 	middlewares.BlockRequestFromClientApp,
 	middlewares.ValidateBody[EditPenaltyBody], ctrler.UpdatePenalty)
+	router.POST("/classifications", ctrler.NewClassfication)
+	router.GET("/classifications", ctrler.GetPenaltyClasses)
+	router.PUT("/classifications/:id", ctrler.UpdatePenaltyClass)
+	router.DELETE("/classifications/:id", ctrler.DeletePenaltyClass)
 }

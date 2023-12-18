@@ -9,6 +9,7 @@ import PublicRoutes from "@components/auth/PublicRoutes";
 import { Suspense, lazy } from "react";
 import Loader from "@components/Loader";
 import NotificationPage from "./protected/notifications/NotificationPage";
+import PolicyPage from "./protected/policy/PolicyPage";
 const Login = lazy(() => import("./Login"));
 const Homepage = lazy(() => import("./Homepage"));
 const Search = lazy(() => import("./protected/Search"));
@@ -27,7 +28,7 @@ const ReservationPage = lazy(
   () => import("./protected/reservation/ReservationPage")
 );
 const QueuePage = lazy(() => import("./protected/queues/QueuePage"));
-
+const FAQsPage = lazy(() => import("./protected/faqs/FAQsPage"));
 const pages = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -118,6 +119,22 @@ const pages = createBrowserRouter(
           element={
             <Suspense fallback={<Loader />}>
               <NotificationPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/faqs"
+          element={
+            <Suspense fallback={<Loader />}>
+              <FAQsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/policy"
+          element={
+            <Suspense fallback={<Loader />}>
+              <PolicyPage />
             </Suspense>
           }
         />

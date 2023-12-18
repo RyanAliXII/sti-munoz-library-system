@@ -28,6 +28,8 @@ type BorrowingRepository interface {
 	CancelByIdAndAccountId(id string, remarks string, accountId string) error
 	GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error)
 	GetBorrowedBookById(id string) (model.BorrowedBook, error)
+	MarkAsReturnedWithAddtionalPenalty(id string, returnedBook model.ReturnBook) error
+	GetBorrowedBooksByAccessionId(accessionId string)(model.BorrowedBook, error)
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -159,7 +161,7 @@ func (repo * Borrowing) GetBorrowedEBookByIdAndStatus (id string, status int)(mo
 func (repo * Borrowing) GetBorrowedBooksView (id string, status int)(model.BorrowedBook, error) {
 	borrowedBook := model.BorrowedBook{}
 	err := repo.db.Get(&borrowedBook, "SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook,created_at FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
-	fmt.Println(id)
+	
 	if err != nil {
 		return borrowedBook, err
 	}
@@ -171,6 +173,13 @@ func (repo * Borrowing)GetBorrowedBooksByAccountId(accountId string)([]model.Bor
 	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook, created_at FROM borrowed_book_all_view where account_id = $1 and status_id != 6 order by created_at desc`
 	err := repo.db.Select(&borrowedBooks, query, accountId)
 	return borrowedBooks, err
+}
+
+func (repo * Borrowing)GetBorrowedBooksByAccessionId(accessionId string)(model.BorrowedBook, error){
+	borrowedBook := model.BorrowedBook{} 
+	query := `SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, created_at FROM borrowed_book_view where status_id = 3 and accession_id = $1 order by created_at desc LIMIT 1`
+	err := repo.db.Get(&borrowedBook, query, accessionId)
+	return borrowedBook, err
 }
 func (repo * Borrowing)GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
