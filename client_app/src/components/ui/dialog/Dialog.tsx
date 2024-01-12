@@ -71,10 +71,14 @@ export const ConfirmDialog = ({
       showCloseIcon={false}
       open={isOpen}
       center
+      classNames={{
+        modal: "w-11/12 md:w-7/12 lg:w-3/12 rounded h-62",
+      }}
       styles={{
         modalContainer: {
           boxShadow: "none",
         },
+
         modal: {
           padding: 0,
           borderRadius: "3px",
@@ -84,18 +88,18 @@ export const ConfirmDialog = ({
       }}
       onClose={close}
     >
-      <div className="w-96 rounded h-48 flex flex-col justify-center gap-4">
+      <div className=" rounded h-48 flex flex-col justify-center gap-4">
         <div className="w-11/12 mx-auto px-3 flex flex-col justify-center gap-2">
-          <span className="text-xl font-semibold">{title}</span>
-          <small className="text-sm text-gray-500">{text}</small>
+          <span className="text-lg font-semibold">{title}</span>
+          <small className="text-sm lg:text-base text-gray-500">{text}</small>
         </div>
-        <div className="flex w-11/12 mx-auto justify-center gap-5">
-          <LightOutlineButton onClick={close} className="px-14">
+        <div className="flex w-11/12 mx-auto gap-2">
+          <button onClick={close} className="btn btn-outline btn-sm">
             Cancel
-          </LightOutlineButton>
-          <PrimaryButton onClick={onConfirm} className="px-14">
+          </button>
+          <button onClick={onConfirm} className="btn btn-primary btn-sm">
             Confirm
-          </PrimaryButton>
+          </button>
         </div>
       </div>
     </Modal>
