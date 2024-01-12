@@ -142,7 +142,7 @@ const Catalog = () => {
   };
   return (
     <div>
-      <div className="flex items-center w-8/12  pt-5 px-5 lg:px-10 gap-2">
+      <div className="flex items-center lg:w-8/12  pt-5 px-5 lg:px-10 gap-1">
         <div className={`dropdown dropdown-bottom mr-5`}>
           <div
             tabIndex={0}
@@ -236,7 +236,7 @@ const Catalog = () => {
         </div>
         <input
           type="text"
-          className="input input-bordered w-full"
+          className="input input-bordered w-full text-xs h-10 lg:text-sm"
           onChange={handleSearch}
           onKeyDown={handleKeydown}
           placeholder="Search by title, subject ,description or authors"
