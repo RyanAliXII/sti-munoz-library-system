@@ -8,7 +8,7 @@ import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { Button, Modal } from "flowbite-react";
+import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { StatusCodes } from "http-status-codes";
 import { BaseSyntheticEvent, useState } from "react";
 import { SingleValue } from "react-select";
@@ -22,7 +22,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   > = {
     name: "",
     prefix: "",
-
+    isBorrowable: true,
     mainCollectionId: 0,
   };
   const {
@@ -157,25 +157,17 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               getOptionValue={(collection) => collection.id?.toString() ?? ""}
             />
           </div>
-          {/* <div className="pt-1">
-            <div className="flex gap-2 items-center">
-              <Checkbox
-                color="primary"
-                name="hasOwnAccession"
-                value={form.prefix}
-                checked={form.hasOwnAccession}
-                onChange={handleFormInput}
-              />
-              <label className="text-gray-500 dark:text-gray-400 text-sm">
-                Separate Generated Accession Number
-              </label>
-              <Tippy content="This prefix will be used in generated book printables. E.g. 'Th' for thesis, 'Ref' for reference">
-                <span>
-                  <AiOutlineInfoCircle className="text-base text-gray-600 hover:text-blue-400"></AiOutlineInfoCircle>
-                </span>
-              </Tippy>
-            </div>
-          </div> */}
+          <div className="flex gap-1 pt-3">
+            <Checkbox
+              checked={form.isBorrowable}
+              color="primary"
+              name="isBorrowable"
+              onChange={handleFormInput}
+            />
+            <Label>
+              Are the books in this collection available for borrowing?
+            </Label>
+          </div>
 
           <div className="flex gap-2 mt-4">
             <Button

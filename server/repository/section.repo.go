@@ -27,7 +27,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 	if section.MainCollectionId == 0 {
 		t := time.Now().Unix()
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, is_borrowable)VALUES($1, $2, $3, $4)", section.Name, tableName, section.Prefix, section.IsBorrowable)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
@@ -42,7 +42,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 			return err
 		}
 		tableName := collection.AccessionTable
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id)VALUES($1,$2,$3,$4)", section.Name, tableName, section.Prefix, section.MainCollectionId)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id, is_borrowable)VALUES($1,$2,$3,$4,$5)", section.Name, tableName, section.Prefix, section.MainCollectionId, section.IsBorrowable)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
