@@ -76,7 +76,7 @@ func (repo * SectionRepository)Update(section model.Section) error {
 		transaction.Rollback()
 		return err
 	}
-	_, err  = transaction.Exec("UPDATE catalog.section set name= $1, prefix = $2 where id = $3", section.Name, section.Prefix, section.Id)
+	_, err  = transaction.Exec("UPDATE catalog.section set name= $1, prefix = $2, is_borrowable = $3 where id = $4", section.Name, section.Prefix, section.IsBorrowable, section.Id)
 	if err != nil {
 		transaction.Rollback()
 		return err

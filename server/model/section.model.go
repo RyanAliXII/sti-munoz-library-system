@@ -70,7 +70,6 @@ func (section * Section) ValidateUpdate() (validation.Errors, error) {
 				return nil
 		})),
 		validation.Field(&section.LastValue, 
-		validation.Required.Error("Counter is required."), 
 		validation.Min(0).Error("Counter must be atleast 0.")),
 		validation.Field(&section.Prefix, validation.Required.Error("Prefix is required."),validation.Length(1, 6).Error("Prefix should be atleast 1 to 6 characters."),),
 	)
