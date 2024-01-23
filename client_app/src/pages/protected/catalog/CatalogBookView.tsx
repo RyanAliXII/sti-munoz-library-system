@@ -127,7 +127,8 @@ const CatalogBookView = () => {
                 disabled={
                   addItemToBag.isLoading ||
                   isAddToBagDisable ||
-                  bookView.status.isAlreadyBorrowed
+                  bookView.status.isAlreadyBorrowed ||
+                  bookView.book.section.isNonCirculating
                 }
                 onClick={initializeItem}
               >
@@ -136,7 +137,9 @@ const CatalogBookView = () => {
               <button
                 className="btn btn-outline w-full"
                 onClick={initHold}
-                disabled={isPlaceHoldDisable}
+                disabled={
+                  isPlaceHoldDisable || bookView.book.section.isNonCirculating
+                }
               >
                 Place Hold
               </button>

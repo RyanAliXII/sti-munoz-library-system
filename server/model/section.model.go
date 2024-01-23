@@ -21,7 +21,7 @@ type Section struct {
 	AccessionTable  string `json:"accessionTable" db:"accession_table"`
 	MainCollectionId int `json:"mainCollectionId" db:"main_collection_id"`
 	IsDeletable bool `json:"isDeleteable" db:"is_deleteable"`
-	IsBorrowable bool `json:"isBorrowable" db:"is_borrowable"`
+	IsNonCirculating bool `json:"isNonCirculating" db:"is_non_circulating"`
 	Model
 }
 func (section * Section) ValidateSection () (validation.Errors, error) {

@@ -22,7 +22,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
   > = {
     name: "",
     prefix: "",
-    isBorrowable: true,
+    isNonCirculating: false,
     mainCollectionId: 0,
   };
   const {
@@ -159,14 +159,12 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
           </div>
           <div className="flex gap-1 pt-3">
             <Checkbox
-              checked={form.isBorrowable}
+              checked={form.isNonCirculating}
               color="primary"
-              name="isBorrowable"
+              name="isNonCirculating"
               onChange={handleFormInput}
             />
-            <Label>
-              Are the books in this collection available for borrowing?
-            </Label>
+            <Label>Is collection non-circulating?</Label>
           </div>
 
           <div className="flex gap-2 mt-4">

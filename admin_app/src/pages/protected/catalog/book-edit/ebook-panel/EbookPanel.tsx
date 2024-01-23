@@ -5,6 +5,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import DocumentView from "./DocumentView";
 import UploadEbook from "./UploadEbook";
 import Container from "@components/ui/container/Container";
+import { useEffect } from "react";
 
 const EbookPanel = () => {
   const { form: book } = useBookEditFormContext();
@@ -27,11 +28,14 @@ const EbookPanel = () => {
     }
   };
 
-  const { data: eBookUrl } = useQuery({
+  const { data: eBookUrl, refetch } = useQuery({
     queryFn: fetchEbook,
-    queryKey: ["eBook"],
     refetchOnWindowFocus: false,
+    queryKey: ["eBook"],
   });
+  useEffect(() => {
+    refetch();
+  }, [book.id]);
 
   return (
     <Container>

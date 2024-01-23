@@ -24,7 +24,7 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
       isSubCollection: false,
       mainCollectionId: 0,
       lastValue: 0,
-      isBorrowable: true,
+      isNonCirculating: false,
     };
   const {
     form,
@@ -153,14 +153,12 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
 
           <div className="flex gap-1 items-center">
             <Checkbox
-              checked={form.isBorrowable}
+              checked={form.isNonCirculating}
               color="primary"
-              name="isBorrowable"
+              name="isNonCirculating"
               onChange={handleFormInput}
             />
-            <Label>
-              Are the books in this collection available for borrowing?
-            </Label>
+            <Label>Is collection non-circulating?</Label>
           </div>
           <div className="flex gap-2 mt-4">
             <Button

@@ -29,7 +29,7 @@ const SectionPage = () => {
     isDeleteable: false,
     mainCollectionId: 0,
     accessionTable: "",
-    isBorrowable: false,
+    isNonCirculating: false,
   });
   const {
     isOpen: isAddModalOpen,
@@ -156,9 +156,8 @@ const SectionPage = () => {
                   <Table.Head>
                     <Table.HeadCell>Collection</Table.HeadCell>
                     <Table.HeadCell>Sub-collection(Yes/No)</Table.HeadCell>
-                    <Table.HeadCell>Borrowable (Yes/No)</Table.HeadCell>
+                    <Table.HeadCell>Non-Circulating(Yes/No)</Table.HeadCell>
                     <Table.HeadCell>Accession Number</Table.HeadCell>
-
                     <Table.HeadCell></Table.HeadCell>
                   </Table.Head>
                   <Table.Body className="divide-y dark:divide-gray-700">
@@ -178,7 +177,7 @@ const SectionPage = () => {
                             )}
                           </Table.Cell>
                           <Table.Cell>
-                            {section.isBorrowable ? (
+                            {section.isNonCirculating ? (
                               <span className="text-green-600"> Yes</span>
                             ) : (
                               <span className="text-gray-600">No</span>

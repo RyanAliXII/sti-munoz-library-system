@@ -1,2 +1,2 @@
 ALTER TABLE IF EXISTS catalog.section
-ADD COLUMN is_borrowable boolean default false;
+ADD COLUMN is_non_circulating boolean default false;
