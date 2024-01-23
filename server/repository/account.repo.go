@@ -493,11 +493,18 @@ func(repo * AccountRepository)RestoreAccounts(accountIds []string) error {
 func (repo * AccountRepository) GetAccountStatsById(accountId string)(model.AccountStats, error ){
 	accountStats := model.AccountStats{}
 	query := `
-		SELECT  COUNT(bbv.id) as total_borrowed_books, max_allowed_borrowed_books, COUNT(bbv.id) < max_allowed_borrowed_books as is_allowed_to_borrow  FROM account_view 
-		LEFT JOIN borrowed_book_all_view as bbv on account_view.id = bbv.account_id 
-		and (bbv.status_id = 1 or bbv.status_id = 2 or bbv.status_id = 3)
-		where is_active and account_view.id = $1
-		GROUP BY account_view.id,max_allowed_borrowed_books	
+	SELECT  account.max_allowed_borrowed_books, 
+	COUNT(bbv.id) FILTER(where is_ebook = false)  +
+	COUNT(bbv.id) FILTER (where is_ebook = true and (due_date is null OR current_date AT TIME ZONE 'PHT' <= due_date))  as total_borrowed_books,
+	(
+	COUNT(bbv.id) FILTER(where is_ebook = false)  +
+	COUNT(bbv.id) FILTER (where is_ebook = true and (due_date is null OR current_date AT TIME ZONE 'PHT' <= due_date))
+	) < account.max_allowed_borrowed_books as is_allowed_to_borrow
+	FROM account_view as account
+	LEFT JOIN borrowed_book_all_view as bbv on account.id = bbv.account_id 
+	and (bbv.status_id = 1 or bbv.status_id = 2 or bbv.status_id = 3)
+	where account.id = $1
+	GROUP BY account.id, account.max_allowed_borrowed_books	
 	`
 	err := repo.db.Get(&accountStats, query, accountId )
 	return accountStats, err

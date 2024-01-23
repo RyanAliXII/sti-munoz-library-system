@@ -16,7 +16,6 @@ import LoadingBoundary from "@components/loader/LoadingBoundary";
 
 import noData from "@assets/images/no-data.svg";
 import { useAccountStats } from "@hooks/data-fetching/account";
-import { is } from "date-fns/locale";
 const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
@@ -141,7 +140,7 @@ const BagPage = () => {
           maxWidth: "800px",
         }}
       >
-        {totalItems >= (stats?.maxAllowedBorrowedBooks ?? 0) && (
+        {totalItems > (stats?.maxAllowedBorrowedBooks ?? 0) && (
           <div className="px-2">
             <div className="alert alert-warning shadow-lg mt-5 text-sm">
               <div>
@@ -191,18 +190,18 @@ const BagPage = () => {
               </span>
             </div>
             <div className="flex h-full items-center gap-2">
-              {totalItems <= (stats?.maxAllowedBorrowedBooks ?? 0) &&
-                stats?.isAllowedToBorrow && (
-                  <button
-                    className="text-xs lg:text-sm p-2 bg-primary text-white rounded disabled:opacity-50"
-                    disabled={!hasSelectedItems}
-                    onClick={() => {
-                      openConfirmCheckoutDialog();
-                    }}
-                  >
-                    Checkout
-                  </button>
-                )}
+              <button
+                className="text-xs lg:text-sm p-2 bg-primary text-white rounded disabled:opacity-50"
+                disabled={
+                  !hasSelectedItems ||
+                  totalItems > (stats?.maxAllowedBorrowedBooks ?? 0)
+                }
+                onClick={() => {
+                  openConfirmCheckoutDialog();
+                }}
+              >
+                Checkout
+              </button>
               <button
                 className="text-xs lg:text-sm p-2 bg-error text-white rounded disabled:opacity-50"
                 disabled={!hasSelectedItems ?? false}

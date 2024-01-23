@@ -1,13 +1,14 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Modal, { ModalProps } from "react-responsive-modal";
 
 interface BookTypeSelectionProps extends ModalProps {
   onSelect: (selectedType: "physical" | "ebook") => void;
+  hasAvailablePhysicalCopy: boolean;
 }
 const BookTypeSelectionModal = ({
   onClose,
   open,
-
+  hasAvailablePhysicalCopy,
   onSelect,
 }: BookTypeSelectionProps) => {
   const [selected, setSelected] = useState<"ebook" | "physical">("physical");
@@ -27,6 +28,14 @@ const BookTypeSelectionModal = ({
       return;
     }
   };
+
+  useEffect(() => {
+    if (!hasAvailablePhysicalCopy) {
+      setSelected("ebook");
+    } else {
+      setSelected("physical");
+    }
+  }, [hasAvailablePhysicalCopy]);
   if (!open) return null;
   return (
     <Modal
@@ -56,7 +65,14 @@ const BookTypeSelectionModal = ({
               value={selected}
               onChange={handleOnChange}
             >
-              <option value="physical">Physical Book</option>
+              <option
+                value="physical"
+                disabled={!hasAvailablePhysicalCopy}
+                className="disabled:bg-gray-200"
+              >
+                Physical Book{" "}
+                {`${hasAvailablePhysicalCopy ? "" : " - Unavailable"}`}
+              </option>
               <option value="ebook">Ebook</option>
             </select>
           </div>

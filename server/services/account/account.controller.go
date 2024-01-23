@@ -282,7 +282,7 @@ func (ctrler * AccountController)GetAccountStats(ctx * gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"stats": stats,
-	}, "Accounts restored."))
+	}, "Accounts stats fetched."))
 }
 func NewAccountController() AccountControllerInterface {
 	return &AccountController{

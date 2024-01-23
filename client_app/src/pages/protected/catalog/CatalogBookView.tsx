@@ -36,16 +36,14 @@ const CatalogBookView = () => {
   });
   const isEbook = (bookView?.book.ebook.length ?? 0) > 0;
   const isAddToBagDisable =
-    (!bookView?.status.isAvailable ||
-      bookView?.status.isAlreadyBorrowed ||
-      bookView.status.isAlreadyInBag) &&
+    (!bookView?.status.isAvailable || bookView.status.isAlreadyInBag) &&
     bookView?.book.ebook.length === 0;
+
   const isPlaceHoldDisable =
     bookView?.status.isAlreadyBorrowed ||
     bookView?.status.isInQueue ||
     bookView?.status.isAvailable;
   const initializeItem = () => {
-    console.log(isEbook);
     if (isEbook) {
       openTypeSelection();
       return;
@@ -126,7 +124,11 @@ const CatalogBookView = () => {
             <div className="flex flex-col gap-2 py-2">
               <button
                 className="btn btn-primary w-full "
-                disabled={addItemToBag.isLoading || isAddToBagDisable}
+                disabled={
+                  addItemToBag.isLoading ||
+                  isAddToBagDisable ||
+                  bookView.status.isAlreadyBorrowed
+                }
                 onClick={initializeItem}
               >
                 Add to Bag
@@ -219,6 +221,7 @@ const CatalogBookView = () => {
         </div>
       </div>
       <BookTypeSelectionModal
+        hasAvailablePhysicalCopy={bookView.status.isAvailable}
         onSelect={onSelectType}
         onClose={closeTypeSelection}
         open={isTypeSelectionOpen}
