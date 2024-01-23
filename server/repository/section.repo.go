@@ -90,6 +90,7 @@ func (repo *SectionRepository) Get() []model.Section {
 	SELECT section.id, 
 	name,
 	prefix,
+	is_borrowable,
 	(case when main_collection_id is null then 0 else main_collection_id end) as main_collection_id,
 	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
@@ -111,6 +112,7 @@ func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
 	SELECT section.id, 
 	name,
 	prefix,
+	is_borrowable,
 	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 

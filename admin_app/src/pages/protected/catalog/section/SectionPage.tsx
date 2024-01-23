@@ -29,6 +29,7 @@ const SectionPage = () => {
     isDeleteable: false,
     mainCollectionId: 0,
     accessionTable: "",
+    isBorrowable: false,
   });
   const {
     isOpen: isAddModalOpen,
