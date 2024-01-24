@@ -549,4 +549,5 @@ type BookRepositoryInterface interface {
 	RemoveEbookById(id string, ) error
 	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
 	MigrateCollection(sectionId int, bookIds []string)error
+	GetBooksByCollectionId(collectionId string)([]model.Accession, error)
 }

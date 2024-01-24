@@ -202,4 +202,5 @@ type BookControllerInterface interface {
 	UpdateEbookById(ctx * gin.Context)
 	MigrateCollection(ctx * gin.Context)
 	GetAccessionById (ctx * gin.Context) 
+	ExportBooks(ctx * gin.Context)
 }
