@@ -1,13 +1,16 @@
+import { Book } from "@definitions/types";
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Modal, { ModalProps } from "react-responsive-modal";
 
 interface BookTypeSelectionProps extends ModalProps {
   onSelect: (selectedType: "physical" | "ebook") => void;
   hasAvailablePhysicalCopy: boolean;
+  book: Book;
 }
 const BookTypeSelectionModal = ({
   onClose,
   open,
+  book,
   hasAvailablePhysicalCopy,
   onSelect,
 }: BookTypeSelectionProps) => {
@@ -30,7 +33,7 @@ const BookTypeSelectionModal = ({
   };
 
   useEffect(() => {
-    if (!hasAvailablePhysicalCopy) {
+    if (!hasAvailablePhysicalCopy || book.section.isNonCirculating) {
       setSelected("ebook");
     } else {
       setSelected("physical");
@@ -67,7 +70,9 @@ const BookTypeSelectionModal = ({
             >
               <option
                 value="physical"
-                disabled={!hasAvailablePhysicalCopy}
+                disabled={
+                  !hasAvailablePhysicalCopy || book.section.isNonCirculating
+                }
                 className="disabled:bg-gray-200"
               >
                 Physical Book{" "}

@@ -128,7 +128,8 @@ const CatalogBookView = () => {
                   addItemToBag.isLoading ||
                   isAddToBagDisable ||
                   bookView.status.isAlreadyBorrowed ||
-                  bookView.book.section.isNonCirculating
+                  (bookView.book.section.isNonCirculating &&
+                    bookView.book.ebook.length === 0)
                 }
                 onClick={initializeItem}
               >
@@ -224,6 +225,7 @@ const CatalogBookView = () => {
         </div>
       </div>
       <BookTypeSelectionModal
+        book={bookView.book}
         hasAvailablePhysicalCopy={bookView.status.isAvailable}
         onSelect={onSelectType}
         onClose={closeTypeSelection}
