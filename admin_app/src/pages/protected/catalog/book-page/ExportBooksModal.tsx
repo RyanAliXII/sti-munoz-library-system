@@ -2,23 +2,23 @@ import { ModalProps } from "@definitions/types";
 import { useCollections } from "@hooks/data-fetching/collection";
 import { useExportBooks } from "@hooks/data-fetching/export-book";
 import { useForm } from "@hooks/useForm";
-import { Label, Modal, Select } from "flowbite-react";
-import { ChangeEvent, FC } from "react";
-
+import { Button, Label, Modal, Select } from "flowbite-react";
+import { ChangeEvent, FC, FormEvent } from "react";
+import { AiOutlineDownload } from "react-icons/ai";
 const ExportBooksModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
   const { data: collections } = useCollections();
   const { form, setForm } = useForm<{
-    collectionId: string;
+    collectionId: number;
     fileType: string;
   }>({
     initialFormData: {
-      collectionId: "",
+      collectionId: 0,
       fileType: ".xlsx",
     },
   });
   const onSelectColection = (event: ChangeEvent<HTMLSelectElement>) => {
-    const collectionId = event.target.value ?? "";
-    if (collectionId.length === 0) return;
+    const collectionId = parseInt(event.target.value ?? "");
+    if (collectionId === 0 || isNaN(collectionId)) return;
     setForm((prev) => ({ ...prev, collectionId: collectionId }));
   };
   const onSelectFileType = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -27,15 +27,22 @@ const ExportBooksModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
     setForm((prev) => ({ ...prev, fileType: fileType }));
   };
 
-  const { data } = useExportBooks({
+  const {
+    data: document,
+    isFetching,
+    refetch,
+  } = useExportBooks({
     queryKey: ["exporteBooks", form.collectionId, form.fileType],
   });
-
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    refetch();
+  };
   return (
-    <Modal show={isOpen} onClose={closeModal} size={"4xl"} dismissible={true}>
+    <Modal show={isOpen} onClose={closeModal} size={"2xl"} dismissible={true}>
       <Modal.Header>Export Books</Modal.Header>
       <Modal.Body>
-        <form>
+        <form onSubmit={onSubmit}>
           <div>
             <div className="py-2">
               <Label>Collection</Label>
@@ -65,6 +72,19 @@ const ExportBooksModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
                 <option value=".csv">CSV(.csv)</option>
               </Select>
             </div>
+          </div>
+          <div className="py-2">
+            <Button
+              color="primary"
+              isProcessing={isFetching}
+              type="submit"
+              disabled={form.collectionId == 0}
+            >
+              <div className="flex gap-1 items-center">
+                <AiOutlineDownload />
+                Download
+              </div>
+            </Button>
           </div>
         </form>
       </Modal.Body>

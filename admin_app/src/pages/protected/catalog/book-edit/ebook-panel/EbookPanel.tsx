@@ -21,6 +21,7 @@ const EbookPanel = () => {
       if (bufferLength === 0) return "";
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
+
       return url;
     } catch (error) {
       console.error(error);
