@@ -80,7 +80,7 @@ var controller BookControllerInterface = NewBookController()
 	middlewares.BlockRequestFromClientApp,
 	middlewares.ValidateBody[MigrateBody],
 	controller.MigrateCollection)
-
+	
 	router.GET("/exportation", controller.ExportBooks)
 
 }
