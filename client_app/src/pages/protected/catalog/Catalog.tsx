@@ -328,6 +328,13 @@ const Catalog = () => {
                       )}
                     </div>
                   )}
+                  {book.section.isNonCirculating && (
+                    <div>
+                      <span className="badge text-xs bg-gray-500 text-white border-none">
+                        Non-circulating
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );

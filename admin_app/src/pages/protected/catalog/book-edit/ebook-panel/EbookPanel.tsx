@@ -5,6 +5,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import DocumentView from "./DocumentView";
 import UploadEbook from "./UploadEbook";
 import Container from "@components/ui/container/Container";
+import { useEffect } from "react";
 
 const EbookPanel = () => {
   const { form: book } = useBookEditFormContext();
@@ -20,6 +21,7 @@ const EbookPanel = () => {
       if (bufferLength === 0) return "";
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
+
       return url;
     } catch (error) {
       console.error(error);
@@ -27,11 +29,14 @@ const EbookPanel = () => {
     }
   };
 
-  const { data: eBookUrl } = useQuery({
+  const { data: eBookUrl, refetch } = useQuery({
     queryFn: fetchEbook,
-    queryKey: ["eBook"],
     refetchOnWindowFocus: false,
+    queryKey: ["eBook"],
   });
+  useEffect(() => {
+    refetch();
+  }, [book.id]);
 
   return (
     <Container>

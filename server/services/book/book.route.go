@@ -77,8 +77,10 @@ var controller BookControllerInterface = NewBookController()
 	controller.RemoveEbookById)
 	
 	router.PUT("/collections/migrations",
-	 middlewares.BlockRequestFromClientApp,
-	 middlewares.ValidateBody[MigrateBody],
-	 controller.MigrateCollection)
+	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidateBody[MigrateBody],
+	controller.MigrateCollection)
+	
+	router.GET("/exportation", controller.ExportBooks)
 
 }

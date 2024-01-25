@@ -27,7 +27,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 	if section.MainCollectionId == 0 {
 		t := time.Now().Unix()
 		tableName = fmt.Sprint(TABLE_PREFIX, t)
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix)VALUES($1, $2, $3)", section.Name, tableName, section.Prefix)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, is_non_circulating)VALUES($1, $2, $3, $4)", section.Name, tableName, section.Prefix, section.IsNonCirculating)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
@@ -42,7 +42,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 			return err
 		}
 		tableName := collection.AccessionTable
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id)VALUES($1,$2,$3,$4)", section.Name, tableName, section.Prefix, section.MainCollectionId)
+		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id, is_non_circulating)VALUES($1,$2,$3,$4,$5)", section.Name, tableName, section.Prefix, section.MainCollectionId, section.IsNonCirculating)
 		if insertErr != nil {
 			transaction.Rollback()
 			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
@@ -76,7 +76,7 @@ func (repo * SectionRepository)Update(section model.Section) error {
 		transaction.Rollback()
 		return err
 	}
-	_, err  = transaction.Exec("UPDATE catalog.section set name= $1, prefix = $2 where id = $3", section.Name, section.Prefix, section.Id)
+	_, err  = transaction.Exec("UPDATE catalog.section set name= $1, prefix = $2, is_non_circulating = $3 where id = $4", section.Name, section.Prefix, section.IsNonCirculating, section.Id)
 	if err != nil {
 		transaction.Rollback()
 		return err
@@ -90,6 +90,7 @@ func (repo *SectionRepository) Get() []model.Section {
 	SELECT section.id, 
 	name,
 	prefix,
+	is_non_circulating,
 	(case when main_collection_id is null then 0 else main_collection_id end) as main_collection_id,
 	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
@@ -111,6 +112,7 @@ func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
 	SELECT section.id, 
 	name,
 	prefix,
+	is_non_circulating,
 	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
@@ -128,6 +130,7 @@ func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
 	SELECT section.id, 
 	name,
 	prefix,
+	is_non_circulating,
 	accession_table,
 	(case when (count(book.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 

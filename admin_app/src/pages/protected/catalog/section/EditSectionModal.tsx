@@ -4,7 +4,7 @@ import { useForm } from "@hooks/useForm";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Modal } from "flowbite-react";
+import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { BaseSyntheticEvent, useState } from "react";
 import { toast } from "react-toastify";
 import { EditSectionSchema } from "../schema";
@@ -24,6 +24,7 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
       isSubCollection: false,
       mainCollectionId: 0,
       lastValue: 0,
+      isNonCirculating: false,
     };
   const {
     form,
@@ -139,7 +140,7 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
               </div>
             )}
           </div>
-          <div className="w-full py-1">
+          <div className="w-full pt-1">
             <CustomInput
               label="Accession number"
               error={errors?.lastValue}
@@ -148,6 +149,16 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
               value={form.lastValue}
               onChange={handleFormInput}
             />
+          </div>
+
+          <div className="flex gap-1 items-center">
+            <Checkbox
+              checked={form.isNonCirculating}
+              color="primary"
+              name="isNonCirculating"
+              onChange={handleFormInput}
+            />
+            <Label>Is collection non-circulating?</Label>
           </div>
           <div className="flex gap-2 mt-4">
             <Button

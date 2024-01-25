@@ -29,6 +29,7 @@ const SectionPage = () => {
     isDeleteable: false,
     mainCollectionId: 0,
     accessionTable: "",
+    isNonCirculating: false,
   });
   const {
     isOpen: isAddModalOpen,
@@ -155,6 +156,7 @@ const SectionPage = () => {
                   <Table.Head>
                     <Table.HeadCell>Collection</Table.HeadCell>
                     <Table.HeadCell>Sub-collection(Yes/No)</Table.HeadCell>
+                    <Table.HeadCell>Non-Circulating(Yes/No)</Table.HeadCell>
                     <Table.HeadCell>Accession Number</Table.HeadCell>
                     <Table.HeadCell></Table.HeadCell>
                   </Table.Head>
@@ -169,6 +171,13 @@ const SectionPage = () => {
                           </Table.Cell>
                           <Table.Cell>
                             {section.isSubCollection ? (
+                              <span className="text-green-600"> Yes</span>
+                            ) : (
+                              <span className="text-gray-600">No</span>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell>
+                            {section.isNonCirculating ? (
                               <span className="text-green-600"> Yes</span>
                             ) : (
                               <span className="text-gray-600">No</span>

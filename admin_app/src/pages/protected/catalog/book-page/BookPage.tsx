@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button, Dropdown, Label, TextInput } from "flowbite-react";
 import { ChangeEvent, useMemo, useReducer, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
-import { MdFilterList } from "react-icons/md";
+import { MdFilterList, MdOutlineDownload } from "react-icons/md";
 import { TbDatabaseImport } from "react-icons/tb";
 import { Link } from "react-router-dom";
 import { MultiValue } from "react-select";
@@ -28,6 +28,7 @@ import MigrateModal from "./MigrateModal";
 import { bookSelectionReducer } from "./bookselection-reducer";
 import PreviewModal from "./PreviewModal";
 import { BookInitialValue } from "@definitions/defaults";
+import ExportBooksModal from "./ExportBooksModal";
 
 const BookPage = () => {
   const {
@@ -218,6 +219,7 @@ const BookPage = () => {
     setBook(book);
     previewModal.open();
   };
+  const exportModal = useSwitch();
   return (
     <>
       <Container>
@@ -319,6 +321,17 @@ const BookPage = () => {
                 Import
               </Button>
             </HasAccess>
+            <HasAccess requiredPermissions={["Book.Read"]}>
+              <Button
+                onClick={exportModal.open}
+                color="secondary"
+                gradientDuoTone={"blueToBlue"}
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400"
+              >
+                <MdOutlineDownload className="text-lg" />
+                Export
+              </Button>
+            </HasAccess>
           </div>
         </div>
         <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
@@ -370,6 +383,10 @@ const BookPage = () => {
         book={book}
         closeModal={previewModal.close}
         isOpen={previewModal.isOpen}
+      />
+      <ExportBooksModal
+        isOpen={exportModal.isOpen}
+        closeModal={exportModal.close}
       />
     </>
   );

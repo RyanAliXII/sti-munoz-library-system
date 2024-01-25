@@ -77,6 +77,7 @@ export type Publisher = {
 export type Section = {
   id?: number;
   name: string;
+  isNonCirculating: boolean;
   isSubCollection: boolean;
   isDeleteable: boolean;
   accessionTable: string;

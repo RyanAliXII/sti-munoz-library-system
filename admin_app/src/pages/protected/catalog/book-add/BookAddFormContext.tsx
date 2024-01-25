@@ -22,6 +22,7 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
         isDeleteable: false,
         isSubCollection: false,
         mainCollectionId: 0,
+        isNonCirculating: false,
         name: "",
         prefix: "",
         id: 0,
