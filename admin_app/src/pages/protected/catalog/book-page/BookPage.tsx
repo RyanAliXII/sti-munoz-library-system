@@ -322,7 +322,12 @@ const BookPage = () => {
               </Button>
             </HasAccess>
             <HasAccess requiredPermissions={["Book.Read"]}>
-              <Button onClick={exportModal.open} color="secondary">
+              <Button
+                onClick={exportModal.open}
+                color="secondary"
+                gradientDuoTone={"blueToBlue"}
+                className="border border-primary-500 text-primary-500 dark:border-primary-500 dark:text-primary-400"
+              >
                 <MdOutlineDownload className="text-lg" />
                 Export
               </Button>
