@@ -6,6 +6,8 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/gocarina/gocsv"
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
@@ -32,10 +34,20 @@ var excelHeaderColumns = []string{
 }
 var alphabet = []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
+var excelSheet = "Books"
+
 func toChar(i int) string {
     return alphabet[i-1]
 }
-var excelSheet = "Books"
+func(repo * BookRepository)getRelatedCollectionIds(collectionId int)([]int, error ){
+	collectionIds := make([]int, 0)
+	err := repo.db.Select(&collectionIds,`SELECT id FROM catalog.section 
+	where (id = $1 or main_collection_id = $1) and deleted_at is null`, collectionId)
+	if err != nil {
+		return  collectionIds, err
+	}
+	return collectionIds, err
+}
 
 func(repo * BookRepository)ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error) {
 	buffer := new(bytes.Buffer)
@@ -120,27 +132,36 @@ func( repo *  BookRepository)buildExcelHeaders(f * excelize.File) error {
 
 func(repo * BookRepository)getExcelDataByCollectionId(collectionId int)([]map[string]interface{}, error) {
 	results := []map[string]interface{}{}
-    query := `
-	SELECT  accession.number as accession_number, copy_number, book.title, 
-	book.id as book_id,
-	accession.id as accession_id,
-	book.subject,
-	description,
-	isbn,
-	pages,
-	cost_price,
-	edition,
-	COALESCE(year_published, 0),
-	received_at,
-	ddc,
-	author_number,
-	ebook
-	FROM catalog.accession
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	where book.section_id = $1
-	ORDER BY accession_number ASC
-	`
-	rows, err := repo.db.Queryx(query, collectionId)
+	collectionIds, err := repo.getRelatedCollectionIds(collectionId)
+	if err != nil {
+		return results, err
+	}
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.From(goqu.T("accession").Schema("catalog")).Select(
+		goqu.C("number").Table("accession").As("accession_number"),
+		goqu.C("copy_number"),
+		goqu.C("title").Table("book"),
+		goqu.C("id").Table("book").As("book_id"),
+		goqu.C("id").Table("accession").As("accession_id"),
+		goqu.C("subject"),
+		goqu.C("description"),
+		goqu.C("isbn"),
+		goqu.C("pages"),
+		goqu.C("cost_price"),
+		goqu.C("edition"),
+		goqu.C("received_at"),
+		goqu.COALESCE(goqu.C("year_published"), 0).As("year_published"),
+		goqu.C("ddc"),
+		goqu.C("author_number"),
+		goqu.C("ebook"),
+	).Where(exp.ExOr{
+		"book.section_id": collectionIds,
+	}).InnerJoin(goqu.T("book_view").As("book"), goqu.On(goqu.Ex{"accession.book_id": goqu.I("book.id") })).Prepared(true)
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		return results, err
+	}
+	rows, err := repo.db.Queryx(query, args...)
 	if err != nil {
 		return results, err
 	}
@@ -181,7 +202,6 @@ func(repo * BookRepository)getExcelDataByCollectionId(collectionId int)([]map[st
 	return results, nil
 }
 
-
 func (repo * BookRepository)processCSV(collectionId int) (*bytes.Buffer, error) {
 	buffer := new(bytes.Buffer)
 	accessions, err := repo.getCSVDataByCollectionId(collectionId)
@@ -201,27 +221,37 @@ func (repo * BookRepository)processCSV(collectionId int) (*bytes.Buffer, error) 
 
 func (repo * BookRepository)getCSVDataByCollectionId(collectionId int)([]model.BookExport, error) {
 	accessions := make([]model.BookExport, 0)
-	query := `
-	SELECT  accession.number as accession_number, copy_number, book.title, 
-	book.id as book_id,
-	accession.id as accession_id,
-	book.subject,
-	description,
-	isbn,
-	pages,
-	cost_price,
-	edition,
-	COALESCE(year_published, 0) as year_published,
-	ddc,
-	author_number,
-	ebook
-	FROM catalog.accession
-	INNER JOIN book_view as book on accession.book_id = book.id 
-	where book.section_id = $1
-	ORDER BY accession_number ASC
-	`
-	err := repo.db.Select(&accessions, query, collectionId)
-	return accessions, err
+	collectionIds, err := repo.getRelatedCollectionIds(collectionId)
+	if err != nil {
+		return accessions, err
+	}
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.From(goqu.T("accession").Schema("catalog")).Select(
+		goqu.C("number").Table("accession").As("accession_number"),
+		goqu.C("copy_number"),
+		goqu.C("title").Table("book"),
+		goqu.C("id").Table("book").As("book_id"),
+		goqu.C("id").Table("accession").As("accession_id"),
+		goqu.C("subject"),
+		goqu.C("description"),
+		goqu.C("isbn"),
+		goqu.C("pages"),
+		goqu.C("cost_price"),
+		goqu.C("edition"),
+		goqu.COALESCE(goqu.C("year_published"), 0).As("year_published"),
+		goqu.C("ddc"),
+		goqu.C("author_number"),
+		goqu.C("ebook"),
+	).Where(exp.ExOr{
+		"book.section_id": collectionIds,
+	}).InnerJoin(goqu.T("book_view").As("book"), goqu.On(goqu.Ex{"accession.book_id": goqu.I("book.id") })).Prepared(true)
 
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		return accessions, err
+	}
+	fmt.Println(query)
+	err = repo.db.Select(&accessions, query, args...)
+	return accessions, err
 }
 
