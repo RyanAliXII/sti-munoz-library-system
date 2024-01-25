@@ -22,6 +22,7 @@ const INITIAL_FORM_DATA: Book = {
   section: {
     accessionTable: "",
     isDeleteable: false,
+    isNonCirculating: false,
     isSubCollection: false,
     mainCollectionId: 0,
     name: "",
