@@ -52,6 +52,27 @@ type BookImport struct {
 	SourceOfFund string `json:"sourceOfFund" db:"source_of_fund" csv:"source_of_fund"`
 	AuthorNumber  string  `json:"authorNumber" db:"author_number" csv:"author_number"`
 }
+type BookExport struct {
+	Title         string `json:"title" db:"title" csv:"title"`
+	Description   string `json:"description" db:"description" csv:"description"`
+	AccessionNumber int `json:"accessionNumber" db:"accession_number" csv:"accession_number"`
+	Subject string `json:"subject" db:"subject" csv:"subject"`
+	AccessionId   string `json:"accessionId" db:"accession_id" csv:"accession_id"`
+	BookId string `json:"bookId" db:"book_id" csv:"book_id"`
+	CopyNumber 	  int `json:"copyNumber" db:"copy_number" csv:"copy_number"`
+	ISBN          string `json:"isbn" db:"isbn" csv:"isbn"`
+	YearPublished int `json:"year_published" db:"year_published" csv:"year_published"`
+	ReceivedAt string `json:"received_at" db:"received_at" csv:"received_at"`
+	Pages         int    `json:"pages" db:"pages" csv:"pages"`
+	Edition       int  	 `json:"edition" db:"edition" csv:"edition"`
+	CostPrice	  int `json:"cost_price" db:"cost_price" csv:"cost_price"`
+	Author        string `json:"author" db:"author" csv:"author"`
+	Publisher 	  string `json:"publisher" db:"publisher" csv:"publisher"`
+	DDC           string `json:"ddc" db:"ddc" csv:"ddc"`
+	SourceOfFund string `json:"sourceOfFund" db:"source_of_fund" csv:"source_of_fund"`
+	AuthorNumber  string  `json:"authorNumber" db:"author_number" csv:"author_number"`
+	Ebook string `json:"ebook" db:"ebook" csv:"ebook"`
+}
 type BookJSON struct {
 	Book
 }

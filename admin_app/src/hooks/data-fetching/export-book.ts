@@ -5,7 +5,10 @@ import {
   UseQueryOptions,
   useQuery,
 } from "@tanstack/react-query";
-
+const ContentType = {
+  ".csv": "text/csv",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+};
 export const useExportBooks = ({
   queryKey,
 }: UseQueryOptions<string, unknown, string, [string, number, string]>) => {
@@ -17,6 +20,7 @@ export const useExportBooks = ({
       const collectionId = queryKey[1];
       const fileType = queryKey[2];
       if (fileType != ".csv" && fileType != ".xlsx") return "";
+
       const { data } = await Get("/books/exportation", {
         params: {
           collectionId,
@@ -27,10 +31,9 @@ export const useExportBooks = ({
       const bufferLength = data.byteLength ?? 0;
       if (bufferLength === 0) return "";
       const blob = new Blob([data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type: ContentType[fileType],
       });
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
       const filename = Date.now();

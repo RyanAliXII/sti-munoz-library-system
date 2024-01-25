@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/gocarina/gocsv"
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
 )
@@ -109,12 +111,7 @@ func(repo * BookRepository)getExcelDataByCollectionId(collectionId int)([]map[st
 func(repo * BookRepository)ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error) {
 	buffer := new(bytes.Buffer)
 	if(fileType == ".xlsx"){
-		data, err := repo.getExcelDataByCollectionId(collectionId)
-		if err != nil {
-			return buffer, err
-		}
-		file, err := repo.processExcel(data)
-		
+		file, err := repo.processExcel(collectionId)
 		if err != nil {
 			return buffer, err
 		}
@@ -122,34 +119,62 @@ func(repo * BookRepository)ExportBooks(collectionId int, fileType string)(*bytes
 		if err != nil {
 			return buffer, err
 		}
-		return buffer, err
+		return buffer, nil
+	}
+	if(fileType == ".csv"){
+		csvBuffer, err := repo.processCSV(collectionId)
+		if err != nil {
+			return buffer, err
+		}
+		return csvBuffer, nil
 	}
 	return buffer, fmt.Errorf("unsupported file type: %s", fileType)
 }
-func (repo * BookRepository)processCSV(accessions []map[string]interface{}) error {
-	//accessions := make([]model.Accession, 0)
-    // query := `
-	// SELECT accession.id as accession_id, accession.number as accession_number, copy_number, 
-	// accession.book_id
-	// FROM catalog.accession
-	// INNER JOIN book_view as book on accession.book_id = book.id 
-	// where book.section_id = $1
-	// ORDER BY accession.number ASC
-	// `
-	// err := repo.db.Select(&excelLists, query, collectionId)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(excelLists)
-	// err = repo.processExcel(excelLists)
-	return nil
+func (repo * BookRepository)processCSV(collectionId int) (*bytes.Buffer, error) {
+	accessions := make([]model.BookExport, 0)
+	buffer := new(bytes.Buffer)
+	query := `
+	SELECT  accession.number as accession_number, copy_number, book.title, 
+	book.id as book_id,
+	accession.id as accession_id,
+	book.subject,
+	description,
+	isbn,
+	pages,
+	cost_price,
+	edition,
+	COALESCE(year_published, 0) as year_published,
+	ddc,
+	author_number,
+	ebook
+	FROM catalog.accession
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	where book.section_id = $1
+	ORDER BY accession_number ASC
+	`
+	err := repo.db.Select(&accessions, query, collectionId)
+	if err != nil {
+		return buffer,err
+	}
+	bytes, err := gocsv.MarshalBytes(&accessions)
+	if err != nil {
+		return buffer, err
+	}
+	_, err = buffer.Write(bytes)
+	if err != nil {
+		return buffer, err
+	}
+	return buffer, nil
 }
-func(repo * BookRepository)processExcel(accessions []map[string]interface{}) (*excelize.File, error) {
+func(repo * BookRepository)processExcel(collectionId int) (*excelize.File, error) {
 	f := excelize.NewFile()
+	accessions, err := repo.getExcelDataByCollectionId(collectionId)
+	if err != nil {
+		return f, err
+	}
 	if(len(accessions) == 0){
 		return f, nil
 	}
-	
     defer func() {
         if err := f.Close(); err != nil {
 			logger.Error(err.Error(), slimlog.Error("error while closing excel file"))
