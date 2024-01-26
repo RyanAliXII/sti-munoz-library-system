@@ -38,12 +38,20 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       ddc: "",
       costPrice: 0,
       description: "",
-
       edition: 0,
       pages: 1,
       searchTags: [],
       yearPublished: new Date().getFullYear(),
-      accessions: [],
+      accessions: [
+        {
+          copyNumber: 1,
+          number: 0,
+          isAvailable: false,
+          isMissing: false,
+          isWeeded: false,
+          remarks: "",
+        },
+      ],
       covers: [],
     },
     schema: NewBookSchemaValidation,

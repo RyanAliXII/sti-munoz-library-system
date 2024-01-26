@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 
@@ -34,6 +35,7 @@ type Book struct {
 	Covers     pq.StringArray  `json:"covers" db:"covers"`
 	SearchTags pq.StringArray  `json:"searchTags,omitempty" db:"search_tags"`
 	CreatedAt  db.NullableTime `json:"createdAt" db:"created_at"`
+	
 }
 
 type BookImport struct {
@@ -72,6 +74,63 @@ type BookExport struct {
 	SourceOfFund string `json:"sourceOfFund" db:"source_of_fund" csv:"source_of_fund"`
 	AuthorNumber  string  `json:"authorNumber" db:"author_number" csv:"author_number"`
 	Ebook string `json:"ebook" db:"ebook" csv:"ebook"`
+}
+
+func (book * Book)ValidateIfAccessionExistsOrDuplicate()([]map[string]string,bool, error){
+	accessionTable := ""
+	db := db.Connect()
+	transaction, err := db.Beginx()
+	accessions := make([]map[string]string, 0)
+	if err != nil {
+		return  accessions,false, err
+	}
+	err = transaction.Get(&accessionTable, "SELECT accession_table from catalog.section where id = $1", book.Section.Id)
+	if err != nil {
+		transaction.Rollback()
+		return accessions, false, err
+	}
+	hasExistingOrDuplicate := false
+	occured := make(map[int]struct{})
+	for _, accession := range book.Accessions {
+		if(accession.Number == 0){
+			accessions = append(accessions, map[string]string{
+				"number": "",
+			})
+			continue;
+		}
+		_, hasOccured := occured[accession.Number]
+		if hasOccured {
+			hasExistingOrDuplicate = true
+			accessions = append(accessions, map[string]string{
+				"number": fmt.Sprintf("%d is already defined.", accession.Number),
+			})
+			continue;
+		} 
+		isExists := true
+		query := `SELECT EXISTS( SELECT 1 from catalog.accession 
+			INNER JOIN catalog.book on accession.book_id = book.id
+			INNER JOIN catalog.section on book.section_id = section.id
+			where number = $1 and section.deleted_at is null and accession_table = $2
+		)`
+		err := db.Get(&isExists, query, accession.Number, accessionTable)
+		if err != nil {
+			return accessions,false,err
+		}
+		if isExists {
+			hasExistingOrDuplicate = true
+			accessions = append(accessions, map[string]string{
+				"number": "Accession number already exists.",
+			})
+		}else{
+			accessions = append(accessions, map[string]string{
+				"number": "",
+			})
+		}
+		occured[accession.Number] = struct{}{}
+		
+	}
+	return accessions, hasExistingOrDuplicate, nil
+
 }
 type BookJSON struct {
 	Book
@@ -112,7 +171,9 @@ type Accession struct {
 	Remarks     string `json:"remarks" db:"remarks"`
 	Book         BookJSON `json:"book" db:"book"`
 }
-
+// type AccessionExistsFieldErr struct{
+// 	Number string `json:"string"`
+// }
 type AccessionsJSON []struct {
 	Id         string `json:"id"`
 	Number     int    `json:"number" db:"number"`

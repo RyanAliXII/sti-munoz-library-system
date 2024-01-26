@@ -32,7 +32,6 @@ type BookFilter struct {
 	Collections []int 
 	MainCollections []string 
 }
-
 func (repo *BookRepository) New(book model.Book) (string, error) {
 	
 	id := uuid.New().String()
@@ -66,11 +65,18 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 
 	// insert book accession.
 	var accessionRows []goqu.Record = make([]goqu.Record, 0)
-	for i := 0; i < book.Copies; i++ {
-		copyNumber := i + 1
-		accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), "book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
 
-	}
+	for idx, accession := range book.Accessions {
+		copyNumber := idx + 1
+		if(accession.Number > 0){
+			accessionRows = append(accessionRows, goqu.Record{"number": accession.Number,
+			 "book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
+
+		}else{
+			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), 
+			"book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
+		}
+	}	
 	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
 	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
 	insertAccessionResult, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
@@ -88,7 +94,6 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 
 	if len(book.Authors) > 0 {
 		rows := make([]goqu.Record, 0)
-
 		for _, p := range book.Authors{
 			rows = append(rows, goqu.Record{"book_id": book.Id, "author_id": p.Id})
 		}
