@@ -1,5 +1,4 @@
 import { useBookEditFormContext } from "./BookEditFormContext";
-
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Container from "@components/ui/container/Container";
 import {
@@ -16,11 +15,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
 import { FaQuestion, FaTimes, FaUndo } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
+import EditAccessionModal from "./EditAccessionModal";
 
 enum Action {
   Weed = 1,
@@ -51,6 +51,7 @@ const EditAccessionPanel = () => {
   const { Patch } = useRequest();
   const queryClient = useQueryClient();
   const [action, setAction] = useState<Action>(1);
+
   const { errors, handleFormInput, validate, removeFieldError } =
     useForm<NewCopiesBody>({
       initialFormData: {
@@ -123,6 +124,21 @@ const EditAccessionPanel = () => {
     queryFn: fetchAccessions,
     queryKey: ["bookAccessions"],
   });
+  const editAccessionModal = useSwitch();
+  const [accession, setAccession] = useState<Accession>({
+    copyNumber: 0,
+    isAvailable: false,
+    isMissing: false,
+    isWeeded: false,
+    number: 0,
+    remarks: "",
+    id: "",
+  });
+
+  const initEdit = (accession: Accession) => {
+    editAccessionModal.open();
+    setAccession(accession);
+  };
   return (
     <Container>
       <div>
@@ -171,50 +187,63 @@ const EditAccessionPanel = () => {
                         )}
                       </Table.Cell>
                       <Table.Cell>
-                        {!accession.isWeeded && !accession.isMissing && (
-                          <div className="flex gap-2">
-                            <Tippy content="Weed book">
-                              <Button
-                                size={"xs"}
-                                color="failure"
-                                onClick={() => {
-                                  setSelectedAccession(accession?.id ?? "");
-                                  setAction(Action.Weed);
-                                  openWeedingDialog();
-                                }}
-                              >
-                                <FaTimes className="text-lg" />
-                              </Button>
-                            </Tippy>
-                            <Tippy content="Mark as Missing ">
-                              <Button
-                                size={"xs"}
-                                color="warning"
-                                onClick={() => {
-                                  setSelectedAccession(accession?.id ?? "");
-                                  setAction(Action.Missing);
-                                  openWeedingDialog();
-                                }}
-                              >
-                                <FaQuestion className="text-lg" />
-                              </Button>
-                            </Tippy>
-                          </div>
-                        )}
-                        {(accession.isWeeded || accession.isMissing) && (
-                          <Tippy content="Undo Weeding/Missing">
+                        <div className="flex gap-2">
+                          <Tippy content="Edit Accession">
                             <Button
-                              size={"xs"}
-                              color="success"
+                              color="primary"
+                              outline={true}
                               onClick={() => {
-                                setSelectedAccession(accession?.id ?? "");
-                                openRecirculateConfirmation();
+                                initEdit(accession);
                               }}
                             >
-                              <FaUndo />
+                              <AiOutlineEdit />
                             </Button>
                           </Tippy>
-                        )}
+                          {!accession.isWeeded && !accession.isMissing && (
+                            <>
+                              <Tippy content="Weed book">
+                                <Button
+                                  size={"xs"}
+                                  color="failure"
+                                  onClick={() => {
+                                    setSelectedAccession(accession?.id ?? "");
+                                    setAction(Action.Weed);
+                                    openWeedingDialog();
+                                  }}
+                                >
+                                  <FaTimes className="text-lg" />
+                                </Button>
+                              </Tippy>
+                              <Tippy content="Mark as Missing ">
+                                <Button
+                                  size={"xs"}
+                                  color="warning"
+                                  onClick={() => {
+                                    setSelectedAccession(accession?.id ?? "");
+                                    setAction(Action.Missing);
+                                    openWeedingDialog();
+                                  }}
+                                >
+                                  <FaQuestion className="text-lg" />
+                                </Button>
+                              </Tippy>
+                            </>
+                          )}
+                          {(accession.isWeeded || accession.isMissing) && (
+                            <Tippy content="Undo Weeding/Missing">
+                              <Button
+                                size={"xs"}
+                                color="success"
+                                onClick={() => {
+                                  setSelectedAccession(accession?.id ?? "");
+                                  openRecirculateConfirmation();
+                                }}
+                              >
+                                <FaUndo />
+                              </Button>
+                            </Tippy>
+                          )}
+                        </div>
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -280,6 +309,11 @@ const EditAccessionPanel = () => {
           updateAccessionStatus.mutate({ action: Action.Recirculate });
         }}
         text="Are you sure you want to undo this book status? This copy will be available again?"
+      />
+      <EditAccessionModal
+        formData={accession}
+        isOpen={editAccessionModal.isOpen}
+        closeModal={editAccessionModal.close}
       />
     </Container>
   );

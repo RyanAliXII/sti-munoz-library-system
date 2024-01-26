@@ -1,11 +1,14 @@
 import { BookInitialValue } from "@definitions/defaults";
-import { CheckoutAccession } from "@definitions/types";
+import { Accession, CheckoutAccession } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
+  MutationOptions,
   QueryFunction,
   UseQueryOptions,
+  useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 export const useAccessionByScanning = ({
   queryKey,
@@ -58,5 +61,20 @@ export const useAccessionByScanning = ({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     onSuccess,
+  });
+};
+
+export const useEditAccession = ({
+  onSuccess,
+  onError,
+  onSettled,
+}: MutationOptions<any, AxiosError<any, any>, Accession, unknown>) => {
+  const { Put } = useRequest();
+  return useMutation({
+    mutationFn: (accession) =>
+      Put(`/books/accessions/${accession?.id}`, accession),
+    onSuccess,
+    onError,
+    onSettled,
   });
 };

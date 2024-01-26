@@ -23,7 +23,6 @@ type BookBody struct {
 	Subject 	  string 	`json:"subject"`
 	Description   string    `json:"description"`
 	ISBN          string    `json:"isbn"  binding:"omitempty,required,min=1,max=150,isbn"`
-	Copies        int       `json:"copies" binding:"required,gte=1"`
 	Pages         int       `json:"pages" binding:"required,gte=0"`
 	Section       MetadataInt  `json:"section"  binding:"required,gte=1,dive"`
 	Publisher     MetadataString  `json:"publisher"  binding:"required,dive"`
@@ -33,7 +32,11 @@ type BookBody struct {
 	DDC           string    `json:"ddc"  binding:"omitempty,required"`
 	AuthorNumber  string    `json:"authorNumber" binding:"omitempty,required,min=1,max=50"`
 	ReceivedAt    db.NullableDate `json:"receivedAt" binding:"required"`
+	Accessions 	  []AccessionBody `json:"accessions" binding:"required,min=1,dive"`
 	Authors       Authors   `json:"authors" binding:"dive"`
+}
+type AccessionBody struct {
+	Number int `json:"number" binding:"min=0"`
 }
 
 

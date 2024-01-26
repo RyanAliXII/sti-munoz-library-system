@@ -1,38 +1,38 @@
-import { CustomInput } from "@components/ui/form/Input";
-import { useSwitch } from "@hooks/useToggle";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
-import { Book, Publisher, Section } from "@definitions/types";
+import Container from "@components/ui/container/Container";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { MultiValue, SingleValue } from "react-select";
-import Container from "@components/ui/container/Container";
 import { FieldRow } from "@components/ui/form/FieldRow";
+import { CustomInput } from "@components/ui/form/Input";
+import { Book, Publisher, Section } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import { useSwitch } from "@hooks/useToggle";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Editor } from "@tinymce/tinymce-react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { MultiValue, SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
-
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { useRequest } from "@hooks/useRequest";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
-
 import { useMsal } from "@azure/msal-react";
-
 import { apiScope } from "@definitions/configs/msal/scopes";
 import useDebounce from "@hooks/useDebounce";
 import { format } from "date-fns";
-import { Button } from "flowbite-react";
+import { Button, Table } from "flowbite-react";
+import { AiOutlinePlus } from "react-icons/ai";
+import { FaTimes } from "react-icons/fa";
+import { useBeforeUnload } from "react-router-dom";
 import CreatableSelect from "react-select/creatable";
 import AddAuthorModal from "./AddAuthorModal";
 import AddPublisherModal from "./AddPublisherModal";
-import { useBeforeUnload } from "react-router-dom";
+import { AxiosError } from "axios";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -93,6 +93,8 @@ const BookAddForm = () => {
     removeFieldError,
     setFieldValue,
     registerFormGroup,
+    setForm,
+    setErrors,
   } = useBookAddFormContext();
   const { Get, Post } = useRequest();
   const fetchPublishers = async () => {
@@ -192,7 +194,12 @@ const BookAddForm = () => {
         eBookUppy.cancelAll();
       });
     },
-    onError: (error) => {
+    onError: (error: AxiosError<any, any>) => {
+      const { data } = error?.response?.data;
+      if (data?.errors) {
+        setErrors(data?.errors);
+        return;
+      }
       toast.error(ErrorMsg.New);
       console.error(error);
     },
@@ -212,6 +219,44 @@ const BookAddForm = () => {
       uppy.cancelAll();
     };
   }, []);
+  const addCopy = () => {
+    setForm((prev) => ({
+      ...prev,
+      accessions: [
+        ...prev.accessions,
+        {
+          copyNumber: prev.accessions.length + 1,
+          number: 0,
+          isAvailable: false,
+          isMissing: false,
+          isWeeded: false,
+          remarks: "",
+        },
+      ],
+    }));
+  };
+  const removeCopy = (copyNumber: number) => {
+    setForm((prev) => {
+      const filtered = prev.accessions.filter(
+        (a) => a.copyNumber != copyNumber
+      );
+      const arranged = filtered.map((a, index) => {
+        return { ...a, copyNumber: index + 1 };
+      });
+      return { ...prev, accessions: arranged };
+    });
+  };
+  const handleAccessionInput = (index: number, value: number) => {
+    removeFieldError(`accessions[${index}].number`);
+    setForm((prev) => {
+      const accessions = [...prev.accessions];
+      accessions[index] = {
+        ...accessions[index],
+        number: value,
+      };
+      return { ...prev, accessions: accessions };
+    });
+  };
 
   return (
     <>
@@ -261,17 +306,65 @@ const BookAddForm = () => {
               name="isbn"
             />
           </FieldRow>
-          <FieldRow label="Copies" isRequired ref={registerFormGroup("copies")}>
-            <CustomInput
-              error={errors?.copies}
-              type="number"
-              min={1}
-              value={form.copies}
-              onChange={handleFormInput}
-              placeholder="Number of copies"
-              name="copies"
-            />
-          </FieldRow>
+
+          <div className="mb-5 mt-3">
+            <h1 className="text-2xl dark:text-white">Book Copies</h1>
+            <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+          </div>
+
+          <div>
+            <div className="mb-2">
+              <Button color="primary" outline={true} onClick={addCopy}>
+                <div className="flex gap-2 items-center">
+                  <AiOutlinePlus /> Add copy
+                </div>
+              </Button>
+            </div>
+            <Table>
+              <Table.Head>
+                <Table.HeadCell>Accession number</Table.HeadCell>
+                <Table.HeadCell>Copy number</Table.HeadCell>
+                <Table.HeadCell></Table.HeadCell>
+              </Table.Head>
+              <Table.Body>
+                {form.accessions.map((v, index) => {
+                  return (
+                    <Table.Row key={index}>
+                      <Table.Cell>
+                        <div
+                          ref={registerFormGroup(`accessions[${index}].number`)}
+                        >
+                          <CustomInput
+                            value={v.number}
+                            error={errors?.accessions?.[index]?.number}
+                            type="number"
+                            onChange={(event) => {
+                              const value = parseInt(event.target.value);
+                              handleAccessionInput(index, value);
+                            }}
+                          />
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>{v.copyNumber}</Table.Cell>
+                      <Table.Cell>
+                        <Button
+                          color="failure"
+                          size={"sm"}
+                          disabled={form.accessions.length === 1}
+                          onClick={() => {
+                            removeCopy(v.copyNumber);
+                          }}
+                        >
+                          <FaTimes />
+                        </Button>
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+          </div>
+          <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
           <FieldRow label="Pages" ref={registerFormGroup("pages")}>
             <CustomInput
               wrapperclass="flex flex-col"
@@ -284,9 +377,9 @@ const BookAddForm = () => {
             />
           </FieldRow>
           <FieldRow
-            label="Colletion"
+            label="Collection"
             isRequired
-            ref={registerFormGroup("section.value")}
+            ref={registerFormGroup("section.id")}
           >
             <CustomSelect
               wrapperclass="w-full flex flex-col"
@@ -301,10 +394,10 @@ const BookAddForm = () => {
           </FieldRow>
           <FieldRow
             label="Publisher"
-            ref={registerFormGroup("publisher.value")}
+            ref={registerFormGroup("publisher.id")}
             isRequired
           >
-            <div className="flex  gap-2">
+            <div className="flex">
               <CustomSelect
                 name="publisher"
                 wrapperclass="flex-1"
@@ -327,7 +420,7 @@ const BookAddForm = () => {
               />
               <Button
                 color="primary"
-                className="mt-0.5"
+                className="mt-0.5 ml-2"
                 type="button"
                 onClick={() => {
                   openAddPublisherModal();

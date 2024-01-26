@@ -17,6 +17,7 @@ type AccessionRepository interface {
 	SearchAccession(filter filter.Filter) []model.Accession
 	MarkAsMissing(id string, remarks string) error
 	GetAccessionsById(id string) (model.Accession, error)
+	UpdateAccession(accession model.Accession) error
 	
 }
 type Accession struct {
@@ -151,6 +152,10 @@ func (repo *Accession) GetAccessionsById(id string) (model.Accession, error) {
 	`
 	err := repo.db.Get(&accession, query, id)
 	return accession, err
+}
+func (repo * Accession)UpdateAccession(accession model.Accession) error {
+	_, err := repo.db.Exec("Update catalog.accession set number = $1 where id = $2", accession.Number, accession.Id)
+	return err
 }
 func NewAccessionRepository () AccessionRepository{
 	return &Accession{

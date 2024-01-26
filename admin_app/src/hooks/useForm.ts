@@ -113,11 +113,13 @@ export const useForm = <T extends object>({
     }
     if (parentElementScroll?.current && scrollToError) {
       const inputPath = error?.inner[0]?.path;
+
       const element = get(
         formGroupRefs.current,
         inputPath ?? "",
         null
       ) as HTMLElement;
+
       parentElementScroll.current.scrollTo({
         behavior: "smooth",
         top: element.scrollTop,

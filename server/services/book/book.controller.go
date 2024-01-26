@@ -30,6 +30,20 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
 		return 
 	}
+	errorDesc, hasExisting, err := book.ValidateIfAccessionExistsOrDuplicate()
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
+		return 
+	}
+	if (hasExisting) {
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors":gin.H{
+				"accessions": errorDesc,
+			},
+		}, "Validation error."))
+		return
+	}
 	bookId, newBookErr := ctrler.bookRepository.New(book)
 	if newBookErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -42,7 +56,6 @@ func (ctrler *BookController) NewBook(ctx *gin.Context) {
 		},
 	}, "New book added."))
 }
-
 func (ctrler * BookController) HandleGetBooks(ctx * gin.Context) {
 	requestorApp := ctx.GetString("requestorApp")
 	switch(requestorApp){
@@ -203,4 +216,5 @@ type BookControllerInterface interface {
 	MigrateCollection(ctx * gin.Context)
 	GetAccessionById (ctx * gin.Context) 
 	ExportBooks(ctx * gin.Context)
+	UpdateAccession(ctx * gin.Context)
 }
