@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	validation "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/lib/pq"
 )
@@ -170,10 +171,43 @@ type Accession struct {
 	IsMissing    bool `json:"isMissing" db:"is_missing"`
 	Remarks     string `json:"remarks" db:"remarks"`
 	Book         BookJSON `json:"book" db:"book"`
+	Model
 }
-// type AccessionExistsFieldErr struct{
-// 	Number string `json:"string"`
-// }
+func(m * Accession)ValidateUpdate() (validation.Errors, error) {
+	return m.Model.Validate(m, validation.Field(&m.Number, 
+		validation.Required.Error("Accession number is required."),
+		validation.Min(1).Error("Accession number must be greater than 0"),
+		validation.By(func(value interface{}) error {
+			accessionTable := ""
+			query := `SELECT accession_table from catalog.accession
+			INNER JOIN catalog.book on accession.book_id = book.id
+			INNER JOIN catalog.section on book.section_id = section.id
+			where accession.id = $1
+			LIMIT 1
+			`
+			db := db.Connect()
+			err := db.Get(&accessionTable, query, m.Id)
+			if err != nil {
+				return err
+			}
+			query = `SELECT EXISTS (SELECT 1 from catalog.accession
+			INNER JOIN catalog.book on accession.book_id = book.id
+			INNER JOIN catalog.section on book.section_id = section.id
+			where accession.number = $1 and section.accession_table = $2)`
+			isExists := true
+			err = db.Get(&isExists, query, m.Number, accessionTable)
+			if err != nil {
+				return err
+			}
+			if(isExists){
+				return fmt.Errorf("accession number exists")
+			}
+			return nil
+		}),
+	   ))
+	
+
+}
 type AccessionsJSON []struct {
 	Id         string `json:"id"`
 	Number     int    `json:"number" db:"number"`

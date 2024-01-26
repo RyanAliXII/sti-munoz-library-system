@@ -8,6 +8,7 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 export const useAccessionByScanning = ({
   queryKey,
@@ -67,7 +68,7 @@ export const useEditAccession = ({
   onSuccess,
   onError,
   onSettled,
-}: MutationOptions<any, unknown, Accession, unknown>) => {
+}: MutationOptions<any, AxiosError<any, any>, Accession, unknown>) => {
   const { Put } = useRequest();
   return useMutation({
     mutationFn: (accession) =>

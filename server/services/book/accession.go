@@ -167,7 +167,18 @@ func (ctrler * BookController)UpdateAccession(ctx * gin.Context){
 		return
 	}
 	accession.Id = id
-	//ctrler.accessionRepo.UpdateAccession(accession)
-
+	fieldErrs, err := accession.ValidateUpdate()
+	if err != nil {
+		ctx.JSON(httpresp.Fail400(gin.H{
+			"errors": fieldErrs,
+		}, "Validation error."))
+		return 
+	}
+	err = ctrler.accessionRepo.UpdateAccession(accession)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("UpdateAccessionError"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
 	ctx.JSON(httpresp.Success200(nil, "Accession updated."))
 }
