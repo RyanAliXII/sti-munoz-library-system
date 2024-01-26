@@ -156,3 +156,18 @@ func(ctrler * BookController)AddBookCopies(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "New copies added."))
 }
+
+func (ctrler * BookController)UpdateAccession(ctx * gin.Context){
+	id := ctx.Param("id")
+	accession := model.Accession{}
+	err := ctx.Bind(&accession)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	accession.Id = id
+	//ctrler.accessionRepo.UpdateAccession(accession)
+
+	ctx.JSON(httpresp.Success200(nil, "Accession updated."))
+}

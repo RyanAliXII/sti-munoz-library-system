@@ -82,5 +82,6 @@ var controller BookControllerInterface = NewBookController()
 	controller.MigrateCollection)
 	
 	router.GET("/exportation", controller.ExportBooks)
+	router.PUT("/accessions/:id", controller.UpdateAccession)
 
 }
