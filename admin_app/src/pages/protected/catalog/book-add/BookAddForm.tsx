@@ -397,7 +397,7 @@ const BookAddForm = () => {
             ref={registerFormGroup("publisher.id")}
             isRequired
           >
-            <div className="flex  gap-2">
+            <div className="flex">
               <CustomSelect
                 name="publisher"
                 wrapperclass="flex-1"
@@ -420,7 +420,7 @@ const BookAddForm = () => {
               />
               <Button
                 color="primary"
-                className="mt-0.5"
+                className="mt-0.5 ml-2"
                 type="button"
                 onClick={() => {
                   openAddPublisherModal();
