@@ -2,6 +2,7 @@ import { CustomInput } from "@components/ui/form/Input";
 import { Accession, EditModalProps } from "@definitions/types";
 import { useEditAccession } from "@hooks/data-fetching/accession";
 import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Modal } from "flowbite-react";
 import { FC, FormEvent, useEffect } from "react";
@@ -14,28 +15,34 @@ const EditAccessionModal: FC<EditModalProps<Accession>> = ({
   isOpen,
   formData,
 }) => {
-  const { form, setForm, handleFormInput, validate, errors, setErrors } =
-    useForm<Accession>({
-      initialFormData: {
-        copyNumber: 0,
-        isAvailable: false,
-        isMissing: false,
-        isWeeded: false,
-        number: 0,
-        remarks: "",
-        id: "",
-      },
-      schema: object({
-        number: number()
-          .integer("Accession number cannot be decimal.")
-          .required("Invalid accession number")
-          .min(0, "Accession should not be less than 0")
-          .typeError("Invalid accession number"),
-      }),
-    });
-  useEffect(() => {
-    setForm({ ...formData });
-  }, [formData]);
+  const {
+    form,
+    setForm,
+    handleFormInput,
+    validate,
+    errors,
+    setErrors,
+    removeErrors,
+    resetForm,
+  } = useForm<Accession>({
+    initialFormData: {
+      copyNumber: 0,
+      isAvailable: false,
+      isMissing: false,
+      isWeeded: false,
+      number: 0,
+      remarks: "",
+      id: "",
+    },
+    schema: object({
+      number: number()
+        .integer("Accession number cannot be decimal.")
+        .required("Invalid accession number")
+        .min(0, "Accession should not be less than 0")
+        .typeError("Invalid accession number"),
+    }),
+  });
+
   const queryClient = useQueryClient();
   const editAccession = useEditAccession({
     onSuccess: () => {
@@ -62,6 +69,13 @@ const EditAccessionModal: FC<EditModalProps<Accession>> = ({
       console.error(e);
     }
   };
+  useModalToggleListener(isOpen, () => {
+    if (isOpen) {
+      setForm({ ...formData });
+      return;
+    }
+    removeErrors();
+  });
   return (
     <Modal show={isOpen} onClose={closeModal} size={"lg"} dismissible={true}>
       <Modal.Header>Edit Accession</Modal.Header>
