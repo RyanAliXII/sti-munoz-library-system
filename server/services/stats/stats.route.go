@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,5 +11,5 @@ import (
 
 func StatsRoutes (router * gin.RouterGroup){
 	ctrler := NewStatsController()
-	router.GET("/", ctrler.GetLibraryStats)
+	router.GET("/", middlewares.BlockRequestFromClientApp, ctrler.GetLibraryStats)
 }

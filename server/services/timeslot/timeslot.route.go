@@ -12,12 +12,32 @@ func TimeSlotRoutes(router* gin.RouterGroup){
 	router.GET("/profiles/:id",ctrler.GetProfileById)
 	router.GET("/profiles/:id/date-slots/:dateSlotId/devices/:deviceId", timeSlotCtrler.GetTimeSlotBasedOnDateAndDevice)
 	privateRouter := router.Group("")
-	privateRouter.Use(middlewares.BlockRequestFromClientApp)
-	privateRouter.POST("/profiles",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
-	privateRouter.GET("/profiles", ctrler.GetProfiles)
-	privateRouter.PUT("/profiles/:id",  middlewares.ValidateBody[TimeSlotProfileBody], ctrler.UpdateProfile)
-	privateRouter.DELETE("/profiles/:id",  ctrler.DeleteProfile)
-	privateRouter.POST("/profiles/:id/slots",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.NewTimeSlot)
-	privateRouter.PUT("/profiles/:id/slots/:slotId",  middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot)
-	privateRouter.DELETE("/profiles/:id/slots/:slotId", timeSlotCtrler.DeleteTimeSlot)
+
+	privateRouter.POST("/profiles",  
+	middlewares.ValidatePermissions([]string{"TimeSlot.Add"}, true),
+	middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
+
+	privateRouter.GET("/profiles",
+	middlewares.ValidatePermissions([]string{"TimeSlot.Read"}, true),
+	ctrler.GetProfiles)
+
+	privateRouter.PUT("/profiles/:id",  
+	middlewares.ValidatePermissions([]string{"TimeSlot.Edit"}, true),
+	middlewares.ValidateBody[TimeSlotProfileBody], ctrler.UpdateProfile)
+
+	privateRouter.DELETE("/profiles/:id",  
+	middlewares.ValidatePermissions([]string{"TimeSlot.Delete"}, true),
+	ctrler.DeleteProfile)
+
+	privateRouter.POST("/profiles/:id/slots",  
+	middlewares.ValidatePermissions([]string{"TimeSlot.Add"}, true),
+	middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.NewTimeSlot)
+	
+	privateRouter.PUT("/profiles/:id/slots/:slotId", 
+	middlewares.ValidatePermissions([]string{"TimeSlot.Edit"}, true),
+	middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot)
+	
+	privateRouter.DELETE("/profiles/:id/slots/:slotId", 
+	middlewares.ValidatePermissions([]string{"TimeSlot.Delete"}, true),
+	timeSlotCtrler.DeleteTimeSlot)
 }

@@ -10,22 +10,29 @@ import (
 
 func PenaltyRoutes (router * gin.RouterGroup){
 	ctrler := NewPenaltyController()
-	router.Use(middlewares.ValidatePermissions("Penalty.Access"))
+
 	router.GET("/", 
-	middlewares.BlockRequestFromClientApp,
 	ctrler.GetPenalties)
 	router.PATCH("/:id/settlement", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Penalty.Edit"}, true),
 	ctrler.UpdatePenaltySettlement)
 	router.POST("/",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Penalty.Add"}, true),
 	middlewares.ValidateBody[AddPenaltyBody], 
 	ctrler.AddPenalty)
 	router.PUT("/:id",  
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Penalty.Edit"}, true),
 	middlewares.ValidateBody[EditPenaltyBody], ctrler.UpdatePenalty)
-	router.POST("/classifications", ctrler.NewClassfication)
-	router.GET("/classifications", ctrler.GetPenaltyClasses)
-	router.PUT("/classifications/:id", ctrler.UpdatePenaltyClass)
-	router.DELETE("/classifications/:id", ctrler.DeletePenaltyClass)
+	router.POST("/classifications", 
+	middlewares.ValidatePermissions([]string{"Penalty.Add"}, true),
+	ctrler.NewClassfication)
+	router.GET("/classifications", 
+	middlewares.ValidatePermissions([]string{"Penalty.Read"}, true),
+	ctrler.GetPenaltyClasses)
+	router.PUT("/classifications/:id",
+	middlewares.ValidatePermissions([]string{"Penalty.Edit"}, true),
+	ctrler.UpdatePenaltyClass)
+	router.DELETE("/classifications/:id",
+	middlewares.ValidatePermissions([]string{"Penalty.Delete"}, true),
+	ctrler.DeletePenaltyClass)
 }

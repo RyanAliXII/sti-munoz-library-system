@@ -110,7 +110,7 @@ func (repo * PenaltyRepository)MarkAsSettled(id string, fileHeader * multipart.F
 	if err != nil {
 		return err
 	}
-	fmt.Println(id)
+
 	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", uploadInfo.Key,remarks, id)
 	if err != nil {
 		return err	
@@ -149,7 +149,7 @@ func (repo * PenaltyRepository)UpdateSettlement(id string, fileHeader * multipar
 	if err != nil {
 		return err
 	}
-	fmt.Println(id)
+
 	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", uploadInfo.Key,remarks, id)
 	if err != nil {
 		return err	

@@ -20,10 +20,13 @@ func (ctrler *RealtimeController) InitializeClientWebSocket(ctx *gin.Context) {
 		logger.Error(connectionErr.Error())
 		return
 	}
+	if connection == nil {
+		logger.Error("websocket connection is nil")
+		return
+	}
 	
 	go ctrler.ClientReader(connection, ctx)
 	go ctrler.ClientWriter(connection, ctx)
-
 }
 
 
@@ -31,14 +34,16 @@ func (ctrler *RealtimeController) ClientReader(connection *websocket.Conn, ctx *
 	accountId := ctx.Query("accountId")
 	defer func() {
 		logger.Info("Reader Exited.", zap.String("accountId", accountId))
-		connection.Close()
+		if connection != nil {
+			connection.Close()
+		}
+	
 	}()
   
 	connection.SetReadDeadline(time.Now().Add(pongWait))
 	connection.SetPongHandler(func(string) error { connection.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, _, err := connection.ReadMessage()
-		
 		if err != nil {
 			logger.Error(err.Error())
 			break
@@ -54,7 +59,9 @@ func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *
 	
 	defer func() {
 		logger.Info("Writer Exited.", zap.String("accountId", accountId))
-		connection.Close()
+		if connection != nil {
+			connection.Close()
+		}
 		cancel()
 		ticker.Stop()
 	}() 

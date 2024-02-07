@@ -9,6 +9,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -22,6 +23,7 @@ type SystemController struct {
 	systemRepository repository.SystemRepositoryInterface
 	accountRepository repository.AccountRepositoryInterface
 	settingsRepository repository.SettingsRepositoryInterface
+	permissionStore permissionstore.PermissionStore
 }
 
 func (ctrler *SystemController) GetModules(ctx *gin.Context) {
@@ -66,6 +68,7 @@ func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
+	ctrler.permissionStore.Invalidate()
 	ctx.JSON(httpresp.Success200(nil, "Role has been created successfully."))
 }
 func (ctrler *SystemController) GetRoles(ctx *gin.Context) {
@@ -87,6 +90,7 @@ func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
+	ctrler.permissionStore.Invalidate()
 	ctx.JSON(httpresp.Success200(nil, "Roles assigned successfully."))
 }
 func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
@@ -199,6 +203,7 @@ func NewSystemConctroller() SystemControllerInterface {
 		accountRepository: repository.NewAccountRepository(),
 		systemRepository: repository.NewSystemRepository(),
 		settingsRepository: repository.NewSettingsRepository(),
+		permissionStore: permissionstore.GetPermissionStore(),
 	}
 }
 

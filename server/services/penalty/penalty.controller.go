@@ -1,8 +1,6 @@
 package penalty
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -36,10 +34,7 @@ func (ctrler * PenaltyController) GetPenalties (ctx * gin.Context){
 }
 
 func (ctrler * PenaltyController)UpdatePenaltySettlement(ctx *gin.Context){
-
 	penaltyId := ctx.Param("id")
-
-	fmt.Println(penaltyId)
 	body := SettlePenaltyBody{}
 	err := ctx.Bind(&body)
 	isUpdate := ctx.Query("isUpdate")

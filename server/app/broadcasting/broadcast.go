@@ -2,7 +2,6 @@ package broadcasting
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
@@ -22,8 +21,7 @@ func Broadcast( exchange string, routingKey string, body string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(exchange)
-	fmt.Println(routingKey)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

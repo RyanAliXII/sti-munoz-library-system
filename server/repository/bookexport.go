@@ -250,7 +250,7 @@ func (repo * BookRepository)getCSVDataByCollectionId(collectionId int)([]model.B
 	if err != nil {
 		return accessions, err
 	}
-	fmt.Println(query)
+
 	err = repo.db.Select(&accessions, query, args...)
 	return accessions, err
 }

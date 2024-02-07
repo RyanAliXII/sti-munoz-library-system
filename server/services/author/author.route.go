@@ -8,20 +8,18 @@ import (
 
 func AuthorRoutes(router *gin.RouterGroup) {
 	var controller AuthorControllerInterface = NewAuthorController()
-
-	router.Use(middlewares.ValidatePermissions("Author.Access"))
 	router.GET("/", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Read","Book.Edit", "Author.Read"}, true),
 	controller.GetAuthors)
 
 	router.POST("/",
-	middlewares.BlockRequestFromClientApp, controller.NewAuthor)
+	middlewares.ValidatePermissions([]string{"Book.Add", "Book.Edit", "Author.Add"}, true), controller.NewAuthor)
 	
 	router.PUT("/:id/", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Author.Edit"}, true),
 	controller.UpdateAuthor)
 
 	router.DELETE("/:id/",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Author.Delete"}, true),
 	controller.DeleteAuthor)
 }

@@ -8,37 +8,23 @@ import (
 
 func InventoryRoutes(router *gin.RouterGroup) {
 	var controller InventoryControllerInterface = NewInventoryController()
-	router.Use(middlewares.ValidatePermissions("Audit.Access"))
+	
+	router.Use(middlewares.ValidatePermissions([]string{"Audit.Access"}, true))
+	router.GET("/audits", controller.GetAudits)
 
-	router.GET("/audits", 
-	middlewares.BlockRequestFromClientApp,
-	controller.GetAudits)
+	router.POST("/audits", middlewares.ValidateBody[InventoryBody], controller.NewAudit)
 
-	router.POST("/audits", 
-	middlewares.BlockRequestFromClientApp,
-	middlewares.ValidateBody[InventoryBody], controller.NewAudit)
-
-	router.PUT("/audits/:id", 
-	middlewares.BlockRequestFromClientApp,
-	middlewares.ValidateBody[InventoryBody], 
+	router.PUT("/audits/:id", middlewares.ValidateBody[InventoryBody], 
 	controller.UpdateAudit)
 
-	router.GET("/audits/:id", 
-	middlewares.BlockRequestFromClientApp,
-	controller.GetAuditById)
+	router.GET("/audits/:id",controller.GetAuditById)
 	router.GET("/audits/:id/books", controller.GetAuditedAccession)
 
 	auditActionGrp := router.Group("/audits/:id")
-	auditActionGrp.POST("/", 
-	middlewares.BlockRequestFromClientApp,
-	controller.AddBookCopyToAudit)
+	auditActionGrp.POST("/", controller.AddBookCopyToAudit)
 	
-	auditActionGrp.DELETE("/accessions/:accessionId", 
-	middlewares.BlockRequestFromClientApp,
-	controller.RemoveBookCopyFromAudit)
+	auditActionGrp.DELETE("/accessions/:accessionId", controller.RemoveBookCopyFromAudit)
 
-	auditActionGrp.POST("/books/:bookId", 
-	middlewares.BlockRequestFromClientApp,
-	controller.AddBookToAudit)
-	auditActionGrp.POST("/reports", middlewares.BlockRequestFromClientApp, controller.GenerateReport)
+	auditActionGrp.POST("/books/:bookId",controller.AddBookToAudit)
+	auditActionGrp.POST("/reports", controller.GenerateReport)
 }

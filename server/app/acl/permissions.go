@@ -116,6 +116,21 @@ var Permissions = []Permission{
 		Description: "Allows user to view borrowed book.",
 	},
 	{
+		Name: "View Account Type and Program/Strand",
+		Value: "AccountTypeProgram.Read",
+		Description: "Allows user to view account type and program/strand.",
+	},
+	{
+		Name: "Add Account Type and Program/Strand",
+		Value: "AccountTypeProgram.Add",
+		Description: "Allows user to add account type and program/strand.",
+	},
+	{
+		Name: "Edit Account Type and Program/Strand",
+		Value: "AccountTypeProgram.Edit",
+		Description: "Allows user to edit account type and program/strand.",
+	},
+	{
 		Name: "Add Borrowed Books",
 		Value:  "BorrowedBook.Add",
 		Description: "Allows user to checkout book.",
@@ -159,7 +174,7 @@ var Permissions = []Permission{
 	{
 		Name: "View Role",
 		Value: "Role.Read",
-		Description: "Allows user to view role.",
+		Description: "Allows user to view role and assigned roles.",
 	},
 	{
 		Name: "Add Role",
@@ -271,6 +286,21 @@ var Permissions = []Permission{
 		Name:"Delete Device",
 		Value :"Device.Delete",
 		Description: "Allows user to edit device.",
+	},
+	{
+		Name: "View Device Logs",
+		Value: "DeviceLog.Read",
+		Description: "Allows user to view device logs.",
+	},
+	{
+		Name: "Add Device Logs",
+		Value: "DeviceLog.Add",
+		Description: "Allows user to add device logs.",
+	},
+	{
+		Name: "Edit Device Logs",
+		Value: "DeviceLog.Edit",
+		Description: "Allows user to edit device logs.",
 	},
 	{
 		Name: "View Date Slot",	

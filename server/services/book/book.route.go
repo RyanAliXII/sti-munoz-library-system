@@ -9,59 +9,63 @@ import (
 func BookRoutes(router *gin.RouterGroup) {
 
 var controller BookControllerInterface = NewBookController()
-	router.Use(middlewares.ValidatePermissions("Book.Access"))
+
 
 	router.GET("/",
+	middlewares.ValidatePermissions([]string{"Book.Read"}, false),
 	controller.HandleGetBooks)
 	router.GET("/:id",
 	controller.HandleGetById)
 	 
 	router.PATCH("/:id/copies",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	middlewares.ValidateBody[AddBookCopyBody],
 	controller.AddBookCopies)
 
 	router.POST("/",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Add"}, true),
 	middlewares.ValidateBody[BookBody], 
 	controller.NewBook)
 
 	router.POST("/bulk",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Add"}, true),
 	controller.ImportBooks)
 	
 	router.POST("/covers", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Add"}, true),
 	controller.UploadBookCover)
 	
 	router.PUT("/covers", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	controller.UpdateBookCover)
 
 	
 	
 	router.GET("/accessions", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Read"}, true),
 	controller.GetAccession)
-    router.GET("/accessions/:id", middlewares.BlockRequestFromClientApp, controller.GetAccessionById)
+    router.GET("/accessions/:id", 
+	middlewares.ValidatePermissions([]string{"Book.Read"}, true),
+	controller.GetAccessionById)
+
 	router.GET("/:id/accessions",
 	controller.GetAccessionByBookId)
 
 	router.PUT("/:id", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	middlewares.ValidateBody[BookBody], 
 	controller.UpdateBook)
 	
 	router.PUT("/:id/ebooks", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	controller.UpdateEbookById)
 
 	router.PATCH("/accessions/:id/status",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	controller.UpdateAccessionStatus)
 
 	router.POST("/:id/ebooks", 
-	middlewares.BlockRequestFromClientApp, 
+	middlewares.ValidatePermissions([]string{"Book.Add"}, true),
 	controller.UploadEBook)
 
 	router.GET("/:id/ebooks", 
@@ -69,19 +73,18 @@ var controller BookControllerInterface = NewBookController()
 	controller.GetEbookById)
 
 	deleteGrp := router.Group("/:id")
+	deleteGrp.Use(middlewares.ValidatePermissions([]string{"Book.Edit"}, true))
 	deleteGrp.DELETE("/covers",
-	middlewares.BlockRequestFromClientApp, 
 	controller.DeleteBookCovers)
 	deleteGrp.DELETE("/ebooks", 
-	middlewares.BlockRequestFromClientApp, 
 	controller.RemoveEbookById)
 	
 	router.PUT("/collections/migrations",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	middlewares.ValidateBody[MigrateBody],
 	controller.MigrateCollection)
 	
-	router.GET("/exportation", controller.ExportBooks)
-	router.PUT("/accessions/:id", controller.UpdateAccession)
+	router.GET("/exportation", middlewares.ValidatePermissions([]string{"Book.Read"}, true), controller.ExportBooks)
+	router.PUT("/accessions/:id", 	middlewares.ValidatePermissions([]string{"Book.Edit"}, true), controller.UpdateAccession)
 
 }
