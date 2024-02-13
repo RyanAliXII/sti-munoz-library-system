@@ -148,7 +148,7 @@ const SectionPage = () => {
             </Button>
           </HasAccess>
         </div>
-        <Tabs.Group>
+        {/* <Tabs.Group>
           <Tabs.Item title="Table View" color="primary">
             <LoadingBoundary isLoading={isLoading} isError={isError}>
               <TableContainer>
@@ -295,7 +295,7 @@ const SectionPage = () => {
               })}
             </Accordion>
           </Tabs.Item>
-        </Tabs.Group>
+        </Tabs.Group> */}
       </Container>
 
       <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />

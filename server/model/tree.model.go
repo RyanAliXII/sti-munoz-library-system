@@ -1,7 +1,8 @@
 package model
 
-type Tree[T any] struct {
+type Tree[IDT any, DataT any] struct {
+	Id IDT `json:"id"`
 	Name string `json:"name"`
-	Children  []*Tree[T] `json:"children"`
-	Data T `json:"data"`
+	Children  []*Tree[IDT, DataT] `json:"children"`
+	Data DataT `json:"data"`
 }

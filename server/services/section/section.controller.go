@@ -44,7 +44,7 @@ func (ctrler *SectionController)GetCategories(ctx *gin.Context) {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	tree := ctrler.sectionRepository.GetCollectionTree()
+	
 	if filter.IsMain {
 		sections, err := ctrler.sectionRepository.GetMainCollections()
 		if err != nil {
@@ -53,6 +53,7 @@ func (ctrler *SectionController)GetCategories(ctx *gin.Context) {
 		ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Main collections fetched."))
 		return
 	}
+	tree := ctrler.sectionRepository.GetCollectionTree()
 	var sections = ctrler.sectionRepository.Get()
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections, "tree" : tree}, "Collections fetched."))
 }
