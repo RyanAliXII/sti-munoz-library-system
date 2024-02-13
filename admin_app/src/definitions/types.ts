@@ -36,6 +36,7 @@ export type Source = {
 export interface Tree<ID, DataT> {
   id: ID;
   name: string;
+  children: Tree<ID, DataT>[];
   data: DataT;
 }
 export type Section = {
