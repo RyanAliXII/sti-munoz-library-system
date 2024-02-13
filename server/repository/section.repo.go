@@ -153,8 +153,12 @@ func (repo * SectionRepository)Delete(id int) error {
 	_, err = repo.db.Exec("UPDATE catalog.section set deleted_at = NOW() where id = $1", id)
 	return err
 }
-func(repo * SectionRepository)GetCollectionTree() []*model.Tree[int, model.Section] {
+func(repo * SectionRepository)GetCollectionTree()[]*model.Tree[int, model.Section] {
 	collections := repo.Get();
+	tree := repo.TransformToTree(collections)
+	return tree
+}
+func (repo * SectionRepository)TransformToTree(collections []model.Section)[]*model.Tree[int, model.Section]{
 	tree := make([]*model.Tree[int, model.Section], 0)
 	nodeCache := make(map[int]*model.Tree[int, model.Section])
 	for _, collection := range collections {
@@ -203,4 +207,5 @@ type SectionRepositoryInterface interface {
 	GetById(id int)(model.Section, error)
 	Delete(id int) error
 	GetCollectionTree() []*model.Tree[int,model.Section]
+	TransformToTree(collections []model.Section)[]*model.Tree[int, model.Section]
 }
