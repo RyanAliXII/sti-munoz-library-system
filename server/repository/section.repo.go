@@ -153,11 +153,44 @@ func (repo * SectionRepository)Delete(id int) error {
 	_, err = repo.db.Exec("UPDATE catalog.section set deleted_at = NOW() where id = $1", id)
 	return err
 }
+func(repo * SectionRepository)GetCollectionTree() []*model.Tree[model.Section] {
+	collections := repo.Get();
+	tree := make([]*model.Tree[model.Section], 0)
+	nodeCache := make(map[int]*model.Tree[model.Section])
+	for _, collection := range collections {
+		if(collection.MainCollectionId == 0){ // if mainCollectionId is 0, it means a node is a root node
+			node := repo.findOrCreateNode(nodeCache, collection.Id, collection)
+			node.Name = collection.Name
+			node.Data = collection
+			tree = append(tree, node)
+			nodeCache[collection.Id] = node 
+			continue
+		}
+		parentNode := repo.findOrCreateNode(nodeCache, collection.MainCollectionId, collection)
+		childNode := repo.findOrCreateNode(nodeCache, collection.Id, collection)
+		parentNode.Children = append(parentNode.Children, childNode)
+		nodeCache[collection.MainCollectionId]  = parentNode
+		nodeCache[collection.Id] = childNode
+	}
+	return tree
+}
+func (repo *SectionRepository)findOrCreateNode(cache map[int]*model.Tree[model.Section], nodeId int , collection  model.Section) *model.Tree[model.Section] {
+	node, isInCache := cache[nodeId]
+	if isInCache {
+		return node
+	}
+	return &model.Tree[model.Section]{
+		Name: collection.Name,
+		Children: make([]*model.Tree[model.Section], 0),
+		Data: collection,
+	}
+}
 func NewSectionRepository() SectionRepositoryInterface {
 	return &SectionRepository{
 		db: postgresdb.GetOrCreateInstance(),
 	}
 }
+
 
 type SectionRepositoryInterface interface {
 	New(section model.Section) error
@@ -166,4 +199,5 @@ type SectionRepositoryInterface interface {
 	GetMainCollections()([]model.Section, error )
 	GetById(id int)(model.Section, error)
 	Delete(id int) error
+	GetCollectionTree() []*model.Tree[model.Section]
 }
