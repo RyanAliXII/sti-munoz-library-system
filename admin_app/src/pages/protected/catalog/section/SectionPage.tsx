@@ -12,7 +12,7 @@ import "react-responsive-modal/styles.css";
 import { toast } from "react-toastify";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
-
+import CollectionTree from "./CollectionTree";
 type Data = {
   collections: Section[];
   tree: Tree<number, Section>[];
@@ -85,7 +85,24 @@ const SectionPage = () => {
       toast.error("Unknown error occured.");
     },
   });
-
+  const tree: Tree<number, Section>[] = [
+    {
+      children: data?.tree ?? [],
+      id: 0,
+      name: "Collection Relationships",
+      data: {
+        id: 0,
+        name: "Collection Relationships",
+        isNonCirculating: true,
+        isSubCollection: false,
+        mainCollectionId: 0,
+        prefix: "",
+        lastValue: 0,
+        isDeleteable: false,
+        accessionTable: "",
+      },
+    },
+  ];
   return (
     <>
       <Container>
@@ -96,6 +113,9 @@ const SectionPage = () => {
             </Button>
           </HasAccess>
         </div>
+        {tree.map((t) => {
+          return <CollectionTree tree={t} key={t.id} />;
+        })}
       </Container>
 
       <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
