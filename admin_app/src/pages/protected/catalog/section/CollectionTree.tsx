@@ -32,7 +32,7 @@ const CollectionTree: FC<CollectionTreeData> = ({ tree }) => {
               </button>
             )}
             <a
-              className="underline hover:text-gray-500 dark:text-white dark:hover:text-gray-300"
+              className="underline underline-offset-4 hover:text-gray-500 dark:text-white dark:hover:text-gray-300"
               role="button"
             >
               {tree.name}
