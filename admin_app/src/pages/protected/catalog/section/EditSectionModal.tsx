@@ -119,7 +119,9 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
             {prefixSuggestions.length > 0 && (
               <div>
                 <div>
-                  <small>Prefix Suggestions:</small>
+                  <small className="dark:text-white pb-2">
+                    Prefix Suggestions:
+                  </small>
                 </div>
                 <div className="flex gap-2">
                   {prefixSuggestions.map((s) => {

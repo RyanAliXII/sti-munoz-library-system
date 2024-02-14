@@ -12,9 +12,10 @@ import { toast } from "react-toastify";
 import { EditSectionSchema } from "../schema";
 type TreeDataPanelProps = {
   collection: Section;
+  initDelete: (e: Section) => void;
 };
 
-const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection }) => {
+const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection, initDelete }) => {
   const FORM_DEFAULT_VALUES: Omit<Section, "isDeleteable" | "accessionTable"> =
     {
       name: "",
@@ -24,18 +25,11 @@ const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection }) => {
       lastValue: 0,
       isNonCirculating: false,
     };
-  const {
-    form,
-    errors,
-    handleFormInput,
-    validate,
-
-    setForm,
-    setErrors,
-  } = useForm<Omit<Section, "isDeleteable" | "accessionTable">>({
-    initialFormData: FORM_DEFAULT_VALUES,
-    schema: EditSectionSchema,
-  });
+  const { form, errors, handleFormInput, validate, setForm, setErrors } =
+    useForm<Omit<Section, "isDeleteable" | "accessionTable">>({
+      initialFormData: FORM_DEFAULT_VALUES,
+      schema: EditSectionSchema,
+    });
   useEffect(() => {
     setForm({ ...collection });
   }, [collection]);
@@ -160,6 +154,17 @@ const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection }) => {
             isProcessing={mutation.isLoading}
           >
             Save
+          </Button>
+          <Button
+            color="failure"
+            type="button"
+            onClick={() => {
+              initDelete(collection);
+            }}
+            disabled={!collection.isDeleteable}
+            isProcessing={mutation.isLoading}
+          >
+            Delete
           </Button>
         </div>
       </form>

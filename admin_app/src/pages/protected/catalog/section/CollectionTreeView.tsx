@@ -7,11 +7,13 @@ type CollectionTreeViewProps = {
   tree: Tree<number, Section>[];
   collection: Section;
   initEdit: (e: Section) => void;
+  initDelete: (e: Section) => void;
 };
 const CollectionTreeView: FC<CollectionTreeViewProps> = ({
   tree,
   initEdit,
   collection,
+  initDelete,
 }) => {
   const onSelect = (collection: Section) => {
     initEdit(collection);
@@ -28,7 +30,7 @@ const CollectionTreeView: FC<CollectionTreeViewProps> = ({
       </Panel>
       <PanelResizeHandle className="border border-l-0 border-t-0 border-b-0 border-gray-300 dark:border-gray-700 "></PanelResizeHandle>
       <Panel defaultSize={75}>
-        <TreeDataPanel collection={collection} />
+        <TreeDataPanel initDelete={initDelete} collection={collection} />
       </Panel>
     </PanelGroup>
   );

@@ -16,12 +16,17 @@ import CollectionTreeView from "./CollectionTreeView";
 import EditSectionModal from "./EditSectionModal";
 import { FaTable } from "react-icons/fa";
 import { MdOutlineAccountTree } from "react-icons/md";
+
 type Data = {
   collections: Section[];
   tree: Tree<number, Section>[];
 };
+enum TabSelections {
+  TableView = 0,
+  TreeView = 1,
+}
 const SectionPage = () => {
-  const [section, setSection] = useState<Section>({
+  const INITIAL_COLLECTION = {
     isSubCollection: false,
     name: "",
     prefix: "",
@@ -30,7 +35,8 @@ const SectionPage = () => {
     mainCollectionId: 0,
     accessionTable: "",
     isNonCirculating: false,
-  });
+  };
+  const [section, setSection] = useState<Section>({ ...INITIAL_COLLECTION });
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -71,7 +77,6 @@ const SectionPage = () => {
   const initEditInTree = (section: Section) => {
     setSection(section);
   };
-
   const deleteConfirm = useSwitch();
   const initDelete = (section: Section) => {
     setSection(section);
@@ -86,12 +91,21 @@ const SectionPage = () => {
       toast.success("Collection deleted.");
       queryClient.invalidateQueries(["sections"]);
       queryClient.invalidateQueries(["sectionsMain"]);
+      resetSelectedCollection();
     },
     onError: () => {
       toast.error("Unknown error occured.");
     },
   });
-
+  const resetSelectedCollection = () => {
+    setSection({ ...INITIAL_COLLECTION });
+  };
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = parseInt(localStorage.getItem("collectionTab") ?? "");
+    if (!tab) return 0;
+    if (isNaN(tab)) return 0;
+    return tab;
+  });
   return (
     <>
       <Container>
@@ -102,8 +116,21 @@ const SectionPage = () => {
             </Button>
           </HasAccess>
         </div>
-        <Tabs.Group style="underline">
-          <Tabs.Item title={<FaTable className="text-xl" />} color="primary">
+        <Tabs.Group
+          style="underline"
+          onActiveTabChange={(tab) => {
+            if (tab == TabSelections.TreeView) {
+              resetSelectedCollection();
+            }
+            setActiveTab(tab);
+            localStorage.setItem("collectionTab", tab.toString());
+          }}
+        >
+          <Tabs.Item
+            active={activeTab === TabSelections.TableView}
+            title={<FaTable className="text-xl" />}
+            color="primary"
+          >
             <CollectionTableView
               isLoading={isLoading}
               isError={isError}
@@ -112,10 +139,14 @@ const SectionPage = () => {
               initEdit={initEdit}
             />
           </Tabs.Item>
-          <Tabs.Item title={<MdOutlineAccountTree className="text-xl" />}>
+          <Tabs.Item
+            active={activeTab === TabSelections.TreeView}
+            title={<MdOutlineAccountTree className="text-xl" />}
+          >
             <CollectionTreeView
               collection={section}
               initEdit={initEditInTree}
+              initDelete={initDelete}
               tree={data?.tree ?? []}
             />
           </Tabs.Item>

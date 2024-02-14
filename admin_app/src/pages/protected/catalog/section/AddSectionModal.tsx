@@ -125,7 +125,9 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
             {prefixSuggestions.length > 0 && (
               <div>
                 <div>
-                  <small>Prefix Suggestions:</small>
+                  <small className="dark:text-white pb-2">
+                    Prefix Suggestions:
+                  </small>
                 </div>
                 <div className="flex gap-2">
                   {prefixSuggestions.map((s) => {
@@ -157,14 +159,31 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               getOptionValue={(collection) => collection.id?.toString() ?? ""}
             />
           </div>
-          <div className="flex gap-1 pt-3">
-            <Checkbox
-              checked={form.isNonCirculating}
-              color="primary"
-              name="isNonCirculating"
-              onChange={handleFormInput}
-            />
-            <Label>Is collection non-circulating?</Label>
+          <div className="pt-5">
+            <div className="flex gap-1 py-2">
+              <Checkbox
+                checked={form.isNonCirculating}
+                color="primary"
+                name="isNonCirculating"
+                onChange={handleFormInput}
+              />
+              <Label>Is collection non-circulating?</Label>
+            </div>
+
+            <div className="flex gap-1 ">
+              <Checkbox
+                color="primary"
+                name="isNonCirculating"
+                className="disabled:opacity-75"
+                disabled={form.mainCollectionId === 0}
+              />
+              <Label
+                className="disabled:opacity-75"
+                disabled={form.mainCollectionId === 0}
+              >
+                Use parent's collection accession number?
+              </Label>
+            </div>
           </div>
 
           <div className="flex gap-2 mt-4">
