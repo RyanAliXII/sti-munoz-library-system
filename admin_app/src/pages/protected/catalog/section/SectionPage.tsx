@@ -6,13 +6,21 @@ import { useDeleteCollection } from "@hooks/data-fetching/collection";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "flowbite-react";
+import { Button, Table, Tabs } from "flowbite-react";
 import { useState } from "react";
 import "react-responsive-modal/styles.css";
 import { toast } from "react-toastify";
 import AddSectionModal from "./AddSectionModal";
 import EditSectionModal from "./EditSectionModal";
 import CollectionTree from "./CollectionTree";
+import LoadingBoundary, {
+  LoadingBoundaryV2,
+} from "@components/loader/LoadingBoundary";
+import TableContainer from "@components/ui/table/TableContainer";
+import Tippy from "@tippyjs/react";
+import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import CollectionTableView from "./CollectionTableView";
+import CollectionTreeView from "./CollectionTreeView";
 type Data = {
   collections: Section[];
   tree: Tree<number, Section>[];
@@ -85,24 +93,7 @@ const SectionPage = () => {
       toast.error("Unknown error occured.");
     },
   });
-  const tree: Tree<number, Section>[] = [
-    {
-      children: data?.tree ?? [],
-      id: 0,
-      name: "Collection Relationships",
-      data: {
-        id: 0,
-        name: "Collection Relationships",
-        isNonCirculating: true,
-        isSubCollection: false,
-        mainCollectionId: 0,
-        prefix: "",
-        lastValue: 0,
-        isDeleteable: false,
-        accessionTable: "",
-      },
-    },
-  ];
+
   return (
     <>
       <Container>
@@ -113,9 +104,20 @@ const SectionPage = () => {
             </Button>
           </HasAccess>
         </div>
-        {tree.map((t) => {
-          return <CollectionTree tree={t} key={t.id} />;
-        })}
+        <Tabs.Group>
+          <Tabs.Item title="Table View" color="primary">
+            <CollectionTableView
+              isLoading={isLoading}
+              isError={isError}
+              collections={data?.collections ?? []}
+              initDelete={initDelete}
+              initEdit={initEdit}
+            />
+          </Tabs.Item>
+          <Tabs.Item title="Tree View">
+            <CollectionTreeView tree={data?.tree ?? []} />
+          </Tabs.Item>
+        </Tabs.Group>
       </Container>
 
       <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
