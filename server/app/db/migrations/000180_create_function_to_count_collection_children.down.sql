@@ -1,0 +1,1 @@
+DROP FUNCTION count_children_of_collection(collection_id int)
