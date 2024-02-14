@@ -1,16 +1,19 @@
-import { Section, Tree } from "@definitions/types";
-import { BaseSyntheticEvent, FC, MouseEventHandler, useState } from "react";
 import "@assets/css/tree.css";
-import { Button } from "flowbite-react";
+import { Section, Tree } from "@definitions/types";
+import { BaseSyntheticEvent, FC, useState } from "react";
 type CollectionTreeData = {
   tree: Tree<number, Section>;
+  onSelectNode?: (collection: Section) => void;
 };
-const CollectionTree: FC<CollectionTreeData> = ({ tree }) => {
+const CollectionTree: FC<CollectionTreeData> = ({ tree, onSelectNode }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const handleClick = (event: BaseSyntheticEvent) => {
+  const handleClick = (event: BaseSyntheticEvent, collection: Section) => {
     const tag = event.target.tagName;
     if (tag === "BUTTON") {
       setIsOpen((prev) => !prev);
+    }
+    if (tag === "A") {
+      onSelectNode?.(collection);
     }
     event.preventDefault();
   };
@@ -20,7 +23,9 @@ const CollectionTree: FC<CollectionTreeData> = ({ tree }) => {
         <details open={isOpen} className="cursor-pointer flex">
           <summary
             className="cursor-pointer flex items-center gap-1"
-            onClick={handleClick}
+            onClick={(event) => {
+              handleClick(event, tree.data);
+            }}
           >
             {isOpen ? (
               <button className="px-1 py-0 bg-blue-500 text-white rounded text-xs">
@@ -41,7 +46,7 @@ const CollectionTree: FC<CollectionTreeData> = ({ tree }) => {
           {tree.children.map((t) => {
             return (
               <li className="pl-5 py-1 block" key={t.id}>
-                <CollectionTree tree={t} />
+                <CollectionTree onSelectNode={onSelectNode} tree={t} />
               </li>
             );
           })}

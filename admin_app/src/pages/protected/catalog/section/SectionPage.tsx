@@ -68,6 +68,9 @@ const SectionPage = () => {
     setSection(section);
     openEditModal();
   };
+  const initEditInTree = (section: Section) => {
+    setSection(section);
+  };
 
   const deleteConfirm = useSwitch();
   const initDelete = (section: Section) => {
@@ -110,7 +113,11 @@ const SectionPage = () => {
             />
           </Tabs.Item>
           <Tabs.Item title={<MdOutlineAccountTree className="text-xl" />}>
-            <CollectionTreeView tree={data?.tree ?? []} />
+            <CollectionTreeView
+              collection={section}
+              initEdit={initEditInTree}
+              tree={data?.tree ?? []}
+            />
           </Tabs.Item>
         </Tabs.Group>
       </Container>

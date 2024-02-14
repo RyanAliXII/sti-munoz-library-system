@@ -1,23 +1,36 @@
 import { Section, Tree } from "@definitions/types";
 import React, { FC } from "react";
 import CollectionTree from "./CollectionTree";
-
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import TreeDataPanel from "./TreeDataPanel";
 type CollectionTreeViewProps = {
   tree: Tree<number, Section>[];
+  collection: Section;
+  initEdit: (e: Section) => void;
 };
-const CollectionTreeView: FC<CollectionTreeViewProps> = ({ tree }) => {
+const CollectionTreeView: FC<CollectionTreeViewProps> = ({
+  tree,
+  initEdit,
+  collection,
+}) => {
+  const onSelect = (collection: Section) => {
+    initEdit(collection);
+  };
   return (
-    <div className="flex w-full gap-2 flex-1">
-      <div>
-        <h1 className="text-xl py-2 dark:text-white">
+    <PanelGroup autoSaveId="treeView" direction="horizontal">
+      <Panel defaultSize={25}>
+        <h5 className="text-xl my-2 dark:text-white">
           Collection Relationships
-        </h1>
+        </h5>
         {tree.map((t) => {
-          return <CollectionTree tree={t} key={t.id} />;
+          return <CollectionTree onSelectNode={onSelect} tree={t} key={t.id} />;
         })}
-      </div>
-      <div className="flex-1"></div>
-    </div>
+      </Panel>
+      <PanelResizeHandle className="border border-l-0 border-t-0 border-b-0 border-gray-300 dark:border-gray-700 "></PanelResizeHandle>
+      <Panel defaultSize={75}>
+        <TreeDataPanel collection={collection} />
+      </Panel>
+    </PanelGroup>
   );
 };
 
