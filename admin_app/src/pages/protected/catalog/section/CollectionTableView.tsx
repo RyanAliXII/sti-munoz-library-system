@@ -4,7 +4,7 @@ import TableContainer from "@components/ui/table/TableContainer";
 import { Section } from "@definitions/types";
 import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
-import React, { FC } from "react";
+import { FC } from "react";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
 type CollectionTableViewProps = {
   isLoading: boolean;

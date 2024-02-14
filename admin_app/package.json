@@ -41,6 +41,7 @@
     "react-icons": "^4.7.1",
     "react-paginate": "^8.2.0",
     "react-pdf": "^7.5.0",
+    "react-resizable-panels": "^2.0.8",
     "react-responsive-modal": "^6.4.1",
     "react-router-dom": "^6.6.1",
     "react-select": "^5.7.0",
