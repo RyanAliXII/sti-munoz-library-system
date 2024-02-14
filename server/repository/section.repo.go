@@ -98,7 +98,7 @@ func (repo *SectionRepository) Get() []model.Section {
 	is_non_circulating,
 	(case when main_collection_id is null then 0 else main_collection_id end) as main_collection_id,
 	accession_table,
-	(case when (count(book.id) > 0) then false else true end) is_deleteable,
+	(case when (count(book.id) > 0) OR (count_children_of_collection(section.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
@@ -119,7 +119,7 @@ func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
 	prefix,
 	is_non_circulating,
 	accession_table,
-	(case when (count(book.id) > 0) then false else true end) is_deleteable,
+	(case when (count(book.id) > 0) OR (count_children_of_collection(section.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
 	as is_sub_collection, last_value from catalog.section 
 	inner join accession.counter on accession_table = counter.accession
@@ -153,7 +153,7 @@ func (repo * SectionRepository)Delete(id int) error {
 		return err
 	}
 	if(!section.IsDeletable){
-		return fmt.Errorf("section is not deleteable")
+		return fmt.Errorf("collection is not deleteable")
 	}
 	_, err = repo.db.Exec("UPDATE catalog.section set deleted_at = NOW() where id = $1", id)
 	return err
