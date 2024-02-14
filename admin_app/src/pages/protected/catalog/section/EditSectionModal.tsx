@@ -48,7 +48,7 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
     ) => Put(`/sections/${formValues.id}`, formValues, {}),
     onSuccess: () => {
       toast.success("Section updated.");
-      queryClient.invalidateQueries(["sections"]);
+      queryClient.invalidateQueries(["collectionsData"]);
       resetForm();
       closeModal();
     },

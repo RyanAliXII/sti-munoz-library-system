@@ -34,14 +34,19 @@ func (repo *SectionRepository) New(section model.Section) error {
 			return insertErr
 		}
 	} else {
-		collection := model.Section{}
-		err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 and main_collection_id is null LIMIT 1", section.MainCollectionId)
-		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
-			transaction.Rollback()
-			return err
+		if(section.UseParentAccessionCounter){
+			collection := model.Section{}
+			err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 LIMIT 1", section.MainCollectionId)
+			if err != nil {
+				logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
+				transaction.Rollback()
+				return err
+			}
+			tableName = collection.AccessionTable
+		}else{
+			t := time.Now().Unix()
+			tableName = fmt.Sprint(TABLE_PREFIX, t)
 		}
-		tableName := collection.AccessionTable
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id, is_non_circulating)VALUES($1,$2,$3,$4,$5)", section.Name, tableName, section.Prefix, section.MainCollectionId, section.IsNonCirculating)
 		if insertErr != nil {
 			transaction.Rollback()

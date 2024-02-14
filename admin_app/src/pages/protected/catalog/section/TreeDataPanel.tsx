@@ -41,7 +41,7 @@ const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection, initDelete }) => {
     ) => Put(`/sections/${formValues.id}`, formValues, {}),
     onSuccess: () => {
       toast.success("Section updated.");
-      queryClient.invalidateQueries(["sections"]);
+      queryClient.invalidateQueries(["collectionsData"]);
     },
     onError: (error: AxiosError<any, any>) => {
       const status = error.response?.status;

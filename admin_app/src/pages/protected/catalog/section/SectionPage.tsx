@@ -67,7 +67,7 @@ const SectionPage = () => {
 
   const { data, isLoading, isError } = useQuery<Data, unknown, Data>({
     queryFn: fetchSections,
-    queryKey: ["sections"],
+    queryKey: ["collectionsData"],
   });
   const queryClient = useQueryClient();
   const initEdit = (section: Section) => {
@@ -89,7 +89,7 @@ const SectionPage = () => {
   const deleteCollection = useDeleteCollection({
     onSuccess: () => {
       toast.success("Collection deleted.");
-      queryClient.invalidateQueries(["sections"]);
+      queryClient.invalidateQueries(["collectionsData"]);
       queryClient.invalidateQueries(["sectionsMain"]);
       resetSelectedCollection();
     },
@@ -153,7 +153,11 @@ const SectionPage = () => {
         </Tabs.Group>
       </Container>
 
-      <AddSectionModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
+      <AddSectionModal
+        collections={data?.collections ?? []}
+        isOpen={isAddModalOpen}
+        closeModal={closeAddModal}
+      />
       <EditSectionModal
         formData={section}
         isOpen={isEditModalOpen}

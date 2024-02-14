@@ -2,7 +2,6 @@ import CustomSelect from "@components/ui/form/CustomSelect";
 import { CustomInput } from "@components/ui/form/Input";
 import { ModalProps, Section } from "@definitions/types";
 import { generatePrefixBasedOnText } from "@helpers/prefix";
-import { useMainCollections } from "@hooks/data-fetching/collection";
 import { useForm } from "@hooks/useForm";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
@@ -15,15 +14,24 @@ import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { SectionSchema } from "../schema";
 
-const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
-  const FORM_DEFAULT_VALUES: Omit<
-    Section,
-    "isDeleteable" | "isSubCollection" | "accessionTable"
-  > = {
+interface AddCollectionForm
+  extends Omit<Section, "isDeleteable" | "isSubCollection" | "accessionTable"> {
+  useParentAccessionCounter: boolean;
+}
+interface AddCollectionModalProps extends ModalProps {
+  collections: Section[];
+}
+const AddSectionModal: React.FC<AddCollectionModalProps> = ({
+  isOpen,
+  collections,
+  closeModal,
+}) => {
+  const FORM_DEFAULT_VALUES: AddCollectionForm = {
     name: "",
     prefix: "",
     isNonCirculating: false,
     mainCollectionId: 0,
+    useParentAccessionCounter: true,
   };
   const {
     form,
@@ -34,9 +42,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     resetForm,
     removeErrors,
     setForm,
-  } = useForm<
-    Omit<Section, "isDeleteable" | "isSubCollection" | "accessionTable">
-  >({
+  } = useForm<AddCollectionForm>({
     initialFormData: FORM_DEFAULT_VALUES,
     schema: SectionSchema,
   });
@@ -47,7 +53,7 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
     mutationFn: () => Post("/sections/", form, {}),
     onSuccess: () => {
       toast.success("New section added");
-      queryClient.invalidateQueries(["sections"]);
+      queryClient.invalidateQueries(["collectionsData"]);
       resetForm();
       closeModal();
     },
@@ -85,8 +91,6 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
       mainCollectionId: newValue?.id ?? 0,
     }));
   };
-
-  const { data: collections } = useMainCollections();
 
   const handleCollectionNameBlur = () => {
     const suggestions = generatePrefixBasedOnText(form.name);
@@ -173,15 +177,17 @@ const AddSectionModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
             <div className="flex gap-1 ">
               <Checkbox
                 color="primary"
-                name="isNonCirculating"
+                checked={form.useParentAccessionCounter}
                 className="disabled:opacity-75"
+                onChange={handleFormInput}
                 disabled={form.mainCollectionId === 0}
+                name="useParentAccessionCounter"
               />
               <Label
                 className="disabled:opacity-75"
                 disabled={form.mainCollectionId === 0}
               >
-                Use parent's collection accession number?
+                Use parent collection's accession number counter?
               </Label>
             </div>
           </div>

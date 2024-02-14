@@ -21,9 +21,7 @@ const CollectionTreeView: FC<CollectionTreeViewProps> = ({
   return (
     <PanelGroup autoSaveId="treeView" direction="horizontal">
       <Panel defaultSize={25}>
-        <h5 className="text-xl my-2 dark:text-white">
-          Collection Relationships
-        </h5>
+        <h5 className="text-xl my-2 dark:text-white">Collection Hierarchy</h5>
         {tree.map((t) => {
           return <CollectionTree onSelectNode={onSelect} tree={t} key={t.id} />;
         })}
