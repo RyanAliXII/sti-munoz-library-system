@@ -1,5 +1,3 @@
-import { PrimaryButton } from "@components/ui/button/Button";
-import CustomSelect from "@components/ui/form/CustomSelect";
 import { InputClasses } from "@components/ui/form/Input";
 
 import { ModalProps, Section } from "@definitions/types";
@@ -10,8 +8,8 @@ import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import { AxiosError } from "axios";
 
+import { Button, Modal, Select } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
-import { Button, Label, Modal, Select, Textarea } from "flowbite-react";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
 
@@ -46,7 +44,6 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
   };
   const { data: sections } = useQuery<Section[]>({
     queryFn: fetchSections,
-
     queryKey: ["sections"],
   });
   const queryClient = useQueryClient();
