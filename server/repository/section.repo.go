@@ -163,20 +163,20 @@ func (repo * SectionRepository)TransformToTree(collections []model.Section)[]*mo
 	nodeCache := make(map[int]*model.Tree[int, model.Section])
 	for _, collection := range collections {
 		if(collection.MainCollectionId == 0){ // if mainCollectionId is 0, it means a node is a root node
-			node := repo.findOrCreateNodeThenUpdate(nodeCache, collection.Id, collection)
+			node := repo.findThenUpdateOrCreateNode(nodeCache, collection.Id, collection)
 			tree = append(tree, node)
 			nodeCache[collection.Id] = node 
 			continue
 		}
-		parentNode := repo.findOrCreateNodeThenUpdate(nodeCache, collection.MainCollectionId, collection)
-		childNode := repo.findOrCreateNodeThenUpdate(nodeCache, collection.Id, collection)
+		parentNode := repo.findThenUpdateOrCreateNode(nodeCache, collection.MainCollectionId, collection)
+		childNode := repo.findThenUpdateOrCreateNode(nodeCache, collection.Id, collection)
 		parentNode.Children = append(parentNode.Children, childNode)
 		nodeCache[collection.MainCollectionId]  = parentNode
 		nodeCache[collection.Id] = childNode
 	}
 	return tree
 }
-func (repo *SectionRepository)findOrCreateNodeThenUpdate(cache map[int]*model.Tree[int, model.Section],
+func (repo *SectionRepository)findThenUpdateOrCreateNode(cache map[int]*model.Tree[int, model.Section],
 	nodeId int , collection  model.Section) *model.Tree[int, model.Section] {
 	node, isInCache := cache[nodeId]
 	if isInCache {
