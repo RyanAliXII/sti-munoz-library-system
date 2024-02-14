@@ -34,14 +34,19 @@ func (repo *SectionRepository) New(section model.Section) error {
 			return insertErr
 		}
 	} else {
-		collection := model.Section{}
-		err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 and main_collection_id is null LIMIT 1", section.MainCollectionId)
-		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
-			transaction.Rollback()
-			return err
+		if(section.UseParentAccessionCounter){
+			collection := model.Section{}
+			err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 LIMIT 1", section.MainCollectionId)
+			if err != nil {
+				logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
+				transaction.Rollback()
+				return err
+			}
+			tableName = collection.AccessionTable
+		}else{
+			t := time.Now().Unix()
+			tableName = fmt.Sprint(TABLE_PREFIX, t)
 		}
-		tableName := collection.AccessionTable
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id, is_non_circulating)VALUES($1,$2,$3,$4,$5)", section.Name, tableName, section.Prefix, section.MainCollectionId, section.IsNonCirculating)
 		if insertErr != nil {
 			transaction.Rollback()
@@ -153,12 +158,52 @@ func (repo * SectionRepository)Delete(id int) error {
 	_, err = repo.db.Exec("UPDATE catalog.section set deleted_at = NOW() where id = $1", id)
 	return err
 }
+func(repo * SectionRepository)GetCollectionTree()[]*model.Tree[int, model.Section] {
+	collections := repo.Get();
+	tree := repo.TransformToTree(collections)
+	return tree
+}
+func (repo * SectionRepository)TransformToTree(collections []model.Section)[]*model.Tree[int, model.Section]{
+	tree := make([]*model.Tree[int, model.Section], 0)
+	nodeCache := make(map[int]*model.Tree[int, model.Section])
+	for _, collection := range collections {
+		if(collection.MainCollectionId == 0){ // if mainCollectionId is 0, it means a node is a root node
+			node := repo.findThenUpdateOrCreateNode(nodeCache, collection.Id, collection)
+			tree = append(tree, node)
+			nodeCache[collection.Id] = node 
+			continue
+		}
+		parentNode := repo.findThenUpdateOrCreateNode(nodeCache, collection.MainCollectionId, collection)
+		childNode := repo.findThenUpdateOrCreateNode(nodeCache, collection.Id, collection)
+		parentNode.Children = append(parentNode.Children, childNode)
+		nodeCache[collection.MainCollectionId]  = parentNode
+		nodeCache[collection.Id] = childNode
+	}
+	return tree
+}
+func (repo *SectionRepository)findThenUpdateOrCreateNode(cache map[int]*model.Tree[int, model.Section],
+	nodeId int , collection  model.Section) *model.Tree[int, model.Section] {
+	node, isInCache := cache[nodeId]
+	if isInCache {
+		if(nodeId == collection.Id){
+			node.Id = collection.Id
+			node.Name = collection.Name
+			node.Data = collection
+		}
+		return node
+	}
+	return &model.Tree[int, model.Section]{
+		Id: nodeId,
+		Name: collection.Name,
+		Children: make([]*model.Tree[int, model.Section], 0),
+		Data: collection,
+	}
+}
 func NewSectionRepository() SectionRepositoryInterface {
 	return &SectionRepository{
 		db: postgresdb.GetOrCreateInstance(),
 	}
 }
-
 type SectionRepositoryInterface interface {
 	New(section model.Section) error
 	Get() []model.Section
@@ -166,4 +211,6 @@ type SectionRepositoryInterface interface {
 	GetMainCollections()([]model.Section, error )
 	GetById(id int)(model.Section, error)
 	Delete(id int) error
+	GetCollectionTree() []*model.Tree[int,model.Section]
+	TransformToTree(collections []model.Section)[]*model.Tree[int, model.Section]
 }

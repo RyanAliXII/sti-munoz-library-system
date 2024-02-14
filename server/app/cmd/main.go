@@ -13,6 +13,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
 	"github.com/gin-contrib/cors"
@@ -50,6 +51,7 @@ func main() {
 	}))
 
 	objstore.GetorCreateInstance()
+	permissionstore.GetPermissionStore()
 	r.GET("/", func(ctx *gin.Context) {
 
 		ctx.JSON(http.StatusOK, gin.H{

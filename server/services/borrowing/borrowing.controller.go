@@ -143,9 +143,7 @@ func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	id := ctx.Param("id")
 	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedEBookByIdAndStatus(id, status.BorrowStatusCheckedOut)
 	clientId := ctx.GetString("requestorId")
-	fmt.Println(clientId)
-	fmt.Println(borrowedBook.AccountId)
-	fmt.Println(borrowedBook.AccountId)
+
 	if clientId != borrowedBook.Client.Id {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))

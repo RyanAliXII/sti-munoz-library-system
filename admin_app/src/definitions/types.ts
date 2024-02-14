@@ -1,5 +1,6 @@
 import { OnlineBorrowStatus } from "@internal/borrow-status";
 import { Message } from "postcss";
+import { number } from "yup";
 
 export type User = {
   firstname?: string;
@@ -32,6 +33,12 @@ export type Source = {
   id?: number;
   name: string;
 };
+export interface Tree<ID, DataT> {
+  id: ID;
+  name: string;
+  children: Tree<ID, DataT>[];
+  data: DataT;
+}
 export type Section = {
   id?: number;
   name: string;

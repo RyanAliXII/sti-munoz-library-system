@@ -9,15 +9,15 @@ import (
 func BorrowingRoutes(r * gin.RouterGroup){
 	ctrler := NewBorrowingController()
 	queueCtrler := NewBorrowingQueue()
-	r.Use(middlewares.ValidatePermissions("Borrowing.Access"))
+
 	
 	r.POST("/",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"BorrowedBook.Add"}, true),
 	middlewares.ValidateBody[CheckoutBody],
 	ctrler.HandleBorrowing)
 
 	r.GET("/requests",
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"BorrowedBook.Read"}, true),
 	ctrler.GetBorrowRequests)
 
 	r.GET("/borrowed-books", 
@@ -26,17 +26,29 @@ func BorrowingRoutes(r * gin.RouterGroup){
 	r.GET("/ebooks/:id", ctrler.GetEbookByBorrowedBookId)
 
 	r.GET("/requests/:id", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.ValidatePermissions([]string{"BorrowedBook.Read"}, true),
 	ctrler.GetBorrowedBooksByGroupId)
-	r.PATCH("/borrowed-books/:id/status", middlewares.BlockRequestFromClientApp, ctrler.UpdateBorrowingStatus)
-	r.PATCH("/borrowed-books/return/bulk", middlewares.BlockRequestFromClientApp, ctrler.ReturnBorrowedBooksBulk)
-	r.PATCH("/borrowed-books/:id/remarks", middlewares.BlockRequestFromClientApp, ctrler.UpdateRemarks)
+	r.PATCH("/borrowed-books/:id/status",
+	 middlewares.ValidatePermissions([]string{"BorrowedBook.Edit"}, true),
+	 ctrler.UpdateBorrowingStatus)
+	r.PATCH("/borrowed-books/return/bulk", 
+	middlewares.ValidatePermissions([]string{"BorrowedBook.Edit"}, true),
+	ctrler.ReturnBorrowedBooksBulk)
+	r.PATCH("/borrowed-books/:id/remarks", 
+	middlewares.ValidatePermissions([]string{"BorrowedBook.Edit"}, true),
+	ctrler.UpdateRemarks)
 	r.PATCH("/borrowed-books/:id/cancellation", ctrler.HandleCancellationByIdAndAccountId)
 	r.POST("/queues", middlewares.ValidateBody[QueueBody], queueCtrler.Queue)
 	r.GET("/queues", queueCtrler.GetActiveQueues)
 	r.GET("/queues/history", queueCtrler.GetInactiveQueueItems)
-	r.DELETE("/queues/:id",middlewares.BlockRequestFromClientApp,queueCtrler.DequeueByBookId)
+	r.DELETE("/queues/:id",
+	middlewares.ValidatePermissions([]string{"Queue.Delete"}, true),
+	queueCtrler.DequeueByBookId)
 	r.DELETE("/queues/items/:id",queueCtrler.DequeueItem)
-	r.GET("/queues/:id",middlewares.BlockRequestFromClientApp,queueCtrler.GetQueueItemsByBookId)
-	r.PUT("/queues/:id",middlewares.BlockRequestFromClientApp, middlewares.ValidateBody[UpdateQueueItemsBody], queueCtrler.UpdateQueueItems)
+	r.GET("/queues/:id",
+	middlewares.ValidatePermissions([]string{"Queue.Read"}, true),
+	queueCtrler.GetQueueItemsByBookId)
+	r.PUT("/queues/:id",
+	middlewares.ValidatePermissions([]string{"Queue.Edit"}, true),
+	middlewares.ValidateBody[UpdateQueueItemsBody], queueCtrler.UpdateQueueItems)
 }

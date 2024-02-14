@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -40,7 +38,7 @@ func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	recordCount := 1 
 	err = repo.db.Get(&recordCount, "SELECT count(1) as recordCount FROM system.client_log where client_id = $1 and created_at > NOW() - INTERVAL '10 minutes'  LIMIT 1", clientId)
 	if err != nil {
-		fmt.Println("GetERR")
+		
 		return err
 	}
     if recordCount == 1 {
@@ -50,7 +48,7 @@ func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
 	}
 	_, err = transaction.Exec("INSERT INTO system.client_log(client_id, scanner_id)VALUES($1,$2)", clientId, scannerId)
 	if err != nil {
-		fmt.Println("INSERT ERR")
+		
 		transaction.Rollback()
 		return err
 	}

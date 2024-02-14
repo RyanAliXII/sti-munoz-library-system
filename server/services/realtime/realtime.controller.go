@@ -36,6 +36,10 @@ func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
 		logger.Error(connectionErr.Error())
 		return
 	}
+	if connection == nil {
+		logger.Error("websocket connection is nil")
+		return
+	}
 	
 	go ctrler.Reader(connection, ctx)
 	go ctrler.Writer(connection, ctx)
@@ -45,7 +49,10 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 	accountId := ctx.Query("accountId")
 	defer func() {
 		logger.Info("Reader Exited.", zap.String("accountId", accountId))
-		connection.Close()
+		if(connection != nil){
+			connection.Close()
+		}
+		
 	}()
   
 	connection.SetReadDeadline(time.Now().Add(pongWait))
@@ -68,7 +75,9 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 	
 	defer func() {
 		logger.Info("Writer Exited.", zap.String("accountId", accountId))
-		connection.Close()
+		if(connection != nil){
+			connection.Close()
+		}
 		cancel()
 		ticker.Stop()
 	}() 

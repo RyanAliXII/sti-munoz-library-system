@@ -7,7 +7,13 @@ import (
 
 func DateSlotRoutes(router * gin.RouterGroup){
 	ctrler := NewDateSlotController()
-	router.POST("", middlewares.ValidateBody[NewSlotBody], ctrler.NewSlot)
-	router.GET("", ctrler.GetSlots)
-	router.DELETE("/:id", ctrler.DeleteSlot)
+	router.POST("", 
+	middlewares.ValidatePermissions([]string{"DateSlot.Add"}, true),
+	middlewares.ValidateBody[NewSlotBody], ctrler.NewSlot)
+	router.GET("", 
+	middlewares.ValidatePermissions([]string{"DateSlot.Read"}, true),
+	ctrler.GetSlots)
+	router.DELETE("/:id",
+	middlewares.ValidatePermissions([]string{"DateSlot.Delete"}, true), 
+	ctrler.DeleteSlot, )
 }

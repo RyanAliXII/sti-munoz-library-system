@@ -20,6 +20,7 @@ type Section struct {
 	LastValue 		int `json:"lastValue" db:"last_value"`
 	AccessionTable  string `json:"accessionTable" db:"accession_table"`
 	MainCollectionId int `json:"mainCollectionId" db:"main_collection_id"`
+	UseParentAccessionCounter bool `json:"useParentAccessionCounter"`
 	IsDeletable bool `json:"isDeleteable" db:"is_deleteable"`
 	IsNonCirculating bool `json:"isNonCirculating" db:"is_non_circulating"`
 	Model

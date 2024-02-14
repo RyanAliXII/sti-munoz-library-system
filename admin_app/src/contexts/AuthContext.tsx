@@ -162,11 +162,10 @@ export const AuthProvider = ({ children }: BaseProps) => {
     let requiredCount = 0;
     for (const p of requiredPermissions) {
       if (permissions.includes(p)) {
-        requiredCount++;
+        return true;
       }
     }
-    //this means that all permissions has been met
-    return requiredCount === requiredPermissions.length;
+    return false;
   };
 
   const logout = async () => {

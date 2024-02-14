@@ -55,8 +55,7 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       return [];
     }
   };
-  const isCreateButtonDisabled =
-    form.permissions.length === 0 || form.name.length === 0;
+
   const createRole = useMutation({
     mutationFn: (role: Role) => Post("/system/roles", role, {}),
     onSuccess: () => {
@@ -71,6 +70,10 @@ const AddRoleModal = ({ closeModal, isOpen }: ModalProps) => {
       closeModal();
     },
   });
+  const isCreateButtonDisabled =
+    form.permissions.length === 0 ||
+    form.name.length === 0 ||
+    createRole.isLoading;
 
   const { data: permissions } = useQuery<Permission[]>({
     queryKey: ["permissions"],
