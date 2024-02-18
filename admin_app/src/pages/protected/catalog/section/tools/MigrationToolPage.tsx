@@ -1,15 +1,16 @@
 import BookSearchBox from "@components/BookSearchBox";
+import Container from "@components/ui/container/Container";
 import { Book } from "@definitions/types";
-import React from "react";
 
 const MigrationToolPage = () => {
-  const onSelectBook = (book: Book) => {
-    console.log(book);
-  };
+  const onSelectBook = (book: Book) => {};
   return (
-    <div>
-      <BookSearchBox selectBook={onSelectBook} />
-    </div>
+    <Container>
+      <BookSearchBox
+        label="Select books to migrate"
+        selectBook={onSelectBook}
+      />
+    </Container>
   );
 };
 

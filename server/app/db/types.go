@@ -35,9 +35,6 @@ func (nt NullableTime) Value() (driver.Value, error) {
 	return time.Time(nt.Time), nil
 }
 
-
-
-
 type NullableDate string
 
 func (nd *NullableDate) Scan(value interface{}) error {
