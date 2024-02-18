@@ -55,7 +55,7 @@ const BookSearchBox = ({ selectBook, label }: BookSearchBoxProps) => {
           getItemProps,
           highlightedIndex,
         }) => (
-          <div className="w-10/12  relative ">
+          <div className="w-full relative ">
             {label && <Label>{label}</Label>}
             <input
               {...getInputProps({
