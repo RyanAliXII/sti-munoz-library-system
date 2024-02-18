@@ -18,7 +18,7 @@ type AccessionRepository interface {
 	MarkAsMissing(id string, remarks string) error
 	GetAccessionsById(id string) (model.Accession, error)
 	UpdateAccession(accession model.Accession) error
-	
+	GetAccessionByCollection(collectionId int ) ([]model.Accession, error) 
 }
 type Accession struct {
 	db *sqlx.DB
@@ -152,6 +152,25 @@ func (repo *Accession) GetAccessionsById(id string) (model.Accession, error) {
 	`
 	err := repo.db.Get(&accession, query, id)
 	return accession, err
+}
+
+func (repo * Accession) GetAccessionByCollection(collectionId int ) ([]model.Accession, error) {
+	accessions := make([]model.Accession, 0)
+	query := `
+	SELECT accession.id, accession.number, copy_number, book.json_format as book,
+	accession.book_id,
+	(CASE WHEN bb.accession_id is not null then true else false END)as is_checked_out,
+	(CASE WHEN bb.accession_id is not null then false else true END) as is_available
+	FROM catalog.accession
+	as accession 
+	INNER JOIN book_view as book on accession.book_id = book.id 
+	LEFT JOIN borrowing.borrowed_book
+	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
+	WHERE book.section_id = $1
+	ORDER BY accession.number ASC
+	`
+	err := repo.db.Select(&accessions, query,  collectionId)
+	return accessions, err
 }
 func (repo * Accession)UpdateAccession(accession model.Accession) error {
 	_, err := repo.db.Exec("Update catalog.accession set number = $1 where id = $2", accession.Number, accession.Id)
