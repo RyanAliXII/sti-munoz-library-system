@@ -375,9 +375,9 @@ const BookPage = () => {
       <DangerConfirmDialog
         close={confirmMigration.close}
         isOpen={confirmMigration.isOpen}
-        title="Collection Migration"
+        title="Book Migration to another collection"
         onConfirm={onConfirmMigrate}
-        text="The system detected that the current collection is not related nor sub-collection of selected collection. This will result in accession number regeneration. Are you sure you want to proceed?"
+        text="Are you sure you want to migrate selected books? This action may cause book copies to generate new accession number."
       />
       <PreviewModal
         book={book}

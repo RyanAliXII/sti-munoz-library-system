@@ -182,3 +182,19 @@ func (ctrler * BookController)UpdateAccession(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accession updated."))
 }
+func (ctrler * BookController)GetAccessionsByCollection(ctx * gin.Context) {
+	collectionId, err  := strconv.Atoi(ctx.Param("collectionId"))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return
+	}
+	accessions, err :=ctrler.accessionRepo.GetAccessionByCollection(collectionId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("getAccessionsErrorByCollection"))
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"accessions": accessions,
+	}, "Accessions fetched by collection id."))
+
+}

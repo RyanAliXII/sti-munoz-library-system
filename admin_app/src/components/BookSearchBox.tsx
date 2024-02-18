@@ -55,7 +55,7 @@ const BookSearchBox = ({ selectBook, label }: BookSearchBoxProps) => {
           getItemProps,
           highlightedIndex,
         }) => (
-          <div className="w-10/12  relative ">
+          <div className="w-full relative ">
             {label && <Label>{label}</Label>}
             <input
               {...getInputProps({
@@ -89,8 +89,10 @@ const BookSearchBox = ({ selectBook, label }: BookSearchBoxProps) => {
                         <span className="text-gray-600 dark:text-gray-100">
                           {book.title}
                         </span>
-                        <small className="text-gray-300">
-                          ISBN: {book.isbn} | Authors: {authors.join(", ")}
+                        <small className="text-gray-500">
+                          Authors: {authors.join(", ")} | Collection:{" "}
+                          {book.section.name} | Year Published:{" "}
+                          {book.yearPublished}
                         </small>
                       </li>
                     );

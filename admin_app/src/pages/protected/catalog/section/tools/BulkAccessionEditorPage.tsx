@@ -1,0 +1,165 @@
+import Container from "@components/ui/container/Container";
+import { CustomInput } from "@components/ui/form/Input";
+import { useAccessionsByCollection } from "@hooks/data-fetching/accession";
+import { useCollections } from "@hooks/data-fetching/collection";
+import { useForm } from "@hooks/useForm";
+import { Button, Select } from "flowbite-react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import SearchApi from "js-worker-search";
+import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import useDebounce from "@hooks/useDebounce";
+
+const BulkAccessionEditorPage = () => {
+  const { form, handleFormInput } = useForm<{ collectionId: 0; query: string }>(
+    {
+      initialFormData: {
+        collectionId: 0,
+        query: "",
+      },
+    }
+  );
+  const { data } = useAccessionsByCollection({
+    queryKey: ["accessionsByCollection", form.collectionId],
+    refetchOnWindowFocus: false,
+  });
+  const searchApi = useRef(new SearchApi());
+  const virtualTable = useRef<VirtuosoHandle>(null);
+  useEffect(() => {
+    searchApi.current = new SearchApi();
+    data?.accessions.forEach((a, idx) => {
+      searchApi.current.indexDocument(idx.toString(), a.book.title);
+      searchApi.current.indexDocument(idx.toString(), a.book.section.name);
+      searchApi.current.indexDocument(idx.toString(), a.number.toString());
+    });
+  }, [data?.accessions]);
+
+  const [resultCursor, setResultCursor] = useState(-1);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  useEffect(() => {
+    const searchIndex = parseInt(searchResults[resultCursor]);
+    virtualTable.current?.scrollToIndex({
+      index: searchIndex,
+      align: "start",
+    });
+    setActiveIndex(searchIndex);
+  }, [resultCursor]);
+  useEffect(() => {
+    if (form.query.length === 0) {
+      setSearchResults([]);
+    }
+  }, [form.query]);
+  const find = async () => {
+    const results = await searchApi.current.search(form.query);
+    setSearchResults(results);
+    setResultCursor(0);
+  };
+  const nextResult = () => {
+    if (resultCursor + 1 === searchResults.length) return;
+    setResultCursor((prev) => prev + 1);
+  };
+  const prevResult = () => {
+    if (resultCursor <= 0) return;
+    setResultCursor((prev) => prev - 1);
+  };
+
+  const { data: collections } = useCollections();
+  return (
+    <Container>
+      <Select onChange={handleFormInput} name="collectionId">
+        <option value="0" disabled>
+          No collection selected
+        </option>
+        {collections?.map((c) => {
+          return (
+            <option value={c.id} key={c.id}>
+              {c.name}
+            </option>
+          );
+        })}
+      </Select>
+      <div className="pt-4 flex items-center gap-2">
+        <div>
+          <CustomInput
+            name="query"
+            onChange={handleFormInput}
+            label={
+              searchResults.length > 0
+                ? `${searchResults.length} results found `
+                : "Search"
+            }
+          />
+        </div>
+        <div className="flex items-center  mt-1 gap-1">
+          <Button
+            color="primary"
+            outline
+            disabled={form.query.length === 0}
+            onClick={find}
+          >
+            Find
+          </Button>
+          <Button
+            color="primary"
+            outline
+            onClick={prevResult}
+            disabled={searchResults.length === 1 || resultCursor === -1}
+          >
+            Find Previous
+          </Button>
+
+          <Button
+            color="primary"
+            outline
+            onClick={nextResult}
+            disabled={
+              searchResults.length - 1 === resultCursor ||
+              searchResults.length === 0
+            }
+          >
+            Find Next
+          </Button>
+        </div>
+      </div>
+      <div>
+        <div className="grid grid-cols-3 gap-2 p-5 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-md">
+          <div>Accession number</div>
+          <div>Book</div>
+          <div>Copy number</div>
+        </div>
+        <div>
+          <Virtuoso
+            style={{ height: 700 }}
+            className="small-scroll"
+            ref={virtualTable}
+            data={data?.accessions ?? []}
+            itemContent={(index, accession) => (
+              <div
+                key={accession.id}
+                className={`w-full grid-cols-3 gap-2 grid p-3 bg-white border-b  dark:text-white ${
+                  activeIndex === index
+                    ? "dark:bg-gray-600  dark:border-gray-500"
+                    : "dark:bg-gray-800 dark:border-gray-700"
+                }`}
+              >
+                <div className="p-2 text-sm">{accession.number}</div>
+                <div className="p-2 text-sm">
+                  <div className="text-base font-semibold text-gray-900 dark:text-white">
+                    {accession.book.title}
+                  </div>
+                  <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                    {accession.book.section.name}
+                  </div>
+                </div>
+                <div className="p-2 text-sm">{accession.copyNumber}</div>
+              </div>
+            )}
+          />
+        </div>
+      </div>
+    </Container>
+  );
+};
+
+export default BulkAccessionEditorPage;
