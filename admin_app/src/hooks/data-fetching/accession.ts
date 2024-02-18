@@ -78,3 +78,53 @@ export const useEditAccession = ({
     onSettled,
   });
 };
+
+type UseAccessionByCollectionData = {
+  accessions: [];
+};
+export const useAccessionsByCollection = ({
+  onError,
+  onSettled,
+  onSuccess,
+  queryKey,
+}: UseQueryOptions<
+  UseAccessionByCollectionData,
+  unknown,
+  UseAccessionByCollectionData,
+  [string, number]
+>) => {
+  const { Get } = useRequest();
+  const fetchAccessions: QueryFunction<
+    UseAccessionByCollectionData,
+    [string, number]
+  > = async ({ queryKey }) => {
+    try {
+      const collectionId = queryKey[1];
+      if (collectionId == 0) {
+        return {
+          accessions: [],
+        };
+      }
+      const { data: response } = await Get("/accounts/", {});
+      return {
+        accessions: [],
+      };
+    } catch {
+      return {
+        accessions: [],
+      };
+    }
+  };
+  return useQuery<
+    UseAccessionByCollectionData,
+    unknown,
+    UseAccessionByCollectionData,
+    [string, number]
+  >({
+    onSuccess,
+    queryFn: fetchAccessions,
+    onError,
+    queryKey,
+    onSettled,
+  });
+};

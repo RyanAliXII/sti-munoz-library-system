@@ -96,6 +96,9 @@ const PenaltyClassPage = lazy(
 const MigrationToolPage = lazy(
   () => import("./protected/catalog/section/tools/MigrationToolPage")
 );
+const BulkAccessionEditorPage = lazy(
+  () => import("./protected/catalog/section/tools/BulkAccessionEditorPage")
+);
 const pages = createRoutesFromChildren(
   <>
     <Route element={<ProtectedRoutes />}>
@@ -173,6 +176,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Collection.Edit"]}>
               <MigrationToolPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/books/collections/bulk-editor"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Collection.Edit"]}>
+              <BulkAccessionEditorPage />
             </PermissionGate>
           </Suspense>
         }
