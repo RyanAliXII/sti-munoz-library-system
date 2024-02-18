@@ -1,5 +1,9 @@
 import { BookInitialValue } from "@definitions/defaults";
-import { Accession, CheckoutAccession } from "@definitions/types";
+import {
+  Accession,
+  CheckoutAccession,
+  DetailedAccession,
+} from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
@@ -80,12 +84,13 @@ export const useEditAccession = ({
 };
 
 type UseAccessionByCollectionData = {
-  accessions: [];
+  accessions: DetailedAccession[];
 };
 export const useAccessionsByCollection = ({
   onError,
   onSettled,
   onSuccess,
+  refetchOnWindowFocus,
   queryKey,
 }: UseQueryOptions<
   UseAccessionByCollectionData,
@@ -105,9 +110,13 @@ export const useAccessionsByCollection = ({
           accessions: [],
         };
       }
-      const { data: response } = await Get("/accounts/", {});
+      const { data: response } = await Get(
+        `/books/accessions/collections/${collectionId}`,
+        {}
+      );
+
       return {
-        accessions: [],
+        accessions: response?.data.accessions ?? [],
       };
     } catch {
       return {
@@ -126,5 +135,6 @@ export const useAccessionsByCollection = ({
     onError,
     queryKey,
     onSettled,
+    refetchOnWindowFocus,
   });
 };
