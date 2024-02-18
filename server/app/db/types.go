@@ -35,30 +35,21 @@ func (nt NullableTime) Value() (driver.Value, error) {
 	return time.Time(nt.Time), nil
 }
 
-
-
-
-
 type NullableDate string
 
 func (nd *NullableDate) Scan(value interface{}) error {
-
-	parsedDate, isValidTime := value.(time.Time)
-	if isValidTime {
-		*nd = NullableDate(parsedDate.Format(time.DateOnly))
-		return nil
+	strDate, isValidStr := value.(string)
+	if isValidStr  {
+		*nd = NullableDate(strDate)
 	}
-	if value == nil {
-		*nd = NullableDate("")
-		return nil
-	}
-
-	return fmt.Errorf("invalid date value")
+	*nd = ""
+	return nil
 }
-
-
-
 func (nd NullableDate) Value() (driver.Value, error) {
+	_, err := time.Parse(time.DateOnly, string(nd))
+	if err != nil {
+		return "", fmt.Errorf("invalid date")
+	}
 	return string(nd), nil
 }
 
@@ -70,10 +61,6 @@ func (nd * NullableDate) UnmarshalJSON(d []byte) error {
 	unquotedDate, unquoteErr := strconv.Unquote(string(d))
 	if unquoteErr != nil {
 		return unquoteErr
-	}
-	_, parseErr := time.Parse(time.DateOnly, unquotedDate)
-	if parseErr != nil {
-		return parseErr
 	}
 	*nd = NullableDate(unquotedDate)
 	return nil

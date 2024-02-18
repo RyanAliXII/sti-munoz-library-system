@@ -1,5 +1,9 @@
 import { BookInitialValue } from "@definitions/defaults";
-import { Accession, CheckoutAccession } from "@definitions/types";
+import {
+  Accession,
+  CheckoutAccession,
+  DetailedAccession,
+} from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
@@ -76,5 +80,61 @@ export const useEditAccession = ({
     onSuccess,
     onError,
     onSettled,
+  });
+};
+
+type UseAccessionByCollectionData = {
+  accessions: DetailedAccession[];
+};
+export const useAccessionsByCollection = ({
+  onError,
+  onSettled,
+  onSuccess,
+  refetchOnWindowFocus,
+  queryKey,
+}: UseQueryOptions<
+  UseAccessionByCollectionData,
+  unknown,
+  UseAccessionByCollectionData,
+  [string, number]
+>) => {
+  const { Get } = useRequest();
+  const fetchAccessions: QueryFunction<
+    UseAccessionByCollectionData,
+    [string, number]
+  > = async ({ queryKey }) => {
+    try {
+      const collectionId = queryKey[1];
+      if (collectionId == 0) {
+        return {
+          accessions: [],
+        };
+      }
+      const { data: response } = await Get(
+        `/books/accessions/collections/${collectionId}`,
+        {}
+      );
+
+      return {
+        accessions: response?.data.accessions ?? [],
+      };
+    } catch {
+      return {
+        accessions: [],
+      };
+    }
+  };
+  return useQuery<
+    UseAccessionByCollectionData,
+    unknown,
+    UseAccessionByCollectionData,
+    [string, number]
+  >({
+    onSuccess,
+    queryFn: fetchAccessions,
+    onError,
+    queryKey,
+    onSettled,
+    refetchOnWindowFocus,
   });
 };
