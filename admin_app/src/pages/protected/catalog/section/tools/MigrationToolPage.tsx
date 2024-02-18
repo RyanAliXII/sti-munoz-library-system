@@ -3,11 +3,16 @@ import Container from "@components/ui/container/Container";
 import TableContainer from "@components/ui/table/TableContainer";
 import { Book } from "@definitions/types";
 import { Button, Label, Select, Table } from "flowbite-react";
-import { useReducer } from "react";
+import { FormEvent, useReducer } from "react";
 import { MigrationData, migrationReducer } from "./migration-reducer";
 import { FaSave, FaTimes } from "react-icons/fa";
 import { useCollections } from "@hooks/data-fetching/collection";
 import { useForm } from "@hooks/useForm";
+import { useSwitch } from "@hooks/useToggle";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
+import { useMigrateCollection } from "@hooks/data-fetching/book";
+import { toast } from "react-toastify";
+import { number, object } from "yup";
 
 const MigrationToolPage = () => {
   const [migrationData, dispatchMigrateAction] = useReducer(migrationReducer, {
@@ -32,18 +37,48 @@ const MigrationToolPage = () => {
     });
   };
   const { data: collections } = useCollections();
-  const { form, handleFormInput } = useForm<{
-    collectionId: string;
-    bookIds: string[];
+  const { form, handleFormInput, resetForm, validate } = useForm<{
+    collectionId: number;
   }>({
     initialFormData: {
-      collectionId: "",
-      bookIds: [],
+      collectionId: 0,
+    },
+    schema: object({
+      collectionId: number().required().min(1),
+    }),
+  });
+  const confirmMigration = useSwitch();
+  const migrateCollection = useMigrateCollection({
+    onSuccess: () => {
+      resetForm();
+      dispatchMigrateAction({ type: "Clear", payload: {} });
+      toast.success("Books migrated to another collection.");
     },
   });
+
+  const onConfirmMigrate = async () => {
+    try {
+      const validatedForm = await validate();
+      if (migrationData.books.length === 0 || !validatedForm) return;
+      confirmMigration.close();
+      migrateCollection.mutate({
+        sectionId: validatedForm.collectionId,
+        bookIds: migrationData.books.map((book) => book.id ?? ""),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    confirmMigration.open();
+  };
   return (
     <Container>
-      <form>
+      <div className="py-4">
+        <h4 className="text-2xl">Migration Tool</h4>
+      </div>
+      <form onSubmit={onSubmit}>
         <BookSearchBox
           label="Search books to migrate"
           selectBook={onSelectBook}
@@ -55,7 +90,7 @@ const MigrationToolPage = () => {
             value={form.collectionId}
             onChange={handleFormInput}
           >
-            <option value="" disabled>
+            <option value="0" disabled>
               No collection selected
             </option>
             {collections?.map((c) => {
@@ -100,19 +135,31 @@ const MigrationToolPage = () => {
                 })}
               </Table.Body>
             </Table>
+            {migrationData.books.length === 0 && (
+              <div className="w-full flex items-center justify-center h-40">
+                <p>No book selected</p>
+              </div>
+            )}
           </TableContainer>
         </div>
         <Button
           type="submit"
           color="primary"
-          disabled={form.collectionId.length === 0 || form.bookIds.length === 0}
+          disabled={form.collectionId == 0 || migrationData.books.length === 0}
         >
           <div className="flex gap-1 items-center">
             <FaSave />
-            Save
+            Migrate to Selected Collection
           </div>
         </Button>
       </form>
+      <DangerConfirmDialog
+        close={confirmMigration.close}
+        isOpen={confirmMigration.isOpen}
+        title="Book Migration to Another Collection"
+        onConfirm={onConfirmMigrate}
+        text="Are you sure you want to migrate selected books? This action may cause book copies to generate new accession number."
+      />
     </Container>
   );
 };
