@@ -4,10 +4,9 @@ import { useAccessionsByCollection } from "@hooks/data-fetching/accession";
 import { useCollections } from "@hooks/data-fetching/collection";
 import { useForm } from "@hooks/useForm";
 import { Button, Select } from "flowbite-react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
 import SearchApi from "js-worker-search";
+import { useEffect, useRef, useState } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import useDebounce from "@hooks/useDebounce";
 
 const BulkAccessionEditorPage = () => {
   const { form, handleFormInput } = useForm<{ collectionId: 0; query: string }>(
@@ -24,6 +23,48 @@ const BulkAccessionEditorPage = () => {
   });
   const searchApi = useRef(new SearchApi());
   const virtualTable = useRef<VirtuosoHandle>(null);
+
+  const [searchResultCursor, setSearchResultCursor] = useState(-1);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [activeRowIndex, setActiveRowIndex] = useState(-1);
+
+  const gotoRow = (activeRowIdx: number, resultCursor: number) => {
+    virtualTable.current?.scrollToIndex({
+      index: activeRowIdx,
+      align: "start",
+    });
+    setActiveRowIndex(activeRowIdx);
+    setSearchResultCursor(resultCursor);
+  };
+  const clearSearchResult = () => {
+    setSearchResults([]);
+    setActiveRowIndex(-1);
+    setSearchResultCursor(-1);
+  };
+  const find = async () => {
+    const results = await searchApi.current.search(form.query);
+    setSearchResults(results);
+    if (results.length === 0) {
+      clearSearchResult();
+    }
+    const cursor = 0;
+    const activeRow = parseInt(results[cursor]);
+    gotoRow(activeRow, cursor);
+  };
+  const nextResult = () => {
+    if (searchResultCursor + 1 === searchResults.length) return;
+    const cursor = searchResultCursor + 1;
+    const activeRow = parseInt(searchResults[cursor]);
+    gotoRow(activeRow, cursor);
+  };
+  const prevResult = () => {
+    if (searchResultCursor <= 0) return;
+    const cursor = searchResultCursor - 1;
+    const activeRow = parseInt(searchResults[cursor]);
+    gotoRow(activeRow, cursor);
+  };
+
+  const { data: collections } = useCollections();
   useEffect(() => {
     searchApi.current = new SearchApi();
     data?.accessions.forEach((a, idx) => {
@@ -31,40 +72,9 @@ const BulkAccessionEditorPage = () => {
       searchApi.current.indexDocument(idx.toString(), a.book.section.name);
       searchApi.current.indexDocument(idx.toString(), a.number.toString());
     });
+    clearSearchResult();
   }, [data?.accessions]);
 
-  const [resultCursor, setResultCursor] = useState(-1);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [activeIndex, setActiveIndex] = useState(-1);
-
-  useEffect(() => {
-    const searchIndex = parseInt(searchResults[resultCursor]);
-    virtualTable.current?.scrollToIndex({
-      index: searchIndex,
-      align: "start",
-    });
-    setActiveIndex(searchIndex);
-  }, [resultCursor]);
-  useEffect(() => {
-    if (form.query.length === 0) {
-      setSearchResults([]);
-    }
-  }, [form.query]);
-  const find = async () => {
-    const results = await searchApi.current.search(form.query);
-    setSearchResults(results);
-    setResultCursor(0);
-  };
-  const nextResult = () => {
-    if (resultCursor + 1 === searchResults.length) return;
-    setResultCursor((prev) => prev + 1);
-  };
-  const prevResult = () => {
-    if (resultCursor <= 0) return;
-    setResultCursor((prev) => prev - 1);
-  };
-
-  const { data: collections } = useCollections();
   return (
     <Container>
       <Select onChange={handleFormInput} name="collectionId">
@@ -86,7 +96,9 @@ const BulkAccessionEditorPage = () => {
             onChange={handleFormInput}
             label={
               searchResults.length > 0
-                ? `${searchResults.length} results found `
+                ? `${searchResultCursor + 1} - ${
+                    searchResults.length
+                  } results found `
                 : "Search"
             }
           />
@@ -104,7 +116,7 @@ const BulkAccessionEditorPage = () => {
             color="primary"
             outline
             onClick={prevResult}
-            disabled={searchResults.length === 1 || resultCursor === -1}
+            disabled={searchResults.length === 1 || searchResultCursor === -1}
           >
             Find Previous
           </Button>
@@ -114,11 +126,20 @@ const BulkAccessionEditorPage = () => {
             outline
             onClick={nextResult}
             disabled={
-              searchResults.length - 1 === resultCursor ||
+              searchResults.length - 1 === searchResultCursor ||
               searchResults.length === 0
             }
           >
             Find Next
+          </Button>
+
+          <Button
+            color="failure"
+            outline={true}
+            onClick={clearSearchResult}
+            disabled={searchResults.length === 0}
+          >
+            Clear Results
           </Button>
         </div>
       </div>
@@ -138,7 +159,7 @@ const BulkAccessionEditorPage = () => {
               <div
                 key={accession.id}
                 className={`w-full grid-cols-3 gap-2 grid p-3 bg-white border-b  dark:text-white ${
-                  activeIndex === index
+                  activeRowIndex === index
                     ? "dark:bg-gray-600  dark:border-gray-500"
                     : "dark:bg-gray-800 dark:border-gray-700"
                 }`}

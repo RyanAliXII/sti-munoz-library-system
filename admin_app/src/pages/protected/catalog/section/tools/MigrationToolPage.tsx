@@ -76,7 +76,7 @@ const MigrationToolPage = () => {
   return (
     <Container>
       <div className="py-4">
-        <h4 className="text-2xl">Migration Tool</h4>
+        <h4 className="text-2xl dark:text-white">Migration Tool</h4>
       </div>
       <form onSubmit={onSubmit}>
         <BookSearchBox
@@ -136,7 +136,7 @@ const MigrationToolPage = () => {
               </Table.Body>
             </Table>
             {migrationData.books.length === 0 && (
-              <div className="w-full flex items-center justify-center h-40">
+              <div className="w-full flex items-center justify-center h-40 dark:text-white">
                 <p>No book selected</p>
               </div>
             )}
