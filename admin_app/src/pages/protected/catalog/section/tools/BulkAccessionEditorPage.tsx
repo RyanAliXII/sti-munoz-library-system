@@ -84,6 +84,8 @@ const BulkAccessionEditorPage = () => {
     onSubmit,
   } = useBulkEditorForm({
     accessions: [...(data?.accessions ?? [])],
+    collectionId: form.collectionId,
+    
   });
   return (
     <Container>

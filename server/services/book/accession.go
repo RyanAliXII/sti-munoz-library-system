@@ -2,6 +2,7 @@ package book
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -198,3 +199,16 @@ func (ctrler * BookController)GetAccessionsByCollection(ctx * gin.Context) {
 	}, "Accessions fetched by collection id."))
 
 }
+
+func (ctrler * BookController)UpdateAccessionBulk(ctx * gin.Context) {
+	accessions := make([]model.Accession,0 )
+	err := ctx.ShouldBindJSON(&accessions)
+	if err != nil{
+		logger.Error(err.Error(), slimlog.Error("BindingErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	fmt.Println(accessions)
+	ctx.JSON(httpresp.Success200(nil, "Accession updated."))
+}
+
