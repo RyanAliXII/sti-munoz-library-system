@@ -19,6 +19,7 @@ type AccessionRepository interface {
 	GetAccessionsById(id string) (model.Accession, error)
 	UpdateAccession(accession model.Accession) error
 	GetAccessionByCollection(collectionId int ) ([]model.Accession, error) 
+	UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error 
 }
 type Accession struct {
 	db *sqlx.DB
@@ -175,6 +176,38 @@ func (repo * Accession) GetAccessionByCollection(collectionId int ) ([]model.Acc
 func (repo * Accession)UpdateAccession(accession model.Accession) error {
 	_, err := repo.db.Exec("Update catalog.accession set number = $1 where id = $2", accession.Number, accession.Id)
 	return err
+}
+func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error {
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		return err
+	}
+	_, err = transaction.Exec("LOCK TABLE catalog.accession IN ACCESS SHARE MODE")
+	if err != nil{
+		transaction.Rollback()
+		return err
+	}
+	_, err  = transaction.Exec("DROP INDEX IF EXISTS catalog.unique_idx_accession_number_section")
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	for _, accession := range accessions {
+		query := "UPDATE catalog.accession SET number = $1 where id = $2 and section_id = $3"
+		_, err := repo.db.Exec(query, accession.Number, accession.Id, accession.Book.Section.Id)
+		if err != nil {
+			transaction.Rollback()
+			return err
+		}
+	}
+	_, err = transaction.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS unique_idx_accession_book_id_copy
+	ON catalog.accession(book_id, copy_number)`)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	transaction.Commit()
+	return nil
 }
 func NewAccessionRepository () AccessionRepository{
 	return &Accession{
