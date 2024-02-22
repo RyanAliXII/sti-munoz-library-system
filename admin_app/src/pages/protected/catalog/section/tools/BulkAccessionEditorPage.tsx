@@ -1,18 +1,18 @@
 import Container from "@components/ui/container/Container";
 import { CustomInput } from "@components/ui/form/Input";
-import { DetailedAccession } from "@definitions/types";
 import { useAccessionsByCollection } from "@hooks/data-fetching/accession";
 import { useCollections } from "@hooks/data-fetching/collection";
 import { useForm } from "@hooks/useForm";
-import { Button, Select, Table } from "flowbite-react";
-
+import { Button, Select } from "flowbite-react";
+import { useSwitch } from "@hooks/useToggle";
 import SearchApi from "js-worker-search";
 import { useEffect, useRef, useState } from "react";
-import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import useBulkEditorForm from "./bulkEditorForm";
 import { FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import ErrorModal from "./ErrorModal";
-import { useSwitch } from "@hooks/useToggle";
+import useBulkEditorForm from "./bulkEditorForm";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BulkAccessionEditorPage = () => {
   const { form, handleFormInput } = useForm<{ collectionId: 0; query: string }>(
@@ -26,6 +26,7 @@ const BulkAccessionEditorPage = () => {
   const { data } = useAccessionsByCollection({
     queryKey: ["accessionsByCollection", form.collectionId],
     refetchOnWindowFocus: false,
+    retry: false,
   });
   const searchApi = useRef(new SearchApi());
   const virtualTable = useRef<VirtuosoHandle>(null);
@@ -72,6 +73,7 @@ const BulkAccessionEditorPage = () => {
 
   const { data: collections } = useCollections();
   useEffect(() => {
+    clearForm();
     searchApi.current = new SearchApi();
     data?.accessions.forEach((a, idx) => {
       searchApi.current.indexDocument(idx.toString(), a.book.title);
@@ -80,20 +82,39 @@ const BulkAccessionEditorPage = () => {
     });
     clearSearchResult();
   }, [data?.accessions]);
+  const queryClient = useQueryClient();
   const {
     form: editorForm,
     handleChange,
     isSubmitting,
     onSubmit,
     errors,
+    clearForm,
   } = useBulkEditorForm({
     accessions: [...(data?.accessions ?? [])],
     collectionId: form.collectionId,
+    onError: () => {
+      toast.error(
+        "An error has occured, please view the error logs for more details."
+      );
+    },
+    onSuccess() {
+      queryClient.invalidateQueries([
+        "accessionsByCollection",
+        form.collectionId,
+      ]);
+      toast.success("Accession has been updated.");
+    },
   });
+  const errorModal = useSwitch();
 
   return (
     <Container>
-      <Select onChange={handleFormInput} name="collectionId">
+      <Select
+        onChange={handleFormInput}
+        value={form.collectionId}
+        name="collectionId"
+      >
         <option value="0" disabled>
           No collection selected
         </option>
@@ -170,8 +191,13 @@ const BulkAccessionEditorPage = () => {
               </div>
             </Button>
           </form>
-          <Button color="failure" type="button" disabled={errors.length === 0}>
-            Errors
+          <Button
+            color="failure"
+            type="button"
+            disabled={errors.length === 0}
+            onClick={errorModal.open}
+          >
+            Error Logs
           </Button>
         </div>
       </div>
@@ -221,6 +247,11 @@ const BulkAccessionEditorPage = () => {
           />
         </div>
       </div>
+      <ErrorModal
+        errors={errors}
+        closeModal={errorModal.close}
+        isOpen={errorModal.isOpen}
+      />
     </Container>
   );
 };

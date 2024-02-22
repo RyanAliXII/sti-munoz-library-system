@@ -1,6 +1,8 @@
 import { Accession } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { StatusCodes } from "http-status-codes";
 import { ChangeEvent, FormEvent, useState } from "react";
 
 const useBulkEditorForm = ({
@@ -44,7 +46,12 @@ const useBulkEditorForm = ({
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const t = transform();
+    setErrors([]);
     updateAccessions.mutate(t);
+  };
+  const clearForm = () => {
+    setFormMap(new Map<number, number>());
+    setErrors([]);
   };
   const transform = () => {
     const a = [...accessions];
@@ -60,6 +67,15 @@ const useBulkEditorForm = ({
       Put(`/books/accessions/collections/${collectionId}`, {
         accessions,
       }),
+    onError: ({ response }: AxiosError<any, any>) => {
+      console.log(response?.status);
+      if (response?.status === StatusCodes.BAD_REQUEST) {
+        const { data } = response.data;
+        setErrors(data.errors ?? []);
+      }
+      onError?.();
+    },
+    onSuccess,
   });
 
   return {
@@ -68,8 +84,7 @@ const useBulkEditorForm = ({
     onSubmit,
     isSubmitting: updateAccessions.isLoading,
     errors,
-    onError,
-    onSuccess,
+    clearForm,
   };
 };
 
