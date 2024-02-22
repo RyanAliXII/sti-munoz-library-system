@@ -5,6 +5,8 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -182,31 +184,35 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 	if err != nil {
 		return err
 	}
-	_, err = transaction.Exec("LOCK TABLE catalog.accession IN ACCESS SHARE MODE")
-	if err != nil{
-		transaction.Rollback()
-		return err
-	}
-	_, err  = transaction.Exec("DROP INDEX IF EXISTS catalog.unique_idx_accession_number_section")
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Update(goqu.T("accession").Schema("catalog")).Prepared(true)
+	ids := make([]string, 0)
+	caseStmt := goqu.Case()
 	for _, accession := range accessions {
-		query := "UPDATE catalog.accession SET number = $1 where id = $2 and section_id = $3"
-		_, err := repo.db.Exec(query, accession.Number, accession.Id, accession.Book.Section.Id)
-		if err != nil {
-			transaction.Rollback()
-			return err
-		}
+		caseStmt = caseStmt.When(goqu.C("id").Eq(accession.Id), accession.Number)
+		ids = append(ids, accession.Id)
 	}
-	_, err = transaction.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS unique_idx_accession_book_id_copy
-	ON catalog.accession(book_id, copy_number)`)
+	caseStmt = caseStmt.Else(goqu.C("number").Schema("accession"))
+	ds = ds.Set(goqu.Record{
+		"number": caseStmt,
+	})
+	ds = ds.Where(exp.Ex{
+		"id" : ids,
+	})
+	query, args, err := ds.ToSQL()
 	if err != nil {
 		transaction.Rollback()
 		return err
 	}
-	transaction.Commit()
+	_, err = transaction.Exec(query, args...)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func NewAccessionRepository () AccessionRepository{

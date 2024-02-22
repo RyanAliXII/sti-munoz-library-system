@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import useBulkEditorForm from "./bulkEditorForm";
 import { FaSave } from "react-icons/fa";
+import ErrorModal from "./ErrorModal";
+import { useSwitch } from "@hooks/useToggle";
 
 const BulkAccessionEditorPage = () => {
   const { form, handleFormInput } = useForm<{ collectionId: 0; query: string }>(
@@ -81,11 +83,14 @@ const BulkAccessionEditorPage = () => {
   const {
     form: editorForm,
     handleChange,
+    isSubmitting,
     onSubmit,
+    errors,
   } = useBulkEditorForm({
     accessions: [...(data?.accessions ?? [])],
     collectionId: form.collectionId,
   });
+
   return (
     <Container>
       <Select onChange={handleFormInput} name="collectionId">
@@ -145,7 +150,7 @@ const BulkAccessionEditorPage = () => {
           </Button>
 
           <Button
-            color="failure"
+            color="primary"
             outline={true}
             onClick={clearSearchResult}
             disabled={searchResults.length === 0}
@@ -154,6 +159,7 @@ const BulkAccessionEditorPage = () => {
           </Button>
           <form onSubmit={onSubmit}>
             <Button
+              isProcessing={isSubmitting}
               type="submit"
               color="primary"
               disabled={editorForm.size === 0}
@@ -164,6 +170,9 @@ const BulkAccessionEditorPage = () => {
               </div>
             </Button>
           </form>
+          <Button color="failure" type="button" disabled={errors.length === 0}>
+            Errors
+          </Button>
         </div>
       </div>
 

@@ -6,11 +6,16 @@ import { ChangeEvent, FormEvent, useState } from "react";
 const useBulkEditorForm = ({
   accessions,
   collectionId,
+  onError,
+  onSuccess,
 }: {
   accessions: Accession[];
   collectionId: number;
+  onSuccess?: () => void;
+  onError?: () => void;
 }) => {
   const [formMap, setFormMap] = useState(new Map<number, number>());
+  const [errors, setErrors] = useState<string[]>([]);
   const { Put } = useRequest();
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -61,6 +66,10 @@ const useBulkEditorForm = ({
     form: formMap,
     handleChange,
     onSubmit,
+    isSubmitting: updateAccessions.isLoading,
+    errors,
+    onError,
+    onSuccess,
   };
 };
 

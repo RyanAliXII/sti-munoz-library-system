@@ -200,8 +200,14 @@ func (ctrler * BookController)GetAccessionsByCollection(ctx * gin.Context) {
 }
 
 func (ctrler * BookController)UpdateAccessionBulk(ctx * gin.Context) {
+	collectionId, err := strconv.Atoi(ctx.Param("collectionId"))
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("convErr"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	} 
 	body := BulkAccessionUpdateBody{}
-	err := ctx.ShouldBindJSON(&body)
+	err = ctx.ShouldBindJSON(&body)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("BindingErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
@@ -214,7 +220,7 @@ func (ctrler * BookController)UpdateAccessionBulk(ctx * gin.Context) {
 		}, "Validation error."))
 		return
 	}
-	err = ctrler.accessionRepo.UpdateBulkByCollectionId(body.Accessions, body.CollectionId)
+	err = ctrler.accessionRepo.UpdateBulkByCollectionId(body.Accessions, collectionId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateBulkError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

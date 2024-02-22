@@ -78,7 +78,7 @@ type BookFilter struct {
 
 type BulkAccessionUpdateBody  struct{
 	Accessions []model.Accession `json:"accessions"`
-	CollectionId int `json:"collectionId"`
+
 }
 
 func (body * BulkAccessionUpdateBody) ValidateDuplicateAccessionNumber()([]string, bool){
