@@ -1,12 +1,16 @@
 import Container from "@components/ui/container/Container";
 import { CustomInput } from "@components/ui/form/Input";
+import { DetailedAccession } from "@definitions/types";
 import { useAccessionsByCollection } from "@hooks/data-fetching/accession";
 import { useCollections } from "@hooks/data-fetching/collection";
 import { useForm } from "@hooks/useForm";
-import { Button, Select } from "flowbite-react";
+import { Button, Select, Table } from "flowbite-react";
+
 import SearchApi from "js-worker-search";
 import { useEffect, useRef, useState } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import useBulkEditorForm from "./bulk-editor-form";
+import { FaSave } from "react-icons/fa";
 
 const BulkAccessionEditorPage = () => {
   const { form, handleFormInput } = useForm<{ collectionId: 0; query: string }>(
@@ -74,7 +78,13 @@ const BulkAccessionEditorPage = () => {
     });
     clearSearchResult();
   }, [data?.accessions]);
-
+  const {
+    form: editorForm,
+    handleChange,
+    onSubmit,
+  } = useBulkEditorForm({
+    accessions: [...(data?.accessions ?? [])],
+  });
   return (
     <Container>
       <Select onChange={handleFormInput} name="collectionId">
@@ -141,13 +151,27 @@ const BulkAccessionEditorPage = () => {
           >
             Clear Results
           </Button>
+          <form onSubmit={onSubmit}>
+            <Button
+              type="submit"
+              color="primary"
+              disabled={editorForm.size === 0}
+            >
+              <div className="flex gap-2 items-center">
+                <FaSave />
+                Save
+              </div>
+            </Button>
+          </form>
         </div>
       </div>
+
       <div>
-        <div className="grid grid-cols-3 gap-2 p-5 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-md">
+        <div className="grid grid-cols-4 gap-2 p-5 text-xs text-gray-700 uppercase  bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-md rounded-b-none font-semibold">
           <div>Accession number</div>
           <div>Book</div>
           <div>Copy number</div>
+          <div>Edit Accession number</div>
         </div>
         <div>
           <Virtuoso
@@ -158,9 +182,9 @@ const BulkAccessionEditorPage = () => {
             itemContent={(index, accession) => (
               <div
                 key={accession.id}
-                className={`w-full grid-cols-3 gap-2 grid p-3 bg-white border-b  dark:text-white ${
+                className={`w-full grid-cols-4 gap-2 grid p-3 bg-white border-b  dark:text-white rounded-md  rounded-t-none ${
                   activeRowIndex === index
-                    ? "dark:bg-gray-600  dark:border-gray-500"
+                    ? "bg-gray-300 dark:bg-gray-600  dark:border-gray-500"
                     : "dark:bg-gray-800 dark:border-gray-700"
                 }`}
               >
@@ -174,6 +198,14 @@ const BulkAccessionEditorPage = () => {
                   </div>
                 </div>
                 <div className="p-2 text-sm">{accession.copyNumber}</div>
+                <div className="p-2 text-sm">
+                  <CustomInput
+                    defaultValue={accession.number}
+                    onChange={(event) => {
+                      handleChange(event, index);
+                    }}
+                  />
+                </div>
               </div>
             )}
           />
