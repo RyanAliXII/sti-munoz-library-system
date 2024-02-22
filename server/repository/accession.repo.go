@@ -184,6 +184,11 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 	if err != nil {
 		return err
 	}
+	_, err = transaction.Exec("DROP INDEX IF EXISTS catalog.unique_idx_accession_number_section")
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Update(goqu.T("accession").Schema("catalog")).Prepared(true)
 	ids := make([]string, 0)
@@ -205,6 +210,12 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 		return err
 	}
 	_, err = transaction.Exec(query, args...)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS unique_idx_accession_number_section
+	ON catalog.accession(section_id, number)`)
 	if err != nil {
 		transaction.Rollback()
 		return err
