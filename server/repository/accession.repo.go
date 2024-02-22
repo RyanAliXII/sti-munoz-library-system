@@ -5,6 +5,8 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -19,6 +21,7 @@ type AccessionRepository interface {
 	GetAccessionsById(id string) (model.Accession, error)
 	UpdateAccession(accession model.Accession) error
 	GetAccessionByCollection(collectionId int ) ([]model.Accession, error) 
+	UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error 
 }
 type Accession struct {
 	db *sqlx.DB
@@ -175,6 +178,42 @@ func (repo * Accession) GetAccessionByCollection(collectionId int ) ([]model.Acc
 func (repo * Accession)UpdateAccession(accession model.Accession) error {
 	_, err := repo.db.Exec("Update catalog.accession set number = $1 where id = $2", accession.Number, accession.Id)
 	return err
+}
+func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error {
+	transaction, err := repo.db.Beginx()
+	if err != nil {
+		return err
+	}
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Update(goqu.T("accession").Schema("catalog")).Prepared(true)
+	ids := make([]string, 0)
+	caseStmt := goqu.Case()
+	for _, accession := range accessions {
+		caseStmt = caseStmt.When(goqu.C("id").Eq(accession.Id), accession.Number)
+		ids = append(ids, accession.Id)
+	}
+	caseStmt = caseStmt.Else(goqu.C("number").Schema("accession"))
+	ds = ds.Set(goqu.Record{
+		"number": caseStmt,
+	})
+	ds = ds.Where(exp.Ex{
+		"id" : ids,
+	})
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	_, err = transaction.Exec(query, args...)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 func NewAccessionRepository () AccessionRepository{
 	return &Accession{

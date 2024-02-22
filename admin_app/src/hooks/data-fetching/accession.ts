@@ -90,6 +90,7 @@ export const useAccessionsByCollection = ({
   onError,
   onSettled,
   onSuccess,
+  retry,
   refetchOnWindowFocus,
   queryKey,
 }: UseQueryOptions<
@@ -136,5 +137,6 @@ export const useAccessionsByCollection = ({
     queryKey,
     onSettled,
     refetchOnWindowFocus,
+    retry,
   });
 };

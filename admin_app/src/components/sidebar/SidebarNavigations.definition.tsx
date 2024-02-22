@@ -1,19 +1,19 @@
+import { FC, SVGProps } from "react";
+import { AiOutlineDashboard, AiOutlineEdit } from "react-icons/ai";
+import { Bs123 } from "react-icons/bs";
+import { FaMoneyBillWave } from "react-icons/fa";
+import { FiBookOpen, FiSettings } from "react-icons/fi";
+import { GiBookshelf } from "react-icons/gi";
 import {
   MdAccountCircle,
   MdManageAccounts,
   MdOutlineGames,
   MdOutlineInventory,
-  MdOutlinePublish,
   MdRotate90DegreesCcw,
 } from "react-icons/md";
-import { TfiWrite } from "react-icons/tfi";
+import { RiFolderTransferLine } from "react-icons/ri";
 import { SiBookstack } from "react-icons/si";
-import { AiOutlineDashboard } from "react-icons/ai";
-import { FC, SVGProps } from "react";
-import { FiBookOpen, FiSettings } from "react-icons/fi";
-import { Bs123 } from "react-icons/bs";
-import { GiBookshelf } from "react-icons/gi";
-import { FaMoneyBillWave } from "react-icons/fa";
+import { TfiWrite } from "react-icons/tfi";
 
 export type SidebarNavItem = {
   to: string;
@@ -67,10 +67,17 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         items: [],
       },
       {
-        text: "Publisher",
-        icon: MdOutlinePublish,
-        requiredPermissions: ["Publisher.Read"],
-        to: "/books/publishers",
+        text: "Collection Migration",
+        icon: RiFolderTransferLine,
+        requiredPermissions: ["Collection.Read", "Book.Edit", "Book.Read"],
+        to: "/books/collections/migration-tool",
+        items: [],
+      },
+      {
+        text: "Accession Editor",
+        icon: AiOutlineEdit,
+        requiredPermissions: ["Collection.Read", "Book.Edit", "Book.Read"],
+        to: "/books/collections/bulk-editor",
         items: [],
       },
     ],

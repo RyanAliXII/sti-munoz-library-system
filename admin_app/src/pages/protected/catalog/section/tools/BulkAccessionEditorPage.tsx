@@ -4,10 +4,15 @@ import { useAccessionsByCollection } from "@hooks/data-fetching/accession";
 import { useCollections } from "@hooks/data-fetching/collection";
 import { useForm } from "@hooks/useForm";
 import { Button, Select } from "flowbite-react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useSwitch } from "@hooks/useToggle";
 import SearchApi from "js-worker-search";
+import { useEffect, useRef, useState } from "react";
+import { FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import useDebounce from "@hooks/useDebounce";
+import ErrorModal from "./ErrorModal";
+import useBulkEditorForm from "./bulkEditorForm";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BulkAccessionEditorPage = () => {
   const { form, handleFormInput } = useForm<{ collectionId: 0; query: string }>(
@@ -21,53 +26,95 @@ const BulkAccessionEditorPage = () => {
   const { data } = useAccessionsByCollection({
     queryKey: ["accessionsByCollection", form.collectionId],
     refetchOnWindowFocus: false,
+    retry: false,
   });
   const searchApi = useRef(new SearchApi());
   const virtualTable = useRef<VirtuosoHandle>(null);
+
+  const [searchResultCursor, setSearchResultCursor] = useState(-1);
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [activeRowIndex, setActiveRowIndex] = useState(-1);
+
+  const gotoRow = (activeRowIdx: number, resultCursor: number) => {
+    virtualTable.current?.scrollToIndex({
+      index: activeRowIdx,
+      align: "start",
+    });
+    setActiveRowIndex(activeRowIdx);
+    setSearchResultCursor(resultCursor);
+  };
+  const clearSearchResult = () => {
+    setSearchResults([]);
+    setActiveRowIndex(-1);
+    setSearchResultCursor(-1);
+  };
+  const find = async () => {
+    const results = await searchApi.current.search(form.query);
+    setSearchResults(results);
+    if (results.length === 0) {
+      clearSearchResult();
+    }
+    const cursor = 0;
+    const activeRow = parseInt(results[cursor]);
+    gotoRow(activeRow, cursor);
+  };
+  const nextResult = () => {
+    if (searchResultCursor + 1 === searchResults.length) return;
+    const cursor = searchResultCursor + 1;
+    const activeRow = parseInt(searchResults[cursor]);
+    gotoRow(activeRow, cursor);
+  };
+  const prevResult = () => {
+    if (searchResultCursor <= 0) return;
+    const cursor = searchResultCursor - 1;
+    const activeRow = parseInt(searchResults[cursor]);
+    gotoRow(activeRow, cursor);
+  };
+
+  const { data: collections } = useCollections();
   useEffect(() => {
+    clearForm();
     searchApi.current = new SearchApi();
     data?.accessions.forEach((a, idx) => {
       searchApi.current.indexDocument(idx.toString(), a.book.title);
       searchApi.current.indexDocument(idx.toString(), a.book.section.name);
       searchApi.current.indexDocument(idx.toString(), a.number.toString());
     });
+    clearSearchResult();
   }, [data?.accessions]);
+  const queryClient = useQueryClient();
+  const {
+    form: editorForm,
+    handleChange,
+    isSubmitting,
+    onSubmit,
+    errors,
+    clearForm,
+  } = useBulkEditorForm({
+    accessions: [...(data?.accessions ?? [])],
+    collectionId: form.collectionId,
+    onError: () => {
+      toast.error(
+        "An error has occured, please view the error logs for more details."
+      );
+    },
+    onSuccess() {
+      queryClient.invalidateQueries([
+        "accessionsByCollection",
+        form.collectionId,
+      ]);
+      toast.success("Accession has been updated.");
+    },
+  });
+  const errorModal = useSwitch();
 
-  const [resultCursor, setResultCursor] = useState(-1);
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [activeIndex, setActiveIndex] = useState(-1);
-
-  useEffect(() => {
-    const searchIndex = parseInt(searchResults[resultCursor]);
-    virtualTable.current?.scrollToIndex({
-      index: searchIndex,
-      align: "start",
-    });
-    setActiveIndex(searchIndex);
-  }, [resultCursor]);
-  useEffect(() => {
-    if (form.query.length === 0) {
-      setSearchResults([]);
-    }
-  }, [form.query]);
-  const find = async () => {
-    const results = await searchApi.current.search(form.query);
-    setSearchResults(results);
-    setResultCursor(0);
-  };
-  const nextResult = () => {
-    if (resultCursor + 1 === searchResults.length) return;
-    setResultCursor((prev) => prev + 1);
-  };
-  const prevResult = () => {
-    if (resultCursor <= 0) return;
-    setResultCursor((prev) => prev - 1);
-  };
-
-  const { data: collections } = useCollections();
   return (
     <Container>
-      <Select onChange={handleFormInput} name="collectionId">
+      <Select
+        onChange={handleFormInput}
+        value={form.collectionId}
+        name="collectionId"
+      >
         <option value="0" disabled>
           No collection selected
         </option>
@@ -86,7 +133,9 @@ const BulkAccessionEditorPage = () => {
             onChange={handleFormInput}
             label={
               searchResults.length > 0
-                ? `${searchResults.length} results found `
+                ? `${searchResultCursor + 1} - ${
+                    searchResults.length
+                  } results found `
                 : "Search"
             }
           />
@@ -104,7 +153,7 @@ const BulkAccessionEditorPage = () => {
             color="primary"
             outline
             onClick={prevResult}
-            disabled={searchResults.length === 1 || resultCursor === -1}
+            disabled={searchResults.length === 1 || searchResultCursor === -1}
           >
             Find Previous
           </Button>
@@ -114,19 +163,51 @@ const BulkAccessionEditorPage = () => {
             outline
             onClick={nextResult}
             disabled={
-              searchResults.length - 1 === resultCursor ||
+              searchResults.length - 1 === searchResultCursor ||
               searchResults.length === 0
             }
           >
             Find Next
           </Button>
+
+          <Button
+            color="primary"
+            outline={true}
+            onClick={clearSearchResult}
+            disabled={searchResults.length === 0}
+          >
+            Clear Results
+          </Button>
+          <form onSubmit={onSubmit}>
+            <Button
+              isProcessing={isSubmitting}
+              type="submit"
+              color="primary"
+              disabled={editorForm.size === 0}
+            >
+              <div className="flex gap-2 items-center">
+                <FaSave />
+                Save
+              </div>
+            </Button>
+          </form>
+          <Button
+            color="failure"
+            type="button"
+            disabled={errors.length === 0}
+            onClick={errorModal.open}
+          >
+            Error Logs
+          </Button>
         </div>
       </div>
+
       <div>
-        <div className="grid grid-cols-3 gap-2 p-5 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-md">
+        <div className="grid grid-cols-4 gap-2 p-5 text-xs text-gray-700 uppercase  bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-md rounded-b-none font-semibold">
           <div>Accession number</div>
           <div>Book</div>
           <div>Copy number</div>
+          <div>Edit Accession number</div>
         </div>
         <div>
           <Virtuoso
@@ -137,9 +218,9 @@ const BulkAccessionEditorPage = () => {
             itemContent={(index, accession) => (
               <div
                 key={accession.id}
-                className={`w-full grid-cols-3 gap-2 grid p-3 bg-white border-b  dark:text-white ${
-                  activeIndex === index
-                    ? "dark:bg-gray-600  dark:border-gray-500"
+                className={`w-full grid-cols-4 gap-2 grid p-3 bg-white border-b  dark:text-white rounded-md  rounded-t-none ${
+                  activeRowIndex === index
+                    ? "bg-gray-300 dark:bg-gray-600  dark:border-gray-500"
                     : "dark:bg-gray-800 dark:border-gray-700"
                 }`}
               >
@@ -153,11 +234,24 @@ const BulkAccessionEditorPage = () => {
                   </div>
                 </div>
                 <div className="p-2 text-sm">{accession.copyNumber}</div>
+                <div className="p-2 text-sm">
+                  <CustomInput
+                    value={editorForm.get(index) ?? 0}
+                    onChange={(event) => {
+                      handleChange(event, index);
+                    }}
+                  />
+                </div>
               </div>
             )}
           />
         </div>
       </div>
+      <ErrorModal
+        errors={errors}
+        closeModal={errorModal.close}
+        isOpen={errorModal.isOpen}
+      />
     </Container>
   );
 };
