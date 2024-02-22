@@ -9,7 +9,7 @@ import { Button, Select, Table } from "flowbite-react";
 import SearchApi from "js-worker-search";
 import { useEffect, useRef, useState } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import useBulkEditorForm from "./bulk-editor-form";
+import useBulkEditorForm from "./bulkEditorForm";
 import { FaSave } from "react-icons/fa";
 
 const BulkAccessionEditorPage = () => {
@@ -85,7 +85,6 @@ const BulkAccessionEditorPage = () => {
   } = useBulkEditorForm({
     accessions: [...(data?.accessions ?? [])],
     collectionId: form.collectionId,
-    
   });
   return (
     <Container>
@@ -202,7 +201,7 @@ const BulkAccessionEditorPage = () => {
                 <div className="p-2 text-sm">{accession.copyNumber}</div>
                 <div className="p-2 text-sm">
                   <CustomInput
-                    defaultValue={accession.number}
+                    value={editorForm.get(index) ?? 0}
                     onChange={(event) => {
                       handleChange(event, index);
                     }}

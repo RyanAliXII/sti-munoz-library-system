@@ -52,7 +52,9 @@ const useBulkEditorForm = ({
   };
   const updateAccessions = useMutation({
     mutationFn: (accessions: Accession[]) =>
-      Put(`/books/accessions/collections/${collectionId}`),
+      Put(`/books/accessions/collections/${collectionId}`, {
+        accessions,
+      }),
   });
 
   return {

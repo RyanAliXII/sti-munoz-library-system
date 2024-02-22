@@ -1,10 +1,12 @@
 package book
 
 import (
+	"fmt"
 	"mime/multipart"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -73,6 +75,25 @@ type BookFilter struct {
 	Collections []int `form:"collections[]"`
 	MainCollections []string `form:"mainC[]"`
 }
+
+type BulkAccessionUpdateBody  struct{
+	Accessions []model.Accession
+}
+
+func (body * BulkAccessionUpdateBody) ValidateDuplicateAccessionNumber()([]string, bool){
+	cache := make(map[int]model.Accession, 0)
+	errors := make([]string, 0)
+	for _, accession := range body.Accessions {
+		existedAccession, exists := cache[accession.Number]
+		if exists {
+			errors = append(errors, fmt.Sprintf("%s and %s has the same accession number %d.",
+			 accession.Book.Title, existedAccession.Book.Title, accession.Number))
+			continue
+		}
+		cache[accession.Number] = accession
+	}
+	return errors, len(errors) == 0
+} 
 
 func NewBookFilter(ctx * gin.Context) *BookFilter{
 	filter := &BookFilter{}
