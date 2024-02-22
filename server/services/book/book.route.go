@@ -55,6 +55,10 @@ var controller BookControllerInterface = NewBookController()
 	middlewares.ValidatePermissions([]string{"Book.Read", "Book.Edit", "Collection.Edit"}, true),
 	controller.GetAccessionsByCollection)
 
+	router.PUT("/accessions/collections/:collectionId", 
+	middlewares.ValidatePermissions([]string{"Book.Edit", "Collection.Edit"}, true),
+	controller.UpdateAccessionBulk)
+
 	router.PUT("/:id", 
 	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	middlewares.ValidateBody[BookBody], 
