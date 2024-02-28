@@ -72,8 +72,6 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	
-	
 	err = page.WaitLoad()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))

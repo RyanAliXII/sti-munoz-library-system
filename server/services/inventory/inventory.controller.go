@@ -41,7 +41,10 @@ func (ctrler *InventoryController) GetAuditById(ctx *gin.Context) {
 }
 func (ctrler InventoryController) GetAuditedAccession(ctx *gin.Context) {
 	id := ctx.Param("id")
-	audited := ctrler.inventoryRepository.GetAuditedAccessionById(id)
+	audited, err  := ctrler.inventoryRepository.GetAuditedAccessionById(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionByIdErr"))
+	}
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audited}, "Accession fetched."))
 }
 func (ctrler *InventoryController)AddBookCopyToAudit(ctx *gin.Context) {
@@ -65,6 +68,7 @@ func (ctrler *InventoryController)GenerateReport(ctx *gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
+	fmt.Println(auditId)
 	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/renderer/reports/audits/%s",auditId))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GotoErr"))
