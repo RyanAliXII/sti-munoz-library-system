@@ -25,7 +25,7 @@ var logger = slimlog.GetInstance()
 
 func createConnection() *sqlx.DB {
 	logger.Info("Connecting to Postgres database.")
-	CONNECTION_STRING := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", HOST, PORT, USERNAME, PASSWORD, DB_NAME)
+	CONNECTION_STRING := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable application_name=library-server", HOST, PORT, USERNAME, PASSWORD, DB_NAME)
 
 	var connection *sqlx.DB
 	var lastErr error
@@ -39,6 +39,8 @@ func createConnection() *sqlx.DB {
 			time.Sleep(time.Second * 2)
 			continue
 		}
+		tempConnection.DB.SetMaxOpenConns(20)
+		tempConnection.DB.SetMaxIdleConns(5)
 		connection = tempConnection
 		lastErr = nil
 		break
