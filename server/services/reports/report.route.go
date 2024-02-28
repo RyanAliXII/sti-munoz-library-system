@@ -14,7 +14,6 @@ func ReportRoutes(router * gin.RouterGroup) {
 
 func ReportRendererRoutes(router * gin.RouterGroup){
 	ctrler := NewReportController()
-	router.Use(middlewares.ValidatePermissions([]string{"Report.Read"}, true))
-	router.GET("/reports", ctrler.RenderReport)
+	router.GET("/reports",middlewares.ValidatePermissions([]string{"Report.Read"}, true), ctrler.RenderReport)
 	router.GET("/reports/audits/:auditId", ctrler.RenderAuditReport)
 }

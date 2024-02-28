@@ -126,8 +126,10 @@ func generateClientWalkInsTable (walkIns []model.WalkInData)(map[string][]int){
 
 func (ctrler  * Report)RenderAuditReport(ctx * gin.Context){
 	auditId := ctx.Param("auditId")
-	audited  := ctrler.inventoryRepo.GetAuditedAccessionById(auditId)
-	
+	audited, err  := ctrler.inventoryRepo.GetAuditedAccessionById(auditId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
+	}
 	ctx.HTML(http.StatusOK, "report/audit/index", gin.H{
 		"auditedBooks": audited,
 	})

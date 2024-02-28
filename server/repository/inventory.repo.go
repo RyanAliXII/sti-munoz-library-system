@@ -35,7 +35,7 @@ func (repo *InventoryRepository) GetById(id string) model.Audit {
 	return audit
 }
 
-func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.AuditedBook {
+func (repo *InventoryRepository) GetAuditedAccessionById(id string) ([]model.AuditedBook, error) {
 
 	var audited []model.AuditedBook
 	query := `
@@ -80,9 +80,9 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) []model.Audi
 	`
 	selectErr := repo.db.Select(&audited, query, id)
 	if selectErr != nil {
-		logger.Info(selectErr.Error(), slimlog.Function("InventoryRepository.GetAuditedAccessionById"), slimlog.Error("selectErr"))
+		return audited, selectErr
 	}
-	return audited
+	return audited, nil
 }
 func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) error {
 	const UNIQUE_VIOLATION_ERROR = "unique_violation"
@@ -211,7 +211,7 @@ func NewInventoryRepository() InventoryRepositoryInterface {
 type InventoryRepositoryInterface interface {
 	GetAudit() []model.Audit
 	GetById(id string) model.Audit
-	GetAuditedAccessionById(id string) []model.AuditedBook
+	GetAuditedAccessionById(id string) ([]model.AuditedBook, error)
 	AddToAudit(id string,  accessionId string) error
 	NewAudit(audit model.Audit) error
 	UpdateAudit(audit model.Audit) error
