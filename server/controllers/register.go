@@ -5,6 +5,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/account"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/author"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/authornumber"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/printables"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/bag"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/book"
@@ -64,4 +65,11 @@ func RegisterAPIV1(router *gin.Engine) {
 	searchtag.SearchTagRoutes(grp.Group("/search-tags"))
 	content.ContentRoutes(grp.Group("/contents"))
 	extras.ExtrasRoutes(grp.Group("/"))
+}
+
+func Register(r * gin.Engine){
+	printables.RegisterPrintablesGeneratorRoutes(r.Group("/printables-generator"))
+	printables.RegisterPrintablesRoutes(r.Group("/printables"))
+	reports.ReportRendererRoutes(r.Group("/renderer"))
+	scanner.ScannerRoutes(r.Group("/scanner/"))
 }
