@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/api/v1"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/realtime"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/routes"
 
 	"time"
@@ -15,7 +16,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/realtime"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

@@ -1,4 +1,4 @@
-package authornum
+package authornumber
 
 import (
 	"time"

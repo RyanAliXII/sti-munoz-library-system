@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/printables"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reports"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/scanner"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/printables"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/reports"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/scanner"
 	"github.com/gin-gonic/gin"
 )
 

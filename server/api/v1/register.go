@@ -2,35 +2,35 @@ package api
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/account"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/author"
-	authornum "github.com/RyanAliXII/sti-munoz-library-system/server/services/author_number"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/bag"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/book"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/borrowing"
-	clientlog "github.com/RyanAliXII/sti-munoz-library-system/server/services/client_log"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/content"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/dateslot"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/ddc"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/device"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/extras"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/game"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/item"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/notification"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reports"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/reservation"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/searchtag"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/timeslot"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/user"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/account"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/author"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/authornumber"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/inventory"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/penalty"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/publisher"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/scanner"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/section"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/stats"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services/system"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/bag"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/book"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/borrowing"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/clientlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/content"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/dateslot"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/ddc"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/device"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/extras"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/game"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/inventory"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/item"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/notification"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/penalty"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/publisher"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/reports"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/reservation"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/scanner"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/searchtag"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/section"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/stats"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/system"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/timeslot"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,7 +40,7 @@ func RegisterAPIV1(router *gin.Engine) {
 	author.AuthorRoutes(grp.Group("/authors"))
 	publisher.PublisherRoutes(grp.Group("/publishers"))
 	section.SectionRoutes(grp.Group("/sections"))
-	authornum.AuthorNumberRoutes(grp.Group("/author-numbers"))
+	authornumber.AuthorNumberRoutes(grp.Group("/author-numbers"))
 	ddc.DDCRoutes(grp.Group("/ddc"))
 	book.BookRoutes(grp.Group("/books"))
 	inventory.InventoryRoutes(grp.Group("/inventory"))

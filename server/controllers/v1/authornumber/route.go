@@ -1,4 +1,4 @@
-package authornum
+package authornumber
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
