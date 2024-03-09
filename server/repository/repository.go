@@ -26,5 +26,6 @@ func New() *Repositories {
 		BookRepository:         NewBookRepository(),
 		InventoryRepository:    NewInventoryRepository(),
 		ClientRepository:       NewAccountRepository(),
+		 
 	}
 }
