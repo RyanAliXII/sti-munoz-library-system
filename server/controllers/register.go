@@ -1,4 +1,4 @@
-package api
+package controllers
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"

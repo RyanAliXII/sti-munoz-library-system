@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/api/v1"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/realtime"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/routes"
 
@@ -62,7 +62,7 @@ func main() {
 	})
 	
 	realtime.RealtimeRoutes(r.Group("/rt"))
-	api.RegisterAPIV1(r)
+	controllers.RegisterAPIV1(r)
 	routes.Register(r)
 	logger.Info("Server starting")
     r.Run(":5200")
