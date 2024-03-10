@@ -9,7 +9,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-rod/rod/lib/proto"
@@ -19,8 +19,7 @@ import (
 
 
 type Report struct {
-	reportRepo repository.ReportRepository
-	inventoryRepo repository.InventoryRepositoryInterface
+	services * services.Services
 }
 
 type ReportController interface {
@@ -28,10 +27,9 @@ type ReportController interface {
 	RenderReport(ctx * gin.Context)
 	RenderAuditReport(ctx * gin.Context)
 }
-func NewReportController () ReportController {
+func NewReportController (services * services.Services) ReportController {
 	return &Report{
-		reportRepo: repository.NewReportRepository(),
-		inventoryRepo: repository.NewInventoryRepository(),
+		services: services,
 	}
 }
 func(ctrler * Report)NewReport(ctx * gin.Context){

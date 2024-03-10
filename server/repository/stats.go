@@ -6,11 +6,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type StatsRepository struct {
+type Stats struct {
 	db *sqlx.DB
 }
 
-func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
+func(repo * Stats)GetLibraryStats()model.LibraryStats{
 	var stats model.LibraryStats
 	query := `
 	SELECT
@@ -26,7 +26,7 @@ func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
     return stats
 }
 
-func (repo * StatsRepository)GetMonthlyLogs()([]model.WalkInLog, error){
+func (repo * Stats)GetMonthlyLogs()([]model.WalkInLog, error){
 	logs := make([]model.WalkInLog, 0)
 	query := `
 	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
@@ -38,7 +38,7 @@ func (repo * StatsRepository)GetMonthlyLogs()([]model.WalkInLog, error){
 	err := repo.db.Select(&logs, query)
 	return logs, err
 }
-func(repo * StatsRepository)GetWeeklyLogs()([]model.WalkInLog, error) {
+func(repo * Stats)GetWeeklyLogs()([]model.WalkInLog, error) {
 	logs := make([]model.WalkInLog, 0)
 	query := `
 	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
@@ -50,7 +50,7 @@ func(repo * StatsRepository)GetWeeklyLogs()([]model.WalkInLog, error) {
 	err := repo.db.Select(&logs, query)
 	return logs, err
 }
-func (repo * StatsRepository)GetWeeklyBorrowedSection ()([]model.BorrowedSection, error) {
+func (repo * Stats)GetWeeklyBorrowedSection ()([]model.BorrowedSection, error) {
 	borrowedSection := make([]model.BorrowedSection, 0)
 	query := `
 	SELECT  section.name, COUNT(1) as total  FROM borrowed_book_view as bv
@@ -63,7 +63,7 @@ func (repo * StatsRepository)GetWeeklyBorrowedSection ()([]model.BorrowedSection
 	return borrowedSection, err
 }
 
-func (repo * StatsRepository)GetMonthlyBorrowedSection ()([]model.BorrowedSection, error) {
+func (repo * Stats)GetMonthlyBorrowedSection ()([]model.BorrowedSection, error) {
 	borrowedSection := make([]model.BorrowedSection, 0)
 	query := `
 	SELECT  section.name, COUNT(1) as total  FROM borrowed_book_view as bv
@@ -75,12 +75,12 @@ func (repo * StatsRepository)GetMonthlyBorrowedSection ()([]model.BorrowedSectio
 	err := repo.db.Select(&borrowedSection, query)
 	return borrowedSection, err
 }
-func NewStatsRepository(db * sqlx.DB) StatsRepositoryInterface {
-	return &StatsRepository{db:db}
+func NewStatsRepository(db * sqlx.DB) StatsRepository {
+	return &Stats{db:db}
 }
 
 
-type StatsRepositoryInterface interface {
+type StatsRepository interface {
 	GetLibraryStats()model.LibraryStats
 	GetWeeklyLogs()([]model.WalkInLog, error)
 	GetMonthlyLogs()([]model.WalkInLog, error) 

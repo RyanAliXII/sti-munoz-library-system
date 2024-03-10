@@ -8,33 +8,33 @@ import (
 	"github.com/lib/pq"
 )
 
-type InventoryRepository struct {
+type Inventory struct {
 	db *sqlx.DB
 }
 
-func (repo *InventoryRepository) GetAudit() []model.Audit {
+func (repo *Inventory) GetAudit() []model.Audit {
 	query := "SELECT id, name FROM inventory.audit ORDER BY created_at DESC"
 	var audit []model.Audit = make([]model.Audit, 0)
 
 	selectErr := repo.db.Select(&audit, query)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("InventoryRepository.GetAudit"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("Inventory.GetAudit"), slimlog.Error("selectErr"))
 	}
 	return audit
 }
-func (repo *InventoryRepository) GetById(id string) model.Audit {
+func (repo *Inventory) GetById(id string) model.Audit {
 
 	query := "SELECT id, name FROM inventory.audit where id = $1"
 	var audit model.Audit = model.Audit{}
 
 	selectErr := repo.db.Get(&audit, query, id)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("InventoryRepository.GetAudit"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("Inventory.GetAudit"), slimlog.Error("selectErr"))
 	}
 	return audit
 }
 
-func (repo *InventoryRepository) GetAuditedAccessionById(id string) ([]model.AuditedBook, error) {
+func (repo *Inventory) GetAuditedAccessionById(id string) ([]model.AuditedBook, error) {
 
 	var audited []model.AuditedBook
 	query := `
@@ -83,11 +83,11 @@ func (repo *InventoryRepository) GetAuditedAccessionById(id string) ([]model.Aud
 	}
 	return audited, nil
 }
-func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) error {
+func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 	const UNIQUE_VIOLATION_ERROR = "unique_violation"
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("transactErr"))
 		transaction.Rollback()
 		return transactErr
 	}
@@ -99,7 +99,7 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 	
 	 getErr := transaction.Get(&accession, query, accessionId)
 	if(getErr != nil ){
-		logger.Error(getErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("getErr"))
 		transaction.Rollback()
 		return getErr
 	}
@@ -109,7 +109,7 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 	checkBookisAuditedErr := transaction.Get(&exists, query, auditId, accession.BookId)
 
 	if checkBookisAuditedErr != nil{
-		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("checkBookisAuditedErr"))
+		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("checkBookisAuditedErr"))
 		transaction.Rollback()
 		return checkBookisAuditedErr
 	}
@@ -118,7 +118,7 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 		query = `INSERT INTO inventory.audited_book(book_id, audit_id) VALUES ($1,$2)`
 		_, auditBookErr := transaction.Exec(query, accession.BookId, auditId)
 		if auditBookErr != nil {
-			logger.Error(auditBookErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertAuditedBookErr"))
+			logger.Error(auditBookErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAuditedBookErr"))
 			transaction.Rollback()
 			return auditBookErr
 		}
@@ -130,32 +130,32 @@ func (repo *InventoryRepository) AddToAudit(auditId string, accessionId string) 
 	if insertAccessionToAuditErr != nil {
 		err, ok := insertAccessionToAuditErr.(*pq.Error)
 		if !ok {
-			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
+			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
 			transaction.Rollback()
 			return insertAccessionToAuditErr
 		}
 
 		if err.Code.Name() != UNIQUE_VIOLATION_ERROR {
 	
-			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
+			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
 			transaction.Rollback()
 			return insertAccessionToAuditErr
 		}
 		//if already inserted
-		logger.Info("Accession Already scanned.", slimlog.Function("InventoryRepository.AddToAudit"))
+		logger.Info("Accession Already scanned.", slimlog.Function("Inventory.AddToAudit"))
 		transaction.Rollback()
 		return nil
 	}
 	transaction.Commit()
 	return nil
 }
-func (repo *InventoryRepository) AddBookToAudit(auditId string, bookId string) error {
+func (repo *Inventory) AddBookToAudit(auditId string, bookId string) error {
 	query := `SELECT EXISTS(SELECT 1 FROM inventory.	audited_book where audit_id = $1  AND book_id = $2 )`
 	exists := true
 	checkBookisAuditedErr := repo.db.Get(&exists, query, auditId, bookId)
 
 	if checkBookisAuditedErr != nil{
-		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("InventoryRepository.AddBookToAudit"), slimlog.Error("checkBookisAuditedErr"))
+		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("Inventory.AddBookToAudit"), slimlog.Error("checkBookisAuditedErr"))
 
 		return checkBookisAuditedErr
 	}
@@ -164,7 +164,7 @@ func (repo *InventoryRepository) AddBookToAudit(auditId string, bookId string) e
 		query = `INSERT INTO inventory.audited_book(book_id, audit_id) VALUES ($1,$2)`
 		_, auditBookErr := repo.db.Exec(query, bookId, auditId)
 		if auditBookErr != nil {
-			logger.Error(auditBookErr.Error(), slimlog.Function("InventoryRepository.AddBookToAudit"), slimlog.Error("insertAuditedBookErr"))
+			logger.Error(auditBookErr.Error(), slimlog.Function("Inventory.AddBookToAudit"), slimlog.Error("insertAuditedBookErr"))
 			
 			return auditBookErr
 		}
@@ -173,12 +173,12 @@ func (repo *InventoryRepository) AddBookToAudit(auditId string, bookId string) e
 	return nil
 }
 
-func (repo *InventoryRepository) DeleteBookCopyFromAudit(auditId string, accessionId string) error {
+func (repo *Inventory) DeleteBookCopyFromAudit(auditId string, accessionId string) error {
 	
 		query := `DELETE FROM inventory.audited_accession where audit_id = $1 and accession_id = $2`
 		_, deleteErr := repo.db.Exec(query, auditId, accessionId)
 		if deleteErr != nil {
-			logger.Error(deleteErr.Error(), slimlog.Function("InventoryRepository.AddToAudit"), slimlog.Error("deleteAuditErr"))
+			logger.Error(deleteErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("deleteAuditErr"))
 			
 			return deleteErr
 		}
@@ -186,28 +186,28 @@ func (repo *InventoryRepository) DeleteBookCopyFromAudit(auditId string, accessi
 	return nil
 }
 
-func (repo *InventoryRepository) NewAudit(audit model.Audit) error {
+func (repo *Inventory) NewAudit(audit model.Audit) error {
 	_, insertErr := repo.db.NamedExec("INSERT INTO inventory.audit(name)VALUES(:name)", audit)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("InventoryRepository.NewAudit"), slimlog.Error("insertErr"))
+		logger.Error(insertErr.Error(), slimlog.Function("Inventory.NewAudit"), slimlog.Error("insertErr"))
 	}
 	return insertErr
 }
-func (repo *InventoryRepository) UpdateAudit(audit model.Audit) error {
+func (repo *Inventory) UpdateAudit(audit model.Audit) error {
 	_, updateErr := repo.db.Exec("UPDATE inventory.audit SET name = $1 WHERE id = $2", audit.Name, audit.Id)
 	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function("InventoryRepository.UpdateAudit"), slimlog.Error("updateErr"))
+		logger.Error(updateErr.Error(), slimlog.Function("Inventory.UpdateAudit"), slimlog.Error("updateErr"))
 	}
 	return updateErr
 }
-func NewInventoryRepository(db *sqlx.DB) InventoryRepositoryInterface {
-	return &InventoryRepository{
+func NewInventoryRepository(db *sqlx.DB) InventoryRepository{
+	return &Inventory{
 		db: db,
 	}
 
 }
 
-type InventoryRepositoryInterface interface {
+type InventoryRepository interface {
 	GetAudit() []model.Audit
 	GetById(id string) model.Audit
 	GetAuditedAccessionById(id string) ([]model.AuditedBook, error)

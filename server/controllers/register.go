@@ -6,6 +6,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/author"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/authornumber"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/printables"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/bag"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/book"
@@ -35,41 +36,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAPIV1(router *gin.Engine) {
+func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	grp := router.Group("/api/1")
 	grp.Use(middlewares.ValidateToken)
-	author.AuthorRoutes(grp.Group("/authors"))
-	publisher.PublisherRoutes(grp.Group("/publishers"))
-	section.SectionRoutes(grp.Group("/sections"))
-	authornumber.AuthorNumberRoutes(grp.Group("/author-numbers"))
-	ddc.DDCRoutes(grp.Group("/ddc"))
-	book.BookRoutes(grp.Group("/books"))
-	inventory.InventoryRoutes(grp.Group("/inventory"))
-	account.ClientRoutes(grp.Group("/accounts"))
-	system.SystemRoutes(grp.Group("/system"))
-	penalty.PenaltyRoutes(grp.Group("/penalties"))
-	stats.StatsRoutes(grp.Group("/stats"))
-	borrowing.BorrowingRoutes(grp.Group("/borrowing"))
-	bag.BagRoutes(grp.Group("/bag"))
-	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"))
-	clientlog.ClientLogRoutes(grp.Group("/client-logs"))
-	game.GameRoutes(grp.Group("/games"))
+	author.AuthorRoutes(grp.Group("/authors"), services)
+	publisher.PublisherRoutes(grp.Group("/publishers"), services)
+	section.SectionRoutes(grp.Group("/sections"), services)
+	authornumber.AuthorNumberRoutes(grp.Group("/author-numbers"), services)
+	ddc.DDCRoutes(grp.Group("/ddc"), services)
+	book.BookRoutes(grp.Group("/books"), services)
+	inventory.InventoryRoutes(grp.Group("/inventory"),services)
+	account.ClientRoutes(grp.Group("/accounts"), services)
+	system.SystemRoutes(grp.Group("/system"), services)
+	penalty.PenaltyRoutes(grp.Group("/penalties"), services)
+	stats.StatsRoutes(grp.Group("/stats"), services)
+	borrowing.BorrowingRoutes(grp.Group("/borrowing"), services)
+	bag.BagRoutes(grp.Group("/bag"), services)
+	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"), services)
+	clientlog.ClientLogRoutes(grp.Group("/client-logs"), services)
+	game.GameRoutes(grp.Group("/games"), services)
 	device.DeviceRoutes(grp.Group("/devices"))
-	timeslot.TimeSlotRoutes(grp.Group("/time-slots"))
-	dateslot.DateSlotRoutes(grp.Group("/date-slots"))
-	reservation.ReservationRoutes(grp.Group("/reservations"))
-	reports.ReportRoutes(grp.Group("/reports"))
-	user.UserRoutes(grp.Group("/users"))
-	item.ItemRoutes(grp.Group("/items"))
+	timeslot.TimeSlotRoutes(grp.Group("/time-slots"), services)
+	dateslot.DateSlotRoutes(grp.Group("/date-slots"), services)
+	reservation.ReservationRoutes(grp.Group("/reservations"), services)
+	reports.ReportRoutes(grp.Group("/reports"), services)
+	user.UserRoutes(grp.Group("/users"), services)
+	item.ItemRoutes(grp.Group("/items"), services)
 	notification.NotificationRoutes(grp.Group("/notifications"))
-	searchtag.SearchTagRoutes(grp.Group("/search-tags"))
-	content.ContentRoutes(grp.Group("/contents"))
-	extras.ExtrasRoutes(grp.Group("/"))
+	searchtag.SearchTagRoutes(grp.Group("/search-tags"), services)
+	content.ContentRoutes(grp.Group("/contents"), services)
+	extras.ExtrasRoutes(grp.Group("/"), services)
 }
 
-func Register(r * gin.Engine){
-	printables.RegisterPrintablesGeneratorRoutes(r.Group("/printables-generator"))
-	printables.RegisterPrintablesRoutes(r.Group("/printables"))
-	reports.ReportRendererRoutes(r.Group("/renderer"))
-	scanner.ScannerRoutes(r.Group("/scanner/"))
+func Register(r * gin.Engine, services * services.Services){
+	printables.RegisterPrintablesGeneratorRoutes(r.Group("/printables-generator"),services)
+	printables.RegisterPrintablesRoutes(r.Group("/printables"), services)
+	reports.ReportRendererRoutes(r.Group("/renderer"), services)
+	scanner.ScannerRoutes(r.Group("/scanner/"), services)
 }

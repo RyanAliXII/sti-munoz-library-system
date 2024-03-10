@@ -2,12 +2,13 @@ package publisher
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-func PublisherRoutes(router *gin.RouterGroup) {
-	var controller PublisherControllerInterface = NewPublisherController()
+func PublisherRoutes(router *gin.RouterGroup, services * services.Services) {
+	controller := NewPublisherController(services)
 
 	router.GET("/",
 	middlewares.ValidatePermissions([]string{"Book.Read","Bookp.Edit","Publisher.Read"}, 

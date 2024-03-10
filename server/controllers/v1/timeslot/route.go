@@ -2,13 +2,14 @@ package timeslot
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
 
-func TimeSlotRoutes(router* gin.RouterGroup){
-	ctrler := NewTimeSlotProfileController()
-	timeSlotCtrler := NewTimeSlotController()
+func TimeSlotRoutes(router* gin.RouterGroup, services * services.Services){
+	ctrler := NewTimeSlotProfileController(services)
+	timeSlotCtrler := NewTimeSlotController(services)
 	router.GET("/profiles/:id",ctrler.GetProfileById)
 	router.GET("/profiles/:id/date-slots/:dateSlotId/devices/:deviceId", timeSlotCtrler.GetTimeSlotBasedOnDateAndDevice)
 	privateRouter := router.Group("")

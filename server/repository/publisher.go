@@ -10,17 +10,17 @@ import (
 )
 
 const (
-	GET_PUBLISHERS   = "PublisherRepository.Get"
-	NEW_PUBLISHER    = "PublisherRepository.New"
-	DELETE_PUBLISHER = "PublisherRepository.Delete"
-	UPDATE_PUBLISHER = "PublisherRepository.Update"
+	GET_PUBLISHERS   = "Publisher.Get"
+	NEW_PUBLISHER    = "Publisher.New"
+	DELETE_PUBLISHER = "Publisher.Delete"
+	UPDATE_PUBLISHER = "Publisher.Update"
 )
 
-type PublisherRepository struct {
+type Publisher struct {
 	db *sqlx.DB
 }
 
-func (repo *PublisherRepository) Get(filter * filter.Filter) []model.Publisher {
+func (repo *Publisher) Get(filter * filter.Filter) []model.Publisher {
 	var publishers []model.Publisher = make([]model.Publisher, 0)
 	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null ORDER BY created_at DESC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
@@ -29,7 +29,7 @@ func (repo *PublisherRepository) Get(filter * filter.Filter) []model.Publisher {
 	return publishers
 }
 
-func (repo *PublisherRepository) Search(filter * filter.Filter) []model.Publisher {
+func (repo *Publisher) Search(filter * filter.Filter) []model.Publisher {
 	var publishers []model.Publisher = make([]model.Publisher, 0)
 	selectErr := repo.db.Select(&publishers, "SELECT id, name from catalog.publisher where deleted_at is null and name ILIKE '%' || $1 || '%'  ORDER BY created_at DESC LIMIT $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
@@ -37,7 +37,7 @@ func (repo *PublisherRepository) Search(filter * filter.Filter) []model.Publishe
 	}
 	return publishers
 }
-func (repo *PublisherRepository) New(publisher model.Publisher) (model.Publisher, error) {
+func (repo *Publisher) New(publisher model.Publisher) (model.Publisher, error) {
 	newPublisher := model.Publisher{}
  	insertErr := repo.db.Get(&newPublisher,"INSERT INTO catalog.publisher(name)VALUES($1) RETURNING id, name", publisher.Name)
 	if insertErr != nil {
@@ -46,7 +46,7 @@ func (repo *PublisherRepository) New(publisher model.Publisher) (model.Publisher
 	}
 	return newPublisher, insertErr
 }
-func (repo *PublisherRepository) Delete(id string) error {
+func (repo *Publisher) Delete(id string) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.publisher SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.String("publisherId", id), slimlog.Function(DELETE_PUBLISHER))
@@ -61,7 +61,7 @@ func (repo *PublisherRepository) Delete(id string) error {
 	logger.Info("model.Publisher Deleted", zap.String("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_PUBLISHER))
 	return deleteErr
 }
-func (repo *PublisherRepository) Update(id string, publisher model.Publisher) error {
+func (repo *Publisher) Update(id string, publisher model.Publisher) error {
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.publisher SET name=$1 where id=$2")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.String("publisherId", id), slimlog.Function(UPDATE_PUBLISHER))
@@ -80,13 +80,13 @@ func (repo *PublisherRepository) Update(id string, publisher model.Publisher) er
 	logger.Info("model.Publisher Updated", zap.String("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
 	return updateErr
 }
-func NewPublisherRepository(db * sqlx.DB) PublisherRepositoryInterface {
-	return &PublisherRepository{
+func NewPublisherRepository(db * sqlx.DB) PublisherRepository {
+	return &Publisher{
 		db: db,
 	}
 }
 
-type PublisherRepositoryInterface interface {
+type PublisherRepository interface {
 	Get(*filter.Filter) []model.Publisher
 	New(publisher model.Publisher) (model.Publisher, error)
 	Delete(id string) error

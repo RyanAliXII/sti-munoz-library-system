@@ -4,19 +4,19 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
 
 
 type Item struct {
-	itemRepo repository.ItemRepository
+	services * services.Services
 }
 
-func NewItemController() ItemController{
+func NewItemController(services * services.Services) ItemController{
 	return &Item{
-		itemRepo: repository.NewItemRepository(),
+		services:  services,
 	}
 }
 type ItemController interface{
@@ -25,7 +25,7 @@ type ItemController interface{
 func (ctrler * Item)GetItems(ctx * gin.Context) {
 	filter := filter.ExtractFilter(ctx)
 	if len(filter.Keyword) > 0 {
-		items, err := ctrler.itemRepo.SearchItems(&filter)
+		items, err := ctrler.services.Repos.ItemRepository.SearchItems(&filter)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error(err.Error()))
 		}

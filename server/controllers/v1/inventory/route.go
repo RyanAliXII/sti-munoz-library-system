@@ -2,13 +2,13 @@ package inventory
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InventoryRoutes(router *gin.RouterGroup) {
-	var controller InventoryControllerInterface = NewInventoryController()
-	
+func InventoryRoutes(router *gin.RouterGroup, services* services.Services) {
+	controller  := NewInventoryController(services)
 	router.Use(middlewares.ValidatePermissions([]string{"Audit.Access"}, true))
 	router.GET("/audits", controller.GetAudits)
 

@@ -4,13 +4,13 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 type Game struct {
-	gameRepo repository.GameRepository
+	services * services.Services
 }
 type GameController interface{ 
 	NewGame (ctx * gin.Context) 
@@ -24,13 +24,13 @@ type GameController interface{
 	LogoutGame(ctx * gin.Context)
 }
 
-func NewGameController () GameController{
+func NewGameController (sevices * services.Services) GameController{
 	return &Game{
-		gameRepo: repository.NewGameRepository(),
+		services: sevices,
 	}
 }
 
-func (ctrler * Game)NewGame (ctx * gin.Context) {
+func (ctrler * Game)NewGame(ctx * gin.Context) {
 	game := model.Game{}
 	err := ctx.ShouldBindBodyWith(&game, binding.JSON)
 	if err != nil {
@@ -38,7 +38,7 @@ func (ctrler * Game)NewGame (ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.gameRepo.NewGame(game)
+	err = ctrler.services.Repos.GameRepository.NewGame(game)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -58,7 +58,7 @@ func (ctrler * Game)UpdateGame(ctx * gin.Context){
 		return
 	}
 	game.Id = id
-	err = ctrler.gameRepo.UpdateGame(game)
+	err =  ctrler.services.Repos.GameRepository.UpdateGame(game)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -70,7 +70,7 @@ func (ctrler * Game)UpdateGame(ctx * gin.Context){
 func (ctrler * Game)DeleteGame(ctx * gin.Context){
 	id := ctx.Param("id")
 	
-	err := ctrler.gameRepo.DeleteGame(id)
+	err :=  ctrler.services.Repos.GameRepository.DeleteGame(id)
 	if err != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -78,7 +78,7 @@ func (ctrler * Game)DeleteGame(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Game deleted."))
 }
 func (ctrler * Game)GetGames(ctx * gin.Context){
-	games, err := ctrler.gameRepo.GetGames()
+	games, err :=  ctrler.services.Repos.GameRepository.GetGames()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetGamesErr"))
 	}

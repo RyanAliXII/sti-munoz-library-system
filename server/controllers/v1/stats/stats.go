@@ -2,29 +2,29 @@ package stats
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-type StatsController struct {
-	statsRepo repository.StatsRepositoryInterface
+type Stats struct {
+	services * services.Services
 }
-func (ctrler *StatsController) GetLibraryStats(ctx *gin.Context) {
-	stats := ctrler.statsRepo.GetLibraryStats()
-	weeklyWalkIns, err := ctrler.statsRepo.GetWeeklyLogs()
+func (ctrler *Stats) GetLibraryStats(ctx *gin.Context) {
+	stats := ctrler.services.Repos.StatsRepository.GetLibraryStats()
+	weeklyWalkIns, err := ctrler.services.Repos.StatsRepository.GetWeeklyLogs()
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	monthlyWalkIns, err :=  ctrler.statsRepo.GetMonthlyLogs()
+	monthlyWalkIns, err :=  ctrler.services.Repos.StatsRepository.GetMonthlyLogs()
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	weeklyBorrowedSection, err := ctrler.statsRepo.GetWeeklyBorrowedSection()
+	weeklyBorrowedSection, err :=ctrler.services.Repos.StatsRepository.GetWeeklyBorrowedSection()
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	monthlyBorrowedSection, err := ctrler.statsRepo.GetMonthlyBorrowedSection()
+	monthlyBorrowedSection, err := ctrler.services.Repos.StatsRepository.GetMonthlyBorrowedSection()
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -38,13 +38,13 @@ func (ctrler *StatsController) GetLibraryStats(ctx *gin.Context) {
 	}, "Library Stats has been fetched."))
 }
 
-func NewStatsController() StatsControllerInterface {
-	return &StatsController{
-		statsRepo:  repository.NewStatsRepository(),
+func NewStatsController(services * services.Services) StatsController{
+	return &Stats{
+		services: services,
 	}
 }
 
-type StatsControllerInterface interface {
+type StatsController interface {
 
 	GetLibraryStats(ctx *gin.Context)
 

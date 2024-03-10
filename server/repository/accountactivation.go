@@ -9,7 +9,7 @@ import (
 )
 
 
-func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActivation) error {
+func(repo * Account)ActivateAccountBulk(accounts []model.AccountActivation) error {
 	transaction, err := repo.db.Beginx()
 	if err != nil {
 		transaction.Rollback()
@@ -52,7 +52,7 @@ func(repo * AccountRepository)ActivateAccountBulk(accounts []model.AccountActiva
 	transaction.Commit()
 	return nil;
 }
-func (repo * AccountRepository)ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error {
+func (repo * Account)ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error {
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Update(goqu.T("account").Schema("system")).Prepared(true)
 	record := goqu.Record{}
@@ -85,7 +85,7 @@ func (repo * AccountRepository)ActivateAccounts(accountIds []string,  userTypeId
 	return err
 }
 
-func (repo * AccountRepository)DeactiveAccounts(accountIds []string) error {
+func (repo * Account)DeactiveAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Update(goqu.T("account").Schema("system")).Prepared(true).Set(goqu.Record{
 		"active_until" : goqu.L("null"),

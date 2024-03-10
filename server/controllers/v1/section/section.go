@@ -7,17 +7,17 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-type SectionController struct {
-	sectionRepository repository.SectionRepositoryInterface
+type Section struct {
+	services * services.Services
 }
 
-func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
+func (ctrler *Section) NewCategory(ctx *gin.Context) {
 	var body model.Section
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	fields, err := body.ValidateSection()
@@ -28,7 +28,7 @@ func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
 		}, "Validation error."))
 		return 
 	}	
-	err = ctrler.sectionRepository.New(body)
+	err = ctrler.services.Repos.SectionRepository.New(body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("New collection error"))
 		ctx.JSON(httpresp.Fail500(gin.H{
@@ -38,25 +38,25 @@ func (ctrler *SectionController) NewCategory(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "model.Section created."))
 }
-func (ctrler *SectionController)GetCategories(ctx *gin.Context) {
+func (ctrler *Section)GetCategories(ctx *gin.Context) {
 	filter  := CollectionFilter{}
 	err := ctx.ShouldBindQuery(&filter)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	if filter.IsMain {
-		sections, err := ctrler.sectionRepository.GetMainCollections()
+		sections, err := ctrler.services.Repos.SectionRepository.GetMainCollections()
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("GetMainCollectionsErr"))
 		}
 		ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Main collections fetched."))
 		return
 	}
-	var sections = ctrler.sectionRepository.Get()
-	tree := ctrler.sectionRepository.TransformToTree(sections)
+	var sections = ctrler.services.Repos.SectionRepository.Get()
+	tree := ctrler.services.Repos.SectionRepository.TransformToTree(sections)
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections, "tree" : tree}, "Collections fetched."))
 }
-func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
+func(ctrler * Section)UpdateSection(ctx * gin.Context){
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("convErr"))
@@ -74,7 +74,7 @@ func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldsErr}, "Validation error."),)
 		return 
 	}
-	err = ctrler.sectionRepository.Update(section)
+	err = ctrler.services.Repos.SectionRepository.Update(section)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -83,14 +83,14 @@ func(ctrler * SectionController)UpdateSection(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Section updated."))
 }
 
-func(ctrler * SectionController)DeleteCollection(ctx * gin.Context){
+func(ctrler * Section)DeleteCollection(ctx * gin.Context){
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("convErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	}
 	
-	err = ctrler.sectionRepository.Delete(id)
+	err = ctrler.services.Repos.SectionRepository.Delete(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DeleteErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -100,14 +100,14 @@ func(ctrler * SectionController)DeleteCollection(ctx * gin.Context){
 }
 
 
-func NewSectionController() SectionControllerInterface {
-	return &SectionController{
-		sectionRepository: repository.NewSectionRepository(),
+func NewSectionController(services * services.Services) SectionController {
+	return &Section{
+		services: services,
 	}
 
 }
 
-type SectionControllerInterface interface {
+type SectionController interface {
 	NewCategory(ctx *gin.Context)
 	GetCategories(ctx *gin.Context)
 	UpdateSection(ctx * gin.Context)

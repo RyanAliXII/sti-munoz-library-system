@@ -8,22 +8,18 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-
-
 type Reservation struct {
-	reservationRepo repository.ReservationRepository
-	accountRepo repository.AccountRepositoryInterface
+	services * services.Services
 }
 
-func NewReservationController () ReservationController {
+func NewReservationController (services * services.Services) ReservationController {
 	return &Reservation{
-		reservationRepo: repository.NewReservationRepository(),
-		accountRepo : repository.NewAccountRepository(),
+		services: services,
 	}
 }
 type ReservationController interface {
@@ -40,13 +36,13 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 		return 
 	}
 	reservation.AccountId = ctx.GetString("requestorId")
-	err = ctrler.reservationRepo.NewReservation(reservation)
+	err = ctrler.services.Repos.ReservationRepository.NewReservation(reservation)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewReservationErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	_, err  = ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
+	_, err  = ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -61,7 +57,7 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 	requestorApp := ctx.GetString("requestorApp")
 	if requestorApp == azuread.ClientAppClientId{
 		accountId := ctx.GetString("requestorId")
-		reservations, err := ctrler.reservationRepo.GetReservationsByClientId(accountId)
+		reservations, err :=ctrler.services.Repos.ReservationRepository.GetReservationsByClientId(accountId)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("GetReservationsErr"))
 		}
@@ -70,7 +66,7 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 		}, "Reservations fetched for client."))
 		return
 	}
-	reservations, err := ctrler.reservationRepo.GetReservations()
+	reservations, err := ctrler.services.Repos.ReservationRepository.GetReservations()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetReservationsErr"))
 	}
@@ -117,7 +113,7 @@ func(ctrler * Reservation)handleEditRemarks(ctx * gin.Context, id string) {
 		ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
 		return
 	}
-	err = ctrler.reservationRepo.UpdateRemarks(id, body.Remarks)
+	err = ctrler.services.Repos.ReservationRepository.UpdateRemarks(id, body.Remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("EditRemarksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -139,7 +135,7 @@ func(ctrler * Reservation)handleUpdateStatusRequestFromClient(ctx * gin.Context,
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	}
 	accountId := ctx.GetString("requestorId")
-	err = ctrler.reservationRepo.CancelReservationByClientAndId(id, accountId, body.Remarks)
+	err = ctrler.services.Repos.ReservationRepository.CancelReservationByClientAndId(id, accountId, body.Remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("CancelErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -148,7 +144,7 @@ func(ctrler * Reservation)handleUpdateStatusRequestFromClient(ctx * gin.Context,
 	ctx.JSON(httpresp.Success200(nil, "Reservation cancelled."))
 }
 func (ctrler * Reservation)handleMarkAsAttended(ctx * gin.Context, id string){
-	err := ctrler.reservationRepo.MarkAsAttended(id)
+	err := ctrler.services.Repos.ReservationRepository.MarkAsAttended(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsAttendedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -157,7 +153,7 @@ func (ctrler * Reservation)handleMarkAsAttended(ctx * gin.Context, id string){
 	ctx.JSON(httpresp.Success200(nil, "Reservation mark as attended."))
 }
 func (ctrler * Reservation)handleMarkAsMissed(ctx * gin.Context, id string){
-	err := ctrler.reservationRepo.MarkAsMissed(id)
+	err := ctrler.services.Repos.ReservationRepository.MarkAsMissed(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsMissedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -173,7 +169,7 @@ func (ctrler * Reservation)handleCancellation(ctx * gin.Context, id string){
 			ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
 			return
 		}
-		err = ctrler.reservationRepo.CancelReservation(id, body.Remarks)
+		err = ctrler.services.Repos.ReservationRepository.CancelReservation(id, body.Remarks)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("CancelErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

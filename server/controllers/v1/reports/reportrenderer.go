@@ -29,7 +29,7 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	reportBody := ReportConfigBody{}
 	ctx.ShouldBindQuery(&reportBody)
 	
-	walkIns, err := ctrler.reportRepo.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
+	walkIns, err := ctrler.services.Repos.ReportRepository.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -37,33 +37,33 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	clientStats, err := ctrler.reportRepo.GetClientStats(reportBody.ClientStatsFrom, reportBody.ClientStatsTo)
+	clientStats, err := ctrler.services.Repos.ReportRepository.GetClientStats(reportBody.ClientStatsFrom, reportBody.ClientStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	walkInsTable := generateClientWalkInsTable(walkIns)
 	
 	
-	borrowingReportData, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	borrowingReportData, err := ctrler.services.Repos.ReportRepository.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	borrowingData, err := ctrler.reportRepo.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	borrowingData, err := ctrler.services.Repos.ReportRepository.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	borrowedBooks, err := ctrler.reportRepo.GetBorrowedBooks(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	borrowedBooks, err :=ctrler.services.Repos.ReportRepository.GetBorrowedBooks(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	
-	borrowedSections, err := ctrler.reportRepo.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
+	borrowedSections, err :=ctrler.services.Repos.ReportRepository.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 
 
-	gameLogData, err := ctrler.reportRepo.GetGameLogsData(reportBody.GameStatsFrom, reportBody.GameStatsTo)
+	gameLogData, err := ctrler.services.Repos.ReportRepository.GetGameLogsData(reportBody.GameStatsFrom, reportBody.GameStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -72,11 +72,11 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 		logger.Error(err.Error())
 	}
 
-	gameLogs, err := ctrler.reportRepo.GetGameLogs(reportBody.GameStatsFrom, reportBody.GameStatsTo)
+	gameLogs, err := ctrler.services.Repos.ReportRepository.GetGameLogs(reportBody.GameStatsFrom, reportBody.GameStatsTo)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("gameLogsErr"))
 	}
-	deviceLogsGrouped, err := ctrler.reportRepo.GetDeviceLogsData(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
+	deviceLogsGrouped, err := ctrler.services.Repos.ReportRepository.GetDeviceLogsData(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -84,7 +84,7 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	deviceLogs, err := ctrler.reportRepo.GetDeviceLogs(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
+	deviceLogs, err := ctrler.services.Repos.ReportRepository.GetDeviceLogs(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -126,7 +126,7 @@ func generateClientWalkInsTable (walkIns []model.WalkInData)(map[string][]int){
 
 func (ctrler  * Report)RenderAuditReport(ctx * gin.Context){
 	auditId := ctx.Param("auditId")
-	audited, err  := ctrler.inventoryRepo.GetAuditedAccessionById(auditId)
+	audited, err  := ctrler.services.Repos.InventoryRepository.GetAuditedAccessionById(auditId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
 	}

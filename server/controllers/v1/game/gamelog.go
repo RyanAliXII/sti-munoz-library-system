@@ -16,7 +16,7 @@ func (ctrler * Game)LogGame(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.gameRepo.Log(gameLog)
+	err =  ctrler.services.Repos.GameRepository.Log(gameLog)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("LogErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -26,7 +26,7 @@ func (ctrler * Game)LogGame(ctx * gin.Context) {
 }
 func (ctrler * Game)GetGameLogs(ctx * gin.Context){
 	filter := NewGameLogFilter(ctx)
-	logs,metadata, err := ctrler.gameRepo.GetLogs(&repository.GameLogFilter{
+	logs,metadata, err :=  ctrler.services.Repos.GameRepository.GetLogs(&repository.GameLogFilter{
 		From: filter.From,
 		To: filter.To,
 		Filter: filter.Filter,
@@ -41,7 +41,7 @@ func (ctrler * Game)GetGameLogs(ctx * gin.Context){
 }
 func(ctrler * Game) DeleteGameLog(ctx * gin.Context){
 	id :=  ctx.Param("id")
-	err := ctrler.gameRepo.DeleteLog(id)
+	err :=  ctrler.services.Repos.GameRepository.DeleteLog(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -59,7 +59,7 @@ func(ctrler * Game)UpdateGameLog(ctx * gin.Context){
 		return 
 	}
 	gameLog.Id = id
-	err = ctrler.gameRepo.UpdateLog(gameLog)
+	err =  ctrler.services.Repos.GameRepository.UpdateLog(gameLog)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -70,7 +70,7 @@ func(ctrler * Game)UpdateGameLog(ctx * gin.Context){
 
 func (ctrler * Game)LogoutGame(ctx * gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.gameRepo.GameLogout(id)
+	err :=  ctrler.services.Repos.GameRepository.GameLogout(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DeviceLogout"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

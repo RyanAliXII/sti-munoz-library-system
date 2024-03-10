@@ -17,10 +17,6 @@ import (
 
 type Book struct {
 	services * services.Services
-	// bookRepository repository.BookRepositoryInterface
-	// accessionRepo repository.AccessionRepository
-	// borrowingRepo repository.BorrowingRepository
-	// recordMetadataRepo repository.RecordMetadataRepository
 }
 
 func (ctrler *Book) NewBook(ctx *gin.Context) {

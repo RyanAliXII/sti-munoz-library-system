@@ -7,32 +7,29 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/gocarina/gocsv"
 )
 
-type AccountController struct {
-	accountRepository repository.AccountRepositoryInterface
-	recordMetadataRepository  repository.RecordMetadataRepository
-	userRepo repository.UserRepository
-	settingsRepo repository.SettingsRepositoryInterface
+type Account struct {
+	services * services.Services
 	validator   * validator.Validate
 	
 }
 
-func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
+func (ctrler *Account) GetAccounts(ctx *gin.Context) {
 	accountFilter := AccountFilter{}
 	accountFilter.ExtractFilter(ctx)
 	if len(accountFilter.Keyword) > 0 {
-		accounts, metadata, err  := ctrler.accountRepository.SearchAccounts(&repository.AccountFilter{
+		accounts, metadata, err  := ctrler.services.Repos.AccountRepository.SearchAccounts(&repository.AccountFilter{
 			Disabled: accountFilter.Disabled,
 			Active: accountFilter.Active,
 			Deleted: accountFilter.Deleted,
@@ -51,7 +48,7 @@ func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 		))
 		return
 	}
-	accounts, metadata, err  := ctrler.accountRepository.GetAccounts(&repository.AccountFilter{
+	accounts, metadata, err  := ctrler.services.Repos.AccountRepository.GetAccounts(&repository.AccountFilter{
 		Disabled: accountFilter.Disabled,
 		Active: accountFilter.Active,
 		Deleted: accountFilter.Deleted,
@@ -71,7 +68,7 @@ func (ctrler *AccountController) GetAccounts(ctx *gin.Context) {
 	))
 }
 
-func(ctrler * AccountController) validateCSVHeaders(file multipart.File, requiredHeaders map[string]struct{}) error {
+func(ctrler *Account) validateCSVHeaders(file multipart.File, requiredHeaders map[string]struct{}) error {
 	m, err := gocsv.CSVToMaps(bufio.NewReader(file))
 	if err != nil {
 		return err
@@ -97,7 +94,7 @@ func(ctrler * AccountController) validateCSVHeaders(file multipart.File, require
 	return nil
 	
 }
-func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
+func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
 	if fileHeaderErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, "No files uploaded."))
@@ -158,7 +155,7 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	newAccountsErr := ctrler.accountRepository.NewAccounts(&accounts)
+	newAccountsErr := ctrler.services.Repos.AccountRepository.NewAccounts(&accounts)
 	
 	if newAccountsErr != nil {
 		logger.Error(newAccountsErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("newAccountsErr"))
@@ -167,16 +164,16 @@ func (ctrler *AccountController) ImportAccount(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accounts imported."))
 }
-func(ctrler * AccountController)GetAccountRoles(ctx * gin.Context){
-	accounts := ctrler.accountRepository.GetAccountsWithAssignedRoles()
+func(ctrler *Account)GetAccountRoles(ctx * gin.Context){
+	accounts := ctrler.services.Repos.AccountRepository.GetAccountsWithAssignedRoles()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts, 
 	}, "Accounts with assigned role fetched."))
 }
-func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
+func (ctrler *Account)GetAccountById(ctx * gin.Context){
 	id := ctx.GetString("requestorId")
 
-	account, err := ctrler.accountRepository.GetAccountById(id)
+	account, err := ctrler.services.Repos.AccountRepository.GetAccountById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAccountByIdErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -187,7 +184,7 @@ func (ctrler * AccountController)GetAccountById(ctx * gin.Context){
 	}, "Account has been fetched."))
 }
 
-func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
+func (ctrler *Account)UpdateProfilePicture(ctx * gin.Context){
 		profilePicture := ProfilePictureBody{}
 		err := ctx.Bind(&profilePicture)
 		if err != nil {
@@ -196,7 +193,7 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 			return 
 		}
 		id := ctx.GetString("requestorId")
-		err = ctrler.accountRepository.UpdateProfilePictureById(id, profilePicture.Image)
+		err =ctrler.services.Repos.AccountRepository.UpdateProfilePictureById(id, profilePicture.Image)
 		if err != nil{
 			logger.Error(err.Error(), slimlog.Error("UpdateProfilePictureError"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -204,7 +201,7 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 		}
 		ctx.JSON(httpresp.Success200(nil, "Profile picture updated."))
 }
-// func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
+// func (ctrler *Account)ActivateAccounts(ctx * gin.Context) {
 // 	body := SelectedAccountIdsBody{}
 // 	err := ctx.Bind(&body)
 // 	if err != nil {
@@ -222,7 +219,7 @@ func (ctrler * AccountController)UpdateProfilePicture(ctx * gin.Context){
 // 	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
 // }
 
-func (ctrler * AccountController)DisableAccounts(ctx * gin.Context) {
+func (ctrler *Account)DisableAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
 	err := ctx.Bind(&body)
 	if err != nil {
@@ -230,7 +227,7 @@ func (ctrler * AccountController)DisableAccounts(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.accountRepository.DisableAccounts(body.AccountIds)
+	err = ctrler.services.Repos.AccountRepository.DisableAccounts(body.AccountIds)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DisableAccounts"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -239,7 +236,7 @@ func (ctrler * AccountController)DisableAccounts(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
 }
 
-func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
+func (ctrler *Account)DeleteAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
 	err := ctx.Bind(&body)
 	if err != nil {
@@ -247,7 +244,7 @@ func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.accountRepository.DeleteAccounts(body.AccountIds)
+	err = ctrler.services.Repos.AccountRepository.DeleteAccounts(body.AccountIds)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DeleteAccounts"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -257,7 +254,7 @@ func (ctrler * AccountController)DeleteAccounts(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Accounts deleted."))
 }
 
-func (ctrler * AccountController)RestoreAccounts(ctx * gin.Context) {
+func (ctrler *Account)RestoreAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
 	err := ctx.Bind(&body)
 	if err != nil {
@@ -265,7 +262,7 @@ func (ctrler * AccountController)RestoreAccounts(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.accountRepository.RestoreAccounts(body.AccountIds)
+	err = ctrler.services.Repos.AccountRepository.RestoreAccounts(body.AccountIds)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("RestoreAccounts"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -274,9 +271,9 @@ func (ctrler * AccountController)RestoreAccounts(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Accounts restored."))
 }
 
-func (ctrler * AccountController)GetAccountStats(ctx * gin.Context) {
+func (ctrler *Account)GetAccountStats(ctx * gin.Context) {
 	requestorId := ctx.GetString("requestorId")
-	stats, err := ctrler.accountRepository.GetAccountStatsById(requestorId)
+	stats, err :=ctrler.services.Repos.AccountRepository.GetAccountStatsById(requestorId)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("getStatsErr"))
 	}
@@ -284,20 +281,15 @@ func (ctrler * AccountController)GetAccountStats(ctx * gin.Context) {
 		"stats": stats,
 	}, "Accounts stats fetched."))
 }
-func NewAccountController() AccountControllerInterface {
-	return &AccountController{
-		accountRepository: repository.NewAccountRepository(),
-		recordMetadataRepository: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
-			CacheExpiration: time.Minute * 5,
-	   }),
+func NewAccountController(services * services.Services) AccountController{
+	return &Account{
+		services: services,
 		validator: validator.New(),
-		settingsRepo: repository.NewSettingsRepository(),
-	   userRepo: repository.NewUserRepository(),
 	}
 
 }
 
-type AccountControllerInterface interface {
+type AccountController interface {
 	GetAccounts(ctx *gin.Context)
 	ImportAccount(ctx *gin.Context)
 	GetAccountRoles(ctx * gin.Context)

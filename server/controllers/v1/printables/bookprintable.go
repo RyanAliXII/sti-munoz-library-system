@@ -8,7 +8,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/ysmood/gson"
@@ -16,11 +16,11 @@ import (
 
 
 type BookPrintable struct{
-	bookRepo repository.BookRepositoryInterface
+	services * services.Services
 }
 func(p * BookPrintable)RenderBookPrintables(ctx * gin.Context) {
 	id := ctx.Param("id")
-	book := p.bookRepo.GetOne(id)
+	book := p.services.Repos.BookRepository.GetOne(id)
 	if book.Id == "" {
 		 ctx.JSON(httpresp.Fail404(nil, "Book not found."))
 		 return
@@ -78,8 +78,8 @@ type PrintableController interface {
 	GetBookPrintablesByBookId(c * gin.Context)
 }
 
-func NewBookPrintableController() PrintableController {
+func NewBookPrintableController(services* services.Services) PrintableController {
 	return &BookPrintable{
-		bookRepo: repository.NewBookRepository(),
+		services: services,
 	}
 }

@@ -2,11 +2,12 @@ package account
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
-func ClientRoutes(router *gin.RouterGroup) {
-	var ctrler AccountControllerInterface = NewAccountController()
+func ClientRoutes(router *gin.RouterGroup, services * services.Services) {
+	ctrler := NewAccountController(services)
 	router.GET("/", 
 	middlewares.ValidatePermissions([]string{"Account.Read"}, true),
 	ctrler.GetAccounts)

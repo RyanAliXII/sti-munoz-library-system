@@ -2,12 +2,13 @@ package system
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SystemRoutes(router *gin.RouterGroup) {
-	ctrler := NewSystemConctroller()
+func SystemRoutes(router *gin.RouterGroup, services * services.Services) {
+	ctrler := NewSystemConctroller(services)
 
 	router.GET("/modules", 
 	middlewares.ValidatePermissions([]string{"Role.Read"}, true),

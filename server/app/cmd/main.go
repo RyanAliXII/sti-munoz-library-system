@@ -61,8 +61,8 @@ func main() {
 	})
 	services := services.BuildServices();
 	realtime.RealtimeRoutes(r.Group("/rt"), &services)
-	controllers.RegisterAPIV1(r)
-	controllers.Register(r);
+	controllers.RegisterAPIV1(r, &services)
+	controllers.Register(r, &services);
 	logger.Info("Server starting")
     r.Run(":5200")
 }

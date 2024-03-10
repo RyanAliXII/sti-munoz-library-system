@@ -19,12 +19,12 @@ const (
 	UPDATE_AUTHOR_NUMBER  = "AuthorNumberRepository.Update"
 )
 
-type AuthorNumberRepository struct {
+type AuthorNumber struct {
 	cutters *cutters.Cutters
 	db      *sqlx.DB
 }
 
-func (repo *AuthorNumberRepository) Get(filter filter.Filter) []model.AuthorNumber {
+func (repo *AuthorNumber) Get(filter filter.Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutter_sanborn LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 
@@ -33,7 +33,7 @@ func (repo *AuthorNumberRepository) Get(filter filter.Filter) []model.AuthorNumb
 	}
 	return table
 }
-func (repo *AuthorNumberRepository) Search(filter filter.Filter) []model.AuthorNumber {
+func (repo *AuthorNumber) Search(filter filter.Filter) []model.AuthorNumber {
 	var table []model.AuthorNumber = make([]model.AuthorNumber, 0)
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutter_sanborn WHERE surname ILIKE $1 OR number ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 
@@ -44,15 +44,15 @@ func (repo *AuthorNumberRepository) Search(filter filter.Filter) []model.AuthorN
 }
 
 
-func NewAuthorNumberRepository() AuthorNumberRepositoryInterface {
+func NewAuthorNumberRepository() AuthorNumberRepository {
 
-	return &AuthorNumberRepository{
+	return &AuthorNumber{
 		cutters: cutters.NewCuttersTable(),
 		db:      postgresdb.GetOrCreateInstance(),
 	}
 }
 
-type AuthorNumberRepositoryInterface interface {
+type AuthorNumberRepository interface {
 	Get(filter.Filter) []model.AuthorNumber
 	Search(filter.Filter) []model.AuthorNumber
 }

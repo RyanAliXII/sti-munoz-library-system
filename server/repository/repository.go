@@ -8,16 +8,16 @@ import (
 )
 
 type Repositories struct {
-	AuthorRepository       AuthorRepositoryInterface
-	AuthorNumberRepository AuthorNumberRepositoryInterface
-	PublisherRepository    PublisherRepositoryInterface
+	AuthorRepository       AuthorRepository
+	AuthorNumberRepository AuthorNumberRepository
+	PublisherRepository    PublisherRepository
 	SOFRepository          FundSourceRepositoryInterface
 	SectionRepository      SectionRepository
 
-	DDCRepository         DDCRepositoryInterface
+	DDCRepository         DDCRepository
 	BookRepository        BookRepository
-	InventoryRepository   InventoryRepositoryInterface
-	AccountRepository    AccountRepositoryInterface
+	InventoryRepository   InventoryRepository
+	AccountRepository    AccountRepository
 	RecordMetadataRepository   RecordMetadataRepository
 	BagRepository BagRepository
 	BorrowingRepository BorrowingRepository
@@ -26,6 +26,21 @@ type Repositories struct {
 	BorrowingQueueRepository BorrowingQueueRepository
 	ClientLogRepository ClientLogRepository
 	ContentRepository ContentRepository
+	ExtrasRepository ExtrasRepository
+	ItemRepository ItemRepository
+	PenaltyRepository PenaltyRepository
+	ReportRepository ReportRepository
+	ReservationRepository ReservationRepository
+	ScannerAccount ScannerAccountRepository
+	TokenRepository TokenRepository
+	SearchTagRepository SearchTagRepository
+	StatsRepository StatsRepository
+	SystemRepository SystemRepository
+	TimeSlotRepository TimeSlotRepository
+	TimeSlotProfileRepository TimeSlotProfileRepository
+	DateSlotRepository DateSlotRepository
+	UserRepository UserRepository
+	GameRepository GameRepository
 }
 
 func New(db * sqlx.DB, minio * minio.Client) *Repositories {
@@ -51,5 +66,20 @@ func New(db * sqlx.DB, minio * minio.Client) *Repositories {
 		BorrowingQueueRepository: NewBorrowingQueueRepository(db),
 		ClientLogRepository:  NewClientLogRepository(db),
 		ContentRepository: NewContentRepository(minio),
+		ExtrasRepository:  NewExtrasRepository(db),
+		ItemRepository:  NewItemRepository(db),
+		PenaltyRepository:  NewPenaltyRepository(db, minio),
+		ReportRepository:  NewReportRepository(db),
+		ReservationRepository: NewReservationRepository(db),
+		ScannerAccount:  NewScannerAccountRepository(db),
+		TokenRepository: NewTokenRepository(db),
+		SearchTagRepository: NewSearchTagRepository(db),
+		StatsRepository: NewStatsRepository(db),
+		SystemRepository: NewSystemRepository(db),
+		TimeSlotRepository:  NewTimeSlotRepository(db),
+		TimeSlotProfileRepository: NewTimeSlotProfileRepository(db),
+		DateSlotRepository: NewDateSlotRepository(),
+		UserRepository: NewUserRepository(db),
+		GameRepository:  NewGameRepository(db),
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -28,10 +28,11 @@ type ScannerController interface {
 }
 
 type Scanner struct {
-	ScannerAccountRepo repository.ScannerAccountRepository
-	ClientLogRepo repository.ClientLogRepository
-	accountRepo repository.AccountRepositoryInterface
-	tokenRepo repository.TokenRepository
+	services * services.Services
+	// ScannerAccountRepo repository.ScannerAccountRepository
+	// ClientLogRepo repository.ClientLogRepository
+	// accountRepo repository.AccountRepositoryInterface
+	// tokenRepo repository.TokenRepository
 
 }
 func(c * Scanner) Login (ctx * gin.Context){
@@ -42,7 +43,7 @@ func(c * Scanner) Login (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
 		return
 	}
-	account, err := c.ScannerAccountRepo.GetAccountByUsername(body.Username)
+	account, err := c.services.Repos.ScannerAccount.GetAccountByUsername(body.Username)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAccountByUsernameErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid username or password."))
@@ -76,7 +77,7 @@ func(c * Scanner) Login (ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	err = c.tokenRepo.NewToken(model.Token{
+	err = c.services.Repos.TokenRepository.NewToken(model.Token{
 		Id: jti,
 		Value: tokenStr,
 	})
@@ -134,7 +135,7 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	} 
-	t, err := c.tokenRepo.GetTokenByJTI(jti)
+	t, err := c.services.Repos.TokenRepository.GetTokenByJTI(jti)
 	if t.IsRevoked || err != nil {
 		logger.Error("Token is revoked.", slimlog.Function("IsAuth"))
 		ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -145,7 +146,7 @@ func(c * Scanner) IsAuth (ctx * gin.Context){
 func(c * Scanner) LogClient (ctx * gin.Context){
 	clientId := ctx.Param("clientId")
 	scannerId := ctx.GetString("sub")
-	account, err := c.accountRepo.GetAccountById(clientId)
+	account, err := c.services.Repos.AccountRepository.GetAccountById(clientId)
 	if err != nil {
 		if(err == sql.ErrNoRows){
 			 ctx.JSON(httpresp.Fail404(nil, "Account not found"))
@@ -155,7 +156,7 @@ func(c * Scanner) LogClient (ctx * gin.Context){
 		return
 	}
 
-	err = c.ClientLogRepo.NewLog(clientId, scannerId)
+	err = c.services.Repos.ClientLogRepository.NewLog(clientId, scannerId)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail400(nil,"Unknown error occured."))
@@ -168,7 +169,7 @@ func(c * Scanner) LogClient (ctx * gin.Context){
 
 func(c * Scanner) Logout (ctx * gin.Context){
 	jti := ctx.GetString("jti")
-	err := c.tokenRepo.RevokeToken(jti) 
+	err := c.services.Repos.TokenRepository.RevokeToken(jti) 
 	if err != nil {
 		logger.Error(err.Error(), zap.String("error", "RevokeErr"))
 		ctx.JSON(httpresp.Fail(http.StatusInternalServerError, nil, "Unknown error occured."))
@@ -180,11 +181,8 @@ func(c * Scanner) Logout (ctx * gin.Context){
 
 
 
-func NewScannerController () ScannerController{
+func NewScannerController (services * services.Services) ScannerController{
 	return &Scanner{
-		ScannerAccountRepo: repository.NewScannerAccountRepository(),
-		ClientLogRepo: repository.NewClientLog(),
-		accountRepo: repository.NewAccountRepository(),
-		tokenRepo: repository.NewTokenRepository(),
+		services: services,
 	}
 }

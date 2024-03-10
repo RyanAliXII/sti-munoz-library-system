@@ -22,7 +22,7 @@ type ActivateBulkError struct {
 func (e * ActivateBulkError) Error() string {
 	return e.Err.Error()
 }
-func (ctrler * AccountController) ActivateBulk (ctx * gin.Context){
+func (ctrler *Account) ActivateBulk (ctx * gin.Context){
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
 	if fileHeaderErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, "No files uploaded."))
@@ -46,7 +46,7 @@ func (ctrler * AccountController) ActivateBulk (ctx * gin.Context){
 	
 }
 
-func(ctrler * AccountController) handleCSV(file multipart.File, ctx * gin.Context){
+func(ctrler *Account) handleCSV(file multipart.File, ctx * gin.Context){
 
 	err := ctrler.validateCSVHeaders(file, map[string]struct{}{
 		"surname": {},
@@ -98,7 +98,7 @@ func(ctrler * AccountController) handleCSV(file multipart.File, ctx * gin.Contex
 		}
 	
 	}
-	err = ctrler.accountRepository.ActivateAccountBulk(accounts)
+	err = ctrler.services.Repos.AccountRepository.ActivateAccountBulk(accounts)
 	if err != nil{
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(gin.H{
@@ -111,14 +111,14 @@ func(ctrler * AccountController) handleCSV(file multipart.File, ctx * gin.Contex
 	ctx.JSON(httpresp.Success200(nil, "Accounts activated."))
 }
 
-func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.AccountActivation) error {
-	typesMaps, err  := ctrler.userRepo.GetUserTypesToMap()	
+func(ctrler *Account)validateTypeAndProgram(accounts * []model.AccountActivation) error {
+	typesMaps, err  := ctrler.services.Repos.UserRepository.GetUserTypesToMap()	
 	if err != nil {
 		return err
 	}
-	settings := ctrler.settingsRepo.Get()
+	settings := ctrler.services.Repos.SettingsRepository.Get()
 
-	programsMap, err := ctrler.userRepo.GetUserProgramsAndStrandsToMap()
+	programsMap, err := ctrler.services.Repos.UserRepository.GetUserProgramsAndStrandsToMap()
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func(ctrler * AccountController)validateTypeAndProgram(accounts * []model.Accoun
 	return nil
 }
 
-func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
+func (ctrler *Account)ActivateAccounts(ctx * gin.Context) {
 	    body := AccountsActivateBody{}
 		err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 		if err != nil {
@@ -159,9 +159,9 @@ func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 			return
 		}
-		settings := ctrler.settingsRepo.Get()
+		settings := ctrler.services.Repos.SettingsRepository.Get()
 		
-		err = ctrler.accountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value, body.StudentNumber)
+		err = ctrler.services.Repos.AccountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value, body.StudentNumber)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("account activation error"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -171,7 +171,7 @@ func (ctrler * AccountController)ActivateAccounts(ctx * gin.Context) {
 }
 
 
-func (ctrler * AccountController)DeactiveAccounts(ctx * gin.Context) {
+func (ctrler *Account)DeactiveAccounts(ctx * gin.Context) {
 	body := AccountsDeactivateBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
@@ -179,7 +179,7 @@ func (ctrler * AccountController)DeactiveAccounts(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.accountRepository.DeactiveAccounts(body.AccountIds)
+	err =  ctrler.services.Repos.AccountRepository.DeactiveAccounts(body.AccountIds)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("account activation error"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

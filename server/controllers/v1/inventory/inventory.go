@@ -9,7 +9,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/ysmood/gson"
 
@@ -19,39 +19,39 @@ import (
 	"go.uber.org/zap"
 )
 
-type InventoryController struct {
-	inventoryRepository repository.InventoryRepositoryInterface
+type Inventory struct {
+	services * services.Services
 }
 
-func (ctrler *InventoryController) GetAudits(ctx *gin.Context) {
+func (ctrler *Inventory) GetAudits(ctx *gin.Context) {
 
-	var audits []model.Audit = ctrler.inventoryRepository.GetAudit()
+	var audits []model.Audit = ctrler.services.Repos.InventoryRepository.GetAudit()
 
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audits}, "Audits fetched."))
 
 }
-func (ctrler *InventoryController) GetAuditById(ctx *gin.Context) {
+func (ctrler *Inventory) GetAuditById(ctx *gin.Context) {
 	id := ctx.Param("id")
-	audit := ctrler.inventoryRepository.GetById(id)
+	audit :=ctrler.services.Repos.InventoryRepository.GetById(id)
 	if len(audit.Id) == 0 {
 		ctx.JSON(httpresp.Fail404(nil, "model.Audit not found."))
 		return
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"audit": audit}, "model.Audit fetched."))
 }
-func (ctrler InventoryController) GetAuditedAccession(ctx *gin.Context) {
+func (ctrler *Inventory) GetAuditedAccession(ctx *gin.Context) {
 	id := ctx.Param("id")
-	audited, err  := ctrler.inventoryRepository.GetAuditedAccessionById(id)
+	audited, err  :=ctrler.services.Repos.InventoryRepository.GetAuditedAccessionById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionByIdErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audited}, "Accession fetched."))
 }
-func (ctrler *InventoryController)AddBookCopyToAudit(ctx *gin.Context) {
+func (ctrler *Inventory)AddBookCopyToAudit(ctx *gin.Context) {
 	auditId := ctx.Param("id")
 	bookCopy := AuditBookCopyBody{} 
 	ctx.ShouldBindBodyWith(&bookCopy, binding.JSON)
-	scannErr := ctrler.inventoryRepository.AddToAudit(auditId, bookCopy.AccessionId)
+	scannErr := ctrler.services.Repos.InventoryRepository.AddToAudit(auditId, bookCopy.AccessionId)
 	if  scannErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -60,7 +60,7 @@ func (ctrler *InventoryController)AddBookCopyToAudit(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Book copy audited."))
 }
 
-func (ctrler *InventoryController)GenerateReport(ctx *gin.Context){
+func (ctrler *Inventory)GenerateReport(ctx *gin.Context){
 	auditId := ctx.Param("id")
 	browser, err := browser.NewBrowser()
 	if err != nil {
@@ -97,22 +97,22 @@ func (ctrler *InventoryController)GenerateReport(ctx *gin.Context){
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
-func (ctrler *InventoryController) AddBookToAudit(ctx *gin.Context) {
+func (ctrler *Inventory) AddBookToAudit(ctx *gin.Context) {
 	auditId := ctx.Param("id")
 	bookId := ctx.Param("bookId")
 
-	addErr :=  ctrler.inventoryRepository.AddBookToAudit(auditId, bookId)
+	addErr :=  ctrler.services.Repos.InventoryRepository.AddBookToAudit(auditId, bookId)
 	if addErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book audited."))
 }
-func (ctrler *InventoryController) RemoveBookCopyFromAudit(ctx *gin.Context) {
+func (ctrler *Inventory) RemoveBookCopyFromAudit(ctx *gin.Context) {
 	auditId := ctx.Param("id")
 	accessionId := ctx.Param("accessionId")
 
-	deleteErr :=  ctrler.inventoryRepository.DeleteBookCopyFromAudit(auditId, accessionId)
+	deleteErr :=  ctrler.services.Repos.InventoryRepository.DeleteBookCopyFromAudit(auditId, accessionId)
 	if deleteErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
@@ -120,11 +120,11 @@ func (ctrler *InventoryController) RemoveBookCopyFromAudit(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Book copy removed."))
 }
 
-func (ctrler *InventoryController) NewAudit(ctx *gin.Context) {
+func (ctrler *Inventory) NewAudit(ctx *gin.Context) {
 
 	var audit model.Audit = model.Audit{}
 	ctx.ShouldBindBodyWith(&audit, binding.JSON)
-	insertErr := ctrler.inventoryRepository.NewAudit(audit)
+	insertErr :=ctrler.services.Repos.InventoryRepository.NewAudit(audit)
 
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, insertErr.Error()))
@@ -132,7 +132,7 @@ func (ctrler *InventoryController) NewAudit(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "model.Audit has been added."))
 }
-func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
+func (ctrler *Inventory) UpdateAudit(ctx *gin.Context) {
 	id := ctx.Param("id")
 	_, err := uuid.Parse(id)
 	if err != nil {
@@ -146,7 +146,7 @@ func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
 	if len(audit.Id) == 0 {
 		audit.Id = id
 	}
-	updatErr := ctrler.inventoryRepository.UpdateAudit(audit)
+	updatErr := ctrler.services.Repos.InventoryRepository.UpdateAudit(audit)
 	if updatErr != nil {
 		logger.Error(updatErr.Error(), slimlog.Function("InventoryController.UpdateAudit"), slimlog.Error("updateErr"))
 		ctx.JSON(httpresp.Fail400(nil, updatErr.Error()))
@@ -154,15 +154,12 @@ func (ctrler *InventoryController) UpdateAudit(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "model.Audit updated"))
 }
-func NewInventoryController() InventoryControllerInterface {
-
-	return &InventoryController{
-		inventoryRepository: repository.NewInventoryRepository(),
+func NewInventoryController(services * services.Services) InventoryController{
+	return &Inventory{
+		services: services,
 	}
-
 }
-
-type InventoryControllerInterface interface {
+type InventoryController interface {
 	GetAudits(ctx *gin.Context)
 	GetAuditById(ctx *gin.Context)
 	GetAuditedAccession(ctx *gin.Context)

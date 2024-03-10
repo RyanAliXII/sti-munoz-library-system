@@ -4,18 +4,18 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 
 type DateSlot struct {
-	dateSlotRepo  repository.DateSlotRepository
+	services *services.Services
 }
-func NewDateSlotController () DateSlotController {
+func NewDateSlotController (services * services.Services) DateSlotController {
 	return &DateSlot{
-		dateSlotRepo: repository.NewDateSlotRepository(),
+		services: services,
 	}
 }
 type DateSlotController interface {
@@ -39,7 +39,7 @@ func (ctrler * DateSlot)NewSlot(ctx * gin.Context){
 		 return
 	}
 	dateSlots := body.ToModel()
-	err = ctrler.dateSlotRepo.NewSlots(dateSlots)
+	err = ctrler.services.Repos.DateSlotRepository.NewSlots(dateSlots)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewSlotsError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -49,7 +49,7 @@ func (ctrler * DateSlot)NewSlot(ctx * gin.Context){
 }
 func (ctrler * DateSlot)DeleteSlot(ctx * gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.dateSlotRepo.DeleteSlot(id)
+	err := ctrler.services.Repos.DateSlotRepository.DeleteSlot(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DeleteSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -63,7 +63,7 @@ func (ctrler * DateSlot)GetSlots(ctx * gin.Context){
 		ctrler.handleGetDateSlotsRequestFromClient(ctx)
 		return 
 	}
-	slots, err := ctrler.dateSlotRepo.GetSlots()
+	slots, err := ctrler.services.Repos.DateSlotRepository.GetSlots()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getSlotsErr"))
 	}
@@ -90,7 +90,7 @@ func (ctrler * DateSlot)handleGetDateSlotsRequestFromClient(ctx * gin.Context){
 		}, "Slots fetched."))
 		return 
 	}
-	slots, err := ctrler.dateSlotRepo.GetSlotsByRange(body.Start, body.End)
+	slots, err := ctrler.services.Repos.DateSlotRepository.GetSlotsByRange(body.Start, body.End)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetSlotsByRangeErr"))
 	}

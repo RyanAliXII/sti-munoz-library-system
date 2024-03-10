@@ -7,32 +7,30 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/acl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-type SystemController struct {
-	systemRepository repository.SystemRepositoryInterface
-	accountRepository repository.AccountRepositoryInterface
-	settingsRepository repository.SettingsRepository
+type System struct {
+	services * services.Services
 	permissionStore permissionstore.PermissionStore
 }
 
-func (ctrler *SystemController) GetModules(ctx *gin.Context) {
+func (ctrler *System) GetModules(ctx *gin.Context) {
 
 	ctx.JSON(httpresp.Success200(gin.H{
 		"permissions": acl.Permissions,
 	}, "Permissions fetched."))
 }
-func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
+func (ctrler *System) CreateRole(ctx *gin.Context) {
 	role := model.Role{}
 	
 	bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
@@ -41,7 +39,7 @@ func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
-	insertErr := ctrler.systemRepository.NewRole(role)
+	insertErr := ctrler.services.Repos.SystemRepository.NewRole(role)
 	if insertErr != nil {
 		logger.Error(insertErr.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -49,7 +47,7 @@ func (ctrler *SystemController) CreateRole(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Role has been created successfully."))
 }
-func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
+func (ctrler *System) UpdateRole(ctx *gin.Context) {
 	role := model.Role{}
 	bindingErr := ctx.ShouldBindBodyWith(&role, binding.JSON)
 	id, parseIdErr := strconv.Atoi(ctx.Param("id"))
@@ -63,7 +61,7 @@ func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 		return
 	}
 	role.Id = id
-	updateErr := ctrler.systemRepository.UpdateRole(role)
+	updateErr := ctrler.services.Repos.SystemRepository.UpdateRole(role)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -71,13 +69,13 @@ func (ctrler *SystemController) UpdateRole(ctx *gin.Context) {
 	ctrler.permissionStore.Invalidate()
 	ctx.JSON(httpresp.Success200(nil, "Role has been created successfully."))
 }
-func (ctrler *SystemController) GetRoles(ctx *gin.Context) {
-	roles := ctrler.systemRepository.GetRoles()
+func (ctrler *System) GetRoles(ctx *gin.Context) {
+	roles := ctrler.services.Repos.SystemRepository.GetRoles()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"roles": roles,
 	}, "User roles fetched."))
 }
-func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
+func (ctrler *System) AssignRole(ctx *gin.Context) {
 	accountRoles := model.AccountRoles{}
 	bindingErr := ctx.ShouldBindBodyWith(&accountRoles, binding.JSON)
 	if bindingErr != nil {
@@ -85,7 +83,7 @@ func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
-	assignErr := ctrler.systemRepository.AssignRole(accountRoles)
+	assignErr := ctrler.services.Repos.SystemRepository.AssignRole(accountRoles)
 	if assignErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -93,7 +91,7 @@ func (ctrler *SystemController) AssignRole(ctx *gin.Context) {
 	ctrler.permissionStore.Invalidate()
 	ctx.JSON(httpresp.Success200(nil, "Roles assigned successfully."))
 }
-func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
+func (ctrler *System) VerifyAccount(ctx *gin.Context) {
 	account := model.Account{}
 	bindingErr := ctx.ShouldBindBodyWith(&account, binding.JSON)
 	if bindingErr != nil {
@@ -101,12 +99,12 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid json body."))
 		return
 	}
-	verifyErr := ctrler.accountRepository.VerifyAndUpdateAccount(account)
+	verifyErr := ctrler.services.Repos.AccountRepository.VerifyAndUpdateAccount(account)
 	if verifyErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	acccount, err  := ctrler.accountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(account.Id)
+	acccount, err  := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(account.Id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAccountByIdDontIgnoreIfDeletedOrInactiveErr"))
 		if(err == sql.ErrNoRows){
@@ -126,7 +124,7 @@ func (ctrler *SystemController) VerifyAccount(ctx *gin.Context) {
 	}, "Account verified.",))
 
 }
-func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
+func (ctrler *System) GetAccountRoleAndPermissions(ctx *gin.Context) {
 	//get requestorId, the account id of a user. this is a claim from token passed by middleware.ValidateToken
 	requestorId, _ := ctx.Get("requestorId")
 	accountId, isAccountIdString := requestorId.(string)
@@ -165,7 +163,7 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 				}, "Permissions successfully fetched"))
 				return
 		  }}
-		  r, getPermissionErr := ctrler.accountRepository.GetRoleByAccountId(accountId)
+		  r, getPermissionErr := ctrler.services.Repos.AccountRepository.GetRoleByAccountId(accountId)
 		  if getPermissionErr != nil {
 			logger.Error(getPermissionErr.Error(), slimlog.Function("SystemController.GetAccountRoleAndPermissions"))
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -176,14 +174,14 @@ func (ctrler *SystemController) GetAccountRoleAndPermissions(ctx *gin.Context) {
 		return
 	}
 }
-func(ctrler * SystemController)GetAccountRoles(ctx * gin.Context){
-	accounts := ctrler.accountRepository.GetAccountsWithAssignedRoles()
+func(ctrler * System)GetAccountRoles(ctx * gin.Context){
+	accounts := ctrler.services.Repos.SystemRepository.GetAccountsWithAssignedRoles()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accounts": accounts, 
 	}, "Accounts with assigned role fetched."))
 }
 
-func (ctrler * SystemController) RemoveRoleAssignment(ctx * gin.Context){
+func (ctrler * System) RemoveRoleAssignment(ctx * gin.Context){
 	roleId, convertErr := strconv.Atoi(ctx.Param("id"))
 	if convertErr != nil{
 		logger.Error(convertErr.Error(), slimlog.Function("SystemController.RemoveRoleAssignment"), slimlog.Error("covertErr"))
@@ -194,20 +192,18 @@ func (ctrler * SystemController) RemoveRoleAssignment(ctx * gin.Context){
 	if parseUUIDErr != nil {
 		logger.Error(convertErr.Error(), slimlog.Function("SystemController.RemoveRoleAssignment"), slimlog.Error("parseUUIDErr"))
 	}
-	ctrler.systemRepository.RemoveRoleAssignment(roleId, accountId.String())
+	ctrler.services.Repos.SystemRepository.RemoveRoleAssignment(roleId, accountId.String())
 	ctx.JSON(httpresp.Success200(nil, "Role assignment has been removed."))
 }
 
-func NewSystemConctroller() SystemControllerInterface {
-	return &SystemController{
-		accountRepository: repository.NewAccountRepository(),
-		systemRepository: repository.NewSystemRepository(),
-		settingsRepository: repository.NewSettingsRepository(),
+func NewSystemConctroller(services * services.Services) SystemController {
+	return &System{
+		services: services,
 		permissionStore: permissionstore.GetPermissionStore(),
 	}
 }
 
-type SystemControllerInterface interface {
+type SystemController interface {
 	GetModules(ctx *gin.Context)
 	CreateRole(ctx *gin.Context)
 	GetRoles(ctx *gin.Context)

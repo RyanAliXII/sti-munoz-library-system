@@ -6,18 +6,18 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 type User struct{
-	userRepo repository.UserRepository
+	services * services.Services
 }
 
-func NewUserController() UserController {
+func NewUserController(services * services.Services) UserController {
 	return &User{
-		userRepo: repository.NewUserRepository(),
+		services: services,
 	}
 }
 type UserController interface {
@@ -35,7 +35,7 @@ func (ctrler * User)GetUserTypes(ctx *gin.Context){
 	filter := UserTypeFilter{}
 	ctx.ShouldBindQuery(&filter)
 	if filter.HasProgram {
-		userTypes, err := ctrler.userRepo.GetUserTypesWithProgram()
+		userTypes, err := ctrler.services.Repos.UserRepository.GetUserTypesWithProgram()
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
 		}
@@ -44,7 +44,7 @@ func (ctrler * User)GetUserTypes(ctx *gin.Context){
 		}, "User types with programs and strands fetched."))
 		return 
 	}
-	userTypes, err := ctrler.userRepo.GetUserTypes()
+	userTypes, err := ctrler.services.Repos.UserRepository.GetUserTypes()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
 	}
@@ -61,7 +61,7 @@ func (ctrler * User)NewUserType(ctx *gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.userRepo.NewUserType(userType)
+	err = ctrler.services.Repos.UserRepository.NewUserType(userType)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewUserType"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -80,7 +80,7 @@ func (ctrler * User)NewUserProgram(ctx *gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.userRepo.NewProgram(program)
+	err =  ctrler.services.Repos.UserRepository.NewProgram(program)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewUserProgram"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -106,7 +106,7 @@ func (ctrler * User)UpdateUserProgram(ctx *gin.Context){
 		return
 	}
 	program.Id = id
-	err = ctrler.userRepo.UpdateProgram(program)
+	err =  ctrler.services.Repos.UserRepository.UpdateProgram(program)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateProgram"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -133,7 +133,7 @@ func (ctrler * User)UpdateUserType(ctx *gin.Context){
 		return
 	}
 	userType.Id = id
-	err = ctrler.userRepo.UpdateUserType(userType)
+	err = ctrler.services.Repos.UserRepository.UpdateUserType(userType)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewUserType"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -144,7 +144,7 @@ func (ctrler * User)UpdateUserType(ctx *gin.Context){
 
 }
 func (ctrler * User)GetUserProgramsAndStrands(ctx *gin.Context){
-	programs, err := ctrler.userRepo.GetUserProgramsAndStrands()
+	programs, err :=  ctrler.services.Repos.UserRepository.GetUserProgramsAndStrands()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
 	}
@@ -158,7 +158,7 @@ func (ctrler * User)GetUserProgramsAndStrandsByType(ctx *gin.Context){
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getUserTypesErr"))
 	}
-	programs, err := ctrler.userRepo.GetUserProgramsAndStrandsByType(id)
+	programs, err := ctrler.services.Repos.UserRepository.GetUserProgramsAndStrandsByType(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetUserProgramsAndStrandsByTypeErr"))
 	}

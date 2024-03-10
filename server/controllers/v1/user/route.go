@@ -2,12 +2,13 @@ package user
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
 
-func UserRoutes(router * gin.RouterGroup){
-	userCtrler := NewUserController()
+func UserRoutes(router * gin.RouterGroup, services * services.Services){
+	userCtrler := NewUserController(services)
 	
 	router.GET("/types", 
 	middlewares.ValidatePermissions([]string{"AccountTypeProgram.Read"}, true),

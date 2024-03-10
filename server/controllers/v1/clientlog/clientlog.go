@@ -8,7 +8,7 @@ import (
 
 
 func ClientLogRoutes (router * gin.RouterGroup, services * services.Services){
-	ctrler := NewClientLogController(se)
+	ctrler := NewClientLogController(services)
 	router.GET("/",
 	middlewares.ValidatePermissions([]string{"PatronLog.Read"}, true),
 	ctrler.GetClientLogs)

@@ -14,21 +14,17 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-type PenaltyRepository struct {
+type Penalty struct {
 	db *sqlx.DB
 	minio * minio.Client
 }
-
-
-func NewPenaltyRepository(db * sqlx.DB, minio * minio.Client) PenaltyRepositoryInterface{
-	return &PenaltyRepository{
+func NewPenaltyRepository(db * sqlx.DB, minio * minio.Client) PenaltyRepository{
+	return &Penalty{
 		db: db,
 		minio: minio,
 	}
-
 }
-
-func(repo * PenaltyRepository) GetPenalties()[]model.Penalty{
+func(repo *Penalty) GetPenalties()[]model.Penalty{
 
 	penalties := make([]model.Penalty, 0)
 	query := `
@@ -52,7 +48,7 @@ func(repo * PenaltyRepository) GetPenalties()[]model.Penalty{
 
 	return penalties
 }
-func (repo * PenaltyRepository)UpdatePenaltySettlement(id string, isSettle bool) error{
+func (repo *Penalty)UpdatePenaltySettlement(id string, isSettle bool) error{
 	settleQuery  := `
 		Update borrowing.penalty SET settled_at = NOW() where id  = $1
 	`
@@ -79,7 +75,7 @@ func (repo * PenaltyRepository)UpdatePenaltySettlement(id string, isSettle bool)
 	return nil
 }
 
-func (repo * PenaltyRepository)MarkAsSettled(id string, fileHeader * multipart.FileHeader, remarks string) error {
+func (repo *Penalty)MarkAsSettled(id string, fileHeader * multipart.FileHeader, remarks string) error {
 	isSettled := true
 
 	err := repo.db.Get(&isSettled, "SELECT EXISTS (SELECT * FROM borrowing.penalty where id = '18c37381-613a-493c-98c5-c6c6274f06ac' and settled_at is null)")
@@ -117,7 +113,7 @@ func (repo * PenaltyRepository)MarkAsSettled(id string, fileHeader * multipart.F
 	return nil
 }
 
-func (repo * PenaltyRepository)UpdateSettlement(id string, fileHeader * multipart.FileHeader, remarks string) error {
+func (repo *Penalty)UpdateSettlement(id string, fileHeader * multipart.FileHeader, remarks string) error {
 	
 	penalty := model.Penalty{}
 	err := repo.db.Get(&penalty, "SELECT id, proof FROM borrowing.penalty where id = $1 and settled_at is not null", id)
@@ -155,7 +151,7 @@ func (repo * PenaltyRepository)UpdateSettlement(id string, fileHeader * multipar
 	}
 	return nil
 }
-func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
+func (repo *Penalty) AddPenalty(penalty model.Penalty ) error {
 	query := `
     INSERT INTO borrowing.penalty (description, account_id, amount, item) VALUES ($1, $2, $3, $4)
     `
@@ -175,7 +171,7 @@ func (repo * PenaltyRepository) AddPenalty(penalty model.Penalty ) error {
     }
 	return nil
 }
-func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty) error {
+func (repo *Penalty) UpdatePenalty(penalty model.Penalty) error {
 	
 	query := `
    		 UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3, item = $4, class_id = null  where id = $5`
@@ -198,7 +194,7 @@ func (repo * PenaltyRepository) UpdatePenalty(penalty model.Penalty) error {
 	return nil
 }
 
-type PenaltyRepositoryInterface interface{
+type PenaltyRepository interface{
 	GetPenalties()[]model.Penalty
 	UpdatePenaltySettlement(id string, isSettle bool) error
 	AddPenalty(penalty model.Penalty ) error

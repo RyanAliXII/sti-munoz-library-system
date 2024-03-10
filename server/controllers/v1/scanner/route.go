@@ -2,11 +2,12 @@ package scanner
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
-func ScannerAccountRoutes (router * gin.RouterGroup){
-	ctrler := NewScannerAccountController()
+func ScannerAccountRoutes (router * gin.RouterGroup, services * services.Services){
+	ctrler := NewScannerAccountController(services)
 
 	router.POST("/",
 	middlewares.ValidatePermissions([]string{"ScannerAccount.Add"}, true),
@@ -25,8 +26,8 @@ func ScannerAccountRoutes (router * gin.RouterGroup){
 	ctrler.DeleteAccount )
 }
 
-func ScannerRoutes(router * gin.RouterGroup){
-	ctrler := NewScannerController()
+func ScannerRoutes(router * gin.RouterGroup, services * services.Services){
+	ctrler := NewScannerController(services)
 	router.POST("/login", ctrler.Login)
 	router.POST("/auth", ctrler.IsAuth)
 	router.POST("/logs/clients/:clientId",middlewares.ValidateScannerToken,ctrler.LogClient)

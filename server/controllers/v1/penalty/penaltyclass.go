@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (ctrler * PenaltyController)NewClassfication(ctx * gin.Context){
+func (ctrler * Penalty)NewClassfication(ctx * gin.Context){
 	class := model.PenaltyClassification{}
 	err := ctx.Bind(&class)
 	if err != nil {
@@ -23,7 +23,7 @@ func (ctrler * PenaltyController)NewClassfication(ctx * gin.Context){
 		}, "Validation error."))
 		return
 	}
-	err = ctrler.penaltyRepo.NewPenaltyClassification(class)
+	err = ctrler.services.Repos.PenaltyRepository.NewPenaltyClassification(class)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewPenaltyClassErr"))
 		ctx.JSON(httpresp.Fail500(nil, "NewPenaltyClassErr "))
@@ -31,8 +31,8 @@ func (ctrler * PenaltyController)NewClassfication(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "New class added."))
 }
-func (ctrler * PenaltyController)GetPenaltyClasses(ctx * gin.Context){
-	classes, err := ctrler.penaltyRepo.GetPenaltyClassifications()
+func (ctrler * Penalty)GetPenaltyClasses(ctx * gin.Context){
+	classes, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyClassifications()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error(err.Error()))
 	}
@@ -40,7 +40,7 @@ func (ctrler * PenaltyController)GetPenaltyClasses(ctx * gin.Context){
 		"penaltyClasses" : classes,
 	}, "OK"))
 }
-func (ctrler * PenaltyController)UpdatePenaltyClass(ctx * gin.Context) {
+func (ctrler * Penalty)UpdatePenaltyClass(ctx * gin.Context) {
 	id := ctx.Param("id")
 	class := model.PenaltyClassification{}
 	err := ctx.Bind(&class)
@@ -59,7 +59,7 @@ func (ctrler * PenaltyController)UpdatePenaltyClass(ctx * gin.Context) {
 	}
 
 	class.Id = id
-	err = ctrler.penaltyRepo.UpdatePenaltyClassification(class)
+	err = ctrler.services.Repos.PenaltyRepository.UpdatePenaltyClassification(class)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdatePenaltyClassErr"))
 		ctx.JSON(httpresp.Fail500(nil, "UpdatePenaltyClassErr "))
@@ -67,9 +67,9 @@ func (ctrler * PenaltyController)UpdatePenaltyClass(ctx * gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "Class updated."))
 }
-func (ctrler * PenaltyController)DeletePenaltyClass(ctx * gin.Context) {
+func (ctrler * Penalty)DeletePenaltyClass(ctx * gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.penaltyRepo.DeletePenaltyClassification(id)
+	err := ctrler.services.Repos.PenaltyRepository.DeletePenaltyClassification(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("deleteErr"))
 		ctx.JSON(httpresp.Fail500(nil, "DeletePenaltyClassErr "))

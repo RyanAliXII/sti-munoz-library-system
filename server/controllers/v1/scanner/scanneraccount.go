@@ -4,7 +4,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +17,7 @@ type ScannerAccountController interface{
 	DeleteAccount(ctx * gin.Context)
 }
 type ScannerAccount struct{
-	scannerAccountRepo repository.ScannerAccountRepository
+	services * services.Services
 } 
 
 func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
@@ -42,7 +42,7 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 		return
 	}
 	body.Password = string(hashedPassword)
-	err =  ctrler.scannerAccountRepo.NewAccount(body)
+	err =  ctrler.services.Repos.ScannerAccount.NewAccount(body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewAccountErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
@@ -52,7 +52,7 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 
 }
 func(ctrler * ScannerAccount) GeAccounts(ctx * gin.Context ){
-	accounts, err := ctrler.scannerAccountRepo.GetAccounts()
+	accounts, err := ctrler.services.Repos.ScannerAccount.GetAccounts()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getAccountsErr"))
 	}
@@ -87,9 +87,9 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 			return
 		}
 		body.Password = string(hashedPassword)
-		err = ctrler.scannerAccountRepo.UpdateAccountWithPassword(body)
+		err = ctrler.services.Repos.ScannerAccount.UpdateAccountWithPassword(body)
 	}else{
-		err = ctrler.scannerAccountRepo.UpdateAccount(body)
+		err = ctrler.services.Repos.ScannerAccount.UpdateAccount(body)
 	}
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateErr"))
@@ -101,7 +101,7 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 }	
 func(ctrler  *ScannerAccount)DeleteAccount(ctx * gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.scannerAccountRepo.DeleteAccountById(id)
+	err := ctrler.services.Repos.ScannerAccount.DeleteAccountById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("deleteErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
@@ -110,8 +110,8 @@ func(ctrler  *ScannerAccount)DeleteAccount(ctx * gin.Context) {
 	ctx.JSON(httpresp.Success200(nil, "Account deleted."))
 }
 
-func NewScannerAccountController()ScannerAccountController{
+func NewScannerAccountController(services * services.Services)ScannerAccountController{
 	return &ScannerAccount{
-		scannerAccountRepo: repository.NewScannerAccountRepository(),
+		services: services,
 	}
 }

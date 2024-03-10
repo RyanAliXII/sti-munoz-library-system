@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type AuthorRepository struct {
+type Author struct {
 	db *sqlx.DB
 }
 
@@ -24,7 +24,7 @@ const (
 	UPDATE_ORG    = "AuthorRepository.UpdateOrganization"
 )
 
-func (repo *AuthorRepository) New(author model.Author) (model.Author, error) {	
+func (repo *Author) New(author model.Author) (model.Author, error) {	
 	 newAuthor := model.Author{}
 	 insertErr := repo.db.Get(&newAuthor, "INSERT INTO catalog.author(name)VALUES($1) RETURNING id, name",author.Name)
 	if insertErr != nil {
@@ -32,7 +32,7 @@ func (repo *AuthorRepository) New(author model.Author) (model.Author, error) {
 	}
 	return newAuthor, insertErr
 }
-func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.Author) {
+func (repo *Author) Get(filter * filter.Filter) ([]model.Author) {
 	authors := make([]model.Author, 0)
 
 	selectErr := repo.db.Select(&authors, "SELECT id, name FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", filter.Limit, filter.Offset)
@@ -41,7 +41,7 @@ func (repo *AuthorRepository) Get(filter * filter.Filter) ([]model.Author) {
 	}
 	return authors
 }
-func (repo *AuthorRepository) Search(filter * filter.Filter) ([]model.Author) {
+func (repo *Author) Search(filter * filter.Filter) ([]model.Author) {
 	authors := make([]model.Author, 0)
 	selectErr := repo.db.Select(&authors, "SELECT id, name FROM catalog.author where deleted_at IS NULL AND name ILIKE '%' || $1 || '%'  ORDER BY created_at DESC LIMIT  $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
@@ -49,7 +49,7 @@ func (repo *AuthorRepository) Search(filter * filter.Filter) ([]model.Author) {
 	}
 	return authors
 }
-func (repo *AuthorRepository) Delete(id string) error {
+func (repo *Author) Delete(id string) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.author SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
 		logger.Error(prepareErr.Error(), zap.String("authorId", id), slimlog.Function(DELETE_AUTHOR), slimlog.Error("prepareErr"))
@@ -64,7 +64,7 @@ func (repo *AuthorRepository) Delete(id string) error {
 	logger.Info("model.Author deleted", zap.String("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
 	return deleteErr
 }
-func (repo *AuthorRepository) GetAuthoredBook(bookId string) []model.Author {
+func (repo *Author) GetAuthoredBook(bookId string) []model.Author {
 	var authors []model.Author = make([]model.Author, 0)
 	query := `
 	SELECT author.id,author.name
@@ -79,7 +79,7 @@ func (repo *AuthorRepository) GetAuthoredBook(bookId string) []model.Author {
 	}
 	return authors
 }
-func (repo *AuthorRepository) Update(id string, author model.Author) error {
+func (repo *Author) Update(id string, author model.Author) error {
 
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.author SET name = $1 where id = $2")
 	if prepareErr != nil {
@@ -101,13 +101,13 @@ func (repo *AuthorRepository) Update(id string, author model.Author) error {
 }
 
 
-func NewAuthorRepository(db * sqlx.DB) AuthorRepositoryInterface {
-	return &AuthorRepository{
+func NewAuthorRepository(db * sqlx.DB) AuthorRepository {
+	return &Author{
 		db: db,
 	}
 }
 
-type AuthorRepositoryInterface interface {
+type AuthorRepository interface {
 	New(model.Author) (model.Author, error)
 	Get(*filter.Filter ) []model.Author
 	GetAuthoredBook(string) []model.Author

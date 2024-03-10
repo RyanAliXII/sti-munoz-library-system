@@ -8,11 +8,11 @@ import (
 )
 
 //DDC stands for Dewey Decimal
-type DDCRepository struct {
+type DDC struct {
 	db *sqlx.DB
 }
 
-func (repo *DDCRepository) Get(filter  * filter.Filter ) []model.DDC {
+func (repo *DDC) Get(filter  * filter.Filter ) []model.DDC {
 	var deweys []model.DDC = make([]model.DDC, 0)
 	selectErr := repo.db.Select(&deweys, "SELECT id, name, number from catalog.ddc ORDER BY number ASC LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
@@ -20,7 +20,7 @@ func (repo *DDCRepository) Get(filter  * filter.Filter ) []model.DDC {
 	}
 	return deweys
 }
-func (repo * DDCRepository) Search (filter * filter.Filter)[]model.DDC {
+func (repo * DDC) Search (filter * filter.Filter)[]model.DDC {
 	var deweys []model.DDC = make([]model.DDC, 0)
 	selectErr := repo.db.Select(&deweys, `
 	SELECT id, name, number
@@ -39,13 +39,13 @@ func (repo * DDCRepository) Search (filter * filter.Filter)[]model.DDC {
 	return deweys
 }
 
-func NewDDCRepository(db * sqlx.DB) DDCRepositoryInterface {
-	return &DDCRepository{
+func NewDDCRepository(db * sqlx.DB) DDCRepository {
+	return &DDC{
 		db: db,
 	}
 }
 
-type DDCRepositoryInterface interface {
+type DDCRepository interface {
 	Get(filter * filter.Filter) []model.DDC
 	Search (filter * filter.Filter)[]model.DDC
 }

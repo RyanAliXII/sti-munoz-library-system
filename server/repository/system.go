@@ -12,11 +12,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type SystemRepository struct {
+type System struct {
 	db *sqlx.DB
 }
 
-func (repo *SystemRepository) NewRole(role model.Role) error {
+func (repo *System) NewRole(role model.Role) error {
 	if len(role.Permissions) == 0 {
 		return fmt.Errorf("no permissions")
 	}
@@ -52,7 +52,7 @@ func (repo *SystemRepository) NewRole(role model.Role) error {
 	transaction.Commit()
 	return err
 }
-func (repo *SystemRepository) UpdateRole(role model.Role) error {
+func (repo *System) UpdateRole(role model.Role) error {
 	if len(role.Permissions) == 0 {
 		return fmt.Errorf("no permissions")
 	}
@@ -92,18 +92,18 @@ func (repo *SystemRepository) UpdateRole(role model.Role) error {
 	transaction.Commit()
 	return err
 }
-func (repo *SystemRepository) GetRoles() []model.Role {
+func (repo *System) GetRoles() []model.Role {
 
 	roles := make([]model.Role, 0)
 	selectErr := repo.db.Select(&roles, `Select role.id, name, COALESCE(ARRAY_AGG(role_permission.value),'{}') as permissions from system.role 
 	INNER JOIN system.role_permission on role.id = role_permission.role_id GROUP BY role.id order by role.created_at desc`)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("SystemRepository.GetRoles"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("System.GetRoles"), slimlog.Error("selectErr"))
 	}
 	return roles
 }
 
-func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error {
+func (repo *System) AssignRole(accountRoles model.AccountRoles) error {
 	dialect := goqu.Dialect("postgres")
 	rows := make([]goqu.Record, 0)
 	for _, ar := range accountRoles {
@@ -121,11 +121,11 @@ func (repo *SystemRepository) AssignRole(accountRoles model.AccountRoles) error 
 
 	_, insertErr := repo.db.Exec(query, args...)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("SystemRepository.AssignRole"), slimlog.Error("insertErr"))
+		logger.Error(insertErr.Error(), slimlog.Function("System.AssignRole"), slimlog.Error("insertErr"))
 	}
 	return insertErr
 }
-func(repo * SystemRepository) GetAccountsWithAssignedRoles() model.AccountRoles{
+func(repo * System) GetAccountsWithAssignedRoles() model.AccountRoles{
 
 	accountRoles := make(model.AccountRoles, 0)
 	query := `SELECT account.json_format as account,
@@ -142,26 +142,26 @@ func(repo * SystemRepository) GetAccountsWithAssignedRoles() model.AccountRoles{
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
-		logger.Error(selectErr.Error(), slimlog.Function("SystemRepository.GetAccountWithAssignedRoles"), slimlog.Error("getErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("System.GetAccountWithAssignedRoles"), slimlog.Error("getErr"))
 		
 	}
 	return accountRoles
 }
-func (repo * SystemRepository) RemoveRoleAssignment(roleId int , accountId string)error{
+func (repo * System) RemoveRoleAssignment(roleId int , accountId string)error{
 
 	_, deleteErr := repo.db.Exec("DELETE FROM system.account_role where role_id = $1 AND account_id = $2", roleId, accountId)
 	if deleteErr != nil{
-		logger.Error(deleteErr.Error(), slimlog.Function("SystemRepository.RemoveRoleAssignments"), slimlog.Error("deleteErr"))
+		logger.Error(deleteErr.Error(), slimlog.Function("System.RemoveRoleAssignments"), slimlog.Error("deleteErr"))
 		return deleteErr
 	}	
 	return nil
 }
-func NewSystemRepository(db * sqlx.DB) SystemRepositoryInterface {
-	return &SystemRepository{
+func NewSystemRepository(db * sqlx.DB) SystemRepository {
+	return &System{
 		db: db,
 	}
 }
-func(repo * SystemRepository) GetUserWithPermission(permission string) ([]model.AccountJSON, error){
+func(repo * System) GetUserWithPermission(permission string) ([]model.AccountJSON, error){
 	accounts := make([]model.AccountJSON, 0)
 	query := `SELECT 
 	account.json_format as account
@@ -175,7 +175,7 @@ func(repo * SystemRepository) GetUserWithPermission(permission string) ([]model.
   return accounts, err
 }
 
-type SystemRepositoryInterface interface {
+type SystemRepository interface {
 	NewRole(role model.Role) error
 	GetRoles() []model.Role
 	UpdateRole(role model.Role) error

@@ -4,15 +4,14 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 
 type TimeSlot struct{
-	timeSlotRepo repository.TimeSlotRepository
-	reservationRepo repository.ReservationRepository
+	services * services.Services
 }
 
 type TimeSlotController interface{
@@ -21,10 +20,9 @@ type TimeSlotController interface{
 	DeleteTimeSlot(ctx * gin.Context)
 	GetTimeSlotBasedOnDateAndDevice(ctx * gin.Context)
 }
-func NewTimeSlotController () TimeSlotController{
+func NewTimeSlotController (services * services.Services) TimeSlotController{
 	return &TimeSlot{
-		timeSlotRepo: repository.NewTimeSlotRepository(),
-		reservationRepo: repository.NewReservationRepository(),
+		services: services,
 	}
 }
 func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
@@ -50,7 +48,7 @@ func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.timeSlotRepo.NewSlot(slot)
+	err = ctrler.services.Repos.TimeSlotRepository.NewSlot(slot)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("NewSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -84,7 +82,7 @@ func(ctrler * TimeSlot)UpdateTimeSlot(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.timeSlotRepo.UpdateSlot(slot)
+	err = ctrler.services.Repos.TimeSlotRepository.UpdateSlot(slot)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("UpdateSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -99,7 +97,7 @@ func(ctrler * TimeSlot)DeleteTimeSlot(ctx * gin.Context){
 	slot := model.TimeSlot{}
 	slot.ProfileId = profileId
 	slot.Id = slotId
-	err := ctrler.timeSlotRepo.DeleteSlot(slot)
+	err := ctrler.services.Repos.TimeSlotRepository.DeleteSlot(slot)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("DeleteSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -108,24 +106,16 @@ func(ctrler * TimeSlot)DeleteTimeSlot(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "Slot deleted."))
 }
 
-
-// func (ctrler * TimeSlot)GetSlots( ctx * gin.Context) {
-// 	_, err  := ctrler.timeSlotRepo.GetSlots()
-// 	if err != nil {
-
-// 		logger.Error("")
-// 	}
-// }
 func (ctrler * TimeSlot)GetTimeSlotBasedOnDateAndDevice(ctx * gin.Context){
 	profileId := ctx.Param("id")
 	dateSlotId := ctx.Param("dateSlotId")
 	deviceId := ctx.Param("deviceId")
 	accountId := ctx.GetString("requestorId")
-	slots, err := ctrler.timeSlotRepo.GetTimeSlotBasedOnDateAndDevice(profileId, dateSlotId, deviceId)
+	slots, err := ctrler.services.Repos.TimeSlotRepository.GetTimeSlotBasedOnDateAndDevice(profileId, dateSlotId, deviceId)
     if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetTimeSlotBasedOnDateAndDevice"))
 	}
-	reservations, err := ctrler.reservationRepo.GetReservationByClientAndDateSlot(accountId, dateSlotId)
+	reservations, err := ctrler.services.Repos.ReservationRepository.GetReservationByClientAndDateSlot(accountId, dateSlotId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetReservationErr") )
 	}

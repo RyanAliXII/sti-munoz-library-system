@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type AccountRepository struct {
+type Account struct {
 	db *sqlx.DB
 	minio * minio.Client
 }
@@ -33,7 +33,7 @@ type AccountFilter struct {
 	Deleted bool `form:"deleted"`
 	filter.Filter
 }
-func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Account,Metadata, error) {
+func (repo *Account) GetAccounts(filter * AccountFilter) ([]model.Account,Metadata, error) {
 	var accounts []model.Account = make([]model.Account, 0)
 	meta := Metadata{}
 	transaction, err := repo.db.Beginx()
@@ -92,7 +92,7 @@ func (repo *AccountRepository) GetAccounts(filter * AccountFilter) ([]model.Acco
 }
 
 
-func (repo * AccountRepository)buildAccountFilters(ds * goqu.SelectDataset, filter * AccountFilter)(*goqu.SelectDataset){
+func (repo * Account)buildAccountFilters(ds * goqu.SelectDataset, filter * AccountFilter)(*goqu.SelectDataset){
 	/*
 	 	check if active filter or disable filter is enabled
 		if both filter are selected, do nothing which fallbacks to default behavior, 
@@ -130,7 +130,7 @@ func (repo * AccountRepository)buildAccountFilters(ds * goqu.SelectDataset, filt
 
 	 return ds
 }
-func (repo * AccountRepository)buildMetadataQuery( filter * AccountFilter)(string, error){
+func (repo * Account)buildMetadataQuery( filter * AccountFilter)(string, error){
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),
@@ -141,7 +141,7 @@ func (repo * AccountRepository)buildMetadataQuery( filter * AccountFilter)(strin
 	return query, err
 }
 
-func (repo * AccountRepository)buildSearchMetadataQuery(filter * AccountFilter)(string, error){
+func (repo * Account)buildSearchMetadataQuery(filter * AccountFilter)(string, error){
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/$1::numeric))::bigint")).As("pages"),
@@ -164,31 +164,31 @@ func (repo * AccountRepository)buildSearchMetadataQuery(filter * AccountFilter)(
 	query, _, err := ds.ToSQL()
 	return query, err
 }
-func (repo *AccountRepository) GetAccount(filter * filter.Filter) []model.Account {
+func (repo *Account) GetAccount(filter * filter.Filter) []model.Account {
 	query := `SELECT id, email, display_name, is_active, given_name, profile_picture, surname, metadata FROM account_view where deleted_at is null  ORDER BY surname ASC LIMIT $1 OFFSET $2 `
 	var accounts []model.Account = make([]model.Account, 0)
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.GetAccounts"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("Account.GetAccounts"), slimlog.Error("selectErr"))
 	}
 	return accounts
 }
-func (repo *AccountRepository) GetAccountById(id string) (model.Account, error) {
+func (repo *Account) GetAccountById(id string) (model.Account, error) {
 	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where id = $1 and deleted_at is null and is_active LIMIT 1`
 	account := model.Account{}
 	err := repo.db.Get(&account, query, id)
 	return account, err
 }
 
-func (repo *AccountRepository) GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error) {
+func (repo *Account) GetAccountByIdDontIgnoreIfDeletedOrInactive(id string) (model.Account, error) {
 	query := `SELECT id, email, display_name,is_active, is_deleted, given_name, surname, profile_picture, metadata FROM account_view where id = $1 LIMIT 1`
 	account := model.Account{}
 	err := repo.db.Get(&account, query, id)
 	return account, err
 }
 
-func (repo *AccountRepository) SearchAccounts(filter * AccountFilter) ([]model.Account,Metadata,error) {
+func (repo *Account) SearchAccounts(filter * AccountFilter) ([]model.Account,Metadata,error) {
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(goqu.C("id"),
 		goqu.C("email"), 
@@ -248,7 +248,7 @@ func (repo *AccountRepository) SearchAccounts(filter * AccountFilter) ([]model.A
 }
 
 
-func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
+func (repo *Account) NewAccounts(accounts *[]model.Account) error {
 	var accountRows []goqu.Record = make([]goqu.Record, 0)
 	dialect := goqu.Dialect("postgres")
 	for _, account := range *accounts {
@@ -263,7 +263,7 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 				"given_name": goqu.L("EXCLUDED.given_name"), "email": goqu.L("EXCLUDED.email")}))
 	query, args, toQueryErr := accountDs.ToSQL()
 	if toQueryErr != nil {
-		logger.Error(toQueryErr.Error(), slimlog.Function("AccountRepository.NewAccounts"))
+		logger.Error(toQueryErr.Error(), slimlog.Function("Account.NewAccounts"))
 		return toQueryErr
 	}
 	transaction, transactErr := repo.db.Beginx()
@@ -273,7 +273,7 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 	}
 	insertResult, insertErr := transaction.Exec(query, args...)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("AccountRepository.NewAccounts"))
+		logger.Error(insertErr.Error(), slimlog.Function("Account.NewAccounts"))
 		transaction.Rollback()
 		return insertErr
 	}
@@ -283,10 +283,10 @@ func (repo *AccountRepository) NewAccounts(accounts *[]model.Account) error {
 
 	return nil
 }
-func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) error {
+func (repo *Account) VerifyAndUpdateAccount(account model.Account) error {
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("transactErr"))
 		transaction.Rollback()
 		return transactErr
 	}
@@ -298,16 +298,16 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 			_, insertErr := transaction.Exec("Insert into system.account(id, display_name, email, surname, given_name) VALUES ($1, $2, $3, $4, $5)",
 				account.Id, account.DisplayName, account.Email, account.Surname, account.GivenName)
 			if insertErr != nil {
-				logger.Error(insertErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("insertErr"))
+				logger.Error(insertErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("insertErr"))
 				transaction.Rollback()
 				return insertErr
 			}
-			logger.Info("Inserting user account.", zap.String("accountId", account.Id), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"))
+			logger.Info("Inserting user account.", zap.String("accountId", account.Id), slimlog.Function("Account.VerifyAndUpdateAccount"))
 			transaction.Commit()
 			return nil
 		}
 		transaction.Rollback()
-		logger.Error(getErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("getErr"))
 		return getErr
 	}
 	OneMonth := time.Hour * 730
@@ -317,18 +317,18 @@ func (repo *AccountRepository) VerifyAndUpdateAccount(account model.Account) err
 			_, updateErr := transaction.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
 				account.DisplayName, account.Email, account.Surname, account.GivenName, account.Id)
 			if updateErr != nil {
-				logger.Error(updateErr.Error(), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"), slimlog.Error("updateErr"))
+				logger.Error(updateErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("updateErr"))
 				transaction.Rollback()
 				return updateErr
 			}
-			logger.Info("Updating user account.", zap.String("accountId", registeredAccount.Id), slimlog.Function("AccountRepository.VerifyAndUpdateAccount"))
+			logger.Info("Updating user account.", zap.String("accountId", registeredAccount.Id), slimlog.Function("Account.VerifyAndUpdateAccount"))
 		}
 
 	}
 	transaction.Commit()
 	return nil
 }
-func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role, error) {
+func (repo *Account) GetRoleByAccountId(accountId string) (model.Role, error) {
 
 	role := model.Role{}
 	query := `SELECT COALESCE(role.id, 0) as id, COALESCE(role.name,'') as name,  COALESCE(ARRAY_AGG(role_permission.value),'{}') as permissions from system.account as ac
@@ -339,11 +339,11 @@ func (repo *AccountRepository) GetRoleByAccountId(accountId string) (model.Role,
 
 	getErr := repo.db.Get(&role, query, accountId)
 	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("AccountRepository.GetRoleByAccountId"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), slimlog.Function("Account.GetRoleByAccountId"), slimlog.Error("getErr"))
 	}
 	return role, getErr
 }
-func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
+func(repo * Account) GetAccountsWithAssignedRoles()model.AccountRoles{
 
 	accountRoles := make(model.AccountRoles, 0)
 	query := `SELECT account.json_format as account,
@@ -359,12 +359,12 @@ func(repo * AccountRepository) GetAccountsWithAssignedRoles()model.AccountRoles{
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
-		logger.Error(selectErr.Error(), slimlog.Function("AccountRepository.GetRoles"), slimlog.Error("getErr"))
+		logger.Error(selectErr.Error(), slimlog.Function("Account.GetRoles"), slimlog.Error("getErr"))
 		
 	}
 	return accountRoles
 }
-func (repo * AccountRepository) UpdateProfilePictureById(id string, image * multipart.FileHeader) error {
+func (repo * Account) UpdateProfilePictureById(id string, image * multipart.FileHeader) error {
 	
 	fileBuffer, err := image.Open()
 	if err != nil {
@@ -420,7 +420,7 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	transaction.Commit()
 	return nil
 }
-// func(repo * AccountRepository)ActivateAccounts(accountIds []string) error {
+// func(repo * Account)ActivateAccounts(accountIds []string) error {
 // 	dialect := goqu.Dialect("postgres")
 // 	if len(accountIds) == 0 {
 // 		return nil
@@ -439,7 +439,7 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 // 	return err
 // }
 
-func(repo * AccountRepository)DisableAccounts(accountIds []string) error {
+func(repo * Account)DisableAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
 	if len(accountIds) == 0 {
 		return nil
@@ -459,7 +459,7 @@ func(repo * AccountRepository)DisableAccounts(accountIds []string) error {
 }
 
 
-func(repo * AccountRepository)DeleteAccounts(accountIds []string) error {
+func(repo * Account)DeleteAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
 	if len(accountIds) == 0 {
 		return nil
@@ -478,7 +478,7 @@ func(repo * AccountRepository)DeleteAccounts(accountIds []string) error {
 	return err
 }
 
-func(repo * AccountRepository)RestoreAccounts(accountIds []string) error {
+func(repo * Account)RestoreAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
 	if len(accountIds) == 0 {
 		return nil
@@ -496,7 +496,7 @@ func(repo * AccountRepository)RestoreAccounts(accountIds []string) error {
 	return err
 }
 
-func (repo * AccountRepository) GetAccountStatsById(accountId string)(model.AccountStats, error ){
+func (repo * Account) GetAccountStatsById(accountId string)(model.AccountStats, error ){
 	accountStats := model.AccountStats{}
 	query := `
 	SELECT  account.max_allowed_borrowed_books, 
@@ -518,14 +518,14 @@ func (repo * AccountRepository) GetAccountStatsById(accountId string)(model.Acco
 
 
 
-func NewAccountRepository(db *sqlx.DB, minio * minio.Client) AccountRepositoryInterface {
-	return &AccountRepository{
+func NewAccountRepository(db *sqlx.DB, minio * minio.Client) AccountRepository {
+	return &Account{
 		db:db,
 		minio: minio,
 	}
 }
 
-type AccountRepositoryInterface interface {
+type AccountRepository interface {
 	GetAccounts( * AccountFilter) ([]model.Account,Metadata ,error)
 	SearchAccounts(* AccountFilter) ([]model.Account, Metadata, error)
 	NewAccounts(accounts *[]model.Account) error
