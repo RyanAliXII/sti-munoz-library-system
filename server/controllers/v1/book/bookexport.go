@@ -9,7 +9,7 @@ import (
 )
 
 
-func(ctrler * BookController)ExportBooks(ctx * gin.Context){
+func(ctrler *Book)ExportBooks(ctx * gin.Context){
 	collectionId, err  := strconv.Atoi(ctx.Query("collectionId"))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ConvErrr"))
@@ -28,7 +28,7 @@ func(ctrler * BookController)ExportBooks(ctx * gin.Context){
 			return
 	}
 	
-	buffer, err := ctrler.bookRepository.ExportBooks(collectionId, fileType)	
+	buffer, err := ctrler.services.Repos.BookRepository.ExportBooks(collectionId, fileType)	
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ExportBooks"))
 		ctx.Data(http.StatusInternalServerError, "application/octet-stream", []byte{})

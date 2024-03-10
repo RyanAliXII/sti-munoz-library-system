@@ -5,12 +5,9 @@ import (
 	"encoding/json"
 )
 
-
 type Settings struct{
 	Value SettingsValue `json:"value" db:"value"`
 }
-
-
 type SettingsValue struct {
 	DuePenalty SettingsFieldInt `json:"app.due-penalty"`
 	MaxReservationPerDay SettingsFieldInt `json:"app.max-reservation" `
@@ -21,8 +18,6 @@ func(instance * SettingsValue)ToBytes() ([]byte, error) {
 	bytes, err := json.Marshal(instance)
 	return bytes, err
 }
-
-
 type SettingsFieldInt struct {
 	Id string `json:"id"`
 	Label string `json:"label"`
@@ -32,7 +27,6 @@ type SettingsFieldInt struct {
 	Value int `json:"value"`
 
 }
-
 type SettingsFieldString struct {
 	Id string `json:"id"`
 	Label string `json:"label"`
@@ -42,7 +36,6 @@ type SettingsFieldString struct {
 	Value string `json:"value"`
 
 }
-
 func (settingsValue * SettingsValue) Scan(value interface{}) error {
 	val, valid := value.([]byte)
 	INITIAL_DATA_ON_ERROR := SettingsValue{

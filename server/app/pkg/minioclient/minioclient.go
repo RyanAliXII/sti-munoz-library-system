@@ -1,4 +1,4 @@
-package objstore
+package minioclient
 
 import (
 	"context"

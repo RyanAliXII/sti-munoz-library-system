@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -13,9 +12,9 @@ type TokenRepository interface {
 	GetTokenByJTI(jti string) (model.Token, error) 
 	RevokeToken(jti string) (error)
 }
-func NewTokenRepository() TokenRepository {
+func NewTokenRepository(db * sqlx.DB) TokenRepository {
 	return &Token{
-		db: db.Connect(),
+		db: db,
 	}
 }
 func(repo * Token)NewToken(token model.Token) error {

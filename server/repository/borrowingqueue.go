@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -23,9 +22,9 @@ type BorrowingQueueRepository interface {
 	GetClientInactiveQueues(clientId string) ([]model.BorrowingQueueItem, error)
 	DequeueItemByIdAndAccountId(itemId string, accountId string) error
 }
-func NewBorrowingQueue () BorrowingQueueRepository {
+func NewBorrowingQueueRepository(db * sqlx.DB)BorrowingQueueRepository {
 	return &BorrowingQueue{
-		db: db.Connect(),
+		db: db,
 	}
 }
 func (repo * BorrowingQueue)Queue(queue model.BorrowingQueue) error {

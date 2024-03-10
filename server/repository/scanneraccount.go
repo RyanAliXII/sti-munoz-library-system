@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -44,8 +43,8 @@ func(repo * ScannerAccount)DeleteAccountById(id string) error {
 	_, err := repo.db.Exec("Update system.scanner_account set deleted_at = now() where id = $1", id)
 	return err	
 }
-func NewScannerAccountRepository()ScannerAccountRepository {
+func NewScannerAccountRepository(db * sqlx.DB)ScannerAccountRepository {
 	return &ScannerAccount {
-		db: db.Connect(),
+		db: db,
 	}
 }

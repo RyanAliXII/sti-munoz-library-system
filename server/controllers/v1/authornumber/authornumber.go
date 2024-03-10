@@ -1,27 +1,22 @@
 package authornumber
 
 import (
-	"time"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-type AuthorNumberController struct {
-	authorNumberRepository repository.AuthorNumberRepositoryInterface
-	recordMetadata repository.RecordMetadataRepository
+type AuthorNumber struct {
+	services * services.Services
 }
 
-
-func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
-
+func (ctrler *AuthorNumber) GetAuthorNumbers(ctx *gin.Context) {
 	filter := filter.ExtractFilter(ctx)
 	if len(filter.Keyword) > 0 {
-		cutters := ctrler.authorNumberRepository.Search(filter)
-		metadata, err := ctrler.recordMetadata.GetAuthorNumberSearchMetadata(filter)
+		cutters := ctrler.services.Repos.AuthorNumberRepository.Search(filter)
+		metadata, err := ctrler.services.Repos.RecordMetadataRepository.GetAuthorNumberSearchMetadata(filter)
 		if err != nil {
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
@@ -29,27 +24,21 @@ func (ctrler *AuthorNumberController) GetAuthorNumbers(ctx *gin.Context) {
 		ctx.JSON(httpresp.Success200(gin.H{"cutters": cutters, "metadata": metadata}, "Author numbers fetched."))	
 		return 
 	}
-	cutters := ctrler.authorNumberRepository.Get(filter)
-	metadata, err := ctrler.recordMetadata.GetAuthorNumberMetadata(filter.Limit)
+	cutters := ctrler.services.Repos.AuthorNumberRepository.Get(filter)
+	metadata, err := ctrler.services.Repos.RecordMetadataRepository.GetAuthorNumberMetadata(filter.Limit)
 	if err != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"cutters": cutters, "metadata": metadata}, "Author numbers fetched."))
 }
-func (ctrler *AuthorNumberController) GetAuthorNumbersByInitial(ctx *gin.Context) {}
-func NewAuthorNumberController() AuthorNumberControllerInterface {
-	return &AuthorNumberController{
-		authorNumberRepository: repository.NewAuthorNumberRepository(),
-		recordMetadata: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
-			CacheExpiration: time.Minute * 5,
-		}),
+func NewAuthorNumberController(services * services.Services) AuthorNumberController{
+	return &AuthorNumber{
+		services: services,
 	}
 
 }
 
-type AuthorNumberControllerInterface interface {
-
+type AuthorNumberController interface {
 	GetAuthorNumbers(ctx *gin.Context)
-	
 }

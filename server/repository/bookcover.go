@@ -6,14 +6,15 @@ import (
 	"mime/multipart"
 	"path/filepath"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jaevor/go-nanoid"
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 )
-func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
+func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
 	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
 	canonicID, nanoIdErr := nanoid.Standard(21)
@@ -30,7 +31,7 @@ func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.File
 		contentType := cover.Header["Content-Type"][0]
 		fileSize := cover.Size
 
-		info, uploadErr := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+		info, uploadErr := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 			ContentType: contentType,
 		})
 		if uploadErr != nil {
@@ -57,7 +58,7 @@ func (repo *BookRepository) NewBookCover(bookId string, covers []*multipart.File
 	return nil
 }
 
-func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.FileHeader) error {
+func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader) error {
 	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
 	path := fmt.Sprintf("covers/%s/", bookId)
@@ -66,7 +67,7 @@ func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.F
 		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("nanoIdErr"))
 		return nanoIdErr
 	}
-	objects := repo.minio.ListObjects(ctx, objstore.BUCKET, minio.ListObjectsOptions{
+	objects := repo.minio.ListObjects(ctx, minioclient.BUCKET, minio.ListObjectsOptions{
 		Recursive: true,
 		Prefix:    path,
 	})
@@ -90,7 +91,7 @@ func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.F
 			contentType := cover.Header["Content-Type"][0]
 			fileSize := cover.Size
 
-			info, uploadErr := repo.minio.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+			info, uploadErr := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 				ContentType: contentType,
 			})
 			if uploadErr != nil {
@@ -118,7 +119,7 @@ func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.F
 		key := oldCover.Key
 		_, stillExist := newCoversMap[key]
 		if !stillExist {
-			deleteObjErr := repo.minio.RemoveObject(ctx, objstore.BUCKET, oldCover.Key, minio.RemoveObjectOptions{})
+			deleteObjErr := repo.minio.RemoveObject(ctx, minioclient.BUCKET, oldCover.Key, minio.RemoveObjectOptions{})
 			if deleteObjErr != nil {
 				transaction.Rollback()
 				logger.Error(deleteObjErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("deleteObjErr"))
@@ -147,16 +148,16 @@ func (repo *BookRepository) UpdateBookCover(bookId string, covers []*multipart.F
 	transaction.Commit()
 	return nil
 }
-func (repo * BookRepository) DeleteBookCoversByBookId(bookId string) error {
+func (repo *Book) DeleteBookCoversByBookId(bookId string) error {
 	ctx := context.Background()
 	path := fmt.Sprintf("covers/%s/", bookId)
-	objects := repo.minio.ListObjects(ctx, objstore.BUCKET, minio.ListObjectsOptions{
+	objects := repo.minio.ListObjects(ctx, minioclient.BUCKET, minio.ListObjectsOptions{
 		Recursive: true,
 		Prefix:    path,
 	})
 
 	for cover := range objects {
-		deleteCoverErr := repo.minio.RemoveObject(ctx, objstore.BUCKET, cover.Key, minio.RemoveObjectOptions{})
+		deleteCoverErr := repo.minio.RemoveObject(ctx, minioclient.BUCKET, cover.Key, minio.RemoveObjectOptions{})
 		if deleteCoverErr != nil {
 			logger.Error(deleteCoverErr.Error(), slimlog.Function("BookRepository.DeleteBookCoversByBookId"), slimlog.Error("deleteCoverErr "))
 			return deleteCoverErr

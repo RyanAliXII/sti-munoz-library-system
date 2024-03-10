@@ -1,29 +1,26 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
 
 
-type SettingsRepository struct {
+type Settings struct {
 	db *sqlx.DB
 }
-
-func(repo * SettingsRepository) Get()model.SettingsValue{
+func(repo * Settings) Get()model.SettingsValue{
 
 	settings := model.Settings{}
 	query := `SELECT value from system.settings limit 1`;
 	getErr := repo.db.Get(&settings, query)
 	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("SettingsRepository.Get"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), slimlog.Function("Settings.Get"), slimlog.Error("getErr"))
 	}
-
 	return settings.Value
 }
-func(repo * SettingsRepository)UpdateSettings(settings model.SettingsValue)error{
+func(repo * Settings)UpdateSettings(settings model.SettingsValue)error{
 	jsonBytes, err := settings.ToBytes()
 	if err != nil {
 		return err
@@ -31,15 +28,13 @@ func(repo * SettingsRepository)UpdateSettings(settings model.SettingsValue)error
 	_, err = repo.db.Exec("UPDATE system.settings set value = $1",  jsonBytes)
 	return err 
 }
-func NewSettingsRepository ()  SettingsRepositoryInterface{
-
-	return &SettingsRepository{
-		db:      postgresdb.GetOrCreateInstance(),
-		
+func NewSettingsRepository(db * sqlx.DB)SettingsRepository{
+	return &Settings{
+		db:db,
 	}
 }
 
-type SettingsRepositoryInterface interface {
+type SettingsRepository interface {
 	Get() model.SettingsValue
 	UpdateSettings(settings model.SettingsValue)error
 }

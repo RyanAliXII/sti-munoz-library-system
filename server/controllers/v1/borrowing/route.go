@@ -2,15 +2,15 @@ package borrowing
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
 
-func BorrowingRoutes(r * gin.RouterGroup){
-	ctrler := NewBorrowingController()
-	queueCtrler := NewBorrowingQueue()
-
-	
+func BorrowingRoutes(r * gin.RouterGroup, services * services.Services){
+	ctrler := NewBorrowingController(services)
+	queueCtrler := NewBorrowingQueue(services)
+		
 	r.POST("/",
 	middlewares.ValidatePermissions([]string{"BorrowedBook.Add"}, true),
 	middlewares.ValidateBody[CheckoutBody],

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/jmoiron/sqlx"
 )
@@ -263,8 +262,7 @@ func (repo * RecordMetadataRepository) InvalidateBook(){
 func(repo * RecordMetadataRepository) InvalidateAccession(){
 	recordMetaDataCache.Accession.IsValid = false
 }
-func NewRecordMetadataRepository (config RecordMetadataConfig) RecordMetadataRepository{
-	db := postgresdb.GetOrCreateInstance()
+func NewRecordMetadataRepository (db *sqlx.DB,  config RecordMetadataConfig) RecordMetadataRepository{
 	return RecordMetadataRepository{
 		db: db,
 		recordMetadataCache: newRecordMetadataCache(config),

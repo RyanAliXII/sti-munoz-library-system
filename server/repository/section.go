@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/jmoiron/sqlx"
 )
 
-type SectionRepository struct {
+type Section struct {
 	db *sqlx.DB
 }
 
-func (repo *SectionRepository) New(section model.Section) error {
+func (repo *Section) New(section model.Section) error {
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("SectionRepository.New"))
+		logger.Error(transactErr.Error(), slimlog.Function("Section.New"))
 		return transactErr
 	}
 	const TABLE_PREFIX = "accession_"
@@ -30,7 +29,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, is_non_circulating)VALUES($1, $2, $3, $4)", section.Name, tableName, section.Prefix, section.IsNonCirculating)
 		if insertErr != nil {
 			transaction.Rollback()
-			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"))
+			logger.Error(insertErr.Error(), slimlog.Function("Section.New"))
 			return insertErr
 		}
 	} else {
@@ -50,7 +49,7 @@ func (repo *SectionRepository) New(section model.Section) error {
 		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id, is_non_circulating)VALUES($1,$2,$3,$4,$5)", section.Name, tableName, section.Prefix, section.MainCollectionId, section.IsNonCirculating)
 		if insertErr != nil {
 			transaction.Rollback()
-			logger.Error(insertErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("insertErr"))
+			logger.Error(insertErr.Error(), slimlog.Function("Section.New"), slimlog.Error("insertErr"))
 			return insertErr
 		}
 	}
@@ -58,13 +57,13 @@ func (repo *SectionRepository) New(section model.Section) error {
 	_, createCounterErr := transaction.Exec("INSERT into accession.counter(accession) VALUES($1) ON CONFLICT (accession) DO NOTHING", tableName)
 	if createCounterErr != nil {
 		transaction.Rollback()
-		logger.Error(createCounterErr.Error(), slimlog.Function("SectionRepository.New"), slimlog.Error("createCounterErr"))
+		logger.Error(createCounterErr.Error(), slimlog.Function("Section.New"), slimlog.Error("createCounterErr"))
 		return createCounterErr
 	}
 	transaction.Commit()
 	return nil
 }
-func (repo * SectionRepository)Update(section model.Section) error {
+func (repo * Section)Update(section model.Section) error {
 	transaction, err := repo.db.Beginx()
 	if err != nil {
 		transaction.Rollback()
@@ -89,7 +88,7 @@ func (repo * SectionRepository)Update(section model.Section) error {
 	transaction.Commit()
 	return nil;
 }
-func (repo *SectionRepository) Get() []model.Section {
+func (repo *Section) Get() []model.Section {
 	var sections []model.Section = make([]model.Section, 0)
 	selectErr := repo.db.Select(&sections, `
 	SELECT section.id, 
@@ -106,12 +105,12 @@ func (repo *SectionRepository) Get() []model.Section {
 	where section.deleted_at is null
 	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("SectionRepository.Get"))
+		logger.Error(selectErr.Error(), slimlog.Function("Section.Get"))
 	}
 	return sections
 }
 
-func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
+func (repo *Section)GetById(id int)(model.Section, error)  {
 	section := model.Section{}
 	err := repo.db.Get(&section,`
 	SELECT section.id, 
@@ -129,7 +128,7 @@ func (repo *SectionRepository)GetById(id int)(model.Section, error)  {
 	
 	return section, err
 }
-func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
+func (repo *Section)GetMainCollections()([]model.Section, error){
 	var sections []model.Section = make([]model.Section, 0)
 	selectErr := repo.db.Select(&sections, `
 	SELECT section.id, 
@@ -147,7 +146,7 @@ func (repo *SectionRepository)GetMainCollections()([]model.Section, error){
 	return sections, selectErr
 }
 
-func (repo * SectionRepository)Delete(id int) error {
+func (repo * Section)Delete(id int) error {
 	section, err := repo.GetById(id)
 	if err != nil{
 		return err
@@ -158,12 +157,12 @@ func (repo * SectionRepository)Delete(id int) error {
 	_, err = repo.db.Exec("UPDATE catalog.section set deleted_at = NOW() where id = $1", id)
 	return err
 }
-func(repo * SectionRepository)GetCollectionTree()[]*model.Tree[int, model.Section] {
+func(repo * Section)GetCollectionTree()[]*model.Tree[int, model.Section] {
 	collections := repo.Get();
 	tree := repo.TransformToTree(collections)
 	return tree
 }
-func (repo * SectionRepository)TransformToTree(collections []model.Section)[]*model.Tree[int, model.Section]{
+func (repo * Section)TransformToTree(collections []model.Section)[]*model.Tree[int, model.Section]{
 	tree := make([]*model.Tree[int, model.Section], 0)
 	nodeCache := make(map[int]*model.Tree[int, model.Section])
 	for _, collection := range collections {
@@ -181,7 +180,7 @@ func (repo * SectionRepository)TransformToTree(collections []model.Section)[]*mo
 	}
 	return tree
 }
-func (repo *SectionRepository)findThenUpdateOrCreateNode(cache map[int]*model.Tree[int, model.Section],
+func (repo *Section)findThenUpdateOrCreateNode(cache map[int]*model.Tree[int, model.Section],
 	nodeId int , collection  model.Section) *model.Tree[int, model.Section] {
 	node, isInCache := cache[nodeId]
 	if isInCache {
@@ -199,12 +198,12 @@ func (repo *SectionRepository)findThenUpdateOrCreateNode(cache map[int]*model.Tr
 		Data: collection,
 	}
 }
-func NewSectionRepository() SectionRepositoryInterface {
-	return &SectionRepository{
-		db: postgresdb.GetOrCreateInstance(),
+func NewSectionRepository(db * sqlx.DB) SectionRepository {
+	return &Section{
+		db: db,
 	}
 }
-type SectionRepositoryInterface interface {
+type SectionRepository interface {
 	New(section model.Section) error
 	Get() []model.Section
 	Update(section model.Section) error

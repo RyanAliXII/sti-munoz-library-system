@@ -3,14 +3,10 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
-
-
-
 type Reservation struct {
 	db * sqlx.DB
 }
@@ -25,9 +21,9 @@ type ReservationRepository interface{
 	GetReservationByClientAndDateSlot(clientId string, dateSlotId string) ([]model.Reservation, error)
 	UpdateRemarks(id string, remarks string) error 
 }
-func NewReservationRepository() ReservationRepository{
+func NewReservationRepository(db * sqlx.DB) ReservationRepository{
 	return &Reservation{
-		db: db.Connect(),
+		db: db,
 	}
 }
 func(repo * Reservation)NewReservation(reservation model.Reservation) error {

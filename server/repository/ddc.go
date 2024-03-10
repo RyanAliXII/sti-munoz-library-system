@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
@@ -40,9 +39,9 @@ func (repo * DDCRepository) Search (filter * filter.Filter)[]model.DDC {
 	return deweys
 }
 
-func NewDDCRepository() DDCRepositoryInterface {
+func NewDDCRepository(db * sqlx.DB) DDCRepositoryInterface {
 	return &DDCRepository{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 	}
 }
 

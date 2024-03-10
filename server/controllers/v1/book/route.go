@@ -2,15 +2,13 @@ package book
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-func BookRoutes(router *gin.RouterGroup) {
-
-var controller BookControllerInterface = NewBookController()
-
-
+func BookRoutes(router *gin.RouterGroup, services * services.Services) {
+	controller := NewBookController(services)
 	router.GET("/",
 	middlewares.ValidatePermissions([]string{"Book.Read"}, false),
 	controller.HandleGetBooks)

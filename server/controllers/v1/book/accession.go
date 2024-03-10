@@ -14,13 +14,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func (ctrler *BookController) GetAccession(ctx *gin.Context) {
+func (ctrler *Book) GetAccession(ctx *gin.Context) {
 	
 	filter := filter.ExtractFilter(ctx)
 
 	if len(filter.Keyword) > 0 {
-		accessions := ctrler.accessionRepo.SearchAccession(filter)
-		metadata, err := ctrler.recordMetadataRepo.GetAccessionSearchMetadata(filter)
+		accessions := ctrler.services.Repos.AccessionRepository.SearchAccession(filter)
+		metadata, err := ctrler.services.Repos.RecordMetadataRepository.GetAccessionSearchMetadata(filter)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("GetAccessionMetadataErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -33,8 +33,8 @@ func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 		return
 	}
 	
-	accessions := ctrler.accessionRepo.GetAccessions(filter)
-	metadata, err := ctrler.recordMetadataRepo.GetAccessionMetadata(filter.Limit)
+	accessions := ctrler.services.Repos.AccessionRepository.GetAccessions(filter)
+	metadata, err := ctrler.services.Repos.RecordMetadataRepository.GetAccessionMetadata(filter.Limit)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAccessionMetadataErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -47,7 +47,7 @@ func (ctrler *BookController) GetAccession(ctx *gin.Context) {
 }
 
 
-func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
+func (ctrler *Book) GetAccessionByBookId(ctx *gin.Context) {
 	id := ctx.Param("id")
 	_, parseErr := uuid.Parse(id)
 	if parseErr != nil {
@@ -58,17 +58,17 @@ func (ctrler *BookController) GetAccessionByBookId(ctx *gin.Context) {
 	var	accessions []model.Accession; 
 	ignoreWeeded := ctx.Query("ignoreWeeded")
     if ignoreWeeded == "false" && appId == azuread.AdminAppClientId{
-          accessions = ctrler.accessionRepo.GetAccessionsByBookIdDontIgnoreWeeded(id)
+          accessions = ctrler.services.Repos.AccessionRepository.GetAccessionsByBookIdDontIgnoreWeeded(id)
 	}else{
-		accessions = ctrler.accessionRepo.GetAccessionsByBookId(id)
+		accessions =ctrler.services.Repos.AccessionRepository.GetAccessionsByBookId(id)
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessions": accessions,
 	}, "Accessions successfully fetched for specific book."))
 }
-func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
+func (ctrler *Book)GetAccessionById (ctx * gin.Context){
 	id := ctx.Param("id")
-	accession, err := ctrler.accessionRepo.GetAccessionsById(id)
+	accession, err := ctrler.services.Repos.AccessionRepository.GetAccessionsById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error(err.Error()))
 		if err == sql.ErrNoRows {
@@ -80,7 +80,7 @@ func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"accession": accession}, "OK"))
 }
- func (ctrler *  BookController) UpdateAccessionStatus(ctx * gin.Context) {
+ func (ctrler *Book) UpdateAccessionStatus(ctx * gin.Context) {
 	id := ctx.Param("id")
 	status, err := strconv.Atoi(ctx.Query("action"))
 	const (
@@ -105,10 +105,10 @@ func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
    ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 
  }
- func(ctrler * BookController) handleWeeding (id string, ctx * gin.Context ){
+ func(ctrler  *Book) handleWeeding (id string, ctx * gin.Context ){
     body := WeedingBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-    err := ctrler.accessionRepo.WeedAccession(id, body.Remarks)
+    err := ctrler.services.Repos.AccessionRepository.WeedAccession(id, body.Remarks)
     if err != nil {
 	 logger.Error(err.Error(), slimlog.Error("weedingErr"))
 	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -116,10 +116,10 @@ func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
    }
 	ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
  }
- func(ctrler * BookController) handleMarkAsMissing (id string, ctx * gin.Context ){
+ func(ctrler *Book) handleMarkAsMissing (id string, ctx * gin.Context ){
     body := WeedingBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-    err := ctrler.accessionRepo.MarkAsMissing(id, body.Remarks)
+    err := ctrler.services.Repos.AccessionRepository.MarkAsMissing(id, body.Remarks)
     if err != nil {
 	 logger.Error(err.Error(), slimlog.Error("weedingErr"))
 	 ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -127,9 +127,8 @@ func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
    }
 	ctx.JSON(httpresp.Success200(nil, "Book weeded successfully."))
  }
- func(ctrler * BookController) handleRecirculation ( id string,  ctx * gin.Context ){
-	 
-	 err := ctrler.accessionRepo.Recirculate(id)
+ func(ctrler *Book) handleRecirculation ( id string,  ctx * gin.Context ){ 
+	err := ctrler.services.Repos.AccessionRepository.Recirculate(id)
 	if err != nil {
 	  logger.Error(err.Error(), slimlog.Error("recirculateErr"))
 	  ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -139,7 +138,7 @@ func (ctrler * BookController)GetAccessionById (ctx * gin.Context){
 }
 
 
-func(ctrler * BookController)AddBookCopies(ctx * gin.Context){
+func(ctrler *Book)AddBookCopies(ctx * gin.Context){
 	id := ctx.Param("id")
 	body := AddBookCopyBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
@@ -148,7 +147,7 @@ func(ctrler * BookController)AddBookCopies(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.bookRepository.AddBookCopies(id, body.Copies)
+	err = ctrler.services.Repos.BookRepository.AddBookCopies(id, body.Copies)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("addBookCopiesErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -157,7 +156,7 @@ func(ctrler * BookController)AddBookCopies(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "New copies added."))
 }
 
-func (ctrler * BookController)UpdateAccession(ctx * gin.Context){
+func (ctrler *Book)UpdateAccession(ctx * gin.Context){
 	id := ctx.Param("id")
 	accession := model.Accession{}
 	err := ctx.Bind(&accession)
@@ -174,7 +173,7 @@ func (ctrler * BookController)UpdateAccession(ctx * gin.Context){
 		}, "Validation error."))
 		return 
 	}
-	err = ctrler.accessionRepo.UpdateAccession(accession)
+	err = ctrler.services.Repos.AccessionRepository.UpdateAccession(accession)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateAccessionError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -182,14 +181,14 @@ func (ctrler * BookController)UpdateAccession(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accession updated."))
 }
-func (ctrler * BookController)GetAccessionsByCollection(ctx * gin.Context) {
+func (ctrler  *Book)GetAccessionsByCollection(ctx * gin.Context) {
 	collectionId, err  := strconv.Atoi(ctx.Param("collectionId"))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	accessions, err :=ctrler.accessionRepo.GetAccessionByCollection(collectionId)
+	accessions, err := ctrler.services.Repos.AccessionRepository.GetAccessionByCollection(collectionId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getAccessionsErrorByCollection"))
 	}
@@ -199,7 +198,7 @@ func (ctrler * BookController)GetAccessionsByCollection(ctx * gin.Context) {
 
 }
 
-func (ctrler * BookController)UpdateAccessionBulk(ctx * gin.Context) {
+func (ctrler  *Book)UpdateAccessionBulk(ctx * gin.Context) {
 	collectionId, err := strconv.Atoi(ctx.Param("collectionId"))
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("convErr"))
@@ -220,7 +219,7 @@ func (ctrler * BookController)UpdateAccessionBulk(ctx * gin.Context) {
 		}, "Validation error."))
 		return
 	}
-	err = ctrler.accessionRepo.UpdateBulkByCollectionId(body.Accessions, collectionId)
+	err = ctrler.services.Repos.AccessionRepository.UpdateBulkByCollectionId(body.Accessions, collectionId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateBulkError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

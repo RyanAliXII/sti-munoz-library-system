@@ -6,8 +6,7 @@ import (
 	"mime/multipart"
 	"path/filepath"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jaevor/go-nanoid"
@@ -17,14 +16,14 @@ import (
 
 type PenaltyRepository struct {
 	db *sqlx.DB
-	objstore * minio.Client
+	minio * minio.Client
 }
 
 
-func NewPenaltyRepository() PenaltyRepositoryInterface{
+func NewPenaltyRepository(db * sqlx.DB, minio * minio.Client) PenaltyRepositoryInterface{
 	return &PenaltyRepository{
-		db: postgresdb.GetOrCreateInstance(),
-		objstore: objstore.GetorCreateInstance(),
+		db: db,
+		minio: minio,
 	}
 
 }
@@ -104,7 +103,7 @@ func (repo * PenaltyRepository)MarkAsSettled(id string, fileHeader * multipart.F
 	objectName := fmt.Sprintf("payment-proof/%s%s", canonicID(), fileExt)
 	size := fileHeader.Size
 	contentType := fileHeader.Header["Content-Type"][0]
-	uploadInfo, err := repo.objstore.PutObject(context.Background(), objstore.BUCKET,objectName, proof, size, minio.PutObjectOptions{
+	uploadInfo, err := repo.minio.PutObject(context.Background(), minioclient.BUCKET,objectName, proof, size, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	if err != nil {
@@ -125,7 +124,7 @@ func (repo * PenaltyRepository)UpdateSettlement(id string, fileHeader * multipar
 	if err != nil {
 		return err
 	}
-	err = repo.objstore.RemoveObject(context.Background(), objstore.BUCKET, penalty.Proof, minio.RemoveObjectOptions{})
+	err = repo.minio.RemoveObject(context.Background(), minioclient.BUCKET, penalty.Proof, minio.RemoveObjectOptions{})
 	if err != nil {
 		return err
 	}
@@ -143,7 +142,7 @@ func (repo * PenaltyRepository)UpdateSettlement(id string, fileHeader * multipar
 	objectName := fmt.Sprintf("payment-proof/%s%s", canonicID(), fileExt)
 	size := fileHeader.Size
 	contentType := fileHeader.Header["Content-Type"][0]
-	uploadInfo, err := repo.objstore.PutObject(context.Background(), objstore.BUCKET,objectName, proof, size, minio.PutObjectOptions{
+	uploadInfo, err := repo.minio.PutObject(context.Background(), minioclient.BUCKET,objectName, proof, size, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	if err != nil {

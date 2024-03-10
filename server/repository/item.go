@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
@@ -12,9 +11,9 @@ import (
 type Item struct {
 	db * sqlx.DB
 }
-func NewItemRepository () ItemRepository {
+func NewItemRepository (db * sqlx.DB) ItemRepository {
 	return &Item{
-		db: db.Connect(),
+		db: db,
 	}
 }
 type ItemRepository interface {

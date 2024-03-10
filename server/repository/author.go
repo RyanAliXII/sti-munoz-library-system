@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
@@ -102,8 +101,7 @@ func (repo *AuthorRepository) Update(id string, author model.Author) error {
 }
 
 
-func NewAuthorRepository() AuthorRepositoryInterface {
-	db := postgresdb.GetOrCreateInstance()
+func NewAuthorRepository(db * sqlx.DB) AuthorRepositoryInterface {
 	return &AuthorRepository{
 		db: db,
 	}

@@ -197,8 +197,8 @@ func(repo *Borrowing)UpdateRemarks(id string, remarks string) error {
 	return err 	
 }
 
-func NewBorrowingRepository ()  BorrowingRepository {
+func NewBorrowingRepository (db * sqlx.DB)  BorrowingRepository {
 	return &Borrowing{
-		db: db.Connect(),
+		db: db,
 	}
 }

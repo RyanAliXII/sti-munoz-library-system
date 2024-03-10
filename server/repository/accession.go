@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -226,8 +225,8 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 	}
 	return nil
 }
-func NewAccessionRepository () AccessionRepository{
+func NewAccessionRepository (db * sqlx.DB) AccessionRepository{
 	return &Accession{
-		db: db.Connect(),
+		db: db,
 	}
 }

@@ -6,21 +6,19 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
 type Content struct{
-	contentRepo repository.ContentRepository
+	services * services.Services
 }
-
 type ContentController interface {
 	UploadFile(ctx * gin.Context)
 }
-
-func NewContentController ()ContentController{
+func NewContentController (services * services.Services)ContentController{
 	return &Content{
-		contentRepo: repository.NewContentRepository(),
+		services: services,
 	}
 }
 func (ctrler * Content)UploadFile(ctx * gin.Context) {
@@ -29,7 +27,7 @@ func (ctrler * Content)UploadFile(ctx * gin.Context) {
 		logger.Error(err.Error(), slimlog.Error("Get file err"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	}
-	path, err := ctrler.contentRepo.UploadFile(file)
+	path, err := ctrler.services.Repos.ContentRepository.UploadFile(file)
 	
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("Get file err"))

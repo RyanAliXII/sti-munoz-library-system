@@ -10,8 +10,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
-
-
 type Section struct {
 	Id              int    `json:"id" db:"id"`
 	Name            string `json:"name" db:"name"`

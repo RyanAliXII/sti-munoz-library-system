@@ -8,7 +8,7 @@ import (
 )
 
 
-func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
+func (ctrler *Book) UploadBookCover(ctx *gin.Context) {
 	body := BookCoverUploadBody{}
 
 	bindErr := ctx.ShouldBind(&body)
@@ -24,14 +24,14 @@ func (ctrler *BookController) UploadBookCover(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	uploadErr := ctrler.bookRepository.NewBookCover(body.BookId, body.Covers)
+	uploadErr := ctrler.services.Repos.BookRepository.NewBookCover(body.BookId, body.Covers)
 	if uploadErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers uploaded."))
 }
-func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
+func (ctrler *Book) UpdateBookCover(ctx *gin.Context) {
 	body := BookCoverUploadBody{}
 
 	bindErr := ctx.ShouldBind(&body)
@@ -44,14 +44,14 @@ func (ctrler *BookController) UpdateBookCover(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	updateCoverErr := ctrler.bookRepository.UpdateBookCover(body.BookId, body.Covers)
+	updateCoverErr := ctrler.services.Repos.BookRepository.UpdateBookCover(body.BookId, body.Covers)
 	if updateCoverErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers updated."))
 }
-func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
+func (ctrler *Book) DeleteBookCovers(ctx * gin.Context){
 	bookId := ctx.Param("id")
 	_, parseIdErr := uuid.Parse(bookId)
 	if parseIdErr != nil {
@@ -59,7 +59,7 @@ func (ctrler * BookController) DeleteBookCovers(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	deleteCoverErr := ctrler.bookRepository.DeleteBookCoversByBookId(bookId)
+	deleteCoverErr := ctrler.services.Repos.BookRepository.DeleteBookCoversByBookId(bookId)
 	if deleteCoverErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return

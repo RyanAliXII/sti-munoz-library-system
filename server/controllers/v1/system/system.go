@@ -22,7 +22,7 @@ import (
 type SystemController struct {
 	systemRepository repository.SystemRepositoryInterface
 	accountRepository repository.AccountRepositoryInterface
-	settingsRepository repository.SettingsRepositoryInterface
+	settingsRepository repository.SettingsRepository
 	permissionStore permissionstore.PermissionStore
 }
 

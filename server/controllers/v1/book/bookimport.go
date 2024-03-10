@@ -17,7 +17,7 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-func(ctrler * BookController) validateHeaders(file multipart.File) error {
+func(ctrler *Book) validateHeaders(file multipart.File) error {
 	m, err := gocsv.CSVToMaps(bufio.NewReader(file))
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func(ctrler * BookController) validateHeaders(file multipart.File) error {
 	return nil
 	
 }
-func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
+func (ctrler *Book) ImportBooks(ctx * gin.Context) {
 	fileHeader, fileHeaderErr := ctx.FormFile("file")
 	sectionId := ctx.PostForm("sectionId")
 	parsedSectionId, err := strconv.Atoi(sectionId)
@@ -125,7 +125,7 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.bookRepository.ImportBooks(booksImports, parsedSectionId)
+	err = ctrler.services.Repos.BookRepository.ImportBooks(booksImports, parsedSectionId)
 	if err != nil {
 		_, isDuplicateErr := err.(*repository.DuplicateError)
 		if isDuplicateErr {
@@ -143,7 +143,7 @@ func (ctrler * BookController) ImportBooks(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	ctrler.recordMetadataRepo.InvalidateBook()
-	ctrler.recordMetadataRepo.InvalidateAccession()	
+	ctrler.services.Repos.RecordMetadataRepository.InvalidateBook()
+	ctrler.services.Repos.RecordMetadataRepository.InvalidateAccession()	
 	
 }

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -10,9 +9,10 @@ import (
 type User struct {
 	db * sqlx.DB
 }
-func NewUserRepository () UserRepository {
+func NewUserRepository (db * sqlx.DB) UserRepository {
 	return &User{
-		db : db.Connect()}
+		db : db,
+	}
 }
 type UserRepository interface {
 	GetUserTypes() ([]model.UserType, error)

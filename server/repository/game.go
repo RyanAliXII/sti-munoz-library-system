@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -22,9 +21,9 @@ type GameRepository interface{
 	UpdateLog(log model.GameLog)(error)
 	GameLogout(id string) error 
 }
-func NewGameRepository () GameRepository {
+func NewGameRepository (db * sqlx.DB) GameRepository {
 	return &Game{
-		db: db.Connect(),
+		db:db,
 	}
 }
 func (repo *Game) NewGame(game model.Game) error {

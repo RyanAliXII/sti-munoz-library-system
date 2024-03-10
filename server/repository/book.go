@@ -7,8 +7,7 @@ import (
 	"mime/multipart"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
@@ -19,10 +18,38 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-type BookRepository struct {
+type Book struct {
 	db                *sqlx.DB
-	sectionRepository SectionRepositoryInterface
+	sectionRepository SectionRepository
 	minio             *minio.Client
+}
+func NewBookRepository(db * sqlx.DB, minio * minio.Client, sectionRepo SectionRepository) BookRepository {
+	return &Book{
+		db:                db,
+		sectionRepository: sectionRepo,
+		minio:             minio,
+	}
+}
+type BookRepository interface {
+	New(model.Book) (string, error)
+	Get(filter * BookFilter) ([]model.Book, Metadata)
+	GetOne(id string) model.Book
+	Update(model.Book) error
+	Search(filter.Filter) []model.Book
+	NewBookCover(bookId string, covers []*multipart.FileHeader) error
+	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
+	AddBookCopies(id string, copies int) error
+	DeleteBookCoversByBookId(bookId string) error 
+	ImportBooks(books []model.BookImport, sectionId int) error
+	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
+	SearchClientView(filter filter.Filter) []model.Book
+	GetOneOnClientView(id string) model.Book
+	AddEbook(id string, eBook * multipart.FileHeader) error
+	GetEbookById(id string, ) (*minio.Object, error)
+	RemoveEbookById(id string, ) error
+	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
+	MigrateCollection(sectionId int, bookIds []string)error
+	ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error)
 }
 type BookFilter struct {
 	filter.Filter
@@ -32,7 +59,7 @@ type BookFilter struct {
 	Collections []int 
 	MainCollections []string 
 }
-func (repo *BookRepository) New(book model.Book) (string, error) {
+func (repo *Book) New(book model.Book) (string, error) {
 	
 	id := uuid.New().String()
 	book.Id = id
@@ -126,7 +153,7 @@ func (repo *BookRepository) New(book model.Book) (string, error) {
 	return book.Id, nil
 }
 
-func (repo *BookRepository) Get(filter * BookFilter) ([]model.Book, Metadata) {
+func (repo *Book) Get(filter * BookFilter) ([]model.Book, Metadata) {
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(
 		goqu.C("id"),
@@ -187,7 +214,7 @@ func (repo *BookRepository) Get(filter * BookFilter) ([]model.Book, Metadata) {
 	
 	return books, metadata
 }
-func(repo * BookRepository)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) (*goqu.SelectDataset, error){
+func(repo *Book)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) (*goqu.SelectDataset, error){
 	
 	sectionFilter := goqu.ExOr{}
 	if(len(filters.Collections) > 0){
@@ -226,7 +253,7 @@ func(repo * BookRepository)buildBookFilters(ds * goqu.SelectDataset, filters * B
 	ds = ds.Where(sectionFilter)
 	return ds, nil
 }
-func (repo *BookRepository) GetClientBookView(filter * BookFilter) ([]model.Book, Metadata) {
+func (repo *Book) GetClientBookView(filter * BookFilter) ([]model.Book, Metadata) {
 	var books []model.Book = make([]model.Book, 0)
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(
@@ -287,7 +314,7 @@ func (repo *BookRepository) GetClientBookView(filter * BookFilter) ([]model.Book
 	repo.db.Get(&metadata, query)
 	return books, metadata
 }
-func (repo *BookRepository) GetOne(id string) model.Book {
+func (repo *Book) GetOne(id string) model.Book {
 	var book model.Book = model.Book{}
 	query := `SELECT id, 
 	title, 
@@ -313,7 +340,7 @@ func (repo *BookRepository) GetOne(id string) model.Book {
 	}
 	return book
 }
-func (repo *BookRepository) GetOneOnClientView(id string) model.Book {
+func (repo *Book) GetOneOnClientView(id string) model.Book {
 	var book model.Book = model.Book{}
 	query := `SELECT id, 
 	title, 
@@ -339,7 +366,7 @@ func (repo *BookRepository) GetOneOnClientView(id string) model.Book {
 	return book
 }
 
-func (repo *BookRepository) Update(book model.Book) error {
+func (repo *Book) Update(book model.Book) error {
 	oldBookRecord := repo.GetOne(book.Id)
 	if len(oldBookRecord.Id) == 0 {
 		return errors.New("book cannot be updated because book doesn't exist")
@@ -414,7 +441,7 @@ func (repo *BookRepository) Update(book model.Book) error {
 	transaction.Commit()
 	return nil
 }
-func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
+func (repo *Book) Search(filter filter.Filter) []model.Book {
 	var books []model.Book = make([]model.Book, 0)
 	query := `
 	SELECT id, 
@@ -447,7 +474,7 @@ func (repo *BookRepository) Search(filter filter.Filter) []model.Book {
 	}
 	return books
 }
-func (repo *BookRepository) SearchClientView(filter filter.Filter) []model.Book {
+func (repo *Book) SearchClientView(filter filter.Filter) []model.Book {
 	var books []model.Book = make([]model.Book, 0)
 	query := `
 	SELECT id, 
@@ -478,7 +505,7 @@ func (repo *BookRepository) SearchClientView(filter filter.Filter) []model.Book 
 	}
 	return books
 }
-func(repo *BookRepository)buildBookMetadataQuery(filters * BookFilter)(*goqu.SelectDataset, error) {
+func(repo *Book)buildBookMetadataQuery(filters * BookFilter)(*goqu.SelectDataset, error) {
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filters.Limit)).As("pages"),
@@ -487,7 +514,7 @@ func(repo *BookRepository)buildBookMetadataQuery(filters * BookFilter)(*goqu.Sel
 	ds, err  := repo.buildBookFilters(ds,  filters)
 	return ds, err
 }
-func(repo *BookRepository)buildClientBookMetadataQuery(filters * BookFilter)(*goqu.SelectDataset, error) {
+func(repo *Book)buildClientBookMetadataQuery(filters * BookFilter)(*goqu.SelectDataset, error) {
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
 		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filters.Limit)).As("pages"),
@@ -496,7 +523,7 @@ func(repo *BookRepository)buildClientBookMetadataQuery(filters * BookFilter)(*go
 	ds, err  := repo.buildBookFilters(ds,  filters)
 	return ds, err
 }
-func (repo * BookRepository)AddBookCopies(id string, copies int) error{
+func (repo *Book)AddBookCopies(id string, copies int) error{
 	if copies == 0 { 
 		return nil
 	}
@@ -526,34 +553,4 @@ func (repo * BookRepository)AddBookCopies(id string, copies int) error{
 	}
 	transaction.Commit()
 	return nil
-}
-
-func NewBookRepository() BookRepositoryInterface {
-	return &BookRepository{
-		db:                postgresdb.GetOrCreateInstance(),
-		sectionRepository: NewSectionRepository(),
-		minio:             objstore.GetorCreateInstance(),
-	}
-}
-
-type BookRepositoryInterface interface {
-	New(model.Book) (string, error)
-	Get(filter * BookFilter) ([]model.Book, Metadata)
-	GetOne(id string) model.Book
-	Update(model.Book) error
-	Search(filter.Filter) []model.Book
-	NewBookCover(bookId string, covers []*multipart.FileHeader) error
-	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
-	AddBookCopies(id string, copies int) error
-	DeleteBookCoversByBookId(bookId string) error 
-	ImportBooks(books []model.BookImport, sectionId int) error
-	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
-	SearchClientView(filter filter.Filter) []model.Book
-	GetOneOnClientView(id string) model.Book
-	AddEbook(id string, eBook * multipart.FileHeader) error
-	GetEbookById(id string, ) (*minio.Object, error)
-	RemoveEbookById(id string, ) error
-	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
-	MigrateCollection(sectionId int, bookIds []string)error
-	ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error)
 }

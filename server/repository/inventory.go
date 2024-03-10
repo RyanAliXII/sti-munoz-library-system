@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
@@ -201,9 +200,9 @@ func (repo *InventoryRepository) UpdateAudit(audit model.Audit) error {
 	}
 	return updateErr
 }
-func NewInventoryRepository() InventoryRepositoryInterface {
+func NewInventoryRepository(db *sqlx.DB) InventoryRepositoryInterface {
 	return &InventoryRepository{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 	}
 
 }

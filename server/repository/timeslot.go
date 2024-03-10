@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -10,9 +9,9 @@ import (
 type TimeSlot struct {
 	db * sqlx.DB
 }
-func NewTimeSlotRepository()TimeSlotRepository{
+func NewTimeSlotRepository(db * sqlx.DB)TimeSlotRepository{
 	return &TimeSlot{
-		db: db.Connect(),
+		db: db,
 	}
 }
 type TimeSlotRepository interface {

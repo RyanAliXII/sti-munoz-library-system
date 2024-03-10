@@ -23,6 +23,5 @@ func NewWebSocket(writer gin.ResponseWriter, request *http.Request) (*websocket.
 		logger.Error(connectionErr.Error(), slimlog.Function("Websocket.New"), slimlog.Error("connectionErr"))
 
 	}
-
 	return connection, nil
 }

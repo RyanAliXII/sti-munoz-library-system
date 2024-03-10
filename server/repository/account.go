@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"mime"
 	"mime/multipart"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore/utils"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jaevor/go-nanoid"
@@ -25,7 +25,7 @@ import (
 
 type AccountRepository struct {
 	db *sqlx.DB
-	objstore * minio.Client
+	minio * minio.Client
 }
 type AccountFilter struct {
 	Disabled bool `form:"disabled"`
@@ -379,12 +379,18 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 	if nanoIdErr != nil {
 		return nanoIdErr
 	}
-	ext := utils.GetFileExtBasedOnContentType(contentType)
-	objectName := fmt.Sprintf("profile-pictures/%s%s", canonicID(), ext)
+	ext, err  := mime.ExtensionsByType(contentType)
+	if err != nil {
+		return err
+	}
+	if ext == nil {
+		return fmt.Errorf("no extension for specificied content type")
+	}
+	objectName := fmt.Sprintf("profile-pictures/%s%s", canonicID(), ext[0])
 	fileSize := image.Size
 	ctx := context.Background()
 
-	info, err := repo.objstore.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+	info, err := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 			ContentType: contentType,})
 	if err != nil {
 		return err
@@ -401,7 +407,7 @@ func (repo * AccountRepository) UpdateProfilePictureById(id string, image * mult
 		return err
 	}
 	if len(dbAccount.ProfilePicture) > 0 {
-		err = repo.objstore.RemoveObject(ctx, objstore.BUCKET, dbAccount.ProfilePicture, minio.RemoveObjectOptions{})
+		err = repo.minio.RemoveObject(ctx, minioclient.BUCKET, dbAccount.ProfilePicture, minio.RemoveObjectOptions{})
 		if err != nil {
 			 transaction.Rollback()
 			 return err
@@ -512,10 +518,10 @@ func (repo * AccountRepository) GetAccountStatsById(accountId string)(model.Acco
 
 
 
-func NewAccountRepository() AccountRepositoryInterface {
+func NewAccountRepository(db *sqlx.DB, minio * minio.Client) AccountRepositoryInterface {
 	return &AccountRepository{
-		db: postgresdb.GetOrCreateInstance(),
-		objstore: objstore.GetorCreateInstance(),
+		db:db,
+		minio: minio,
 	}
 }
 

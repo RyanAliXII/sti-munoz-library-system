@@ -21,7 +21,7 @@ type DuplicateError struct {
 func (e * DuplicateError) Error() string {
 	return e.Err.Error()
 }
-func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int) error{
+func (repo *Book)ImportBooks(books []model.BookImport, sectionId int) error{
 	err := repo.validateDuplicateFromFile(books)
 	if err != nil {
 		return err
@@ -216,7 +216,7 @@ func (repo * BookRepository)ImportBooks(books []model.BookImport, sectionId int)
 	return nil
 }
 
-func (repo * BookRepository)validateDuplicateFromFile(books []model.BookImport)error{
+func (repo *Book)validateDuplicateFromFile(books []model.BookImport)error{
 	withDuplicates := make([]model.BookImport, 0)
 	bookCache := make(map[int]struct{}, 0)
 	for _, book := range books {
@@ -236,7 +236,7 @@ func (repo * BookRepository)validateDuplicateFromFile(books []model.BookImport)e
 	return nil
 }
 
-func (repo * BookRepository)validateDuplicateFromDb(book []model.BookImport, sectionId int) error {
+func (repo *Book)validateDuplicateFromDb(book []model.BookImport, sectionId int) error {
 
 	transaction, err := repo.db.Beginx()
 	if err != nil {

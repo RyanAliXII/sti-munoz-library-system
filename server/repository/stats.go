@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
@@ -10,7 +9,6 @@ import (
 type StatsRepository struct {
 	db *sqlx.DB
 }
-
 
 func(repo * StatsRepository)GetLibraryStats()model.LibraryStats{
 	var stats model.LibraryStats
@@ -77,8 +75,7 @@ func (repo * StatsRepository)GetMonthlyBorrowedSection ()([]model.BorrowedSectio
 	err := repo.db.Select(&borrowedSection, query)
 	return borrowedSection, err
 }
-func NewStatsRepository() StatsRepositoryInterface {
-	db :=  postgresdb.GetOrCreateInstance()
+func NewStatsRepository(db * sqlx.DB) StatsRepositoryInterface {
 	return &StatsRepository{db:db}
 }
 

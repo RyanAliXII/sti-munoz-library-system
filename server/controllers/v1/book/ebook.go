@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func(ctrler * BookController) UploadEBook(ctx * gin.Context){
+func(ctrler *Book) UploadEBook(ctx * gin.Context){
 	id := ctx.Param("id") // book id
 	body := EbookBody{}
 	err := ctx.Bind(&body)
@@ -19,7 +19,7 @@ func(ctrler * BookController) UploadEBook(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.bookRepository.AddEbook(id, body.Ebook)
+	err = ctrler.services.Repos.BookRepository.AddEbook(id, body.Ebook)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("AddEbookErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -27,9 +27,9 @@ func(ctrler * BookController) UploadEBook(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Ebook successfully added."))
 }
-func(ctrler * BookController) GetEbookById(ctx * gin.Context){
+func(ctrler *Book) GetEbookById(ctx * gin.Context){
 	id := ctx.Param("id") // book id
-	object ,err := ctrler.bookRepository.GetEbookById(id)
+	object ,err := ctrler.services.Repos.BookRepository.GetEbookById(id)
 	if err != nil {
 		_, ok := err.(*repository.IsNotEbook)
 		if ok {
@@ -56,9 +56,9 @@ func(ctrler * BookController) GetEbookById(ctx * gin.Context){
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
 
-func(ctrler * BookController) RemoveEbookById(ctx * gin.Context){
+func(ctrler *Book) RemoveEbookById(ctx * gin.Context){
 	id := ctx.Param("id") // book id
-	err := ctrler.bookRepository.RemoveEbookById(id)
+	err := ctrler.services.Repos.BookRepository.RemoveEbookById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("RemoveBookByIdErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -67,7 +67,7 @@ func(ctrler * BookController) RemoveEbookById(ctx * gin.Context){
     ctx.JSON(httpresp.Success200(nil, "Ebook removed."))
 }
 
-func(ctrler * BookController) UpdateEbookById(ctx * gin.Context){
+func(ctrler *Book) UpdateEbookById(ctx * gin.Context){
 	id := ctx.Param("id") // book id
 	body := EbookBody{}
 	err := ctx.Bind(&body)
@@ -76,7 +76,7 @@ func(ctrler * BookController) UpdateEbookById(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.bookRepository.UpdateEbookByBookId(id, body.Ebook)
+	err = ctrler.services.Repos.BookRepository.UpdateEbookByBookId(id, body.Ebook)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateEbookByBookId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))

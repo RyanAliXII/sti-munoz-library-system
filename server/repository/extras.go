@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -15,9 +14,9 @@ type ExtrasRepository interface{
 	UpdatePolicyContent(content model.ExtrasContent) error
 	GetPolicyContent() (model.ExtrasContent,error) 
 }
-func NewExtrasRepository() ExtrasRepository{
+func NewExtrasRepository(db * sqlx.DB) ExtrasRepository{
 	return &Extras{
-		db: db.Connect(),
+		db: db,
 	}
 }
 func (repo * Extras)UpdateFAQsContent(content model.ExtrasContent) error {

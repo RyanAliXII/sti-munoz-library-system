@@ -9,7 +9,7 @@ import (
 
 
 
-func (repo * BookController)MigrateCollection(ctx * gin.Context) {
+func (ctrler *Book)MigrateCollection(ctx * gin.Context) {
 
 	body := MigrateBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
@@ -18,7 +18,7 @@ func (repo * BookController)MigrateCollection(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
-	err = repo.bookRepository.MigrateCollection(body.SectionId, body.BookIds)
+	err = ctrler.services.Repos.BookRepository.MigrateCollection(body.SectionId, body.BookIds)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil,"Unknown error occured."))

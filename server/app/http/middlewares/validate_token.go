@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"go.uber.org/zap"
@@ -140,9 +141,8 @@ func processAdminApplicationToken(token string, ctx * gin.Context)error{
 
 }
 
-var tokenRepo = repository.NewTokenRepository()
+var tokenRepo = repository.NewTokenRepository(postgresdb.GetOrCreateInstance())
 func ValidateScannerToken(ctx * gin.Context){
-
 	headerValue, hasAuthorizationHeader := ctx.Request.Header["Authorization"]
 	if !hasAuthorizationHeader {
 		logger.Error("No authorization header present.", slimlog.Function("ValidateScannerToken"))

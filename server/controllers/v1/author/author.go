@@ -1,24 +1,21 @@
 package author
 
 import (
-	"time"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-type AuthorController struct {
-	authorRepository repository.AuthorRepositoryInterface
-	recordMetadataRepository  repository.RecordMetadataRepository
+type Author struct {
+	services * services.Services
 }
 
-func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
+func (ctrler *Author) NewAuthor(ctx *gin.Context) {
 	var author model.Author= model.Author{}
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
 	fieldErr, err := author.ValidateNew()
@@ -27,20 +24,20 @@ func (ctrler *AuthorController) NewAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
 		return
 	}
-	newAuthor, insertErr := ctrler.authorRepository.New(author)
+	newAuthor, insertErr := ctrler.services.Repos.AuthorRepository.New(author)
 	if insertErr != nil {
 		ctx.JSON(httpresp.Fail400(gin.H{}, insertErr.Error()))
 		return	
 	}
-	ctrler.recordMetadataRepository.InvalidateAuthor()
+	ctrler.services.Repos.RecordMetadataRepository.InvalidateAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{
 		"author": newAuthor,
 	}, "Author has been added."))
 }
-func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
+func (ctrler *Author) GetAuthors(ctx *gin.Context) {
 	filter := filter.ExtractFilter(ctx)
 	if len(filter.Keyword) > 0 {
-		metaData, metaErr := ctrler.recordMetadataRepository.GetAuthorSearchMetadata(filter)
+		metaData, metaErr := ctrler.services.Repos.RecordMetadataRepository.GetAuthorSearchMetadata(filter)
 		if metaErr != nil {
 			logger.Error(metaErr.Error(), slimlog.Error("AuthorSearchMetadataErr"))
 			ctx.JSON(httpresp.Fail500(gin.H{
@@ -48,33 +45,33 @@ func (ctrler *AuthorController) GetAuthors(ctx *gin.Context) {
 			}, "Invalid page number."))
 			return
 		}
-		authors := ctrler.authorRepository.Search(&filter)
+		authors := ctrler.services.Repos.AuthorRepository.Search(&filter)
 		ctx.JSON(httpresp.Success200(gin.H{"authors": authors, "metaData": metaData,}, "Authors fetched."))
 		return
 	}
-	metaData, metaErr := ctrler.recordMetadataRepository.GetAuthorMetadata(filter.Limit)
+	metaData, metaErr := ctrler.services.Repos.RecordMetadataRepository.GetAuthorMetadata(filter.Limit)
 	if metaErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"message": "Unknown error occured",
 		}, "Invalid page number."))
         return
 	}
-	authors := ctrler.authorRepository.Get(&filter)
+	authors := ctrler.services.Repos.AuthorRepository.Get(&filter)
 	ctx.JSON(httpresp.Success200(gin.H{"authors": authors, "metaData": metaData,}, "Authors fetched."))
 }
 
-func (ctrler *AuthorController) DeleteAuthor(ctx *gin.Context) {
+func (ctrler *Author) DeleteAuthor(ctx *gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.authorRepository.Delete(id)
+	err := ctrler.services.Repos.AuthorRepository.Delete(id)
 	if err != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{}, err.Error()))
 		return
 	}
-	ctrler.recordMetadataRepository.InvalidateAuthor()
+	ctrler.services.Repos.RecordMetadataRepository.InvalidateAuthor()
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor deleted."))
 }
 
-func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
+func (ctrler *Author) UpdateAuthor(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var author model.Author;
 	bindingErr := ctx.ShouldBindBodyWith(&author, binding.JSON)
@@ -89,25 +86,19 @@ func (ctrler *AuthorController) UpdateAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
 		return
 	}
-	updateErr := ctrler.authorRepository.Update(id, author)
+	updateErr := ctrler.services.Repos.AuthorRepository.Update(id, author)
 	if updateErr != nil {
 		ctx.JSON(httpresp.Fail500(gin.H{}, updateErr.Error()))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{}, "model.PersonAsAuthor Updated"))
 }
 
-func NewAuthorController() AuthorControllerInterface {
-
-	return &AuthorController{
-		authorRepository: repository.NewAuthorRepository(),
-		recordMetadataRepository: repository.NewRecordMetadataRepository(repository.RecordMetadataConfig{
-			 CacheExpiration: time.Minute * 5,
-		}),
+func NewAuthorController(services * services.Services) AuthorController {
+	return &Author{
+		services: services,
 	}
-
 }
-
-type AuthorControllerInterface interface {
+type AuthorController interface {
 	NewAuthor(ctx *gin.Context)
 	GetAuthors(ctx *gin.Context)
 	DeleteAuthor(ctx *gin.Context)

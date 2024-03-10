@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/jmoiron/sqlx"
 )
 type SearchTag struct {
@@ -10,9 +9,9 @@ type SearchTag struct {
 type SearchTagRepository interface{
 	GetSearchTags() ([]string, error) 
 }
-func NewSearchTagRepository() SearchTagRepository {
+func NewSearchTagRepository(db * sqlx.DB) SearchTagRepository {
 	return &SearchTag{
-		db: db.Connect(),
+		db: db,
 	}
 }
 func (repo * SearchTag)GetSearchTags() ([]string, error) {

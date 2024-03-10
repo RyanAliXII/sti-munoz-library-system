@@ -15,6 +15,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/google/uuid"
@@ -35,12 +36,9 @@ type BorrowingController interface {
 	
 }
 type Borrowing struct {
-	borrowingRepo repository.BorrowingRepository
-	bookRepo repository.BookRepositoryInterface
-	settingsRepo repository.SettingsRepositoryInterface
-
+	services * services.Services
 }
-func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
+func (ctrler *Borrowing)HandleBorrowing(ctx * gin.Context){
 	body := CheckoutBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
@@ -66,7 +64,7 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
-	err  = ctrler.borrowingRepo.BorrowBook(borrowedBooks, borrowedEbooks)
+	err  = ctrler.services.Repos.BorrowingRepository.BorrowBook(borrowedBooks, borrowedEbooks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
@@ -77,9 +75,9 @@ func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 	}, "Book has been borrowed"))
 	
 }
-func (ctrler * Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
+func (ctrler *Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
 	accessionId := ctx.Param("accessionId")
-	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBooksByAccessionId(accessionId)
+	borrowedBook, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByAccessionId(accessionId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error(err.Error()))
 		if err == sql.ErrNoRows {
@@ -93,7 +91,7 @@ func (ctrler * Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
 		"borrowedBook": borrowedBook,
 	}, "OK"))
 }
-func (ctrler * Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
+func (ctrler *Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
 	body := ReturnBulkBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
@@ -102,7 +100,7 @@ func (ctrler * Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
 		return
 	}
 	for _, b := range body.BorrowedBookIds{
-		err := ctrler.borrowingRepo.MarkAsReturned(b, body.Remarks)
+		err := ctrler.services.Repos.BorrowingRepository.MarkAsReturned(b, body.Remarks)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error(err.Error()))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -113,10 +111,8 @@ func (ctrler * Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
 	ctx.JSON(httpresp.Success200(nil, "OK"))
 
 }
-func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
-
-	settings := ctrler.settingsRepo.Get()
-
+func (ctrler *Borrowing)toBorrowedBookModel(body CheckoutBody, status int, groupId string )([]model.BorrowedBook,error){
+	settings := ctrler.services.Repos.SettingsRepository.Get()
 	borrowedBooks := make([]model.BorrowedBook, 0)	
 	if settings.DuePenalty.Value == 0 {
 		return borrowedBooks, fmt.Errorf("due penalty must not be 0")
@@ -139,9 +135,9 @@ func (ctrler *Borrowing )toBorrowedBookModel(body CheckoutBody, status int, grou
 	}
 	return borrowedBooks, nil
 }
-func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
+func (ctrler *Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	id := ctx.Param("id")
-	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedEBookByIdAndStatus(id, status.BorrowStatusCheckedOut)
+	borrowedBook, err :=ctrler.services.Repos.BorrowingRepository.GetBorrowedEBookByIdAndStatus(id, status.BorrowStatusCheckedOut)
 	clientId := ctx.GetString("requestorId")
 
 	if clientId != borrowedBook.Client.Id {
@@ -165,7 +161,7 @@ func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail404(nil, "Link expired is expired."))
 		return
 	}
-	object, err := ctrler.bookRepo.GetEbookById(borrowedBook.Book.Id)
+	object, err := ctrler.services.Repos.BookRepository.GetEbookById(borrowedBook.Book.Id)
 	if err != nil {
 		_, isNotEbook := err.(*repository.IsNotEbook)
 		if isNotEbook {
@@ -192,7 +188,7 @@ func (ctrler * Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	 }, ""))
 	
 }
-func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, groupId string)([]model.BorrowedEBook, error){
+func (ctrler *Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, groupId string)([]model.BorrowedEBook, error){
 	ebooks := make([]model.BorrowedEBook, 0)
 	for _, ebook := range body.Ebooks{
 		err := ctrler.isValidDueDate(string(ebook.DueDate))
@@ -210,7 +206,7 @@ func (ctrler * Borrowing)toBorrowedEbookModel(body CheckoutBody, status int, gro
 	return ebooks, nil	
 }
 
-func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
+func(ctrler *Borrowing) isValidDueDate (dateStr string) error {
 	loc, err := time.LoadLocation("Asia/Manila")
 	if err != nil{
 		return err
@@ -229,9 +225,9 @@ func(ctrler * Borrowing) isValidDueDate (dateStr string) error {
 	}
 	return nil
 }
-func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
+func (ctrler *Borrowing)GetBorrowRequests(ctx * gin.Context){
 	filter := NewBorrowingRequestFilter(ctx)
-	requests,metadata, err := ctrler.borrowingRepo.GetBorrowingRequests(&repository.BorrowingRequestFilter{
+	requests,metadata, err := ctrler.services.Repos.BorrowingRepository.GetBorrowingRequests(&repository.BorrowingRequestFilter{
 		From: filter.From,
 		To: filter.To,
 		Filter: filter.Filter,
@@ -244,7 +240,7 @@ func (ctrler * Borrowing)GetBorrowRequests(ctx * gin.Context){
 		"metadata": metadata,
 	}, "Borrow requests fetched."))
 }
-func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
+func (ctrler *Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
 	appId, _ := ctx.Get("requestorApp")
 	requestorId, _ :=ctx.Get("requestorId")
 	accountId := requestorId.(string)
@@ -261,9 +257,9 @@ func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
 	   statusId != status.BorrowStatusCancelled &&
 	   statusId != status.BorrowStatusCheckedOut &&
 	   statusId != status.BorrowStatusReturned {
-		borrowedBooks, err = ctrler.borrowingRepo.GetBorrowedBooksByAccountId(accountId)	
+		borrowedBooks, err = ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByAccountId(accountId)	
 	}else{
-		borrowedBooks, err = ctrler.borrowingRepo.GetBorrowedBooksByAccountIdAndStatusId(accountId,  statusId)
+		borrowedBooks, err = ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByAccountIdAndStatusId(accountId,  statusId)
 	}
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowedBooksErr"))
@@ -274,9 +270,9 @@ func (ctrler * Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
 		"borrowedBooks": borrowedBooks,
 	}, "Borrowed books fetched fetched."))
 }
-func (ctrler * Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
+func (ctrler *Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 	groupId := ctx.Param("id")
-	requests, err := ctrler.borrowingRepo.GetBorrowedBooksByGroupId(groupId)
+	requests, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByGroupId(groupId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowedBooksByGroupId")) 
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
@@ -296,7 +292,7 @@ func (ctrler * Borrowing)UpdateRemarks(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.borrowingRepo.UpdateRemarks(id, body.Remarks)
+	err = ctrler.services.Repos.BorrowingRepository.UpdateRemarks(id, body.Remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("updateRemarksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -360,14 +356,14 @@ func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Conte
 		return
 	}
 	if !returnBody.HasAdditionaPenalty {
-		err := ctrler.borrowingRepo.MarkAsReturned(id, remarks)
+		err := ctrler.services.Repos.BorrowingRepository.MarkAsReturned(id, remarks)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
 	}else{
-		err := ctrler.borrowingRepo.MarkAsReturnedWithAddtionalPenalty(id, returnBody)
+		err := ctrler.services.Repos.BorrowingRepository.MarkAsReturnedWithAddtionalPenalty(id, returnBody)
 		if err != nil {
 			logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -378,7 +374,7 @@ func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Conte
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Context){
-	err := ctrler.borrowingRepo.MarkAsUnreturned(id, remarks)
+	err := ctrler.services.Repos.BorrowingRepository.MarkAsUnreturned(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsUnreturnedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -388,13 +384,13 @@ func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Con
 }
 
 func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Context){
-	err := ctrler.borrowingRepo.MarkAsApproved(id, remarks)
+	err := ctrler.services.Repos.BorrowingRepository.MarkAsApproved(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	_, err = ctrler.borrowingRepo.GetBorrowedBookById(id)
+	_, err = ctrler.services.Repos.BorrowingRepository.GetBorrowedBookById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
 		ctx.JSON(httpresp.Success200(nil, "Status updated."))
@@ -407,7 +403,7 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){
-	err := ctrler.borrowingRepo.MarkAsCancelled(id, remarks)
+	err := ctrler.services.Repos.BorrowingRepository.MarkAsCancelled(id, remarks)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsCancelled"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -421,13 +417,13 @@ func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context)
 	body := UpdateBorrowStatusBody{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	accountId := ctx.GetString("requestorId")
-	err := ctrler.borrowingRepo.CancelByIdAndAccountId(id, body.Remarks, accountId)
+	err := ctrler.services.Repos.BorrowingRepository.CancelByIdAndAccountId(id, body.Remarks, accountId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("Cancel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	_, err = ctrler.borrowingRepo.GetBorrowedBookById(id)
+	_, err = ctrler.services.Repos.BorrowingRepository.GetBorrowedBookById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getBorrowedBookErr"))
 		return
@@ -448,7 +444,7 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 }
-	err = ctrler.borrowingRepo.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
+	err = ctrler.services.Repos.BorrowingRepository.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("MarkAsCheckedOut"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -456,10 +452,8 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 	}
 }
 
-func NewBorrowingController () BorrowingController {
+func NewBorrowingController(services * services.Services)BorrowingController {
 	return &Borrowing{
-		borrowingRepo: repository.NewBorrowingRepository(),
-		settingsRepo: repository.NewSettingsRepository(),
-		bookRepo: repository.NewBookRepository(),
+		services: services,
 	}
 }

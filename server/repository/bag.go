@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -24,7 +23,7 @@ type BagRepository interface {
 }
 type Bag struct {
 	db * sqlx.DB
-	settingsRepo SettingsRepositoryInterface
+	settingsRepo  SettingsRepository
 }
 
 func (repo * Bag) AddItemToBag(item model.BagItem) error{
@@ -182,7 +181,6 @@ func (repo * Bag) DeleteAllCheckedItems(accountId string) error {
 }
 
 func (repo * Bag) CheckoutCheckedItems(accountId string) (string, error) {
-
 	settings := repo.settingsRepo.Get()
 	if settings.DuePenalty.Value == 0 {
 		settingsErr := fmt.Errorf("due penalty value is 0")
@@ -266,12 +264,9 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) (string, error) {
 	transaction.Commit()
 	return groupId,nil
 }
-
-
-
-func NewBagRepository () BagRepository {
+func NewBagRepository (db * sqlx.DB, settingsRepo  SettingsRepository) BagRepository {
 	return &Bag{
-		db: db.Connect(),
-		settingsRepo: NewSettingsRepository(),
+		db: db,
+		settingsRepo: settingsRepo,
 	}
 }

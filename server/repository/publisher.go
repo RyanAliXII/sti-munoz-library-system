@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
@@ -81,9 +80,9 @@ func (repo *PublisherRepository) Update(id string, publisher model.Publisher) er
 	logger.Info("model.Publisher Updated", zap.String("publisherId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_PUBLISHER))
 	return updateErr
 }
-func NewPublisherRepository() PublisherRepositoryInterface {
+func NewPublisherRepository(db * sqlx.DB) PublisherRepositoryInterface {
 	return &PublisherRepository{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 	}
 }
 

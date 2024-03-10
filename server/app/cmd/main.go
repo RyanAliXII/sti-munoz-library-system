@@ -13,7 +13,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
@@ -51,7 +51,6 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	objstore.GetorCreateInstance()
 	permissionstore.GetPermissionStore()
 	r.GET("/", func(ctx *gin.Context) {
 

@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
@@ -157,8 +156,7 @@ func (repo * SystemRepository) RemoveRoleAssignment(roleId int , accountId strin
 	}	
 	return nil
 }
-func NewSystemRepository() SystemRepositoryInterface {
-	db := postgresdb.GetOrCreateInstance()
+func NewSystemRepository(db * sqlx.DB) SystemRepositoryInterface {
 	return &SystemRepository{
 		db: db,
 	}

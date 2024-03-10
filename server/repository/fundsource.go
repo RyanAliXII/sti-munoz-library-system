@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
@@ -65,9 +64,9 @@ func (repo *FundSourceRepository) Update(id int, source model.FundSource) error 
 	logger.Info("Source updated", zap.Int("sourceId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_SOURCE))
 	return updateErr
 }
-func NewFundSourceRepository() FundSourceRepositoryInterface {
+func NewFundSourceRepository(db *sqlx.DB) FundSourceRepositoryInterface {
 	return &FundSourceRepository{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 	}
 }
 

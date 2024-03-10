@@ -7,14 +7,13 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 type BorrowingQueue struct {
-	queueRepo repository.BorrowingQueueRepository
-	accountRepo repository.AccountRepositoryInterface
+	services * services.Services
 }
 type BorrowingQueueController interface {
 	Queue( * gin.Context)
@@ -26,14 +25,11 @@ type BorrowingQueueController interface {
 	GetInactiveQueueItems(ctx * gin.Context)
 	
 }
-
-func NewBorrowingQueue()BorrowingQueueController{
+func NewBorrowingQueue(services * services.Services)BorrowingQueueController{
 	return &BorrowingQueue{
-     queueRepo: repository.NewBorrowingQueue(),
-	 accountRepo: repository.NewAccountRepository(),
+		services: services,
 	}
 }
-
 func (ctrler * BorrowingQueue) Queue(ctx * gin.Context) {
 	queueBody := model.BorrowingQueue{}
 	app := ctx.GetString("requestorApp")
@@ -52,13 +48,13 @@ func (ctrler * BorrowingQueue) Queue(ctx * gin.Context) {
 func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model.BorrowingQueue)  {
 	accountId := ctx.GetString("requestorId")
 	body.AccountId = accountId
-	err := ctrler.queueRepo.Queue(*body)
+	err := ctrler.services.Repos.BorrowingQueueRepository.Queue(*body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("QueueErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	_, err = ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(accountId)
+	_, err = ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(accountId)
 	if err != nil {
 		logger.Error(err.Error())
 	} 
@@ -82,7 +78,7 @@ func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {
 	ctx.AbortWithStatus(http.StatusUnauthorized)
 }
 func(ctrler * BorrowingQueue)getActiveQueuesGroupByBook(ctx * gin.Context) {
-	queues, err := ctrler.queueRepo.GetActiveQueuesGroupByBook()
+	queues, err := ctrler.services.Repos.BorrowingQueueRepository.GetActiveQueuesGroupByBook()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -95,7 +91,7 @@ func(ctrler * BorrowingQueue)getActiveQueuesGroupByBook(ctx * gin.Context) {
 
 func(ctrler * BorrowingQueue)DequeueByBookId(ctx * gin.Context) {
 	id := ctx.Param("id")
-	err := ctrler.queueRepo.DequeueByBookId(id)
+	err := ctrler.services.Repos.BorrowingQueueRepository.DequeueByBookId(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueByBookId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -106,7 +102,7 @@ func(ctrler * BorrowingQueue)DequeueByBookId(ctx * gin.Context) {
 
 func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 	accountId := ctx.GetString("requestorId")
-	queues, err := ctrler.queueRepo.GetClientActiveQueueItems(accountId)
+	queues, err := ctrler.services.Repos.BorrowingQueueRepository.GetClientActiveQueueItems(accountId)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetClientActiveQueues"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -119,7 +115,7 @@ func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 
 func (ctrler * BorrowingQueue)GetQueueItemsByBookId(ctx * gin.Context) {
 	id := ctx.Param("id")
-	items, err := ctrler.queueRepo.GetQueueItemsByBookId(id)
+	items, err := ctrler.services.Repos.BorrowingQueueRepository.GetQueueItemsByBookId(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetQueueItemsByBookIdErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
@@ -136,7 +132,7 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("bindErr"))
 	}
-	err = ctrler.queueRepo.UpdateQueueItems(body.Items)
+	err = ctrler.services.Repos.BorrowingQueueRepository.UpdateQueueItems(body.Items)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("UpdateQueueItemsErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -152,7 +148,7 @@ func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 		ctrler.handleClientDequeueing(ctx, id)
 		return 
 	}
-	err := ctrler.queueRepo.DequeueItem(id)
+	err := ctrler.services.Repos.BorrowingQueueRepository.DequeueItem(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -162,7 +158,7 @@ func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 }
 func(ctrler * BorrowingQueue)handleClientDequeueing(ctx * gin.Context, id string) {
 	accountId := ctx.GetString("requestorId")
-	err := ctrler.queueRepo.DequeueItemByIdAndAccountId(id,accountId )
+	err := ctrler.services.Repos.BorrowingQueueRepository.DequeueItemByIdAndAccountId(id,accountId )
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("DequeueItemByIdAndAccountId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -178,7 +174,7 @@ func (ctrler * BorrowingQueue)GetInactiveQueueItems(ctx * gin.Context){
 		return
 	}
 
-	items, err := ctrler.queueRepo.GetInactiveQueues()
+	items, err := ctrler.services.Repos.BorrowingQueueRepository.GetInactiveQueues()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetInactiveItemsErr"))
 	}
@@ -189,7 +185,7 @@ func (ctrler * BorrowingQueue)GetInactiveQueueItems(ctx * gin.Context){
 
 func (ctrler * BorrowingQueue)handleGetClientInactiveQueues(ctx * gin.Context) {
 	accountId := ctx.GetString("requestorId")
-	items, err := ctrler.queueRepo.GetClientInactiveQueues(accountId)
+	items, err := ctrler.services.Repos.BorrowingQueueRepository.GetClientInactiveQueues(accountId)
 	if err != nil {
 			logger.Error(err.Error(), slimlog.Error("GetClientInactiveQueuesErr"))
 	}

@@ -4,6 +4,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,12 +12,12 @@ type ClientLogController interface {
 	GetClientLogs(ctx * gin.Context)
 }
 type ClientLog struct {
-	clientLogRepo repository.ClientLogRepository
+	services * services.Services
 }
 func (ctrler * ClientLog) GetClientLogs(ctx * gin.Context){
 	filter := NewFilter(ctx)
 	filter.Filter.ExtractFilter(ctx)
-	logs,metadata, err := ctrler.clientLogRepo.GetLogs(&repository.ClientLogFilter{
+	logs,metadata, err := ctrler.services.Repos.ClientLogRepository.GetLogs(&repository.ClientLogFilter{
 		From: filter.From,
 		To: filter.To,
 		Filter: filter.Filter,
@@ -29,8 +30,8 @@ func (ctrler * ClientLog) GetClientLogs(ctx * gin.Context){
 		"metadata": metadata,
 	}, "Client logs fetched."))
 }
-func NewClientLogController () ClientLogController {
+func NewClientLogController (services * services.Services) ClientLogController {
 	return &ClientLog{
-		clientLogRepo: repository.NewClientLog(),
+		services: services,
 	}
 }

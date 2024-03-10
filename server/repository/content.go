@@ -6,22 +6,20 @@ import (
 	"mime/multipart"
 	"path/filepath"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/objstore"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 	"github.com/jaevor/go-nanoid"
 	"github.com/minio/minio-go/v7"
 )
 
 type Content struct {
-	objstore *minio.Client
+	minio *minio.Client
 }
 type ContentRepository interface {
-
 	UploadFile(file * multipart.FileHeader) (string, error) 
 }
-
-func NewContentRepository () ContentRepository {
+func NewContentRepository (minio * minio.Client) ContentRepository {
 	return &Content{
-		objstore: objstore.GetorCreateInstance(),
+		minio: minio,
 	}
 }
 func (repo * Content)UploadFile(file * multipart.FileHeader) (string, error) {
@@ -40,7 +38,7 @@ func (repo * Content)UploadFile(file * multipart.FileHeader) (string, error) {
 	fileSize := file.Size
 	ctx := context.Background()
 	contentType := file.Header["Content-Type"][0]
-	info, err := repo.objstore.PutObject(ctx, objstore.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
+	info, err := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
 			ContentType: contentType,})
 	if err != nil {
 		return "",err

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
@@ -137,8 +136,8 @@ func(repo * ClientLog) buildClientLogFilters(ds * goqu.SelectDataset,  filter * 
 	}
 	return ds
 }
-func NewClientLog()ClientLogRepository {
-	return &ClientLog{db : db.Connect()}
+func NewClientLogRepository(db  * sqlx.DB)ClientLogRepository {
+	return &ClientLog{db : db}
 }
 
 
