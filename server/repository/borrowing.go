@@ -31,7 +31,7 @@ type BorrowingRepository interface {
 }
 type Borrowing struct{
 	db * sqlx.DB
-	notificationRepo NotificationRepository
+
 }
 type BorrowingRequestFilter struct {
     From string
@@ -200,6 +200,5 @@ func(repo *Borrowing)UpdateRemarks(id string, remarks string) error {
 func NewBorrowingRepository ()  BorrowingRepository {
 	return &Borrowing{
 		db: db.Connect(),
-		notificationRepo: NewNotificationRepository(),
 	}
 }

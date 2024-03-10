@@ -1,8 +1,6 @@
 package bag
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -25,7 +23,7 @@ type BagController interface {
 }
 type Bag struct {
 	bagRepo repository.BagRepository
-	notificationRepo repository.NotificationRepository
+
 	accountRepo repository.AccountRepositoryInterface
 }
 
@@ -154,22 +152,13 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 	 ctx.JSON(httpresp.Fail400(nil, "invalid account id."))
 	 return
 	}
-	groupId,checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
+	_, checkoutErr := ctrler.bagRepo.CheckoutCheckedItems(parsedAccountId)
 	if checkoutErr != nil{
 		logger.Error(checkoutErr.Error(), slimlog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
-	account ,err := ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(parsedAccountId)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	
-
-	err = ctrler.notificationRepo.NotifyAdminsWithPermission(model.AdminNotification{
-		Message: fmt.Sprintf("%s %s has requested to borrow a book.", account.GivenName, account.Surname),
-		Link: fmt.Sprintf("/borrowing/requests/%s", groupId),
-	}, "BorrowedBook.Read")
+	_, err := ctrler.accountRepo.GetAccountByIdDontIgnoreIfDeletedOrInactive(parsedAccountId)
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -180,7 +169,7 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 func NewBagController()BagController {
 	return &Bag{
 		bagRepo: repository.NewBagRepository(),
-		notificationRepo: repository.NewNotificationRepository(),
+		
 		accountRepo: repository.NewAccountRepository(),
 	}
 }

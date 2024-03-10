@@ -38,7 +38,7 @@ type Borrowing struct {
 	borrowingRepo repository.BorrowingRepository
 	bookRepo repository.BookRepositoryInterface
 	settingsRepo repository.SettingsRepositoryInterface
-	notificationRepo repository.NotificationRepository
+
 }
 func (ctrler *  Borrowing)HandleBorrowing(ctx * gin.Context){
 	body := CheckoutBody{}
@@ -394,17 +394,13 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBookById(id)
+	_, err = ctrler.borrowingRepo.GetBorrowedBookById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
 		ctx.JSON(httpresp.Success200(nil, "Status updated."))
 		return
 	}
-	err = ctrler.notificationRepo.NotifyClient(model.ClientNotification{
-		Message: fmt.Sprintf("The book you have borrowed titled %s is ready for pick-up.", borrowedBook.Book.Title ),
-		Link: "/borrowed-books?statusId=2",
-		AccountId: borrowedBook.Client.Id,
-	})
+
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
 	}
@@ -431,19 +427,10 @@ func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context)
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	borrowedBook, err := ctrler.borrowingRepo.GetBorrowedBookById(id)
+	_, err = ctrler.borrowingRepo.GetBorrowedBookById(id)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("getBorrowedBookErr"))
 		return
-	}
-	err = ctrler.notificationRepo.NotifyAdminsWithPermission(model.AdminNotification{
-	 Message: fmt.Sprintf(`%s %s has cancelled borrowing the book titled"%s".`, 
-	 borrowedBook.Client.GivenName, borrowedBook.Client.Surname, borrowedBook.Book.Title),  
-	 AccountId: borrowedBook.Client.Id,
-	 Link: fmt.Sprintf("/borrowing/requests/%s", borrowedBook.GroupId) ,
-	}, "BorrowedBook.Read")
-	if err != nil {
-		logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
@@ -474,6 +461,5 @@ func NewBorrowingController () BorrowingController {
 		borrowingRepo: repository.NewBorrowingRepository(),
 		settingsRepo: repository.NewSettingsRepository(),
 		bookRepo: repository.NewBookRepository(),
-		notificationRepo : repository.NewNotificationRepository(),
 	}
 }

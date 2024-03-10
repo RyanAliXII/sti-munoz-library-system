@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/broadcasting"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -37,7 +36,6 @@ func (ctrler *RealtimeController) ClientReader(connection *websocket.Conn, ctx *
 		if connection != nil {
 			connection.Close()
 		}
-	
 	}()
   
 	connection.SetReadDeadline(time.Now().Add(pongWait))
@@ -54,9 +52,9 @@ func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *
 	ticker := time.NewTicker(time.Second * 3)
 	accountId := ctx.Query("account")
 	context, cancel := context.WithCancel(context.Background())
-	notificationBroadcaster := broadcasting.NewNotificationBroadcaster()
-	go notificationBroadcaster.ListenByRoutingKey(fmt.Sprintf("notify_client_%s", accountId), context)
-	
+	routingKey := fmt.Sprintf("notify_client_%s", accountId)
+	hub := ctrler.services.Notification.NewHub()
+	go hub.ListenByRoutingKey(routingKey, context)
 	defer func() {
 		logger.Info("Writer Exited.", zap.String("accountId", accountId))
 		if connection != nil {
@@ -68,11 +66,11 @@ func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *
 	
 	for {
 		select {
-		case <-notificationBroadcaster.Stop():
+		case <-hub.Stop():
 			cancel()
 			return
 			
-		case d := <-notificationBroadcaster.Message():
+		case d := <-hub.Message():
 			writeErr := connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
 				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.ClientWriter"), slimlog.Error("writeErr"))
