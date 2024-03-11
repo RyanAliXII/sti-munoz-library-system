@@ -43,7 +43,6 @@ const BookPage = () => {
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
     tags: { type: "string", multiple: true, default: [] },
-    mainC: { type: "string", multiple: true, default: [] },
     collections: { type: "number", multiple: true, default: [] },
     fromYearPublished: { type: "number", default: 1980 },
     toYearPublished: { type: "number", default: new Date().getFullYear() },
@@ -177,18 +176,8 @@ const BookPage = () => {
   };
 
   const handleCollectionSelect = (values: MultiValue<Section>) => {
-    const main = [];
-    const collections = [];
-    for (const s of values) {
-      if (s.isSubCollection) {
-        collections.push(s.id);
-      } else {
-        main.push(s.accessionTable);
-      }
-    }
     setFilterParams({
-      collections: [...collections],
-      mainC: [...main],
+      collections: values.map((collection) => collection.id),
       page: 1,
     });
   };
