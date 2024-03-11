@@ -94,6 +94,7 @@ const BookPage = () => {
         mainC: filterParams?.mainC,
         fromYearPublished: filterParams?.fromYearPublished,
         toYearPublished: filterParams?.toYearPublished,
+        includeSubCollection: filterParams?.includeSubCollection ?? false,
       },
     ],
   });
@@ -257,7 +258,7 @@ const BookPage = () => {
                       color="primary"
                       checked={filterParams.includeSubCollection}
                     />
-                    <Label>Include sub-collections</Label>
+                    <Label>Include sub-collection</Label>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">

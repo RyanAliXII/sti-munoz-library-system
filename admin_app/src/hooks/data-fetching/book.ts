@@ -36,6 +36,7 @@ type BookFilter = {
   mainC: string[];
   fromYearPublished: number;
   toYearPublished: number;
+  includeSubCollection: boolean;
 };
 type UseBookData = {
   books: Book[];
@@ -57,15 +58,7 @@ export const useBooks = ({
     const filter = queryKey[1];
     try {
       const { data: response } = await Get("/books/", {
-        params: {
-          page: filter?.page ?? 0,
-          keyword: filter?.keyword ?? "",
-          tags: filter?.tags ?? [],
-          collections: filter?.collections ?? [],
-          mainC: filter?.mainC ?? [],
-          fromYearPublished: filter?.fromYearPublished ?? 0,
-          toYearPublished: filter?.toYearPublished ?? 0,
-        },
+        params: filter,
       });
 
       return {

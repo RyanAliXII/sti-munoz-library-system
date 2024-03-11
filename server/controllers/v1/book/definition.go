@@ -73,7 +73,7 @@ type BookFilter struct {
 	ToYearPublished int `form:"toYearPublished"`
 	Tags []string `form:"tags[]"`
 	Collections []int `form:"collections[]"`
-	MainCollections []string `form:"mainC[]"`
+	IncludeSubCollection bool `form:"includeSubCollection"`
 }
 
 type BulkAccessionUpdateBody  struct{

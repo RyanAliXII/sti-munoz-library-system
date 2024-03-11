@@ -57,6 +57,7 @@ type BookFilter struct {
 	ToYearPublished int 
 	Tags []string 
 	Collections []int 
+	IncludeSubCollection bool
 }
 func (repo *Book) New(book model.Book) (string, error) {
 	
@@ -214,10 +215,20 @@ func (repo *Book) Get(filter * BookFilter) ([]model.Book, Metadata) {
 	return books, metadata
 }
 func(repo *Book)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) (*goqu.SelectDataset, error){
-	
 	sectionFilter := goqu.ExOr{}
 	if(len(filters.Collections) > 0){
-		sectionFilter["section_id"] = filters.Collections
+		if(filters.IncludeSubCollection){
+			ids, err := repo.getSubCollections(filters.Collections)
+			fmt.Println(ids)
+			if err != nil {
+				return ds, err
+			}
+			
+			sectionFilter["section_id"] = ids
+		}else{
+			sectionFilter["section_id"] = filters.Collections
+		}
+		
 	}
 	var tagsLiteral exp.LiteralExpression = goqu.L("") 
 	if(len(filters.Tags) > 0) {
@@ -248,6 +259,26 @@ func(repo *Book)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) 
 	}
 	ds = ds.Where(sectionFilter)
 	return ds, nil
+}
+func (repo *Book)getSubCollections(collectionIds []int)([]int, error){
+	dialect := goqu.Dialect("postgres")
+	ids := make([]int, 0)
+	sql, args, err := dialect.From(goqu.T("collection_tree")).Prepared(true).WithRecursive("collection_tree", 
+		dialect.Select(goqu.C("id").Table("section")).From(goqu.T("section").Schema("catalog")).
+		Where(exp.Ex{"id": collectionIds, "deleted_at": nil }).
+		Union(
+			dialect.From(goqu.T("section").Schema("catalog")).
+			Select(goqu.C("id").Table("section")).
+			InnerJoin(goqu.T("collection_tree").As("ct"), goqu.On(goqu.Ex{"ct.id": goqu.C("main_collection_id").
+			Schema("section")})))).ToSQL()
+	if err != nil {
+		return ids, err
+	}
+	err = repo.db.Select(&ids, sql, args...)
+	if err != nil{
+		return ids, err
+	}
+	return ids, nil
 }
 func (repo *Book) GetClientBookView(filter * BookFilter) ([]model.Book, Metadata) {
 	var books []model.Book = make([]model.Book, 0)
@@ -377,7 +408,7 @@ func (repo *Book) Update(book model.Book) error {
 
 	updateBookQuery := `UPDATE catalog.book SET title = $1,  isbn = $2, description = $3, pages = $4, section_id = $5, publisher_id = $6,
 	 cost_price= $7, edition = $8, year_published = $9, received_at = $10, author_number = $11, ddc = $12, subject = $13 where id = $14`
-
+	
 	//update book
 	updateResult, updateErr := transaction.Exec(updateBookQuery, book.Title, book.ISBN, book.Description, book.Pages, book.Section.Id, book.Publisher.Id,
 		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Subject, book.Id)
