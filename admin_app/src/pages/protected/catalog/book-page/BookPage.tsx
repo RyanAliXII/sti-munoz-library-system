@@ -12,7 +12,7 @@ import { useSearchTags } from "@hooks/data-fetching/search-tag";
 import useDebounce from "@hooks/useDebounce";
 import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Dropdown, Label, TextInput } from "flowbite-react";
+import { Button, Checkbox, Dropdown, Label, TextInput } from "flowbite-react";
 import { ChangeEvent, useMemo, useReducer, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { MdFilterList, MdOutlineDownload } from "react-icons/md";
@@ -42,6 +42,7 @@ const BookPage = () => {
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
+    includeSubCollection: { type: "boolean", default: false },
     tags: { type: "string", multiple: true, default: [] },
     collections: { type: "number", multiple: true, default: [] },
     fromYearPublished: { type: "number", default: 1980 },
@@ -208,6 +209,14 @@ const BookPage = () => {
     setBook(book);
     previewModal.open();
   };
+  const handleIncludeSubCollectionCheck = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const isChecked = event.target.checked;
+    setFilterParams({
+      includeSubCollection: isChecked,
+    });
+  };
   const exportModal = useSwitch();
   return (
     <>
@@ -235,15 +244,21 @@ const BookPage = () => {
                     onChange={handleCollectionSelect}
                     options={collections}
                     isMulti={true}
-                    value={collections?.filter(
-                      (c) =>
-                        filterParams?.collections.includes(c.id) ||
-                        filterParams?.mainC.includes(c.accessionTable)
+                    value={collections?.filter((c) =>
+                      filterParams?.collections.includes(c.id)
                     )}
                     getOptionLabel={(opt) => opt.name}
                     getOptionValue={(opt) => opt.id?.toString() ?? ""}
                     placeholder="Select Collection"
                   />
+                  <div className="flex items-center gap-1">
+                    <Checkbox
+                      onChange={handleIncludeSubCollectionCheck}
+                      color="primary"
+                      checked={filterParams.includeSubCollection}
+                    />
+                    <Label>Include sub-collections</Label>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label>Subject Tags</Label>
@@ -285,12 +300,12 @@ const BookPage = () => {
               </div>
             </Dropdown>
 
-            <HasAccess requiredPermissions={["Book.Edit"]}>
+            {/* <HasAccess requiredPermissions={["Book.Edit"]}>
               {isSelectionsSameAccessionTable &&
                 bookSelections.books.size > 0 && (
                   <Button onClick={migrate}>Migrate</Button>
                 )}
-            </HasAccess>
+            </HasAccess> */}
           </div>
 
           <div className="flex gap-2">

@@ -80,7 +80,6 @@ func (ctrler *Book) getBooksAdmin(ctx *gin.Context) {
 		 ToYearPublished: f.ToYearPublished,
 		 Tags: f.Tags,
 		 Collections: f.Collections,
-		 MainCollections: f.MainCollections,
 	})
 	ctx.JSON(httpresp.Success200(gin.H{
 		"books": books,
@@ -100,7 +99,6 @@ func (ctrler *Book) getBooksClient(ctx *gin.Context) {
 		ToYearPublished: f.ToYearPublished,
 		Tags: f.Tags,
 		Collections: f.Collections,
-		MainCollections: f.MainCollections,
 	})
 	
 	ctx.JSON(httpresp.Success200(gin.H{

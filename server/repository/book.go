@@ -57,7 +57,6 @@ type BookFilter struct {
 	ToYearPublished int 
 	Tags []string 
 	Collections []int 
-	MainCollections []string 
 }
 func (repo *Book) New(book model.Book) (string, error) {
 	
@@ -219,9 +218,6 @@ func(repo *Book)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) 
 	sectionFilter := goqu.ExOr{}
 	if(len(filters.Collections) > 0){
 		sectionFilter["section_id"] = filters.Collections
-	}
-	if(len(filters.MainCollections) > 0){
-		sectionFilter["accession_table"] = filters.MainCollections
 	}
 	var tagsLiteral exp.LiteralExpression = goqu.L("") 
 	if(len(filters.Tags) > 0) {
