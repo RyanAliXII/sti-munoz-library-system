@@ -9,6 +9,7 @@ import (
 type Services struct {
 	Notification  NotificationService;
 	Repos * repository.Repositories
+	ClientLogExport ClientLogExporter
 }
 func BuildServices () Services {
 	minioclient := minioclient.GetorCreateInstance()
@@ -16,5 +17,6 @@ func BuildServices () Services {
 	return Services{
 		Notification: NewNotificationService(),
 		Repos: repository.New(db, minioclient),
+		ClientLogExport: NewClienLogExporter(),
 	}
 }

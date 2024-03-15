@@ -219,11 +219,9 @@ func(repo *Book)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) 
 	if(len(filters.Collections) > 0){
 		if(filters.IncludeSubCollection){
 			ids, err := repo.getSubCollections(filters.Collections)
-			fmt.Println(ids)
 			if err != nil {
 				return ds, err
 			}
-			
 			sectionFilter["section_id"] = ids
 		}else{
 			sectionFilter["section_id"] = filters.Collections

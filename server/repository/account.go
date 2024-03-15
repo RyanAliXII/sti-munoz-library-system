@@ -80,6 +80,7 @@ func (repo *Account) GetAccounts(filter * AccountFilter) ([]model.Account,Metada
 		transaction.Rollback()	
 		return accounts, meta, err	
 	}
+
 	
 	err = transaction.Get(&meta, query, filter.Limit)
 

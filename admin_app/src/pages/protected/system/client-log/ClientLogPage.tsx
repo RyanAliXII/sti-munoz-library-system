@@ -1,12 +1,15 @@
 import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import CustomPagination from "@components/pagination/CustomPagination";
 import Container from "@components/ui/container/Container";
+import CustomSelect from "@components/ui/form/CustomSelect";
 import TableContainer from "@components/ui/table/TableContainer";
-import { ClientLog } from "@definitions/types";
+import { ClientLog, UserProgramOrStrand, UserType } from "@definitions/types";
 import { buildAvatar } from "@helpers/avatar";
 import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
+import { useUserPrograms, useUserTypes } from "@hooks/data-fetching/user";
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -15,13 +18,16 @@ import {
   Datepicker,
   Dropdown,
   Label,
+  Radio,
+  Select,
   Table,
+  TextInput,
 } from "flowbite-react";
-import { TextInput } from "flowbite-react";
 import { ChangeEvent, useState } from "react";
 import { MdFilterList } from "react-icons/md";
+import { MultiValue } from "react-select";
 import { useSearchParamsState } from "react-use-search-params-state";
-import TimeAgo from "timeago-react";
+import ExportModal from "./ExportModal";
 
 const ClientLogPage = () => {
   const { Get } = useRequest();
@@ -32,6 +38,10 @@ const ClientLogPage = () => {
     from: { default: "", type: "string" },
     to: { default: "", type: "string" },
     keyword: { default: "", type: "string" },
+    userTypes: { default: [], type: "string", multiple: true },
+    userPrograms: { default: [], type: "string", multiple: true },
+    sortBy: { default: "created_at", type: "string" },
+    order: { default: "desc", type: "string" },
   });
   const fetchClientLogs = async () => {
     try {
@@ -41,6 +51,10 @@ const ClientLogPage = () => {
           from: filterParams?.from ?? "",
           to: filterParams?.to ?? "",
           keyword: filterParams?.keyword ?? "",
+          userTypes: filterParams?.userTypes ?? [],
+          userPrograms: filterParams?.userPrograms ?? [],
+          sortBy: filterParams?.sortBy ?? "",
+          order: filterParams?.order ?? "",
         },
       });
       const { data } = response;
@@ -84,6 +98,33 @@ const ClientLogPage = () => {
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     debounceSearch(search, event.target.value, 500);
   };
+  const { data: userTypes } = useUserTypes({});
+  const { data: userPrograms } = useUserPrograms({});
+  const handleUserTypeSelect = (values: MultiValue<UserType>) => {
+    setFilterParams({
+      userTypes: values.map((t) => t.id),
+      page: 1,
+    });
+  };
+  const handleUserProgramSelect = (values: MultiValue<UserProgramOrStrand>) => {
+    setFilterParams({
+      userPrograms: values.map((t) => t.id),
+      page: 1,
+    });
+  };
+  const handleSortBySelect = (event: ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setFilterParams({
+      sortBy: value,
+    });
+  };
+  const handleOrderSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFilterParams({
+      order: value,
+    });
+  };
+  const exportModal = useSwitch();
   return (
     <Container>
       <div className="py-3 flex gap-2">
@@ -108,10 +149,81 @@ const ClientLogPage = () => {
               onSelectedDateChanged={handleTo}
             />
           </div>
+          <div className="p-2">
+            <Label>Patron Type</Label>
+            <CustomSelect
+              options={userTypes ?? []}
+              isMulti={true}
+              onChange={handleUserTypeSelect}
+              value={userTypes?.filter((c) =>
+                filterParams?.userTypes.includes(c.id.toString())
+              )}
+              getOptionLabel={(opt) => opt.name}
+              getOptionValue={(opt) => opt.id?.toString() ?? ""}
+              placeholder="Select User Type"
+            />
+          </div>
+          <div className="p-2">
+            <Label>Patron Program</Label>
+            <CustomSelect
+              onChange={handleUserProgramSelect}
+              options={userPrograms ?? []}
+              isMulti={true}
+              value={userPrograms?.filter((c) =>
+                filterParams?.userPrograms.includes(c.id.toString())
+              )}
+              getOptionLabel={(opt) => opt.code}
+              getOptionValue={(opt) => opt.id?.toString() ?? ""}
+              placeholder="Select User Program"
+            />
+          </div>
+          <div className="p-2">
+            <Label>Sort by</Label>
+            <Select
+              name="sortBy"
+              value={filterParams.sortBy}
+              onChange={handleSortBySelect}
+            >
+              <option value="dateCreated">Date Created</option>
+              <option value="givenName">Given name</option>
+              <option value="surname">Surname</option>
+              <option value="scanner">Scanner</option>
+            </Select>
+          </div>
+
+          <div className="pb-3 px-2">
+            <Label>Order</Label>
+            <div className="flex flex-col">
+              <div className="flex gap-1 items-center mt-1">
+                <Radio
+                  name="order"
+                  value="asc"
+                  onChange={handleOrderSelect}
+                  color="primary"
+                  checked={filterParams.order === "asc"}
+                />
+                <Label>Ascending</Label>
+              </div>
+              <div className="flex gap-1 items-center mt-1">
+                <Radio
+                  name="order"
+                  value="desc"
+                  color="primary"
+                  onChange={handleOrderSelect}
+                  checked={filterParams.order === "desc"}
+                />
+                <Label>Descending</Label>
+              </div>
+            </div>
+          </div>
+
           <Button color="primary" className="w-full" onClick={handleReset}>
             Reset
           </Button>
         </Dropdown>
+        <Button color="primary" onClick={exportModal.open}>
+          Export
+        </Button>
       </div>
       <LoadingBoundaryV2 isError={false} isLoading={false}>
         <TableContainer>
@@ -178,6 +290,11 @@ const ClientLogPage = () => {
           />
         </div>
       </LoadingBoundaryV2>
+      <ExportModal
+        closeModal={exportModal.close}
+        isOpen={exportModal.isOpen}
+        filters={filterParams}
+      />
     </Container>
   );
 };

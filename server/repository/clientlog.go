@@ -14,7 +14,8 @@ import (
 type ClientLogRepository interface {
 	GetLogs(filter *  ClientLogFilter)([]model.ClientLog, Metadata, error)
 	NewLog(clientId string, scannerId string) error
-	
+	GetCSVData(filter * ClientLogFilter)([]model.ClientLogExport, error )
+	GetExcelData(filter * ClientLogFilter)([]map[string]interface{}, error )
 }
 
 type ClientLog struct {
@@ -23,6 +24,10 @@ type ClientLog struct {
 type ClientLogFilter struct {
 	From string
 	To string
+	UserTypes []int 
+	UserPrograms []int 
+	SortBy string 
+	Order string 
 	filter.Filter
 }
 func(repo *ClientLog) NewLog(clientId string, scannerId string) error {
@@ -77,12 +82,11 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 		"client_log.scanner_id" : goqu.I("scanner_account.id"),
 	}))
 	ds = repo.buildClientLogFilters(ds, filter)
-	ds = ds.Prepared(true).
-	Order(exp.NewOrderedExpression(goqu.I("client_log.created_at"), exp.DescSortDir, exp.NoNullsSortType)).
-	Limit(uint(filter.Limit)).
+	ds = ds.Prepared(true)
+	ds = repo.buildSortOrder(ds, filter)
+	ds = ds.Limit(uint(filter.Limit)).
 	Offset(uint(filter.Offset))
 	query, args, err :=  ds.ToSQL()
-	
 	if err != nil {
 		return clientLogs, meta, err
 	}
@@ -101,7 +105,25 @@ func (repo * ClientLog) GetLogs(filter *  ClientLogFilter) ([]model.ClientLog, M
 	}
 	return clientLogs, meta, nil
 }
-
+func(repo * ClientLog)buildSortOrder(ds * goqu.SelectDataset, filter * ClientLogFilter)(*goqu.SelectDataset){
+	SortByColumnMap := map[string]string{
+		"givenName": "account.given_name",
+		"surname": "account.surname",
+		"dateCreated": "client_log.created_at",
+		"scanner": "scanner_account.username",
+	}
+	column, exists := SortByColumnMap[filter.SortBy]
+	if(exists){
+		if(filter.Order == "asc"){
+			return ds.Order(exp.NewOrderedExpression(goqu.I(column), exp.AscDir, exp.NullsLastSortType))
+		}
+		if(filter.Order == "desc"){
+			return ds.Order(exp.NewOrderedExpression(goqu.I(column), exp.DescSortDir, exp.NullsLastSortType))
+		}
+	}
+	return ds.Order(exp.NewOrderedExpression(goqu.L("client_log.created_at"), exp.DescSortDir, exp.NoNullsSortType))
+	
+}
 func (repo * ClientLog)buildMetadataQuery(filter * ClientLogFilter) (*goqu.SelectDataset){
 	dialect := goqu.Dialect("postgres")	
 	ds := dialect.Select(
@@ -134,7 +156,93 @@ func(repo * ClientLog) buildClientLogFilters(ds * goqu.SelectDataset,  filter * 
 		  `, keyword, keyword, keyword, keyword, keyword ),
 		)
 	}
+
+	if(len(filter.UserTypes) > 0){
+		ds = ds.Where(goqu.Ex{
+			"account.type_id" : filter.UserTypes,
+		})
+	}
+	if(len(filter.UserPrograms) > 0){
+		ds = ds.Where(goqu.Ex{
+			"account.program_id" : filter.UserPrograms,
+		})
+	}
 	return ds
+}
+
+func (repo * ClientLog)buildExportQuery(filter * ClientLogFilter) (string, []interface{}, error){
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(
+		 goqu.L("CONCAT(account.given_name, ' ', account.surname)").As("patron"),
+		 goqu.C("student_number"),
+		 goqu.C("user_type"),
+		 goqu.C("program_code"),
+		 goqu.L("account.created_at at TIME ZONE 'PHT'").As("created_at"),
+	).
+	From(goqu.T("client_log").Schema("system").As("client_log")).
+	InnerJoin(goqu.T("account_view").As("account"), goqu.On(goqu.Ex{
+		"client_log.client_id" : goqu.I("account.id"),
+	})).
+	InnerJoin(goqu.T("scanner_account").Schema("system"), goqu.On(goqu.Ex{
+		"client_log.scanner_id" : goqu.I("scanner_account.id"),
+	}))
+	ds = repo.buildClientLogFilters(ds, filter)
+	ds = ds.Prepared(true)
+	ds = repo.buildSortOrder(ds, filter)
+	return ds.ToSQL()
+}
+func(repo * ClientLog)GetCSVData(filter * ClientLogFilter)([]model.ClientLogExport, error ){
+	logs := make([]model.ClientLogExport, 0)
+	query, args, err := repo.buildExportQuery(filter)
+	if err != nil {
+		return logs, err
+	}
+	err = repo.db.Select(&logs, query, args...)
+	if err != nil {
+		return logs, err
+	}
+	return logs, err
+}
+
+func(repo * ClientLog)GetExcelData(filter * ClientLogFilter)([]map[string]interface{}, error ){
+	results := []map[string]interface{}{}
+	query, args, err := repo.buildExportQuery(filter)
+	if err != nil {
+		return results, err
+	}
+	rows, err := repo.db.Queryx(query, args...)
+	if err != nil {
+		return results, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		// Create a map to store the result of each row
+		result := make(map[string]interface{})
+
+		// Use MapScan to map the columns to the map
+		err := rows.MapScan(result)
+		if err != nil {
+			return results, err
+		}
+		// if idBytes, ok := result["accession_id"].([]byte); ok {
+		// 	id, err := uuid.FromBytes(idBytes[:16])
+		// 	if err != nil {
+		// 		return  results, err
+		// 	}
+		// 	result["accession_id"] = id.String()
+		// }
+		// if idBytes, ok := result["book_id"].([]byte); ok {
+		// 	id, err := uuid.FromBytes(idBytes[:16])
+		// 	if err != nil {
+		// 		return results, err
+		// 	}
+		// 	result["book_id"] = id.String()
+		// }
+		
+		results = append(results, result)
+	}
+	return results, err
 }
 func NewClientLogRepository(db  * sqlx.DB)ClientLogRepository {
 	return &ClientLog{db : db}

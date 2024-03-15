@@ -255,3 +255,49 @@ func (repo *Book)getCSVDataByCollectionId(collectionId int)([]model.BookExport, 
 	return accessions, err
 }
 
+
+
+func(repo *Book)buildAccessionFilters(ds * goqu.SelectDataset, filters * BookFilter) (*goqu.SelectDataset, error){
+	sectionFilter := goqu.ExOr{}
+	if(len(filters.Collections) > 0){
+		if(filters.IncludeSubCollection){
+			ids, err := repo.getSubCollections(filters.Collections)
+			if err != nil {
+				return ds, err
+			}
+			sectionFilter["section_id"] = ids
+		}else{
+			sectionFilter["section_id"] = filters.Collections
+		}
+		
+	}
+	var tagsLiteral exp.LiteralExpression = goqu.L("") 
+	if(len(filters.Tags) > 0) {
+		cols := ``
+		for i, tag := range filters.Tags {
+			if(i == 0){
+				cols += fmt.Sprintf("'%s' = ANY(search_tags)", tag)
+			}else{
+				cols += fmt.Sprintf("OR '%s' = ANY(search_tags)", tag)
+			}
+		}
+		a := fmt.Sprintf("(%s)", cols)
+		tagsLiteral = goqu.L(a)	
+		ds = ds.Where(tagsLiteral)
+	}
+	
+	if(filters.FromYearPublished > 0 && filters.ToYearPublished  > 0){
+			ds = ds.Where(goqu.C("year_published").Between(goqu.Range(filters.FromYearPublished, filters.ToYearPublished)))
+	}
+	if( len(filters.Keyword) > 0 ){
+		ds = ds.Where(goqu.L(`(
+		search_vector @@ websearch_to_tsquery('english', ?) 
+		OR search_vector @@ plainto_tsquery('simple', ?) 
+		OR search_tag_vector @@ websearch_to_tsquery('english', ?) 
+		OR search_tag_vector @@ plainto_tsquery('simple', ?)
+		OR  authors_concatenated ILIKE '%' || ? || '%'
+		)`, filters.Keyword, filters.Keyword, filters.Keyword,filters.Keyword, filters.Keyword))
+	}
+	ds = ds.Where(sectionFilter)
+	return ds, nil
+}

@@ -12,6 +12,10 @@ import (
 type ClientLogFilter struct {
 	From  string `form:"from"`
 	To string `form:"to"`
+	UserTypes []int `form:"userTypes[]"`
+	UserPrograms []int `form:"userPrograms[]"`
+	SortBy string `form:"sortBy"`
+	Order string `form:"order"`
 	Filter filter.Filter
 }
 
