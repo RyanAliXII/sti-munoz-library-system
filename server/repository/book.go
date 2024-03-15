@@ -191,7 +191,8 @@ func (repo *Book) Get(filter * BookFilter) ([]model.Book, Metadata) {
 	Offset(uint(filter.Offset))
 	var books []model.Book = make([]model.Book, 0)
 	query, args, err := ds.ToSQL()
-
+	fmt.Println(query)
+	fmt.Println(err)
 	if err != nil {
 		logger.Error(err.Error())
 		return books, Metadata{}
@@ -229,17 +230,19 @@ func(repo *Book)buildBookFilters(ds * goqu.SelectDataset, filters * BookFilter) 
 		
 	}
 	var tagsLiteral exp.LiteralExpression = goqu.L("") 
+	tags := make([]interface{}, 0)
 	if(len(filters.Tags) > 0) {
 		cols := ``
 		for i, tag := range filters.Tags {
 			if(i == 0){
-				cols += fmt.Sprintf("'%s' = ANY(search_tags)", tag)
+				cols += "? = ANY(search_tags)"
 			}else{
-				cols += fmt.Sprintf("OR '%s' = ANY(search_tags)", tag)
+				cols += " OR ? = ANY(search_tags)"
 			}
+			tags = append(tags, tag)
 		}
 		a := fmt.Sprintf("(%s)", cols)
-		tagsLiteral = goqu.L(a)	
+		tagsLiteral = goqu.L(a, tags... )	
 		ds = ds.Where(tagsLiteral)
 	}
 	

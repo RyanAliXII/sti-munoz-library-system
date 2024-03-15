@@ -156,7 +156,7 @@ const ClientLogPage = () => {
               isMulti={true}
               onChange={handleUserTypeSelect}
               value={userTypes?.filter((c) =>
-                filterParams?.userTypes.includes(c.id.toString())
+                filterParams?.userTypes.includes(c.id?.toString())
               )}
               getOptionLabel={(opt) => opt.name}
               getOptionValue={(opt) => opt.id?.toString() ?? ""}
