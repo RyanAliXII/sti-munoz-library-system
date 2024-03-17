@@ -20,6 +20,10 @@ func BorrowingRoutes(r * gin.RouterGroup, services * services.Services){
 	middlewares.ValidatePermissions([]string{"BorrowedBook.Read"}, true),
 	ctrler.GetBorrowRequests)
 
+	r.GET("/requests/export",
+	middlewares.ValidatePermissions([]string{"BorrowedBook.Read"}, true),
+	ctrler.ExportBorrowedBooks)
+
 	r.GET("/borrowed-books", 
 	ctrler.GetBorrowedBookByAccountId)
 	r.GET("/borrowed-books/accessions/:accessionId", ctrler.GetBorrowedBookByAccessionId)

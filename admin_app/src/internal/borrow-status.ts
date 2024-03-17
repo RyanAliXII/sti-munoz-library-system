@@ -23,31 +23,27 @@ export type OnlineBorrowStatus =
 // export type BorrowStatus = "returned" | "cancelled" | "unreturned";
 export const STATUSES_OPTIONS = [
   {
-    value: "all",
-    label: "All",
-  },
-  {
-    value: "pending",
+    value: 1,
     label: "Pending",
   },
   {
-    value: "approved",
+    value: 2,
     label: "Approved",
   },
   {
-    value: "checked-out",
+    value: 3,
     label: "Checked Out",
   },
   {
-    value: "cancelled",
+    value: 4,
     label: "Cancelled",
   },
   {
-    value: "returned",
+    value: 5,
     label: "Returned",
   },
   {
-    value: "unreturned",
+    value: 6,
     label: "Unreturned",
   },
 ];

@@ -225,21 +225,7 @@ func(repo * ClientLog)GetExcelData(filter * ClientLogFilter)([]map[string]interf
 		if err != nil {
 			return results, err
 		}
-		// if idBytes, ok := result["accession_id"].([]byte); ok {
-		// 	id, err := uuid.FromBytes(idBytes[:16])
-		// 	if err != nil {
-		// 		return  results, err
-		// 	}
-		// 	result["accession_id"] = id.String()
-		// }
-		// if idBytes, ok := result["book_id"].([]byte); ok {
-		// 	id, err := uuid.FromBytes(idBytes[:16])
-		// 	if err != nil {
-		// 		return results, err
-		// 	}
-		// 	result["book_id"] = id.String()
-		// }
-		
+	
 		results = append(results, result)
 	}
 	return results, err

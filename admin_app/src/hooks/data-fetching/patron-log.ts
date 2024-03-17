@@ -5,10 +5,6 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
-const ContentType = {
-  ".csv": "text/csv",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
 export const useExportClientLogs = ({
   queryKey,
 }: UseQueryOptions<string, unknown, string, [string, string, any]>) => {
@@ -19,7 +15,7 @@ export const useExportClientLogs = ({
     try {
       const fileType = queryKey[1];
       const filters = queryKey[2];
-      console.log(filters);
+
       if (fileType != ".csv" && fileType != ".xlsx") return "";
 
       const { data } = await Get("/client-logs/export", {

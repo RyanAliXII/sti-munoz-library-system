@@ -53,6 +53,9 @@ type BorrowingRequestFilter struct {
 	From  string `form:"from"`
 	To string `form:"to"`
 	Filter filter.Filter
+	Statuses []int `form:"statuses[]"`
+	SortBy string `form:"sortBy"`
+	Order string `form:"order"`
 }
 func NewBorrowingRequestFilter(ctx * gin.Context) *BorrowingRequestFilter{
 	filter := &BorrowingRequestFilter{}

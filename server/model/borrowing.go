@@ -76,6 +76,20 @@ type ReturnBook struct {
 	Model
 }
 
+type BorrowedBookExport struct {
+	Book string `db:"book" csv:"book"`
+	CopyNumber int `db:"copy_number" csv:"copy_number"`
+	AccessionNumber int `db:"accession_number" csv:"accession_number"`
+	IsEbook bool `db:"is_ebook" csv:"is_ebook"`
+	Patron string `db:"patron" csv:"patron"`
+	Email string `db:"email" csv:"email"`
+	UserType string `db:"user_type" csv:"user_type"`
+	Program string `db:"program_code" csv:"program_code"`
+	DueDate *string `db:"due_date" csv:"due_date"`
+	Status string `db:"status" csv:"status"`
+	Penalty string `db:"penalty" csv:"penalty"`
+}
+
 func (m * ReturnBook)Validate() (validation.Errors, error){
 	fieldRules := make([]*validation.FieldRules,0)
 	if(m.HasAdditionaPenalty){

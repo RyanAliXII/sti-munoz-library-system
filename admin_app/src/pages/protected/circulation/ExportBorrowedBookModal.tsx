@@ -1,16 +1,16 @@
 import { ModalProps } from "@definitions/types";
-import { useExportClientLogs } from "@hooks/data-fetching/patron-log";
+import { useExportBorrowedBooks } from "@hooks/data-fetching/borrowing";
 import { useForm } from "@hooks/useForm";
 import { Button, Label, Modal, Select } from "flowbite-react";
 import { FC, FormEvent } from "react";
 import { AiOutlineDownload } from "react-icons/ai";
 
-interface ClientLogExportModalProps extends ModalProps {
+interface BorrowedBookModalProps extends ModalProps {
   filters: any;
 }
-const ExportModal: FC<ClientLogExportModalProps> = ({
-  isOpen,
+const ExportBorrowedBookModal: FC<BorrowedBookModalProps> = ({
   closeModal,
+  isOpen,
   filters,
 }) => {
   const { form, handleFormInput } = useForm({
@@ -18,37 +18,33 @@ const ExportModal: FC<ClientLogExportModalProps> = ({
       fileType: ".csv",
     },
   });
-  const exportLogs = (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     refetch();
   };
-
-  const { isFetching, refetch } = useExportClientLogs({
-    queryKey: ["exportLogs", form.fileType, filters],
+  const { refetch, isFetching } = useExportBorrowedBooks({
+    queryKey: ["exportBorrowedBooks", form.fileType, filters],
   });
-
   return (
     <Modal show={isOpen} onClose={closeModal}>
       <Modal.Header>File Format</Modal.Header>
       <Modal.Body>
-        <form onSubmit={exportLogs}>
-          <div className="pb-2">
-            <Label>Select file format</Label>
-            <Select
-              value={form.fileType}
-              name="fileType"
-              onChange={handleFormInput}
-            >
-              <option value=".csv">CSV</option>
-              <option value=".xlsx">Excel</option>
-            </Select>
-          </div>
+        <form onSubmit={onSubmit}>
+          <Label>Select file type</Label>
+          <Select
+            value={form.fileType}
+            onChange={handleFormInput}
+            name="fileType"
+          >
+            <option value=".csv">CSV</option>
+            <option value=".xlsx">Excel</option>
+          </Select>
           <Button
             color="primary"
             type="submit"
             className="mt-2"
-            isProcessing={isFetching}
             disabled={isFetching}
+            isProcessing={isFetching}
           >
             <div className="flex gap-1 items-center">
               <AiOutlineDownload />
@@ -61,4 +57,4 @@ const ExportModal: FC<ClientLogExportModalProps> = ({
   );
 };
 
-export default ExportModal;
+export default ExportBorrowedBookModal;

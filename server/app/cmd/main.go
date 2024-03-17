@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/realtime"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
-
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/realtime"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -22,9 +22,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger *zap.Logger = slimlog.GetInstance()
+
 
 func main() {
+	var logger *zap.Logger = slimlog.GetInstance()
 
 	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
 	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
@@ -42,7 +43,7 @@ func main() {
 	r.LoadHTMLFiles(loadtmpl.LoadHTMLFiles("./templates")...)
 	r.Static("/assets", "./assets")
 	r.Use(gin.Recovery())
-	r.Use(CustomLogger())
+	r.Use(CustomLogger(logger))
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{ADMIN_APP, CLIENT_APP, SCANNER_APP},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
@@ -50,7 +51,7 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-
+	azuread.GetOrCreateJwksInstance()
 	permissionstore.GetPermissionStore()
 	r.GET("/", func(ctx *gin.Context) {
 
@@ -59,6 +60,7 @@ func main() {
 			"time":    time.Now(),
 		})
 	})
+	azuread.GetOrCreateJwksInstance()
 	services := services.BuildServices();
 	realtime.RealtimeRoutes(r.Group("/rt"), &services)
 	controllers.RegisterAPIV1(r, &services)
@@ -67,7 +69,7 @@ func main() {
     r.Run(":5200")
 }
 
-func CustomLogger() gin.HandlerFunc {
+func CustomLogger(logger * zap.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		method := ctx.Request.Method
 		if(method == "OPTIONS"){

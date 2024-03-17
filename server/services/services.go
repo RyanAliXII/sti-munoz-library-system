@@ -10,6 +10,7 @@ type Services struct {
 	Notification  NotificationService;
 	Repos * repository.Repositories
 	ClientLogExport ClientLogExporter
+	BorrowedBookExport BorrowedBookExporter
 }
 func BuildServices () Services {
 	minioclient := minioclient.GetorCreateInstance()
@@ -18,5 +19,6 @@ func BuildServices () Services {
 		Notification: NewNotificationService(),
 		Repos: repository.New(db, minioclient),
 		ClientLogExport: NewClienLogExporter(),
+		BorrowedBookExport: NewBorrowedBookExporter(),
 	}
 }

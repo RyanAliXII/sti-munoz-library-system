@@ -40,31 +40,8 @@ func createJWKS() *keyfunc.JWKS {
 		FIVE_MINUTES = time.Minute * 5
 		TEN_SECONDS  = time.Second * 10
 	)
-	// instance, err := keyfunc.GetMultiple(map[string]keyfunc.Options{
-	// 	 AdminAppJwksURL: {
-	// 		RefreshInterval:   EVERY_HOUR,
-	// 		RefreshTimeout:    TEN_SECONDS,
-	// 		RefreshRateLimit:  FIVE_MINUTES,
-	// 		RefreshUnknownKID: true,
-	// 		RefreshErrorHandler: func(err error) {
-	// 			logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
-	// 		},
-	// 	},
-	// 	ClientAppJwksURL:{
-	// 		RefreshInterval:   EVERY_HOUR,
-	// 		RefreshTimeout:    TEN_SECONDS,
-	// 		RefreshRateLimit:  FIVE_MINUTES,
-	// 		RefreshUnknownKID: true,
-	// 		RefreshErrorHandler: func(err error) {
-	// 			logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
-	// 		},
-	// 	},
-
-
-		
-	// }, keyfunc.MultipleOptions{} )
 	 instance, err := keyfunc.Get(AppJwksURL, keyfunc.Options{
-					RefreshInterval:   EVERY_HOUR,
+			RefreshInterval:   EVERY_HOUR,
 			RefreshTimeout:    TEN_SECONDS,
 			RefreshRateLimit:  FIVE_MINUTES,
 			RefreshUnknownKID: true,
@@ -73,8 +50,9 @@ func createJWKS() *keyfunc.JWKS {
 			},
 	 })
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Function("createJwksErr"))
+		panic(err)
 	}
+	
 	return instance
 }
 

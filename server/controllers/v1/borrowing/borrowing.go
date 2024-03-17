@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -33,6 +34,7 @@ type BorrowingController interface {
 	UpdateRemarks(ctx * gin.Context)
 	GetBorrowedBookByAccessionId(ctx * gin.Context)
 	ReturnBorrowedBooksBulk(ctx * gin.Context)
+	ExportBorrowedBooks(ctx * gin.Context)
 	
 }
 type Borrowing struct {
@@ -230,8 +232,12 @@ func (ctrler *Borrowing)GetBorrowRequests(ctx * gin.Context){
 	requests,metadata, err := ctrler.services.Repos.BorrowingRepository.GetBorrowingRequests(&repository.BorrowingRequestFilter{
 		From: filter.From,
 		To: filter.To,
+		Statuses: filter.Statuses,
+		SortBy: filter.SortBy,
+		Order: filter.Order,
 		Filter: filter.Filter,
 	})
+	
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
 	}
@@ -239,6 +245,55 @@ func (ctrler *Borrowing)GetBorrowRequests(ctx * gin.Context){
 		"borrowRequests": requests,
 		"metadata": metadata,
 	}, "Borrow requests fetched."))
+}
+
+func(ctrler * Borrowing)ExportBorrowedBooks(ctx * gin.Context){
+	filter := NewBorrowingRequestFilter(ctx)
+	fileType := ctx.Query("fileType")
+	if fileType == ".csv"{
+		data, err := ctrler.services.Repos.BorrowingRepository.GetCSVData(&repository.BorrowingRequestFilter{
+			From: filter.From,
+			To: filter.To,
+			Statuses: filter.Statuses,
+			SortBy: filter.SortBy,
+			Order: filter.Order,
+			Filter: filter.Filter,
+		})
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetCSVDataErr"))
+			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
+			return
+		}
+		file, err := ctrler.services.BorrowedBookExport.ExportCSV(data)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("ExportCSVErr"))
+			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
+		}
+		ctx.Data(http.StatusOK, "text/csv", file.Bytes())
+	}
+	if fileType == ".xlsx"{
+		data, err := ctrler.services.Repos.BorrowingRepository.GetExcelData(&repository.BorrowingRequestFilter{
+			From: filter.From,
+			To: filter.To,
+			Statuses: filter.Statuses,
+			SortBy: filter.SortBy,
+			Order: filter.Order,
+			Filter: filter.Filter,
+		})
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("GetCSVDataErr"))
+			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
+			return
+		}
+		file, err := ctrler.services.BorrowedBookExport.ExportExcel(data)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("ExportCSVErr"))
+			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
+		}
+		ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", file.Bytes())
+	}
+	ctx.Data(http.StatusBadRequest, "", []byte{})
+	
 }
 func (ctrler *Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
 	appId, _ := ctx.Get("requestorApp")
@@ -397,9 +452,7 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 		return
 	}
 
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
-	}
+	
 	ctx.JSON(httpresp.Success200(nil, "Status updated."))
 }
 func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gin.Context){

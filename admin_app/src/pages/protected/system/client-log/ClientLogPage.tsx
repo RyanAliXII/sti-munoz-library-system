@@ -53,8 +53,8 @@ const ClientLogPage = () => {
           keyword: filterParams?.keyword ?? "",
           userTypes: filterParams?.userTypes ?? [],
           userPrograms: filterParams?.userPrograms ?? [],
-          sortBy: filterParams?.sortBy ?? "",
-          order: filterParams?.order ?? "",
+          sortBy: filterParams?.sortBy ?? "dateCreated",
+          order: filterParams?.order ?? "desc",
         },
       });
       const { data } = response;
@@ -88,6 +88,12 @@ const ClientLogPage = () => {
     setFilterParams({
       from: "",
       to: "",
+      keyword: "",
+      userTypes: [],
+      page: 1,
+      userPrograms: [],
+      sortBy: "dateCreated",
+      order: "desc",
     });
   };
 

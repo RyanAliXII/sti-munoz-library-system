@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -10,7 +12,6 @@ import (
 )
 
 type BorrowingRepository interface {
-
 	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
 	GetBorrowingRequests(filter * BorrowingRequestFilter)([]model.BorrowingRequest, Metadata, error)
 	MarkAsReturned(id string, remarks string) error
@@ -28,6 +29,8 @@ type BorrowingRepository interface {
 	GetBorrowedBookById(id string) (model.BorrowedBook, error)
 	MarkAsReturnedWithAddtionalPenalty(id string, returnedBook model.ReturnBook) error
 	GetBorrowedBooksByAccessionId(accessionId string)(model.BorrowedBook, error)
+	GetCSVData(*BorrowingRequestFilter)([]model.BorrowedBookExport, error)
+	GetExcelData(filter * BorrowingRequestFilter)([]map[string]interface{}, error)
 }
 type Borrowing struct{
 	db * sqlx.DB
@@ -36,6 +39,9 @@ type Borrowing struct{
 type BorrowingRequestFilter struct {
     From string
 	To string
+	Statuses []int
+	SortBy string 
+	Order string
 	filter.Filter
 }
 func (repo * Borrowing)BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error{
@@ -80,14 +86,15 @@ func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]m
 		goqu.MAX("bbv.created_at").As("created_at"),
 	).From(goqu.T("borrowed_book_all_view").As("bbv"))
 	ds = repo.buildBorrowingRequestFilters(ds, filter)
-	ds = ds.GroupBy("group_id", "account_id", "client").Prepared(true).
-	Order(exp.NewOrderedExpression(goqu.MAX("bbv.created_at"), exp.DescSortDir,exp.NoNullsSortType)).
-	Limit(uint(filter.Limit)).
+	ds = ds.GroupBy("group_id", "account_id", "client").Prepared(true)
+	ds = repo.buildSortOrder(ds, filter)
+	ds = ds.Limit(uint(filter.Limit)).
 	Offset(uint(filter.Offset))
 	
     metadata := Metadata{}
 	requests := make([]model.BorrowingRequest, 0) 
 	query, args ,err := ds.ToSQL()
+	fmt.Println(query)
     if err != nil {
 		return requests, metadata, err
 	}
@@ -97,6 +104,7 @@ func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]m
 	}
 	ds = repo.buildBorrowingRequestMetadata(filter)
 	query, args, err = ds.ToSQL()
+	
 	if err != nil {
 		return requests, metadata, err
 	}
@@ -139,7 +147,29 @@ func (repo * Borrowing)buildBorrowingRequestFilters(ds * goqu.SelectDataset, fil
 		  `, keyword, keyword, keyword, keyword, keyword),
 		)
 	}
+	if (len(filter.Statuses) > 0){
+		ds = ds.Where(goqu.Ex{
+			"status_id" : filter.Statuses,
+		})
+	}
 	return ds
+}
+func(repo * Borrowing)buildSortOrder(ds * goqu.SelectDataset, filter * BorrowingRequestFilter)(*goqu.SelectDataset){
+	SortByColumnMap := map[string]string{
+		"givenName": "client->>'givenName'",
+		"surname": "client->>'surname'",
+		"dateCreated": "created_at",
+	}
+	column, exists := SortByColumnMap[filter.SortBy]
+	if(exists){
+		if(filter.Order == "asc"){
+			return ds.Order(exp.NewOrderedExpression(goqu.L(column), exp.AscDir, exp.NullsLastSortType))
+		}
+		if(filter.Order == "desc"){
+			return ds.Order(exp.NewOrderedExpression(goqu.L(column), exp.DescSortDir, exp.NullsLastSortType))
+		}
+	}
+	return ds.Order(exp.NewOrderedExpression(goqu.L("created_at"), exp.DescSortDir, exp.NoNullsSortType))
 }
 func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error){
 	borrowedBooks := make([]model.BorrowedBook, 0) 
