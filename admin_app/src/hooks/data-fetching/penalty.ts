@@ -137,3 +137,49 @@ export const usePenaltyBill = ({
     refetchOnWindowFocus: false,
   });
 };
+
+export const useExportPenalties = ({
+  queryKey,
+}: UseQueryOptions<string, unknown, string, [string, string, any]>) => {
+  const { Get } = useRequest();
+  const exportPenalties: QueryFunction<string, [string, string, any]> = async ({
+    queryKey,
+  }) => {
+    try {
+      const fileType = queryKey[1];
+      const filters = queryKey[2];
+
+      if (fileType != ".csv" && fileType != ".xlsx") return "";
+
+      const { data } = await Get("/penalties/export", {
+        params: {
+          ...filters,
+          fileType,
+        },
+        responseType: "arraybuffer",
+      });
+      const bufferLength = data.byteLength ?? 0;
+      if (bufferLength === 0) return "";
+      const blob = new Blob([data], {
+        type: "text/csv",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const filename = Date.now();
+      a.download = `${filename}${fileType}`;
+      a.click();
+      return url;
+    } catch (error) {
+      console.error(error);
+      return "";
+    }
+  };
+  return useQuery<string, unknown, string, [string, string, any]>({
+    queryFn: exportPenalties,
+    queryKey: queryKey,
+    enabled: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+};

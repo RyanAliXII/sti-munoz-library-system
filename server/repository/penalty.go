@@ -59,6 +59,8 @@ func(repo *Penalty) GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metada
 	).Prepared(true)
 	ds = repo.buildPenaltyFilters(ds, filter)
 	ds = repo.buildSortOrder(ds, filter)
+	ds = ds.Limit(uint(filter.Limit)).
+	Offset(uint(filter.Offset))
 	query, args , err := ds.ToSQL()
 	if err != nil {
 		return penalties, metadata, err
@@ -89,15 +91,15 @@ func(repo * Penalty) buildPenaltyFilters(ds * goqu.SelectDataset,  filter * Pena
 		keyword := filter.Filter.Keyword
 		ds = ds.Where(
 			goqu.L(`	
-		   (account.search_vector @@ (phraseto_tsquery('simple', ?) :: text) :: tsquery  
+		   (account->>'searchVector' @@ (phraseto_tsquery('simple', ?) :: text) :: tsquery  
 			OR 
-			account.search_vector @@ (plainto_tsquery('simple', ?)::text) :: tsquery
+			account->>'searchVector' @@ (plainto_tsquery('simple', ?)::text) :: tsquery
 			OR
-			account.email ILIKE '%' || ? || '%'
+			account->>'email' ILIKE '%' || ? || '%'
 			OR 
-			account.given_name ILIKE '%' || ? || '%'
+			account->>'givenName' ILIKE '%' || ? || '%'
 			OR
-			account.surname ILIKE'%' || ? || '%')
+			account->>'surname' ILIKE'%' || ? || '%')
 		  `, keyword, keyword, keyword, keyword, keyword ),
 		)
 	}
@@ -190,8 +192,6 @@ func (repo *Penalty)UpdatePenaltySettlement(id string, isSettle bool) error{
 			logger.Error(settleErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenaltySettlement") , slimlog.Error("settleErr"))
 			return settleErr
 		}
-
-
 	}else{
 		_,unSettleErr := repo.db.Exec(unSettleQuery, id)
         if unSettleErr!= nil {
@@ -233,7 +233,6 @@ func (repo *Penalty)MarkAsSettled(id string, fileHeader * multipart.FileHeader, 
 	if err != nil {
 		return err
 	}
-
 	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", uploadInfo.Key,remarks, id)
 	if err != nil {
 		return err	
@@ -272,7 +271,6 @@ func (repo *Penalty)UpdateSettlement(id string, fileHeader * multipart.FileHeade
 	if err != nil {
 		return err
 	}
-
 	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", uploadInfo.Key,remarks, id)
 	if err != nil {
 		return err	
@@ -299,8 +297,7 @@ func (repo *Penalty) AddPenalty(penalty model.Penalty ) error {
     }
 	return nil
 }
-func (repo *Penalty) UpdatePenalty(penalty model.Penalty) error {
-	
+func (repo *Penalty)UpdatePenalty(penalty model.Penalty) error {
 	query := `
    		 UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3, item = $4, class_id = null  where id = $5`
 	
@@ -322,6 +319,63 @@ func (repo *Penalty) UpdatePenalty(penalty model.Penalty) error {
 	return nil
 }
 
+func(repo * Penalty) buildExportQuery(filter * PenaltyFilter)(string, []interface{}, error){
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.From(goqu.T("penalty_view").As("penalty")).Select(
+		goqu.C("description"),
+		goqu.C("reference_number"),
+		goqu.C("item"),
+		goqu.C("amount"),
+		goqu.C("remarks"),
+		goqu.C("created_at").Table("penalty"),
+		goqu.L("CONCAT(account->>'givenName', ' ', account->>'surname')").As("name"),
+		goqu.L("account->>'studentNumber'").As("student_number"),
+		goqu.L("account->>'userType'").As("user_type"),
+		goqu.L("account->>'programCode'").As("program_code"),
+		goqu.C("is_settled"),
+	).Prepared(true)
+	ds = repo.buildPenaltyFilters(ds, filter)
+	ds = repo.buildSortOrder(ds, filter)
+	return ds.ToSQL()
+}
+func(repo *Penalty)GetPenaltyCSVData(filter * PenaltyFilter)([]model.PenaltyExport, error) {
+	data := make([]model.PenaltyExport, 0)
+	query, args, err := repo.buildExportQuery(filter)
+	if err != nil {
+		return data, err
+	}
+	err = repo.db.Select(&data, query, args...)
+	if err != nil {
+		return data, err
+	}
+	return data, nil
+}
+func(repo *Penalty)GetPenaltyExcelData(filter * PenaltyFilter)([]map[string]interface{}, error){
+	results := []map[string]interface{}{}
+	query, args, err := repo.buildExportQuery(filter)
+	if err != nil {
+		return results, err
+	}
+	rows, err := repo.db.Queryx(query, args...)
+	if err != nil {
+		return results, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		// Create a map to store the result of each row
+		result := make(map[string]interface{})
+
+		// Use MapScan to map the columns to the map
+		err := rows.MapScan(result)
+		if err != nil {
+			return results, err
+		}
+	
+		results = append(results, result)
+	}
+	return results, nil
+}
 type PenaltyRepository interface{
 	GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metadata, error)
 	UpdatePenaltySettlement(id string, isSettle bool) error
@@ -334,4 +388,6 @@ type PenaltyRepository interface{
 	UpdatePenaltyClassification (class model.PenaltyClassification)(error)
 	DeletePenaltyClassification(id string) error 
 	GetPenaltyById(id string)(model.Penalty, error)
+	GetPenaltyCSVData(filter * PenaltyFilter)([]model.PenaltyExport, error) 
+	GetPenaltyExcelData(filter * PenaltyFilter)([]map[string]interface{}, error)
 }

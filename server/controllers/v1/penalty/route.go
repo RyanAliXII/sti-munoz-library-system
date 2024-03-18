@@ -6,14 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
-
 func PenaltyRoutes (router * gin.RouterGroup, services * services.Services){
 	ctrler := NewPenaltyController(services)
 	router.GET("/", 
 	ctrler.GetPenalties)
 	router.GET("/:id/bill", ctrler.GetBill)
+	router.GET("/export", ctrler.ExportPenalties, middlewares.ValidatePermissions([]string{"Penalty.Read"}, true))
 	router.PATCH("/:id/settlement", 
 	middlewares.ValidatePermissions([]string{"Penalty.Edit"}, true),
 	ctrler.UpdatePenaltySettlement)

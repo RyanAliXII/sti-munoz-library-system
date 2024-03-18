@@ -2,9 +2,7 @@ package services
 
 import (
 	"bytes"
-	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/numtochar"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gocarina/gocsv"
 	"github.com/xuri/excelize/v2"
@@ -52,17 +50,16 @@ func(s * BorrowedBookExport)ExportExcel(data []map[string]interface{})(*bytes.Bu
 		return buffer, nil
 	}
 	firstSheet := f.GetSheetList()[0]
-	for rowCursor, log := range data{
-		for colCursor, col := range borrowedBookExcelHeaders  {
-			char := numtochar.ToChar(colCursor + 1)
-			cell := fmt.Sprintf("%s%d", char, rowCursor + 1)
-			err := f.SetCellValue(firstSheet, cell, log[col])
-			if err != nil {
-				return buffer, err
-			}
-		}
+	const SECONDO_ROW = 2
+	err := buildExcelHeaders(f, borrowedBookExcelHeaders, firstSheet )
+	if err != nil {
+		return buffer, err
 	}
-	err := f.Write(buffer)
+	err = buildExcelData(f, data, borrowedBookExcelHeaders, firstSheet, SECONDO_ROW)
+	if err != nil {
+		return buffer, err
+	}
+	err = f.Write(buffer)
 	if err != nil {
 		return buffer, err
 	}

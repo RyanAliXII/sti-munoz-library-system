@@ -301,7 +301,8 @@ jsonb_build_object('id', account.id,
     'programName', (case when user_program.name is null then '' else user_program.name end), 
     'programCode', (case when user_program.code is null then '' else user_program.code end),
     'userType', (case when program_id is null and type_id is null then '' else 
-    (case when program_id is not null then user_program.user_type else user_type.name end) end)
+    (case when program_id is not null then user_program.user_type else user_type.name end) end),
+	'searchVector', account.search_vector
 ) as json_format,
 jsonb_build_object( 
 	'totalPenalty', COALESCE(penalty_tbl.total, 0),

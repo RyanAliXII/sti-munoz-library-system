@@ -30,7 +30,6 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
     }
 	if parsedRequestorApp == azuread.AdminAppClientId {
 		filter := NewPenaltyFilter(ctx)
-		fmt.Println(filter)
 		penalties, metadata, err := ctrler.services.Repos.PenaltyRepository.GetPenalties(&repository.PenaltyFilter{
 			From: filter.From,
 			To: filter.To,
@@ -41,6 +40,20 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 			SortBy: filter.SortBy,
 			Filter: filter.Filter,
 		})
+		csvData, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyCSVData(&repository.PenaltyFilter{
+			From: filter.From,
+			To: filter.To,
+			Status: filter.Status,
+			Min: filter.Min,
+			Max: filter.Max,
+			Order: filter.Order,
+			SortBy: filter.SortBy,
+			Filter: filter.Filter,
+		})
+		fmt.Println(csvData)
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportErr"))
+		}
 		if err != nil {
 			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltiesErr"))
 		}
@@ -142,11 +155,56 @@ func(ctrler * Penalty)GetBill(ctx * gin.Context){
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
+func(ctrler * Penalty)ExportPenalties(ctx * gin.Context){
+	fileType := ctx.Query("fileType")
+	filter := NewPenaltyFilter(ctx)
+	repoFilter := &repository.PenaltyFilter{
+		From: filter.From,
+		To: filter.To,
+		Status: filter.Status,
+		Min: filter.Min,
+		Max: filter.Max,
+		Order: filter.Order,
+		SortBy: filter.SortBy,
+		Filter: filter.Filter,
+	}
+	if fileType == ".csv"{
+		data, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyCSVData(repoFilter)
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltyCSVData"))
+			ctx.Data(http.StatusInternalServerError, "", []byte{})
+			return
+		}
+		bytes, err := ctrler.services.PenaltyExport.ExportCSV(data)
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportCSVErr"))
+			ctx.Data(http.StatusInternalServerError, "", []byte{})
+			return
+		}
+		ctx.Data(http.StatusOK, "text/csv", bytes.Bytes())
+		return
+	}
+	if fileType == ".xlsx"{
+		data, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyExcelData(repoFilter)
+		if err != nil{
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetExcelData"))
+			ctx.Data(http.StatusInternalServerError, "", []byte{})
+			return
+		}
+		bytes, err := ctrler.services.PenaltyExport.ExportExcel(data)
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportExcelErr"))
+			ctx.Data(http.StatusInternalServerError, "", []byte{})
+			return
+		}
+		ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes.Bytes())
+	}
+	ctx.Data(http.StatusBadRequest, "", []byte{})
+}
 func NewPenaltyController(services * services.Services) PenaltyController {
 	return &Penalty{
 			services: services,
 	}
-
 }
 type PenaltyController interface {
 	GetPenalties (ctx * gin.Context)
@@ -158,4 +216,5 @@ type PenaltyController interface {
 	UpdatePenaltyClass(ctx * gin.Context)
 	DeletePenaltyClass(ctx * gin.Context)
 	GetBill(ctx * gin.Context)
+	ExportPenalties(ctx * gin.Context)
 }

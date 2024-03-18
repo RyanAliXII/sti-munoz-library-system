@@ -2,27 +2,23 @@ package services
 
 import (
 	"bytes"
-	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/numtochar"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gocarina/gocsv"
 	"github.com/xuri/excelize/v2"
 )
-
-type ClientLogExporter interface{
-	ExportCSV([]model.ClientLogExport) (*bytes.Buffer, error)
-	ExportExcel([]map[string]interface{})(*bytes.Buffer, error)
-}
-
-type ClientLogExport struct {}
-var excelHeaderColumns = []string{
+var clientLogHeaders = []string{
 	"patron",
 	"student_number",
 	"user_type",
 	"program_code",
 	"created_at",
 }
+type ClientLogExporter interface{
+	ExportCSV([]model.ClientLogExport) (*bytes.Buffer, error)
+	ExportExcel([]map[string]interface{})(*bytes.Buffer, error)
+}
+type ClientLogExport struct {}
 func (s * ClientLogExport)ExportCSV(logs []model.ClientLogExport)(*bytes.Buffer, error) {
 	buffer := new(bytes.Buffer)
 	bytes, err := gocsv.MarshalBytes(&logs)
@@ -45,18 +41,18 @@ func(s * ClientLogExport)ExportExcel(logs []map[string]interface{})(*bytes.Buffe
 	if (len(f.GetSheetList()) == 0){
 		return buffer, nil
 	}
+
 	firstSheet := f.GetSheetList()[0]
-	for rowCursor, log := range logs{
-		for colCursor, col := range excelHeaderColumns {
-			char := numtochar.ToChar(colCursor + 1)
-			cell := fmt.Sprintf("%s%d", char, rowCursor + 1)
-			err := f.SetCellValue(firstSheet, cell, log[col])
-			if err != nil {
-				return buffer, err
-			}
-		}
+	err := buildExcelHeaders(f, clientLogHeaders, firstSheet)
+	if err != nil {
+		return buffer, err
+	} 
+	const SECOND_ROW = 2
+	err = buildExcelData(f, logs, clientLogHeaders, firstSheet, SECOND_ROW)
+	if err != nil {
+		return buffer, err
 	}
-	err := f.Write(buffer)
+	err = f.Write(buffer)
 	if err != nil {
 		return buffer, err
 	}

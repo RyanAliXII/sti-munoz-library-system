@@ -14,6 +14,7 @@ type Services struct {
 	ClientLogExport ClientLogExporter
 	BorrowedBookExport BorrowedBookExporter
 	Logger * zap.Logger
+	PenaltyExport PenaltyExporter
 }
 func BuildServices () Services {
 	minioclient := minioclient.GetorCreateInstance()
@@ -24,5 +25,6 @@ func BuildServices () Services {
 		ClientLogExport: NewClienLogExporter(),
 		BorrowedBookExport: NewBorrowedBookExporter(),
 		Logger: slimlog.GetInstance(),
+		PenaltyExport: NewPenaltyExporter(),
 	}
 }

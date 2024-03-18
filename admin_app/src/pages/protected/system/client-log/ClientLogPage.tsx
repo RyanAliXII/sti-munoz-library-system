@@ -40,7 +40,7 @@ const ClientLogPage = () => {
     keyword: { default: "", type: "string" },
     userTypes: { default: [], type: "string", multiple: true },
     userPrograms: { default: [], type: "string", multiple: true },
-    sortBy: { default: "created_at", type: "string" },
+    sortBy: { default: "dateCreated", type: "string" },
     order: { default: "desc", type: "string" },
   });
   const fetchClientLogs = async () => {

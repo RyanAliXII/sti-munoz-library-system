@@ -40,6 +40,7 @@ import EditSettlementModal from "./EditSettlementModal";
 import SettleModal from "./SettleModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
 import CustomPagination from "@components/pagination/CustomPagination";
+import ExportPenaltiesModal from "./ExportPenaltiesModal";
 export type PenaltyForm = {
   id?: string;
   item: string;
@@ -187,6 +188,7 @@ const PenaltyPage = () => {
       page: 1,
     });
   };
+  const exportPenalties = useSwitch();
   return (
     <>
       <Container>
@@ -294,13 +296,23 @@ const PenaltyPage = () => {
             </Dropdown>
           </div>
           <HasAccess requiredPermissions={["Penalty.Add"]}>
-            <Button
-              color="primary"
-              className="flex items-center gap-1"
-              onClick={openAddModal}
-            >
-              <AiOutlinePlus className="text-lg " /> Add Penalty
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                color="primary"
+                className="flex items-center gap-1"
+                onClick={openAddModal}
+              >
+                <AiOutlinePlus className="text-lg " /> Add Penalty
+              </Button>
+              <Button
+                color="primary"
+                outline
+                className="flex items-center gap-1"
+                onClick={exportPenalties.open}
+              >
+                Export
+              </Button>
+            </div>
           </HasAccess>
         </div>
         <TableContainer>
@@ -434,6 +446,11 @@ const PenaltyPage = () => {
         closeModal={closeViewModal}
         isOpen={isViewModalOpen}
         url={billUrl ?? ""}
+      />
+      <ExportPenaltiesModal
+        closeModal={exportPenalties.close}
+        isOpen={exportPenalties.isOpen}
+        filters={filters}
       />
     </>
   );

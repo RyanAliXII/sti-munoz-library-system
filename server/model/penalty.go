@@ -18,3 +18,17 @@ type Penalty struct {
 	Classification PenaltyClassificationJSON `json:"classification" db:"classification"`
 	IsSettled bool `json:"isSettled" db:"is_settled"`
 }
+
+type PenaltyExport struct {
+	ReferenceNumber string ` db:"reference_number" csv:"reference_number"`
+	Name string `db:"name" csv:"patron"`
+	StudentNumber string `db:"student_number" csv:"student_number"`
+	ProgramCode string `db:"program_code" csv:"program_code"`
+	UserType string `db:"user_type" csv:"user_type"`
+	Description string ` db:"description" csv:"description"`
+	Amount float64 ` db:"amount" csv:"amount"`
+	Item string ` db:"item" csv:"item"`
+	Remarks string ` db:"remarks" csv:"remarks"`
+	CreatedAt db.NullableTime `db:"created_at" csv:"created_at"`
+	IsSettled bool `db:"is_settled" csv:"is_settled"`
+}
