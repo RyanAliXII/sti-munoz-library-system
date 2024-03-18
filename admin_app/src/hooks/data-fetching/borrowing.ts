@@ -103,9 +103,7 @@ export const useExportBorrowedBooks = ({
       });
       const bufferLength = data.byteLength ?? 0;
       if (bufferLength === 0) return "";
-      const blob = new Blob([data], {
-        type: "text/csv",
-      });
+      const blob = new Blob([data]);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

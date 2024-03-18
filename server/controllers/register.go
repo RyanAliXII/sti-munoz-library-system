@@ -5,6 +5,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/account"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/author"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/authornumber"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/billing"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/printables"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
@@ -73,4 +74,5 @@ func Register(r * gin.Engine, services * services.Services){
 	printables.RegisterPrintablesRoutes(r.Group("/printables"), services)
 	reports.ReportRendererRoutes(r.Group("/renderer"), services)
 	scanner.ScannerRoutes(r.Group("/scanner/"), services)
+	billing.BillingRendererRoutes(r.Group("/billing"), services)
 }

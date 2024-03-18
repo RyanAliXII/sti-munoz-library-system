@@ -1,6 +1,7 @@
 package loadtmpl
 
 import (
+	"fmt"
 	"io/fs"
 	"path/filepath"
 )
@@ -12,8 +13,9 @@ func LoadHTMLFiles(path string) []string {
 			fileExtension := filepath.Ext(path)
 			if fileExtension == ".html" {
 				templateList = append(templateList, path)
+				fmt.Println(path)
 			}
-
+			
 		}
 		return nil
 	})

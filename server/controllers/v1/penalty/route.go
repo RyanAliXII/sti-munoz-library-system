@@ -13,6 +13,7 @@ func PenaltyRoutes (router * gin.RouterGroup, services * services.Services){
 	ctrler := NewPenaltyController(services)
 	router.GET("/", 
 	ctrler.GetPenalties)
+	router.GET("/:id/bill", ctrler.GetBill)
 	router.PATCH("/:id/settlement", 
 	middlewares.ValidatePermissions([]string{"Penalty.Edit"}, true),
 	ctrler.UpdatePenaltySettlement)

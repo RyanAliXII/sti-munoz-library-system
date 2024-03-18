@@ -4,13 +4,22 @@ import HasAccess from "@components/auth/HasAccess";
 import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty, PenaltyClassification } from "@definitions/types";
-import { toReadableDatetime } from "@helpers/datetime";
+import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
-import { Button, Table } from "flowbite-react";
-import { useState } from "react";
+import {
+  Button,
+  Datepicker,
+  Dropdown,
+  Label,
+  Radio,
+  Select,
+  Table,
+  TextInput,
+} from "flowbite-react";
+import { ChangeEvent, useState } from "react";
 import {
   AiFillCheckCircle,
   AiOutlineEdit,
@@ -22,6 +31,12 @@ import EditPenaltyModal from "./EditPenaltyModal";
 import EditSettlementModal from "./EditSettlementModal";
 import SettleModal from "./SettleModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
+import { usePenaltyBill } from "@hooks/data-fetching/penalty";
+import { useSearchParamsState } from "react-use-search-params-state";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { MdFilterList } from "react-icons/md";
+import { format } from "date-fns";
+import useDebounce from "@hooks/useDebounce";
 export type PenaltyForm = {
   id?: string;
   item: string;
@@ -33,6 +48,13 @@ export type PenaltyForm = {
 };
 const PenaltyPage = () => {
   const { Get } = useRequest();
+
+  const [filters, setFilters] = useSearchParamsState({
+    page: { default: 1, type: "number" },
+    keyword: { default: "", type: "string" },
+    from: { default: "", type: "string" },
+    to: { default: "", type: "string" },
+  });
   const {
     isOpen: isAddModalOpen,
     open: openAddModal,
@@ -52,7 +74,9 @@ const PenaltyPage = () => {
   const editSettlement = useSwitch();
   const fetchPenalties = async () => {
     try {
-      const response = await Get("/penalties/", {});
+      const response = await Get("/penalties/", {
+        params: filters,
+      });
       const { data } = response.data;
       return data?.penalties ?? [];
     } catch (error) {
@@ -60,7 +84,7 @@ const PenaltyPage = () => {
     }
   };
   const { data: penalties } = useQuery<Penalty[]>({
-    queryKey: ["penalties"],
+    queryKey: ["penalties", filters],
     queryFn: fetchPenalties,
   });
   const [selectedPenalty, setSelectedPenalty] = useState<Penalty>({
@@ -81,14 +105,111 @@ const PenaltyPage = () => {
     amount: 0,
     item: "",
   });
+  const { data: billUrl, refetch: refetchBill } = usePenaltyBill({
+    queryKey: ["penaltyBill", selectedPenalty.id ?? ""],
+  });
   const initEditSettleMent = (penalty: Penalty) => {
     editSettlement.open();
     setSelectedPenalty(penalty);
   };
+
+  const handleFrom = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setFilters({
+      from: dateStr,
+      page: 1,
+    });
+  };
+  const handleTo = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setFilters({
+      to: dateStr,
+      page: 1,
+    });
+  };
+  const handleReset = () => {
+    setFilters({
+      from: "",
+      to: "",
+      keyword: "",
+    });
+  };
+  const debounceSearch = useDebounce();
+  const search = (q: any) => {
+    setFilters({ page: 1, keyword: q });
+  };
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    debounceSearch(search, event.target.value, 500);
+  };
   return (
     <>
       <Container>
-        <div className="flex w-full justify-end py-4">
+        <div className="flex w-full justify-between py-4">
+          <div className="flex gap-2">
+            <TextInput
+              placeholder="Search by account"
+              onChange={handleSearch}
+            />
+            <Dropdown
+              color="light"
+              arrowIcon={false}
+              className="py-2 p-3"
+              label={<MdFilterList className="text-lg" />}
+            >
+              <div className="p-2 flex flex-col gap-2 ">
+                <Label>From</Label>
+                <Datepicker
+                  value={toReadableDate(filters?.from)}
+                  onSelectedDateChanged={handleFrom}
+                />
+              </div>
+              <div className="p-2 flex flex-col">
+                <Label className="block">To</Label>
+                <Datepicker
+                  value={toReadableDate(filters?.to)}
+                  onSelectedDateChanged={handleTo}
+                />
+              </div>
+              <div className="p-2">
+                <Label>Status</Label>
+                <CustomSelect />
+              </div>
+              <div className="p-2">
+                <Label>Min Penalty</Label>
+                <TextInput></TextInput>
+              </div>
+              <div className="p-2">
+                <Label>Max Penalty</Label>
+                <TextInput></TextInput>
+              </div>
+              <div className="p-2">
+                <Label>Sort by</Label>
+                <Select name="sortBy">
+                  <option value="dateCreated">Date Created</option>
+                  <option value="givenName">Given name</option>
+                  <option value="surname">Surname</option>
+                </Select>
+              </div>
+
+              <div className="pb-3 px-2">
+                <Label>Order</Label>
+                <div className="flex flex-col">
+                  <div className="flex gap-1 items-center mt-1">
+                    <Radio name="order" value="asc" color="primary" />
+                    <Label>Ascending</Label>
+                  </div>
+                  <div className="flex gap-1 items-center mt-1">
+                    <Radio name="order" value="desc" color="primary" />
+                    <Label>Descending</Label>
+                  </div>
+                </div>
+              </div>
+
+              <Button color="primary" className="w-full" onClick={handleReset}>
+                Reset
+              </Button>
+            </Dropdown>
+          </div>
           <HasAccess requiredPermissions={["Penalty.Add"]}>
             <Button
               color="primary"
@@ -142,6 +263,7 @@ const PenaltyPage = () => {
                       <Button
                         color="primary"
                         onClick={() => {
+                          refetchBill();
                           setSelectedPenalty(penalty);
                           openViewModal();
                         }}
@@ -216,7 +338,7 @@ const PenaltyPage = () => {
       <ViewPenaltyModal
         closeModal={closeViewModal}
         isOpen={isViewModalOpen}
-        penalty={selectedPenalty}
+        url={billUrl ?? ""}
       />
     </>
   );

@@ -25,7 +25,6 @@ func NewPenaltyRepository(db * sqlx.DB, minio * minio.Client) PenaltyRepository{
 	}
 }
 func(repo *Penalty) GetPenalties()[]model.Penalty{
-
 	penalties := make([]model.Penalty, 0)
 	query := `
 	SELECT penalty.id, 
@@ -47,6 +46,29 @@ func(repo *Penalty) GetPenalties()[]model.Penalty{
 	}
 
 	return penalties
+}
+func(repo * Penalty)GetPenaltyById(id string)(model.Penalty, error){
+	penalty := model.Penalty{}
+	query := `
+	SELECT penalty.id, 
+	description,account_id, 
+	reference_number,
+	item, amount,settled_at,
+	proof,
+	remarks,
+	classification,
+	class_id,
+	penalty.created_at, account,
+	is_settled
+	FROM penalty_view as penalty inner join account_view as account on penalty.account_id = account.id
+	where penalty.id = $1
+	ORDER BY created_at DESC`
+	err := repo.db.Get(&penalty, query, id)
+	if  err != nil {
+		return penalty,err
+	}
+	return penalty, err
+	
 }
 func (repo *Penalty)UpdatePenaltySettlement(id string, isSettle bool) error{
 	settleQuery  := `
@@ -205,4 +227,5 @@ type PenaltyRepository interface{
 	GetPenaltyClassifications()([]model.PenaltyClassification, error)
 	UpdatePenaltyClassification (class model.PenaltyClassification)(error)
 	DeletePenaltyClassification(id string) error 
+	GetPenaltyById(id string)(model.Penalty, error)
 }
