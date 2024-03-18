@@ -1,14 +1,19 @@
 import Container from "@components/ui/container/Container";
 
 import HasAccess from "@components/auth/HasAccess";
+import CustomSelect from "@components/ui/form/CustomSelect";
+import { CustomInput } from "@components/ui/form/Input";
 import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty, PenaltyClassification } from "@definitions/types";
 import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
+import { usePenaltyBill } from "@hooks/data-fetching/penalty";
+import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
+import { format } from "date-fns";
 import {
   Button,
   Datepicker,
@@ -26,17 +31,15 @@ import {
   AiOutlineEye,
   AiOutlinePlus,
 } from "react-icons/ai";
+import { MdFilterList } from "react-icons/md";
+import { SingleValue } from "react-select";
+import { useSearchParamsState } from "react-use-search-params-state";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import EditSettlementModal from "./EditSettlementModal";
 import SettleModal from "./SettleModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
-import { usePenaltyBill } from "@hooks/data-fetching/penalty";
-import { useSearchParamsState } from "react-use-search-params-state";
-import CustomSelect from "@components/ui/form/CustomSelect";
-import { MdFilterList } from "react-icons/md";
-import { format } from "date-fns";
-import useDebounce from "@hooks/useDebounce";
+import CustomPagination from "@components/pagination/CustomPagination";
 export type PenaltyForm = {
   id?: string;
   item: string;
@@ -46,14 +49,33 @@ export type PenaltyForm = {
   classId: string;
   classification: PenaltyClassification;
 };
+const PenaltyStatuses = [
+  {
+    name: "All",
+    value: "all",
+  },
+  {
+    name: "Settled",
+    value: "settled",
+  },
+  {
+    name: "Unsettled",
+    value: "unsettled",
+  },
+];
 const PenaltyPage = () => {
   const { Get } = useRequest();
-
+  const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useSearchParamsState({
     page: { default: 1, type: "number" },
     keyword: { default: "", type: "string" },
     from: { default: "", type: "string" },
     to: { default: "", type: "string" },
+    status: { default: "all", type: "string" },
+    min: { default: "", type: "number" },
+    max: { default: "", type: "number" },
+    sortBy: { default: "dateCreated", type: "string" },
+    order: { default: "desc", type: "string" },
   });
   const {
     isOpen: isAddModalOpen,
@@ -78,6 +100,7 @@ const PenaltyPage = () => {
         params: filters,
       });
       const { data } = response.data;
+      setTotalPages(data?.pages ?? 0);
       return data?.penalties ?? [];
     } catch (error) {
       return [];
@@ -134,12 +157,35 @@ const PenaltyPage = () => {
       keyword: "",
     });
   };
+
+  const handleMinMax = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const name = event.target.name;
+    setFilters({
+      page: 1,
+      [name]: value,
+    });
+  };
   const debounceSearch = useDebounce();
   const search = (q: any) => {
     setFilters({ page: 1, keyword: q });
   };
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     debounceSearch(search, event.target.value, 500);
+  };
+  const handleOrderSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFilters({
+      order: value,
+    });
+  };
+  const onSelectStatus = (
+    value: SingleValue<{ value: string; name: string }>
+  ) => {
+    setFilters({
+      status: value?.value,
+      page: 1,
+    });
   };
   return (
     <>
@@ -172,15 +218,39 @@ const PenaltyPage = () => {
               </div>
               <div className="p-2">
                 <Label>Status</Label>
-                <CustomSelect />
+                <CustomSelect
+                  options={PenaltyStatuses}
+                  getOptionLabel={(opt) => opt.name}
+                  getOptionValue={(opt) => opt.value}
+                  value={PenaltyStatuses.find(
+                    (penalty) => penalty.value === filters.status
+                  )}
+                  onChange={onSelectStatus}
+                />
               </div>
-              <div className="p-2">
-                <Label>Min Penalty</Label>
-                <TextInput></TextInput>
+              <div className="px-2">
+                <CustomInput
+                  label="Min Penalty"
+                  type="number"
+                  value={filters.min}
+                  onChange={handleMinMax}
+                  name="min"
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                ></CustomInput>
               </div>
-              <div className="p-2">
-                <Label>Max Penalty</Label>
-                <TextInput></TextInput>
+              <div className="px-2">
+                <CustomInput
+                  label="Max Penalty"
+                  type="number"
+                  value={filters.max}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onChange={handleMinMax}
+                  name="max"
+                ></CustomInput>
               </div>
               <div className="p-2">
                 <Label>Sort by</Label>
@@ -188,6 +258,7 @@ const PenaltyPage = () => {
                   <option value="dateCreated">Date Created</option>
                   <option value="givenName">Given name</option>
                   <option value="surname">Surname</option>
+                  <option value="amount">Amount</option>
                 </Select>
               </div>
 
@@ -195,11 +266,23 @@ const PenaltyPage = () => {
                 <Label>Order</Label>
                 <div className="flex flex-col">
                   <div className="flex gap-1 items-center mt-1">
-                    <Radio name="order" value="asc" color="primary" />
+                    <Radio
+                      name="order"
+                      value="asc"
+                      color="primary"
+                      onChange={handleOrderSelect}
+                      checked={filters.order === "asc"}
+                    />
                     <Label>Ascending</Label>
                   </div>
                   <div className="flex gap-1 items-center mt-1">
-                    <Radio name="order" value="desc" color="primary" />
+                    <Radio
+                      name="order"
+                      value="desc"
+                      color="primary"
+                      onChange={handleOrderSelect}
+                      checked={filters.order === "desc"}
+                    />
                     <Label>Descending</Label>
                   </div>
                 </div>
@@ -318,6 +401,18 @@ const PenaltyPage = () => {
             </Table.Body>
           </Table>
         </TableContainer>
+        <div className="py-5">
+          <CustomPagination
+            isHidden={totalPages <= 1}
+            pageCount={totalPages}
+            forcePage={filters.page - 1}
+            onPageChange={({ selected }) => {
+              setFilters({
+                page: selected + 1,
+              });
+            }}
+          />
+        </div>
       </Container>
       <AddPenaltyModal isOpen={isAddModalOpen} closeModal={closeAddModal} />
       <EditPenaltyModal

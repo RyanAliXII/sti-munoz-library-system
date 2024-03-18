@@ -131,7 +131,6 @@ func (repo * ClientLog)buildMetadataQuery(filter * ClientLogFilter) (*goqu.Selec
 		goqu.COUNT(1).As("records"),
 	).From(goqu.T("client_log").Schema("system"))
 	ds = repo.buildClientLogFilters(ds, filter)
-	
 	return ds
 }
 func(repo * ClientLog) buildClientLogFilters(ds * goqu.SelectDataset,  filter * ClientLogFilter) *goqu.SelectDataset{

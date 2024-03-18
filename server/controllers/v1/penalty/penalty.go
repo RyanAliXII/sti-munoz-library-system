@@ -10,17 +10,16 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/ysmood/gson"
 )
-
 type Penalty struct{
 	services * services.Services
 }
-
 func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 	requestorApp, hasRequestorApp := ctx.Get("requestorApp")
 	parsedRequestorApp, isRequestorAppStr := requestorApp.(string)
@@ -29,11 +28,25 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
         httpresp.Fail400(nil, "Bad request.")
         return
     }
-
 	if parsedRequestorApp == azuread.AdminAppClientId {
-		penalties := ctrler.services.Repos.PenaltyRepository.GetPenalties()
+		filter := NewPenaltyFilter(ctx)
+		fmt.Println(filter)
+		penalties, metadata, err := ctrler.services.Repos.PenaltyRepository.GetPenalties(&repository.PenaltyFilter{
+			From: filter.From,
+			To: filter.To,
+			Status: filter.Status,
+			Min: filter.Min,
+			Max: filter.Max,
+			Order: filter.Order,
+			SortBy: filter.SortBy,
+			Filter: filter.Filter,
+		})
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltiesErr"))
+		}
 		ctx.JSON(httpresp.Success200(gin.H{
 				"penalties": penalties,
+				"metadata": metadata,
 		}, "penalties has been fetched."))
 		return
 	}

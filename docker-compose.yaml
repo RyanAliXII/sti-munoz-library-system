@@ -145,18 +145,18 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server --console-address ":9001" /data
-  librarymetabase:
-    image: metabase/metabase:v0.49.0
-    container_name: librarymetabase
-    ports:
-      - "5210:3000"
-    environment:
-      MB_DB_TYPE: ${DB_DRIVER}
-      MB_DB_DBNAME: ${POSTGRES_DB}
-      MB_DB_PORT: ${DB_PORT}
-      MB_DB_USER: ${POSTGRES_USER}
-      MB_DB_PASS: ${POSTGRES_PASSWORD}
-      MB_DB_HOST: ${DB_HOST}
+  # librarymetabase:
+  #   image: metabase/metabase:v0.49.0
+  #   container_name: librarymetabase
+  #   ports:
+  #     - "5210:3000"
+  #   environment:
+  #     MB_DB_TYPE: ${DB_DRIVER}
+  #     MB_DB_DBNAME: ${POSTGRES_DB}
+  #     MB_DB_PORT: ${DB_PORT}
+  #     MB_DB_USER: ${POSTGRES_USER}
+  #     MB_DB_PASS: ${POSTGRES_PASSWORD}
+  #     MB_DB_HOST: ${DB_HOST}
 
   # nginx:
   #   image: nginx:1.25.2-alpine

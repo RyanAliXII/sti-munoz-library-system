@@ -6,9 +6,12 @@ import (
 	"mime/multipart"
 	"path/filepath"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jaevor/go-nanoid"
 	"github.com/jmoiron/sqlx"
 	"github.com/minio/minio-go/v7"
@@ -18,34 +21,137 @@ type Penalty struct {
 	db *sqlx.DB
 	minio * minio.Client
 }
+type PenaltyFilter struct {
+	From string 
+	To string 
+	Min float64
+	Max float64 
+	Status string 
+	SortBy string 
+	Order string 
+	filter.Filter
+}
 func NewPenaltyRepository(db * sqlx.DB, minio * minio.Client) PenaltyRepository{
 	return &Penalty{
 		db: db,
 		minio: minio,
 	}
 }
-func(repo *Penalty) GetPenalties()[]model.Penalty{
+func(repo *Penalty) GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metadata, error){
 	penalties := make([]model.Penalty, 0)
-	query := `
-	SELECT penalty.id, 
-	description,account_id, 
-	reference_number,
-	item, amount,settled_at,
-	proof,
-	remarks,
-	classification,
-	class_id,
-	penalty.created_at, account,
-	is_settled
-	FROM penalty_view as penalty inner join account_view as account on penalty.account_id = account.id
-	ORDER BY created_at DESC`
-	
-	selectErr := repo.db.Select(&penalties, query)
-	if selectErr != nil {
-		logger.Error(selectErr.Error(),slimlog.Function("PenaltyRepository.GetPenalties") ,slimlog.Error("selectErr"))
+	metadata := Metadata{}
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.From(goqu.T("penalty_view").As("penalty")).Select(
+		goqu.C("id").Table("penalty"),
+		goqu.C("description"),
+		goqu.C("account_id"),
+		goqu.C("reference_number"),
+		goqu.C("item"),
+		goqu.C("amount"),
+		goqu.C("settled_at"),
+		goqu.C("proof"),
+		goqu.C("remarks"),
+		goqu.C("classification"),
+		goqu.C("class_id"),
+		goqu.C("created_at").Table("penalty"),
+		goqu.C("account"),
+		goqu.C("is_settled"),
+	).Prepared(true)
+	ds = repo.buildPenaltyFilters(ds, filter)
+	ds = repo.buildSortOrder(ds, filter)
+	query, args , err := ds.ToSQL()
+	if err != nil {
+		return penalties, metadata, err
+	} 
+	err = repo.db.Select(&penalties, query, args...)
+	if err != nil {
+		return penalties, metadata, err
 	}
 
-	return penalties
+	ds = repo.buildMetadataQuery(filter)
+	query, args, err = ds.ToSQL()
+	if err != nil {
+		return penalties, metadata, err
+	}
+	err = repo.db.Get(&metadata, query, args...)
+	if err != nil {
+		return penalties, metadata, err
+	}
+	return penalties, metadata, nil
+}
+func(repo * Penalty) buildPenaltyFilters(ds * goqu.SelectDataset,  filter * PenaltyFilter) *goqu.SelectDataset{
+	if(len(filter.From) > 0  && len(filter.To) > 0){
+		ds = ds.Where(
+			goqu.L("date(created_at at time zone 'PHT')").Between(goqu.Range(filter.From, filter.To)),
+		) 
+	}
+	if(len(filter.Keyword) > 0){
+		keyword := filter.Filter.Keyword
+		ds = ds.Where(
+			goqu.L(`	
+		   (account.search_vector @@ (phraseto_tsquery('simple', ?) :: text) :: tsquery  
+			OR 
+			account.search_vector @@ (plainto_tsquery('simple', ?)::text) :: tsquery
+			OR
+			account.email ILIKE '%' || ? || '%'
+			OR 
+			account.given_name ILIKE '%' || ? || '%'
+			OR
+			account.surname ILIKE'%' || ? || '%')
+		  `, keyword, keyword, keyword, keyword, keyword ),
+		)
+	}
+	if(filter.Min > 0 && filter.Max > 0){
+		ds = ds.Where(
+			goqu.L("amount").Between(goqu.Range(filter.Min, filter.Max)),
+		) 
+	}
+	if(filter.Min > 0){
+		ds = ds.Where(
+			goqu.L("amount").Gte(filter.Min)) 
+	}
+	if(filter.Max > 0){
+		ds = ds.Where(
+			goqu.L("amount").Lte(filter.Max)) 
+	}
+	if filter.Status == "settled"{
+		ds = ds.Where(goqu.Ex{
+			"is_settled":true,
+		})
+	}
+	if filter.Status == "unsettled"{
+		ds = ds.Where(goqu.Ex{
+			"is_settled":false,
+		})
+	}	
+	return ds
+}
+func (repo * Penalty)buildMetadataQuery(filter * PenaltyFilter) (*goqu.SelectDataset){
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filter.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("penalty_view"))
+	ds = repo.buildPenaltyFilters(ds, filter)
+	return ds
+}
+func(repo * Penalty)buildSortOrder(ds * goqu.SelectDataset, filter * PenaltyFilter)(*goqu.SelectDataset){
+	SortByColumnMap := map[string]string{
+			"givenName": "account.given_name",
+			"surname": "account.surname",
+			"dateCreated": "created_at",
+			"amount": "amount",
+	}
+	column, exists := SortByColumnMap[filter.SortBy]
+	if(exists){
+		if(filter.Order == "asc"){
+			return ds.Order(exp.NewOrderedExpression(goqu.I(column), exp.AscDir, exp.NullsLastSortType))
+		}
+		if(filter.Order == "desc"){
+			return ds.Order(exp.NewOrderedExpression(goqu.I(column), exp.DescSortDir, exp.NullsLastSortType))
+		}
+	}
+	return ds.Order(exp.NewOrderedExpression(goqu.L("created_at"), exp.DescSortDir, exp.NoNullsSortType))
 }
 func(repo * Penalty)GetPenaltyById(id string)(model.Penalty, error){
 	penalty := model.Penalty{}
@@ -217,7 +323,7 @@ func (repo *Penalty) UpdatePenalty(penalty model.Penalty) error {
 }
 
 type PenaltyRepository interface{
-	GetPenalties()[]model.Penalty
+	GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metadata, error)
 	UpdatePenaltySettlement(id string, isSettle bool) error
 	AddPenalty(penalty model.Penalty ) error
 	UpdatePenalty(penalty model.Penalty ) error
