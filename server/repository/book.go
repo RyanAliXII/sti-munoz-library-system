@@ -191,8 +191,6 @@ func (repo *Book) Get(filter * BookFilter) ([]model.Book, Metadata) {
 	Offset(uint(filter.Offset))
 	var books []model.Book = make([]model.Book, 0)
 	query, args, err := ds.ToSQL()
-	fmt.Println(query)
-	fmt.Println(err)
 	if err != nil {
 		logger.Error(err.Error())
 		return books, Metadata{}

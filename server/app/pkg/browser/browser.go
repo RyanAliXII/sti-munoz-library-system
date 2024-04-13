@@ -5,11 +5,7 @@ import (
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/rod/lib/proto"
 )
-
-
-
 
 var once sync.Once;
 var browser * Browser
@@ -17,22 +13,12 @@ var browser * Browser
 type Browser struct {
 	b * rod.Browser
 	launcher * launcher.Launcher
-	page * rod.Page
+	pagePool * rod.PagePool
+	
 }
-func(b * Browser) Goto (url string)(*rod.Page,error){
-	err := b.page.Navigate(url)
-	return b.page, err
+func (browser * Browser)GetBrowser()*rod.Browser{
+	return browser.b
 }
-func(b * Browser)GetPage()*rod.Page{
-	return b.page
-}
-func (b * Browser)GetBrowser()*rod.Browser{
-	return b.b
-}
-func (b * Browser)GetLauncher()*rod.Browser{
-	return b.b
-}
-
 func NewBrowser() (*Browser, error){
 	var err error = nil
 	once.Do(func ()  {
@@ -50,15 +36,39 @@ func NewBrowser() (*Browser, error){
 		if err != nil {
 			return
 		}
-		page, err := b.Page(proto.TargetCreateTarget{})
-		if err != nil {
-			return 
-		}
+		pagePool := rod.NewPagePool(5)
 		browser = &Browser{
 			b: b,
-			page: page,
+			pagePool: &pagePool,
 			launcher: launcher,
 		}
 	})
 	return browser, err
+}
+func(b * Browser) GetPageFromPool() *rod.Page {
+	page := b.pagePool.Get(func () * rod.Page{
+		return b.b.MustIncognito().MustPage()
+	})
+	return page
+}
+func (b * Browser)GetPagePool() *rod.PagePool{
+	return b.pagePool
+}
+func(b * Browser)ReturnPageToPool(p * rod.Page){
+	b.pagePool.Put(p)
+}
+func(b * Browser)ReturnPagesToPool()(error){
+	pages, err := b.b.Pages()
+	if err != nil {
+		return err
+	}
+	for _, p := range pages{
+		b.pagePool.Put(p)
+	}
+	return nil
+}
+func (browser * Browser)Close(){
+	if(browser.b != nil){
+		browser.b.Close()
+	}
 }

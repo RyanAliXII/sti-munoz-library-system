@@ -40,17 +40,6 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 			SortBy: filter.SortBy,
 			Filter: filter.Filter,
 		})
-		csvData, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyCSVData(&repository.PenaltyFilter{
-			From: filter.From,
-			To: filter.To,
-			Status: filter.Status,
-			Min: filter.Min,
-			Max: filter.Max,
-			Order: filter.Order,
-			SortBy: filter.SortBy,
-			Filter: filter.Filter,
-		})
-		fmt.Println(csvData)
 		if err != nil {
 			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportErr"))
 		}
@@ -125,13 +114,15 @@ func(ctrler * Penalty)GetBill(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/billing/penalty/%s",  id))
+	url := fmt.Sprintf("http://localhost:5200/billing/penalty/%s",  id)
+	page := browser.GetPageFromPool()
+	defer browser.ReturnPageToPool(page)
+	err = page.Navigate(url)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GotoErr"))
+		logger.Error(err.Error(), slimlog.Error("NavigateErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	
 	err = page.WaitLoad()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))

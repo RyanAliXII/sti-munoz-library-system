@@ -35,8 +35,7 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	defer browser.GetBrowser().Close()
-	defer browser.GetLauncher().Close()
+	defer browser.Close()
 
 	r := gin.New()
 	r.SetFuncMap(funcmap.FuncMap)

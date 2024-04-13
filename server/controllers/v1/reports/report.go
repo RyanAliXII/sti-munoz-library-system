@@ -63,12 +63,8 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 		ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
 		return
 	}
-	page, err := browser.Goto(u.String())
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GotoErr"))
-		ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
-		return
-	}
+	page := browser.GetPageFromPool()
+	defer browser.ReturnPageToPool(page)
 	err = page.WaitLoad()
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))

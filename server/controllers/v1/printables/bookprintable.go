@@ -44,7 +44,10 @@ func (p * BookPrintable)GetBookPrintablesByBookId(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/printables-generator/books/%s",  bookId))
+	url := fmt.Sprintf("http://localhost:5200/printables-generator/books/%s",  bookId)
+	page := browser.GetPageFromPool()
+	defer browser.ReturnPageToPool(page)
+	err = page.Navigate(url)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GotoErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))

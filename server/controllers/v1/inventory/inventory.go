@@ -68,10 +68,12 @@ func (ctrler *Inventory)GenerateReport(ctx *gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	fmt.Println(auditId)
-	page, err := browser.Goto(fmt.Sprintf("http://localhost:5200/renderer/reports/audits/%s",auditId))
+	url := fmt.Sprintf("http://localhost:5200/renderer/reports/audits/%s",auditId)
+	page := browser.GetPageFromPool()
+	defer browser.ReturnPageToPool(page)
+	err = page.Navigate(url)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GotoErr"))
+		logger.Error(err.Error(), slimlog.Error("NavigateErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}

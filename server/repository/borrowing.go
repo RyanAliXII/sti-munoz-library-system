@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -94,7 +92,7 @@ func (repo * Borrowing)GetBorrowingRequests(filter * BorrowingRequestFilter)([]m
     metadata := Metadata{}
 	requests := make([]model.BorrowingRequest, 0) 
 	query, args ,err := ds.ToSQL()
-	fmt.Println(query)
+
     if err != nil {
 		return requests, metadata, err
 	}
