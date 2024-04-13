@@ -129,9 +129,7 @@ const PenaltyPage = () => {
     amount: 0,
     item: "",
   });
-  const { data: billUrl, refetch: refetchBill } = usePenaltyBill({
-    queryKey: ["penaltyBill", selectedPenalty.id ?? ""],
-  });
+
   const initEditSettleMent = (penalty: Penalty) => {
     editSettlement.open();
     setSelectedPenalty(penalty);
@@ -358,7 +356,6 @@ const PenaltyPage = () => {
                       <Button
                         color="primary"
                         onClick={() => {
-                          refetchBill();
                           setSelectedPenalty(penalty);
                           openViewModal();
                         }}
@@ -445,7 +442,7 @@ const PenaltyPage = () => {
       <ViewPenaltyModal
         closeModal={closeViewModal}
         isOpen={isViewModalOpen}
-        url={billUrl ?? ""}
+        penaltyId={selectedPenalty.id ?? ""}
       />
       <ExportPenaltiesModal
         closeModal={exportPenalties.close}
