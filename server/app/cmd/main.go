@@ -22,8 +22,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
-
 func main() {
 	var logger *zap.Logger = slimlog.GetInstance()
 
