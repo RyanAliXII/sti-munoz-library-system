@@ -38,43 +38,16 @@ func (repo *Inventory) GetAuditedAccessionById(id string) ([]model.AuditedBook, 
 
 	var audited []model.AuditedBook
 	query := `
-	SELECT book.id,title, book.isbn, 
-	book.description, 
-	book.copies,
-	book.pages,
-	book.cost_price,
-	book.edition,
-	book.year_published,
-	book.received_at,
-	book.ddc,
-	book.publisher,
-	COALESCE(book.authors, '[]') as authors,
-	book.author_number,
-	book.created_at,
-	book.covers,
+	SELECT book.id, title, 
 	COALESCE(json_agg(json_build_object('id',accession.id,'number', accession.number, 'copyNumber', accession.copy_number, 
-	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.transaction_id is null and obb. id is null then false else true end))),'[]') as accessions
+	'isAudited',(case when aa.audit_id is null then false else true end), 'isCheckedOut', (case when bb.id is null  then false else true end))),'[]') as accessions
 	FROM inventory.audited_book
 	INNER JOIN book_view as book on audited_book.book_id = book.id
 	INNER JOIN catalog.accession as accession on book.id = accession.book_id and accession.weeded_at is null
 	LEFT JOIN inventory.audited_accession as aa on accession.id = aa.accession_id  
-	LEFT JOIN circulation.borrowed_book as bb on accession.book_id = bb.book_id AND  accession.number =  bb. accession_number AND bb.returned_at is null AND bb.cancelled_at is null and bb.unreturned_at is null
-	LEFT JOIN circulation.online_borrowed_book as obb on accession.id = obb.accession_id AND status = 'checked-out'
+	LEFT JOIN borrowing.borrowed_book as bb on accession.id = bb.accession_id AND bb.status_id = 3
 	where audited_book.audit_id = $1
-	GROUP BY audited_book.audit_id, audited_book.book_id, book.id, title, isbn, 
-	description, 
-	copies,
-	pages,
-	cost_price,
-	edition,
-	year_published,
-	received_at,
-	ddc,
-	book.author_number,
-	book.created_at,
-	publisher,
-	authors,
-	covers
+	GROUP BY audited_book.audit_id, audited_book.book_id, book.id, title, book.created_at 
 	ORDER BY book.created_at DESC
 	`
 	selectErr := repo.db.Select(&audited, query, id)
@@ -136,7 +109,7 @@ func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 		}
 
 		if err.Code.Name() != UNIQUE_VIOLATION_ERROR {
-	
+			
 			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
 			transaction.Rollback()
 			return insertAccessionToAuditErr
@@ -172,6 +145,44 @@ func (repo *Inventory) AddBookToAudit(auditId string, bookId string) error {
 
 	return nil
 }
+func (repo *Inventory)GetMissingBooksByAuditId(auditId string)([]model.AuditedAccession, error) {
+	audited := make([]model.AuditedAccession, 0)
+	query := `
+		WITH accession as (
+			SELECT accession.id, title, book.id as book_id, accession.number, accession.copy_number FROM catalog.accession 
+			INNER JOIN book_view as book on accession.book_id = book.id
+		)
+		SELECT title, ab.audit_id, ab.book_id, accession.number, accession.copy_number, 
+		(case when aa.audit_id is null then false else true end) as is_audited,
+		(case when bb.id is null  then false else true end) as is_checked_out
+		FROM inventory.audited_book as ab
+		INNER JOIN accession on ab.book_id = accession.book_id
+		LEFT JOIN inventory.audited_accession as aa on accession.id = aa.accession_id
+		LEFT JOIN borrowing.borrowed_book as bb on accession.id = bb.accession_id AND bb.status_id = 3
+		where aa.audit_id is null and  ab.audit_id = $1  
+	`
+	err := repo.db.Select(&audited, query, auditId)
+	return audited, err
+}
+func (repo * Inventory)GetFoundBooksByAuditId(auditId string)([]model.AuditedAccession, error){
+	audited := make([]model.AuditedAccession, 0)
+	query := `
+		WITH accession as (
+			SELECT accession.id, title, book.id as book_id, accession.number, accession.copy_number FROM catalog.accession 
+			INNER JOIN book_view as book on accession.book_id = book.id
+		)
+		SELECT title, ab.audit_id, ab.book_id, accession.number, accession.copy_number, 
+		(case when aa.audit_id is null then false else true end) as is_audited,
+		(case when bb.id is null  then false else true end) as is_checked_out
+		FROM inventory.audited_book as ab
+		INNER JOIN accession on ab.book_id = accession.book_id
+		LEFT JOIN inventory.audited_accession as aa on accession.id = aa.accession_id
+		LEFT JOIN borrowing.borrowed_book as bb on accession.id = bb.accession_id AND bb.status_id = 3
+		where aa.audit_id is not null and ab.audit_id = $1
+	`
+	err := repo.db.Select(&audited, query, auditId)
+	return audited, err
+}
 
 func (repo *Inventory) DeleteBookCopyFromAudit(auditId string, accessionId string) error {
 	
@@ -179,11 +190,10 @@ func (repo *Inventory) DeleteBookCopyFromAudit(auditId string, accessionId strin
 		_, deleteErr := repo.db.Exec(query, auditId, accessionId)
 		if deleteErr != nil {
 			logger.Error(deleteErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("deleteAuditErr"))
-			
 			return deleteErr
 		}
 	
-	return nil
+	return deleteErr
 }
 
 func (repo *Inventory) NewAudit(audit model.Audit) error {
@@ -216,4 +226,6 @@ type InventoryRepository interface {
 	UpdateAudit(audit model.Audit) error
 	AddBookToAudit(auditId string, bookId string) error
 	DeleteBookCopyFromAudit(auditId string, accessionId string) error
+	GetMissingBooksByAuditId(auditId string)([]model.AuditedAccession, error)
+	GetFoundBooksByAuditId(auditId string)([]model.AuditedAccession, error)
 }

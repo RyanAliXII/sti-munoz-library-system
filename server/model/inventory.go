@@ -10,6 +10,7 @@ type Audit struct {
 	Name string `json:"name" db:"name"`
 }
 
+
 type AuditedBook struct {
 	Book
 	Accession AuditedAccesions `json:"accessions" db:"accessions"`
@@ -40,4 +41,16 @@ func (aa *AuditedAccesions) Scan(value interface{}) error {
 
 func (aa AuditedAccesions) Value(value interface{}) (driver.Value, error) {
 	return aa, nil
+}
+
+
+
+type AuditedAccession struct {
+	AuditId string `db:"audit_id"`
+	Title string `db:"title"`
+	BookId string `db:"book_id"`
+	CopyNumber int `db:"copy_number"`
+	Number int `db:"number"`
+	IsAudited bool `db:"is_audited"`
+	IsCheckedOut bool `db:"is_checked_out"`
 }

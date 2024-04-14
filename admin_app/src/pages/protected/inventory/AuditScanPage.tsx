@@ -39,8 +39,6 @@ const AuditScan = () => {
   const { data: audit } = useQuery<Audit>({
     queryFn: fetchAudit,
     queryKey: ["audit"],
-    staleTime: Infinity,
-    refetchOnMount: "always",
     refetchOnWindowFocus: false,
     retry: false,
     onError: () => {
@@ -62,7 +60,7 @@ const AuditScan = () => {
       toast.success("Report has been generated.");
       const url = URL.createObjectURL(response.data);
       const a = document.createElement("a");
-      a.download = "audit-report.pdf";
+      a.download = `${Date.now()}.pdf`;
       a.href = url;
       a.click();
     },
@@ -83,6 +81,7 @@ const AuditScan = () => {
     isError,
   } = useQuery<AuditedBooks[]>({
     queryFn: fetchAuditedBooks,
+    refetchOnWindowFocus: false,
     queryKey: ["auditedBooks"],
   });
 
@@ -216,13 +215,15 @@ const AuditScan = () => {
 
                         {accession.isAudited && !accession.isCheckedOut && (
                           <Tippy content="Mark as Missing">
-                            <button className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500">
+                            <button
+                              className="flex items-center border p-2  rounded bg-white text-orange-500 border-orange-500"
+                              onClick={() => {
+                                deleteBookCopy.mutate(accession.id ?? "");
+                              }}
+                            >
                               <BsFillQuestionDiamondFill
                                 className="
                           text-lg"
-                                onClick={() => {
-                                  deleteBookCopy.mutate(accession.id ?? "");
-                                }}
                               />
                             </button>
                           </Tippy>

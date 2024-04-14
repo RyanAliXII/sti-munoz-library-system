@@ -126,12 +126,20 @@ func generateClientWalkInsTable (walkIns []model.WalkInData)(map[string][]int){
 
 func (ctrler  * Report)RenderAuditReport(ctx * gin.Context){
 	auditId := ctx.Param("auditId")
-	audited, err  := ctrler.services.Repos.InventoryRepository.GetAuditedAccessionById(auditId)
+	found, err := ctrler.services.Repos.InventoryRepository.GetFoundBooksByAuditId(auditId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
+	}
+	missing, err := ctrler.services.Repos.InventoryRepository.GetMissingBooksByAuditId(auditId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
+	}
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
 	}
 	ctx.HTML(http.StatusOK, "report/audit/index", gin.H{
-		"auditedBooks": audited,
+		"foundBooks" : found,
+		"missingBooks" : missing,
 	})
 
 }
