@@ -210,6 +210,30 @@ func(repo * Penalty)GetPenaltyById(id string)(model.Penalty, error){
 	return penalty, err
 	
 }
+
+func(repo * Penalty)GetPenaltyByIdAndAccountId(id string, accountId string)(model.Penalty, error){
+	penalty := model.Penalty{}
+	query := `
+	SELECT penalty.id, 
+	description,account_id, 
+	reference_number,
+	item, amount,settled_at,
+	proof,
+	remarks,
+	classification,
+	class_id,
+	penalty.created_at, account,
+	is_settled
+	FROM penalty_view as penalty inner join account_view as account on penalty.account_id = account.id
+	where penalty.id = $1 and account_id = $2
+	ORDER BY created_at DESC`
+	err := repo.db.Get(&penalty, query, id, accountId)
+	if  err != nil {
+		return penalty,err
+	}
+	return penalty, err
+	
+}
 func (repo *Penalty)UpdatePenaltySettlement(id string, isSettle bool) error{
 	settleQuery  := `
 		Update borrowing.penalty SET settled_at = NOW() where id  = $1
@@ -422,5 +446,6 @@ type PenaltyRepository interface{
 	GetPenaltyById(id string)(model.Penalty, error)
 	GetPenaltyCSVData(filter * PenaltyFilter)([]model.PenaltyExport, error) 
 	GetPenaltyExcelData(filter * PenaltyFilter)([]map[string]interface{}, error)
-	GetPenaltiesByAccountId(id string)([]model.Penalty, error) 
+	GetPenaltiesByAccountId(id string)([]model.Penalty, error)
+	GetPenaltyByIdAndAccountId(id string, accountId string)(model.Penalty, error) 
 }

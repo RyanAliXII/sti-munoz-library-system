@@ -2,6 +2,7 @@ package penalty
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -109,8 +110,25 @@ func (ctrler * Penalty)UpdatePenalty(ctx * gin.Context){
 }
 func(ctrler * Penalty)GetBill(ctx * gin.Context){
 	id := ctx.Param("id")
+	requestorApp := ctx.GetString("requestorApp")
+	/* 
+		Check if request comes from client application and validate by 
+		checking if user is trying to fetch his/her own bill
+	*/
+	if requestorApp == azuread.ClientAppClientId {
+		accountId := ctx.GetString("requestorId")
+		_, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyByIdAndAccountId(id, accountId)
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltyByIdAndAccountIdErr"))
+			if err == sql.ErrNoRows {
+				ctx.Data(http.StatusNotFound, "application/pdf", []byte{})
+				return
+			}
+			ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
+			return
+		}
+	}
 	browser, err := browser.NewBrowser()
-
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("NewBrowserErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
