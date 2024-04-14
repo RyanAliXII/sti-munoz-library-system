@@ -21,14 +21,8 @@ type Penalty struct{
 	services * services.Services
 }
 func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
-	requestorApp, hasRequestorApp := ctx.Get("requestorApp")
-	parsedRequestorApp, isRequestorAppStr := requestorApp.(string)
-
-	if!hasRequestorApp || !isRequestorAppStr{
-        httpresp.Fail400(nil, "Bad request.")
-        return
-    }
-	if parsedRequestorApp == azuread.AdminAppClientId {
+	requestorApp := ctx.GetString("requestorApp")
+	if requestorApp == azuread.AdminAppClientId {
 		filter := NewPenaltyFilter(ctx)
 		penalties, metadata, err := ctrler.services.Repos.PenaltyRepository.GetPenalties(&repository.PenaltyFilter{
 			From: filter.From,
@@ -41,15 +35,23 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 			Filter: filter.Filter,
 		})
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportErr"))
-		}
-		if err != nil {
 			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltiesErr"))
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 				"penalties": penalties,
 				"metadata": metadata,
 		}, "penalties has been fetched."))
+		return
+	}
+	if requestorApp == azuread.ClientAppClientId{
+		requestorId := ctx.GetString("requestorId")
+		penalties, err := ctrler.services.Repos.PenaltyRepository.GetPenaltiesByAccountId(requestorId)
+		if err != nil {
+			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltiesByAccountId"))
+		}
+		ctx.JSON(httpresp.Success200(gin.H{
+			"penalties": penalties,
+		}, "Penalties fetched."))
 		return
 	}
 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured please try again later."))

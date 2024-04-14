@@ -81,6 +81,38 @@ func(repo *Penalty) GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metada
 	}
 	return penalties, metadata, nil
 }
+
+func(repo *Penalty) GetPenaltiesByAccountId(accountId string)([]model.Penalty, error){
+	penalties := make([]model.Penalty, 0)
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.From(goqu.T("penalty_view").As("penalty")).Select(
+		goqu.C("id").Table("penalty"),
+		goqu.C("description"),
+		goqu.C("account_id"),
+		goqu.C("reference_number"),
+		goqu.C("item"),
+		goqu.C("amount"),
+		goqu.C("settled_at"),
+		goqu.C("proof"),
+		goqu.C("remarks"),
+		goqu.C("classification"),
+		goqu.C("class_id"),
+		goqu.C("created_at").Table("penalty"),
+		goqu.C("account"),
+		goqu.C("is_settled"),
+	).Prepared(true).Where(goqu.Ex{
+		"account_id" : accountId,
+	})
+	query, args , err := ds.ToSQL()
+	if err != nil {
+		return penalties, err
+	} 
+	err = repo.db.Select(&penalties, query, args...)
+	if err != nil {
+		return penalties,  err
+	}
+	return penalties, nil
+}
 func(repo * Penalty) buildPenaltyFilters(ds * goqu.SelectDataset,  filter * PenaltyFilter) *goqu.SelectDataset{
 	if(len(filter.From) > 0  && len(filter.To) > 0){
 		ds = ds.Where(
@@ -390,4 +422,5 @@ type PenaltyRepository interface{
 	GetPenaltyById(id string)(model.Penalty, error)
 	GetPenaltyCSVData(filter * PenaltyFilter)([]model.PenaltyExport, error) 
 	GetPenaltyExcelData(filter * PenaltyFilter)([]map[string]interface{}, error)
+	GetPenaltiesByAccountId(id string)([]model.Penalty, error) 
 }
