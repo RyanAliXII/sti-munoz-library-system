@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/google/uuid"
@@ -22,7 +21,7 @@ func (repo * Borrowing)handlePenaltyCreation(id string, transaction * sqlx.Tx) e
 	if borrowedBook.Penalty > 0 {
 		borrowedDate := fmt.Sprintf("%s %d %d", borrowedBook.CreatedAt.Month(), borrowedBook.CreatedAt.Day(), borrowedBook.CreatedAt.Year())
 		description := fmt.Sprintf(`Late return of book, Due date: %s`, borrowedDate)
-		_, err = transaction.Exec("INSERT INTO borrowing.penalty(,description, account_id, amount, item) VALUES($1, $2 ,$3, $4 )", description, borrowedBook.AccountId, borrowedBook.Penalty, borrowedBook.Book.Title )
+		_, err = transaction.Exec("INSERT INTO borrowing.penalty(description, account_id, amount, item) VALUES($1, $2 ,$3, $4 )", description, borrowedBook.AccountId, borrowedBook.Penalty, borrowedBook.Book.Title )
 		if err != nil {
 			return err
 		}
@@ -108,9 +107,6 @@ func (repo * Borrowing)handleQueue(transaction * sqlx.Tx, bookId string, accessi
 		return err
 	}
 
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NotifyClient"))
-	}
 	return nil
 }
 func (repo * Borrowing) MarkAsReturned(id string, remarks string) error {
