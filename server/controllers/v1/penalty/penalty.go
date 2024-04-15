@@ -91,10 +91,30 @@ func (ctrler * Penalty)UpdatePenaltySettlement(ctx *gin.Context){
 func (ctrler * Penalty)AddPenalty(ctx * gin.Context){
     penalty := model.Penalty{}
 	ctx.ShouldBindBodyWith(&penalty, binding.JSON)
-	addErr := ctrler.services.Repos.PenaltyRepository.AddPenalty(penalty)
+	id, addErr := ctrler.services.Repos.PenaltyRepository.AddPenalty(penalty)
 	if addErr!= nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured please try again later."))
 		return
+	}
+	dbPenalty, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyById(id)
+	if err != nil {
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Success200(nil, "Penalty has been added."))
+		return 
+	}
+	routingKey := fmt.Sprintf("notify_client_%s", penalty.AccountId)
+	message := fmt.Sprintf("You have received a penalty amounting %.2f. Reason: %s",dbPenalty.Amount, dbPenalty.Description)
+	err = ctrler.services.Repos.NotificationRepository.NotifyClient(model.ClientNotification{
+		Message: message,
+		AccountId: penalty.AccountId,
+		Link: "/penalties",
+	})
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	err = ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
+	if err != nil {
+		logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(nil, "Penalty has been added."))
 }

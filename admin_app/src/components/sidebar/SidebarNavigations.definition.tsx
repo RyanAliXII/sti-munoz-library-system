@@ -9,6 +9,7 @@ import {
   MdManageAccounts,
   MdOutlineGames,
   MdOutlineInventory,
+  MdOutlinePublish,
   MdRotate90DegreesCcw,
 } from "react-icons/md";
 import { RiFolderTransferLine } from "react-icons/ri";
@@ -64,6 +65,13 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         to: "/books/authors",
         requiredPermissions: ["Author.Read"],
         icon: TfiWrite,
+        items: [],
+      },
+      {
+        text: "Publisher",
+        to: "/books/publishers",
+        requiredPermissions: ["Author.Read"],
+        icon: MdOutlinePublish,
         items: [],
       },
       {

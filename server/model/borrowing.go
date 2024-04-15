@@ -44,9 +44,6 @@ type BorrowedEBook struct {
 	CreatedAt db.NullableTime `json:"createdAt" db:"created_at"`
 }
 
-
-
-
 type BorrowingRequest struct {
 	Id string `json:"id" db:"id"`
 	AccountId string `json:"accountId" db:"account_id"`

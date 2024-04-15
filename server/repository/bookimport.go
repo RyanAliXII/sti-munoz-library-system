@@ -52,6 +52,7 @@ func (repo *Book)ImportBooks(books []model.BookImport, sectionId int) error{
 	bookRows := make([]goqu.Record, 0)
 	bookAuthorRows := make([]goqu.Record, 0)
 	accessionRows := make([]goqu.Record, 0)
+	
 	for _, book := range books {
 		if(book.AccessionNumber > maxAccessionNumber ){
 				maxAccessionNumber = book.AccessionNumber
@@ -154,16 +155,17 @@ func (repo *Book)ImportBooks(books []model.BookImport, sectionId int) error{
 		lastBookTitleId = bookTitleId
 	 }
 	accesionCounter := model.AccessionCounter{}
-
+  
 	err = transaction.Get(&accesionCounter, "SELECT accession, last_value FROM catalog.section INNER JOIN accession.counter on section.accession_table = counter.accession where id = $1", sectionId)
 	if err != nil {
 		transaction.Rollback()
-		return err
+		return fmt.Errorf("get accession counter: %s", err.Error())
 	}
 	if maxAccessionNumber > accesionCounter.LastValue {
 		_, err = transaction.Exec("UPDATE accession.counter set last_value = $1 where accession = $2", maxAccessionNumber, accesionCounter.Accession)
 		if err  != nil {
 			transaction.Rollback()
+			return fmt.Errorf("update accession: %s", err.Error())
 		}
 	}
 	if(len(authorRows) > 0){

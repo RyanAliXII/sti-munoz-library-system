@@ -12,20 +12,20 @@ import (
 type BorrowingRepository interface {
 	BorrowBook(borrowedBooks []model.BorrowedBook, borrowedEbooks []model.BorrowedEBook) error
 	GetBorrowingRequests(filter * BorrowingRequestFilter)([]model.BorrowingRequest, Metadata, error)
-	MarkAsReturned(id string, remarks string) error
+	MarkAsReturned(id string, remarks string) (UpdateStatusResult, error)
 	MarkAsUnreturned(id string, remarks string) error 
 	MarkAsApproved(id string, remarks string) error 
 	MarkAsCheckedOut(id string, remarks string, dueDate db.NullableDate) error
  	GetBorrowedBooksByGroupId(groupId string)([]model.BorrowedBook, error)
 	GetBorrowedBooksByAccountId(accountId string)([]model.BorrowedBook, error)
 	GetBorrowedBooksByAccountIdAndStatusId(accountId string, statusId int)([]model.BorrowedBook, error)
-	MarkAsCancelled(id string, remarks string) error
+	MarkAsCancelled(id string, remarks string)(UpdateStatusResult, error)
 	GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error)
 	UpdateRemarks(id string, remarks string) error 
-	CancelByIdAndAccountId(id string, remarks string, accountId string) error
+	CancelByIdAndAccountId(id string, remarks string, accountId string) (UpdateStatusResult, error)
 	GetBookStatusBasedOnClient(bookId string, accountId string,)(model.BookStatus, error)
 	GetBorrowedBookById(id string) (model.BorrowedBook, error)
-	MarkAsReturnedWithAddtionalPenalty(id string, returnedBook model.ReturnBook) error
+	MarkAsReturnedWithAddtionalPenalty(id string, returnedBook model.ReturnBook)(UpdateStatusResult, error)
 	GetBorrowedBooksByAccessionId(accessionId string)(model.BorrowedBook, error)
 	GetCSVData(*BorrowingRequestFilter)([]model.BorrowedBookExport, error)
 	GetExcelData(filter * BorrowingRequestFilter)([]map[string]interface{}, error)
@@ -177,8 +177,7 @@ func (repo * Borrowing)GetBorrowedBooksByGroupId(groupId string)([]model.Borrowe
 }
 func (repo * Borrowing) GetBorrowedEBookByIdAndStatus (id string, status int)(model.BorrowedBook, error) {
 	borrowedBook := model.BorrowedBook{}
-	err := repo.db.Get(&borrowedBook, "SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date, remarks, is_ebook,created_at FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
-	
+	err := repo.db.Get(&borrowedBook, "SELECT id, group_id, client, account_id, book, status, status_id, accession_id, number, copy_number, penalty, due_date as due_date, remarks, is_ebook,created_at FROM borrowed_book_all_view WHERE id = $1 and is_ebook = true and status_id = $2", id, status)
 	if err != nil {
 		return borrowedBook, err
 	}

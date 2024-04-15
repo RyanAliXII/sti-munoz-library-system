@@ -336,7 +336,9 @@ const BorrowedBooksViewPage = () => {
                                     openApprovalConfirmationDialog();
                                   }}
                                 >
-                                  For pick-up
+                                  {borrowedBook.isEbook
+                                    ? "Approve"
+                                    : " For pick-up"}
                                 </Button>
                               </Tippy>
                             )}

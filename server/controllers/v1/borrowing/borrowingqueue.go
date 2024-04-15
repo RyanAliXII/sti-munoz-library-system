@@ -1,6 +1,7 @@
 package borrowing
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -54,14 +55,22 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
-	_, err = ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(accountId)
+	account, err := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(accountId)
 	if err != nil {
 		logger.Error(err.Error())
 	} 
-	
+	message := fmt.Sprintf("%s %s has place a hold on a book.", account.GivenName, account.Surname)
+	accountIds, err :=  ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification	{
+		Message: message,
+		Link: "/borrowing/queues",
+	}, "Queue.Read")
 	if err != nil {
 		logger.Error(err.Error())
-	}
+	} 
+	for _, accountId := range accountIds {
+		routingKey := fmt.Sprintf("notify_admin_%s", accountId)
+		go ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
+	}	
 	ctx.JSON(httpresp.Success200(nil, "Added to queue successfully."))
 }
 func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {

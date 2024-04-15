@@ -38,7 +38,7 @@ func (hub * NotificationHub) ListenByRoutingKey(routingKey string, context conte
 	}
 
 	queue, err := hub.rabbit.Channel.QueueDeclare(
-		"",    // queue name
+		"",    // queue name"
 		false, // durable
 		false, // delete when unused
 		false, // exclusive

@@ -41,6 +41,7 @@ type Repositories struct {
 	DateSlotRepository DateSlotRepository
 	UserRepository UserRepository
 	GameRepository GameRepository
+	NotificationRepository NotificationRepository
 }
 
 func New(db * sqlx.DB, minio * minio.Client) *Repositories {
@@ -81,5 +82,6 @@ func New(db * sqlx.DB, minio * minio.Client) *Repositories {
 		DateSlotRepository: NewDateSlotRepository(),
 		UserRepository: NewUserRepository(db),
 		GameRepository:  NewGameRepository(db),
+		NotificationRepository: NewNotificationRepository(db) ,
 	}
 }

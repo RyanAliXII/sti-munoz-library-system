@@ -1,6 +1,8 @@
 package bag
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -160,9 +162,21 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
-	_, err := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(parsedAccountId)
+	account, err := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(parsedAccountId)
 	if err != nil {
 		logger.Error(err.Error())
+	}
+	message := fmt.Sprintf("%s %s has requested to borrow a book.", account.GivenName, account.Surname)
+	accountIds, err := ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification{
+		Message: message,
+		Link: "/borrowing/requests",
+	}, "BorrowedBook.Read")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	for _, accountId := range accountIds {
+		routingKey := fmt.Sprintf("notify_admin_%s", accountId)
+		go ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
 	}
 	ctx.JSON(httpresp.Success200(nil, "Books has been checked out."))
 } 

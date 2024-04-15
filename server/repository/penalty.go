@@ -333,25 +333,27 @@ func (repo *Penalty)UpdateSettlement(id string, fileHeader * multipart.FileHeade
 	}
 	return nil
 }
-func (repo *Penalty) AddPenalty(penalty model.Penalty ) error {
+func (repo *Penalty) AddPenalty(penalty model.Penalty ) (string, error) {
 	query := `
-    INSERT INTO borrowing.penalty (description, account_id, amount, item) VALUES ($1, $2, $3, $4)
+    INSERT INTO borrowing.penalty (description, account_id, amount, item) VALUES ($1, $2, $3, $4) RETURNING id
     `
+	id := ""
 	if(len(penalty.ClassId) > 0){
-		query = `INSERT INTO borrowing.penalty (account_id, item, class_id) VALUES ($1, $2, $3)`
-		_,insertErr := repo.db.Exec(query, penalty.AccountId, penalty.Item, penalty.ClassId)
+		query = `INSERT INTO borrowing.penalty (account_id, item, class_id) VALUES ($1, $2, $3) RETURNING id`
+		insertErr := repo.db.Get(&id,query, penalty.AccountId, penalty.Item, penalty.ClassId)
 		if insertErr != nil {
 			logger.Error(insertErr.Error(), slimlog.Function("PenaltyRepository.AddPenalty"), slimlog.Error("inserErr"))
-			return insertErr
+			return id, insertErr
 		}
-		return nil
+		return id, nil
 	}
-    _,insertErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Item)
+    insertErr := repo.db.Get(&id,query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Item)
     if insertErr != nil {
         logger.Error(insertErr.Error(), slimlog.Function("PenaltyRepository.AddPenalty"), slimlog.Error("inserErr"))
-        return insertErr
+        return id, insertErr
     }
-	return nil
+	
+	return id, nil
 }
 func (repo *Penalty)UpdatePenalty(penalty model.Penalty) error {
 	query := `
@@ -435,7 +437,7 @@ func(repo *Penalty)GetPenaltyExcelData(filter * PenaltyFilter)([]map[string]inte
 type PenaltyRepository interface{
 	GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metadata, error)
 	UpdatePenaltySettlement(id string, isSettle bool) error
-	AddPenalty(penalty model.Penalty ) error
+	AddPenalty(penalty model.Penalty ) (string, error)
 	UpdatePenalty(penalty model.Penalty ) error
 	MarkAsSettled(id string, fileHeader * multipart.FileHeader, remarks string) error
 	UpdateSettlement(id string, fileHeader * multipart.FileHeader, remarks string) error
@@ -448,4 +450,5 @@ type PenaltyRepository interface{
 	GetPenaltyExcelData(filter * PenaltyFilter)([]map[string]interface{}, error)
 	GetPenaltiesByAccountId(id string)([]model.Penalty, error)
 	GetPenaltyByIdAndAccountId(id string, accountId string)(model.Penalty, error) 
+	
 }

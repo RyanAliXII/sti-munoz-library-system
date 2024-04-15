@@ -63,7 +63,7 @@ func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	reports.ReportRoutes(grp.Group("/reports"), services)
 	user.UserRoutes(grp.Group("/users"), services)
 	item.ItemRoutes(grp.Group("/items"), services)
-	notification.NotificationRoutes(grp.Group("/notifications"))
+	notification.NotificationRoutes(grp.Group("/notifications"), services)
 	searchtag.SearchTagRoutes(grp.Group("/search-tags"), services)
 	content.ContentRoutes(grp.Group("/contents"), services)
 	extras.ExtrasRoutes(grp.Group("/"), services)

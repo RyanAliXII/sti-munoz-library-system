@@ -135,10 +135,6 @@ func (repo *Book)UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) e
 	if err != nil {
 		return err
 	}	
-	if err != nil {
-		return err
-	}
-
 	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", result.Key, id)
 	if err != nil {
 		return err
