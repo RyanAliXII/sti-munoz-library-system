@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
@@ -17,18 +18,21 @@ type Services struct {
 	Logger * zap.Logger
 	PenaltyExport PenaltyExporter
 	Broadcaster Broadcaster
+	FileStorage filestorage.FileStorage
 }
 func BuildServices () Services {
 	minioclient := minioclient.GetorCreateInstance()
 	db := postgresdb.GetOrCreateInstance()
 	rabbitmq := rabbitmq.CreateOrGetInstance()
+	fileStorage := GetOrCreateS3FileStorage()
 	return Services{
 		Notification: NewNotificationService(),
-		Repos: repository.New(db, minioclient),
+		Repos: repository.New(db, minioclient, fileStorage),
 		ClientLogExport: NewClienLogExporter(),
 		BorrowedBookExport: NewBorrowedBookExporter(),
 		Logger: slimlog.GetInstance(),
 		Broadcaster: NewRabbitMQBroadcast(rabbitmq),
 		PenaltyExport: NewPenaltyExporter(),
+		FileStorage:  GetOrCreateS3FileStorage(),
 	}
 }

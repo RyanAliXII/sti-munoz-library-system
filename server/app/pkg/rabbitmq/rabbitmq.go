@@ -47,7 +47,7 @@ func createConnection() *RabbitMQ {
 		}
 		tempChannel, channelErr := tempConnection.Channel()
 		if channelErr != nil {
-			logger.Warn(connectionErr.Error(), zap.String("nextAction", "Will attempt to redial RabbitMQ."))
+			logger.Warn(channelErr.Error(), zap.String("nextAction", "Will attempt to redial RabbitMQ."))
 			lastError = channelErr
 			time.Sleep(time.Second * 2)
 			continue

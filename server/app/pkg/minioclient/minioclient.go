@@ -89,10 +89,10 @@ func createBucketPolicy(client * minio.Client) error{
 }
 
 func GetorCreateInstance() *minio.Client {
-	once.Do(func() {
-		client = createConnection()
-	})
-	return client
+	// once.Do(func() {
+	// 	client = createConnection()
+	// })
+	return nil
 }
 
 

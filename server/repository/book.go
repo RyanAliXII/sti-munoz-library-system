@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -22,12 +23,15 @@ type Book struct {
 	db                *sqlx.DB
 	sectionRepository SectionRepository
 	minio             *minio.Client
+	fileStorage filestorage.FileStorage
 }
-func NewBookRepository(db * sqlx.DB, minio * minio.Client, sectionRepo SectionRepository) BookRepository {
+func NewBookRepository(db * sqlx.DB, minio * minio.Client, sectionRepo SectionRepository, storage filestorage.FileStorage) BookRepository {
 	return &Book{
 		db:                db,
 		sectionRepository: sectionRepo,
 		minio:             minio,
+		fileStorage: storage,
+		
 	}
 }
 type BookRepository interface {

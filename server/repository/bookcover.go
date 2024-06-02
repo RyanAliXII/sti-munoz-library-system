@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"os"
 	"path/filepath"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
@@ -15,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
-	ctx := context.Background()
+
 	dialect := goqu.Dialect("postgres")
 	canonicID, nanoIdErr := nanoid.Standard(21)
 	if nanoIdErr != nil {
@@ -23,26 +24,24 @@ func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) er
 		return nanoIdErr
 	}
 	bookCoverRows := make([]goqu.Record, 0)
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
 	for _, cover := range covers {
 		extension := filepath.Ext(cover.Filename)
 		objectName := fmt.Sprintf("covers/%s/%s%s", bookId, canonicID(), extension)
 		fileBuffer, _ := cover.Open()
 		defer fileBuffer.Close()
-		contentType := cover.Header["Content-Type"][0]
-		fileSize := cover.Size
-
-		info, uploadErr := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
-			ContentType: contentType,
-		})
-		if uploadErr != nil {
-			logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("uploadErr"))
-			return uploadErr
+		
+		
+		resultKey, err := repo.fileStorage.Upload(objectName, bucket, fileBuffer)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("NewBookCover"))
 		}
+		
 		bookCoverRows = append(bookCoverRows, goqu.Record{
-			"path":    info.Key,
+			"path":    resultKey,
 			"book_id": bookId,
 		})
-		logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+		logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", resultKey))
 
 	}
 	ds := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)

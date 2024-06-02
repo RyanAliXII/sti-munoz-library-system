@@ -204,16 +204,21 @@ const BookEditForm = () => {
       setForm((prev) => ({ ...prev, ...data, receivedAt: strReceivedAt }));
       for (const cover of data.covers) {
         try {
-          const response = await fetch(buildS3Url(cover));
+          const response = await fetch(buildS3Url(cover), {
+            method: "GET",
+          });
           if (response.status === HttpStatusCode.Ok) {
             const blob = await response.blob();
+
             uppy.addFile({
               name: cover,
               data: blob,
               size: blob.size,
             });
           }
-        } catch {}
+        } catch (error) {
+          console.error(error);
+        }
       }
     },
     onError: () => {
