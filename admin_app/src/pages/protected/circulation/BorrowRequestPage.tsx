@@ -1,28 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
+import HasAccess from "@components/auth/HasAccess";
+import CustomPagination from "@components/pagination/CustomPagination";
 import Container from "@components/ui/container/Container";
-import { BorrowRequest } from "@definitions/types";
-import { useRequest } from "@hooks/useRequest";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import CustomSelect from "@components/ui/form/CustomSelect";
 import TableContainer from "@components/ui/table/TableContainer";
+import { BorrowRequest } from "@definitions/types";
 import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
+import useDebounce from "@hooks/useDebounce";
+import { useRequest } from "@hooks/useRequest";
+import { useSwitch } from "@hooks/useToggle";
+import { STATUSES_OPTIONS } from "@internal/borrow-status";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   Button,
   Datepicker,
   Dropdown,
   Label,
+  Radio,
+  Select,
   Table,
   TextInput,
 } from "flowbite-react";
+import { ChangeEvent, useState } from "react";
 import { AiOutlineCheckCircle, AiOutlineWarning } from "react-icons/ai";
 import { BiErrorAlt } from "react-icons/bi";
-import { useSearchParamsState } from "react-use-search-params-state";
-import { ChangeEvent, useState } from "react";
-import CustomPagination from "@components/pagination/CustomPagination";
-import { format } from "date-fns";
-import useDebounce from "@hooks/useDebounce";
 import { MdFilterList } from "react-icons/md";
-import HasAccess from "@components/auth/HasAccess";
-import { useSwitch } from "@hooks/useToggle";
+import { Link, useNavigate } from "react-router-dom";
+import { MultiValue } from "react-select";
+import { useSearchParamsState } from "react-use-search-params-state";
+import ExportBorrowedBookModal from "./ExportBorrowedBookModal";
 import ReturnScanModal from "./ReturnScanModal";
 
 const BorrowRequestPage = () => {
@@ -32,6 +38,9 @@ const BorrowRequestPage = () => {
     from: { default: "", type: "string" },
     to: { default: "", type: "string" },
     keyword: { default: "", type: "string" },
+    statuses: { default: "", type: "number", multiple: true },
+    sortBy: { default: "dateCreated", type: "string" },
+    order: { default: "desc", type: "string" },
   });
   const { Get } = useRequest();
   const fetchTransactions = async () => {
@@ -42,6 +51,9 @@ const BorrowRequestPage = () => {
           from: filters?.from ?? "",
           to: filters?.to ?? "",
           keyword: filters?.keyword ?? "",
+          statuses: filters?.statuses ?? [],
+          sortBy: filters?.sortBy ?? "dateCreated",
+          order: filters?.order ?? "desc",
         },
       });
       setPages(response?.data?.metadata?.pages ?? 1);
@@ -55,6 +67,7 @@ const BorrowRequestPage = () => {
     queryFn: fetchTransactions,
     queryKey: ["transactions", filters],
   });
+
   const navigate = useNavigate();
   const handleFrom = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
@@ -74,6 +87,9 @@ const BorrowRequestPage = () => {
     setFilters({
       from: "",
       to: "",
+      statuses: [],
+      sortBy: "dateCreated",
+      order: "desc",
     });
   };
   const debounceSearch = useDebounce();
@@ -83,7 +99,28 @@ const BorrowRequestPage = () => {
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     debounceSearch(search, event.target.value, 500);
   };
+  const handleStatusSelect = (
+    values: MultiValue<{ value: number; label: string }>
+  ) => {
+    setFilters({
+      statuses: values.map((t) => t.value),
+      page: 1,
+    });
+  };
+  const handleSortBySelect = (event: ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setFilters({
+      sortBy: value,
+    });
+  };
+  const handleOrderSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFilters({
+      order: value,
+    });
+  };
   const returnScanModal = useSwitch();
+  const exportModal = useSwitch();
   return (
     <>
       <Container>
@@ -114,6 +151,55 @@ const BorrowRequestPage = () => {
                     onSelectedDateChanged={handleTo}
                   />
                 </div>
+                <div className="p-2">
+                  <Label>Status</Label>
+                  <CustomSelect
+                    options={STATUSES_OPTIONS}
+                    isMulti={true}
+                    onChange={handleStatusSelect}
+                    value={STATUSES_OPTIONS.filter((s) =>
+                      filters.statuses.includes(s.value)
+                    )}
+                    placeholder="Select User Type"
+                  />
+                </div>
+                <div className="p-2">
+                  <Label>Sort by</Label>
+                  <Select
+                    name="sortBy"
+                    value={filters.sortBy}
+                    onChange={handleSortBySelect}
+                  >
+                    <option value="dateCreated">Date Created</option>
+                    <option value="givenName">Given name</option>
+                    <option value="surname">Surname</option>
+                  </Select>
+                </div>
+                <div className="pb-3 px-2">
+                  <Label>Order</Label>
+                  <div className="flex flex-col">
+                    <div className="flex gap-1 items-center mt-1">
+                      <Radio
+                        name="order"
+                        value="asc"
+                        onChange={handleOrderSelect}
+                        color="primary"
+                        checked={filters.order === "asc"}
+                      />
+                      <Label>Ascending</Label>
+                    </div>
+                    <div className="flex gap-1 items-center mt-1">
+                      <Radio
+                        name="order"
+                        value="desc"
+                        color="primary"
+                        onChange={handleOrderSelect}
+                        checked={filters.order === "desc"}
+                      />
+                      <Label>Descending</Label>
+                    </div>
+                  </div>
+                </div>
                 <Button
                   color="primary"
                   className="w-full"
@@ -131,6 +217,11 @@ const BorrowRequestPage = () => {
               </HasAccess>
               <HasAccess requiredPermissions={["BorrowedBook.Edit"]}>
                 <Button onClick={returnScanModal.open}>Scan and Return</Button>
+              </HasAccess>
+              <HasAccess requiredPermissions={["BorrowedBook.Read"]}>
+                <Button outline color="primary" onClick={exportModal.open}>
+                  Export
+                </Button>
               </HasAccess>
             </div>
           </div>
@@ -187,6 +278,11 @@ const BorrowRequestPage = () => {
         <ReturnScanModal
           closeModal={returnScanModal.close}
           isOpen={returnScanModal.isOpen}
+        />
+        <ExportBorrowedBookModal
+          filters={filters}
+          closeModal={exportModal.close}
+          isOpen={exportModal.isOpen}
         />
       </Container>
     </>

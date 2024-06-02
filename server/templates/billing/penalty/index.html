@@ -1,0 +1,114 @@
+{{define "billing/penalty/index"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <title>Bill</title>
+  </head>
+  <style type="text/css">
+    .dont-break {
+      break-inside: avoid;
+    }
+    .page-break {
+      page-break-after: always;
+    }
+
+    table {
+      page-break-inside: auto;
+    }
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+    thead {
+      display: table-header-group;
+    }
+    tfoot {
+      display: table-footer-group;
+    }
+    .headers {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+  </style>
+  <body>
+    <div style="width: 85%; margin: auto">
+      <div class="headers">
+        <img src="/assets/images/library-icon.svg" width="90px" height="90px" />
+        <h4>STI College Munoz-EDSA Library</h4>
+      </div>
+
+     
+        <div class="mx-4">
+            <div class="row text-center">
+              <h6
+                class="text-uppercase text-center mt-3"
+                style="font-size: 30px"
+              >
+                Invoice
+              </h6>
+              <p>Ref#{{.penalty.ReferenceNumber}}</p>
+            </div>
+            <div class="mb-1 mt-3">
+            <div class="row mb-1">
+              <div class="col-6 d-flex flex-column">
+                <small class="text-xs">Patron</small>
+              <strong> {{.penalty.Account.GivenName}} {{.penalty.Account.Surname}}</strong> 
+              
+              </div>
+              <div class="col-6  d-flex flex-column">
+                <small class="text-xs">Student number</small>
+                <strong>  {{.penalty.Account.StudentNumber}}</div></strong> 
+            </div>
+           </div>
+            <div class="row">
+              <div class="col-12 d-flex flex-column">
+                <small>Program/Strand</small>
+                <strong>{{.penalty.Account.ProgramCode}}</div></strong> 
+            </div>
+          </div>
+            <div class="row mx-3 mt-4">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Description</th>
+                    <th scope="col">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{.penalty.Description}} ({{.penalty.Item}})</td>
+                    <td> ₱ {{.penalty.Amount}}</td>
+                  </tr>
+                
+              
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-xl-8">
+                <ul class="list-unstyled float-end me-0">
+                  <li>
+                    <span class="me-3 float-start">Total Amount:</span
+                    > ₱ {{.penalty.Amount}}
+                  </li>
+                
+                </ul>
+              </div>
+            </div>
+            <hr />
+         
+        </div>
+    </main>
+    <table></table>
+  </body>
+</html>
+{{end}}

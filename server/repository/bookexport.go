@@ -39,7 +39,7 @@ var excelSheet = "Books"
 func toChar(i int) string {
     return alphabet[i-1]
 }
-func(repo * BookRepository)getRelatedCollectionIds(collectionId int)([]int, error ){
+func(repo *Book)getRelatedCollectionIds(collectionId int)([]int, error ){
 	collectionIds := make([]int, 0)
 	err := repo.db.Select(&collectionIds,`SELECT id FROM catalog.section 
 	where (id = $1 or main_collection_id = $1) and deleted_at is null`, collectionId)
@@ -49,7 +49,7 @@ func(repo * BookRepository)getRelatedCollectionIds(collectionId int)([]int, erro
 	return collectionIds, err
 }
 
-func(repo * BookRepository)ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error) {
+func(repo *Book)ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error) {
 	buffer := new(bytes.Buffer)
 	if(fileType == ".xlsx"){
 		file, err := repo.processExcel(collectionId)
@@ -72,7 +72,7 @@ func(repo * BookRepository)ExportBooks(collectionId int, fileType string)(*bytes
 	return buffer, fmt.Errorf("unsupported file type: %s", fileType)
 }
 
-func(repo * BookRepository)processExcel(collectionId int) (*excelize.File, error) {
+func(repo *Book)processExcel(collectionId int) (*excelize.File, error) {
 	f := excelize.NewFile()
 	accessions, err := repo.getExcelDataByCollectionId(collectionId)
 	if err != nil {
@@ -104,7 +104,7 @@ func(repo * BookRepository)processExcel(collectionId int) (*excelize.File, error
 	
 	return f, err
 }
-func(repo * BookRepository)addExcelData(startingRow int, accessions []map[string]interface{}, f * excelize.File) error {
+func(repo *Book)addExcelData(startingRow int, accessions []map[string]interface{}, f * excelize.File) error {
 	for rowCursor, accession := range accessions {
 		for colCursor, col  := range excelHeaderColumns{
 			char := toChar(colCursor + 1)
@@ -118,7 +118,7 @@ func(repo * BookRepository)addExcelData(startingRow int, accessions []map[string
 	}
 	return nil
 }
-func( repo *  BookRepository)buildExcelHeaders(f * excelize.File) error {
+func( repo *Book)buildExcelHeaders(f * excelize.File) error {
 	for idx, col := range excelHeaderColumns {
 		char := toChar(idx + 1)
 		cell := fmt.Sprintf(`%s1`, char)
@@ -130,7 +130,7 @@ func( repo *  BookRepository)buildExcelHeaders(f * excelize.File) error {
 	return nil
 }
 
-func(repo * BookRepository)getExcelDataByCollectionId(collectionId int)([]map[string]interface{}, error) {
+func(repo *Book)getExcelDataByCollectionId(collectionId int)([]map[string]interface{}, error) {
 	results := []map[string]interface{}{}
 	collectionIds, err := repo.getRelatedCollectionIds(collectionId)
 	if err != nil {
@@ -202,7 +202,7 @@ func(repo * BookRepository)getExcelDataByCollectionId(collectionId int)([]map[st
 	return results, nil
 }
 
-func (repo * BookRepository)processCSV(collectionId int) (*bytes.Buffer, error) {
+func (repo *Book)processCSV(collectionId int) (*bytes.Buffer, error) {
 	buffer := new(bytes.Buffer)
 	accessions, err := repo.getCSVDataByCollectionId(collectionId)
 	if err != nil {
@@ -219,7 +219,7 @@ func (repo * BookRepository)processCSV(collectionId int) (*bytes.Buffer, error) 
 	return buffer, nil
 }
 
-func (repo * BookRepository)getCSVDataByCollectionId(collectionId int)([]model.BookExport, error) {
+func (repo *Book)getCSVDataByCollectionId(collectionId int)([]model.BookExport, error) {
 	accessions := make([]model.BookExport, 0)
 	collectionIds, err := repo.getRelatedCollectionIds(collectionId)
 	if err != nil {
@@ -255,3 +255,49 @@ func (repo * BookRepository)getCSVDataByCollectionId(collectionId int)([]model.B
 	return accessions, err
 }
 
+
+
+func(repo *Book)buildAccessionFilters(ds * goqu.SelectDataset, filters * BookFilter) (*goqu.SelectDataset, error){
+	sectionFilter := goqu.ExOr{}
+	if(len(filters.Collections) > 0){
+		if(filters.IncludeSubCollection){
+			ids, err := repo.getSubCollections(filters.Collections)
+			if err != nil {
+				return ds, err
+			}
+			sectionFilter["section_id"] = ids
+		}else{
+			sectionFilter["section_id"] = filters.Collections
+		}
+		
+	}
+	var tagsLiteral exp.LiteralExpression = goqu.L("") 
+	if(len(filters.Tags) > 0) {
+		cols := ``
+		for i, tag := range filters.Tags {
+			if(i == 0){
+				cols += fmt.Sprintf("'%s' = ANY(search_tags)", tag)
+			}else{
+				cols += fmt.Sprintf("OR '%s' = ANY(search_tags)", tag)
+			}
+		}
+		a := fmt.Sprintf("(%s)", cols)
+		tagsLiteral = goqu.L(a)	
+		ds = ds.Where(tagsLiteral)
+	}
+	
+	if(filters.FromYearPublished > 0 && filters.ToYearPublished  > 0){
+			ds = ds.Where(goqu.C("year_published").Between(goqu.Range(filters.FromYearPublished, filters.ToYearPublished)))
+	}
+	if( len(filters.Keyword) > 0 ){
+		ds = ds.Where(goqu.L(`(
+		search_vector @@ websearch_to_tsquery('english', ?) 
+		OR search_vector @@ plainto_tsquery('simple', ?) 
+		OR search_tag_vector @@ websearch_to_tsquery('english', ?) 
+		OR search_tag_vector @@ plainto_tsquery('simple', ?)
+		OR  authors_concatenated ILIKE '%' || ? || '%'
+		)`, filters.Keyword, filters.Keyword, filters.Keyword,filters.Keyword, filters.Keyword))
+	}
+	ds = ds.Where(sectionFilter)
+	return ds, nil
+}

@@ -9,7 +9,7 @@ import (
 )
 
 
-func (repo * BookRepository)MigrateCollection(sectionId int, bookIds []string)error{
+func (repo *Book)MigrateCollection(sectionId int, bookIds []string)error{
 	if len(bookIds) == 0 {
 		return nil
 	}

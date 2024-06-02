@@ -225,3 +225,26 @@ export type BorrowedBook = {
   status: string;
   dueDate: string | null; //timestamp
 };
+export type PenaltyClassification = {
+  id: string;
+  name: string;
+  description: string;
+  amount: number;
+};
+
+export type Penalty = {
+  id?: string;
+  classification: PenaltyClassification;
+  description: string;
+  amount: number;
+  accountId: string;
+  classId: string;
+  item: string;
+  account: Account;
+  isSettled: boolean;
+  referenceNumber?: string;
+  remarks?: string;
+  proof?: string;
+  settledAt: string | null; //iso-time-string
+  createdAt: string; //iso-time-string
+};

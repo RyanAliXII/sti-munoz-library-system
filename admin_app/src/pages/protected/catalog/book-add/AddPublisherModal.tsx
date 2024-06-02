@@ -84,7 +84,12 @@ const AddPublisherModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               />
             </div>
             <div className="flex gap-1 mt-3">
-              <Button color="primary" type="submit">
+              <Button
+                color="primary"
+                type="submit"
+                isProcessing={mutation.isLoading}
+                disabled={mutation.isLoading}
+              >
                 Add publisher
               </Button>
               <Button color="light" onClick={closeModal} type="button">

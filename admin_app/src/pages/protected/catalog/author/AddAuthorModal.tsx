@@ -79,7 +79,12 @@ const AddAuthorModal: React.FC<ModalProps> = ({ isOpen, closeModal }) => {
               />
             </div>
             <div className="flex gap-1  py-3">
-              <Button color="primary" type="submit">
+              <Button
+                color="primary"
+                type="submit"
+                isProcessing={mutation.isLoading}
+                disabled={mutation.isLoading}
+              >
                 Submit
               </Button>
               <Button color="light" type="button" onClick={closeModal}>

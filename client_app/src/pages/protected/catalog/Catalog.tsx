@@ -28,7 +28,6 @@ const Catalog = () => {
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
     tags: { type: "string", multiple: true, default: [] },
-    mainC: { type: "string", multiple: true, default: [] },
     collections: { type: "number", multiple: true, default: [] },
     fromYearPublished: { type: "number", default: 1980 },
     toYearPublished: { type: "number", default: new Date().getFullYear() },
@@ -52,7 +51,6 @@ const Catalog = () => {
           keyword: filterParams?.keyword,
           tags: filterParams?.tags ?? [],
           collections: filterParams?.collections ?? [],
-          mainC: filterParams?.mainC ?? [],
           fromYearPublished: filterParams?.fromYearPublished ?? 0,
           toYearPublished: filterParams?.toYearPublished ?? 0,
         },
@@ -86,18 +84,8 @@ const Catalog = () => {
   };
 
   const handleCollectionSelect = (values: MultiValue<Section>) => {
-    const main = [];
-    const collections = [];
-    for (const s of values) {
-      if (s.isSubCollection) {
-        collections.push(s.id);
-      } else {
-        main.push(s.accessionTable);
-      }
-    }
     setFilterParams({
-      collections: [...collections],
-      mainC: [...main],
+      collections: values?.map((c) => c.id ?? 0),
       page: 1,
     });
   };
@@ -168,10 +156,8 @@ const Catalog = () => {
                   onChange={handleCollectionSelect}
                   options={collections}
                   isMulti={true}
-                  value={collections?.filter(
-                    (c) =>
-                      filterParams?.collections.includes(c.id) ||
-                      filterParams?.mainC.includes(c.accessionTable)
+                  value={collections?.filter((c) =>
+                    filterParams?.collections.includes(c.id)
                   )}
                   getOptionLabel={(opt) => opt.name}
                   getOptionValue={(opt) => opt.id?.toString() ?? ""}

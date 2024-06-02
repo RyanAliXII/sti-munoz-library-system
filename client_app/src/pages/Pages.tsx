@@ -29,6 +29,7 @@ const ReservationPage = lazy(
 );
 const QueuePage = lazy(() => import("./protected/queues/QueuePage"));
 const FAQsPage = lazy(() => import("./protected/faqs/FAQsPage"));
+const PenaltyPage = lazy(() => import("./protected/penalty/PenaltyPage"));
 const pages = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -138,7 +139,16 @@ const pages = createBrowserRouter(
             </Suspense>
           }
         />
+        <Route
+          path="/penalties"
+          element={
+            <Suspense fallback={<Loader />}>
+              <PenaltyPage />
+            </Suspense>
+          }
+        />
       </Route>
+
       <Route element={<PublicRoutes restricted={true} />}>
         <Route path="/login" element={<Login />} />
       </Route>

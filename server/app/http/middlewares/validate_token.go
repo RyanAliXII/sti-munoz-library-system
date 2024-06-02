@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"go.uber.org/zap"
@@ -107,7 +108,6 @@ func processClientApplicationToken (token string, ctx * gin.Context) error{
 func processAdminApplicationToken(token string, ctx * gin.Context)error{
 	claims := jwt.MapClaims{}
 	jwks := azuread.GetOrCreateJwksInstance()
-
 	_, parseTokenErr := jwt.ParseWithClaims(token, &claims, jwks.Keyfunc)
 	if parseTokenErr != nil {
 		logger.Error(parseTokenErr.Error(), slimlog.Function("middlewares.ValidateToken.processAdminApplicationToken"), slimlog.Error("parseTokenErr"))
@@ -140,9 +140,9 @@ func processAdminApplicationToken(token string, ctx * gin.Context)error{
 
 }
 
-var tokenRepo = repository.NewTokenRepository()
-func ValidateScannerToken(ctx * gin.Context){
 
+func ValidateScannerToken(ctx * gin.Context){
+	var tokenRepo = repository.NewTokenRepository(postgresdb.GetOrCreateInstance())
 	headerValue, hasAuthorizationHeader := ctx.Request.Header["Authorization"]
 	if !hasAuthorizationHeader {
 		logger.Error("No authorization header present.", slimlog.Function("ValidateScannerToken"))

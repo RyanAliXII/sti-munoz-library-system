@@ -15,6 +15,7 @@ export const useNotifications = () => {
   };
   return useQuery<Notification[]>({
     queryFn: fetchNotifications,
+    refetchOnWindowFocus: false,
     queryKey: ["notifications"],
   });
 };

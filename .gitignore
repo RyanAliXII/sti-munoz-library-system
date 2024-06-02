@@ -4,5 +4,6 @@
 .env
 *.Identifier
 .exe
-
+/minio
 node_modules
+/metabase
