@@ -18,6 +18,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
+import Compressor from "@uppy/compressor";
 import { HttpStatusCode } from "axios";
 import { format, isValid } from "date-fns";
 import { Button } from "flowbite-react";
@@ -37,12 +38,14 @@ const uppy = new Uppy({
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
     maxNumberOfFiles: 3,
   },
-}).use(XHRUpload, {
-  fieldName: "covers",
-  bundle: true,
-  method: "PUT",
-  endpoint: `${BASE_URL_V1}/books/covers`,
-});
+})
+  .use(Compressor)
+  .use(XHRUpload, {
+    fieldName: "covers",
+    bundle: true,
+    method: "PUT",
+    endpoint: `${BASE_URL_V1}/books/covers`,
+  });
 
 const BookEditForm = () => {
   const {
@@ -100,11 +103,13 @@ const BookEditForm = () => {
   const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
     queryKey: ["publishers", keyword],
+    refetchOnWindowFocus: false,
   });
 
   const { data: sections } = useQuery<Section[]>({
     queryFn: fetchSections,
     queryKey: ["sections"],
+    refetchOnWindowFocus: false,
   });
   const {
     isOpen: isAddPublisherModalOpen,
@@ -155,7 +160,6 @@ const BookEditForm = () => {
       });
       const covers = uppy.getFiles();
       if (covers.length === 0) {
-        console.log(covers);
         deleteBookCovers();
       }
       uppy.setMeta({ bookId: form.id });
@@ -204,16 +208,21 @@ const BookEditForm = () => {
       setForm((prev) => ({ ...prev, ...data, receivedAt: strReceivedAt }));
       for (const cover of data.covers) {
         try {
-          const response = await fetch(buildS3Url(cover));
+          const response = await fetch(buildS3Url(cover), {
+            method: "GET",
+          });
           if (response.status === HttpStatusCode.Ok) {
             const blob = await response.blob();
+
             uppy.addFile({
               name: cover,
               data: blob,
               size: blob.size,
             });
           }
-        } catch {}
+        } catch (error) {
+          console.error(error);
+        }
       }
     },
     onError: () => {

@@ -1,21 +1,18 @@
 package repository
 
 import (
-	"context"
 	"fmt"
 	"mime/multipart"
+	"os"
 	"path/filepath"
-
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jaevor/go-nanoid"
-	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 )
 func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) error {
-	ctx := context.Background()
+
 	dialect := goqu.Dialect("postgres")
 	canonicID, nanoIdErr := nanoid.Standard(21)
 	if nanoIdErr != nil {
@@ -23,26 +20,24 @@ func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) er
 		return nanoIdErr
 	}
 	bookCoverRows := make([]goqu.Record, 0)
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
 	for _, cover := range covers {
 		extension := filepath.Ext(cover.Filename)
 		objectName := fmt.Sprintf("covers/%s/%s%s", bookId, canonicID(), extension)
 		fileBuffer, _ := cover.Open()
 		defer fileBuffer.Close()
-		contentType := cover.Header["Content-Type"][0]
-		fileSize := cover.Size
-
-		info, uploadErr := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
-			ContentType: contentType,
-		})
-		if uploadErr != nil {
-			logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("uploadErr"))
-			return uploadErr
+		
+		
+		resultKey, err := repo.fileStorage.Upload(objectName, bucket, fileBuffer)
+		if err != nil {
+			logger.Error(err.Error(), slimlog.Error("NewBookCover"))
 		}
+		
 		bookCoverRows = append(bookCoverRows, goqu.Record{
-			"path":    info.Key,
+			"path":    resultKey,
 			"book_id": bookId,
 		})
-		logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+		logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", resultKey))
 
 	}
 	ds := dialect.From(goqu.T("book_cover").Schema("catalog")).Prepared(true).Insert().Rows(bookCoverRows)
@@ -59,7 +54,6 @@ func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) er
 }
 
 func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader) error {
-	ctx := context.Background()
 	dialect := goqu.Dialect("postgres")
 	path := fmt.Sprintf("covers/%s/", bookId)
 	canonicID, nanoIdErr := nanoid.Standard(21)
@@ -67,14 +61,18 @@ func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader)
 		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("nanoIdErr"))
 		return nanoIdErr
 	}
-	objects := repo.minio.ListObjects(ctx, minioclient.BUCKET, minio.ListObjectsOptions{
-		Recursive: true,
-		Prefix:    path,
-	})
+    
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	objectKeys, err := repo.fileStorage.ListFiles(path,  bucket)
+	
+	if err != nil {
+		return err
+	}
 	//map old uploaded book covers.
-	oldCoversMap := make(map[string]minio.ObjectInfo)
-	for obj := range objects {
-		oldCoversMap[obj.Key] = obj
+	oldCoversMap := make(map[string]string)
+
+	for _, objKey := range objectKeys {
+		oldCoversMap[objKey] = objKey
 	}
 	newCoversMap := make(map[string]*multipart.FileHeader)
 	bookCoverRows := make([]goqu.Record, 0)
@@ -88,22 +86,17 @@ func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader)
 			objectName := fmt.Sprintf("%s%s%s", path, canonicID(), extension)
 			fileBuffer, _ := cover.Open()
 			defer fileBuffer.Close()
-			contentType := cover.Header["Content-Type"][0]
-			fileSize := cover.Size
-
-			info, uploadErr := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
-				ContentType: contentType,
-			})
-			if uploadErr != nil {
-				logger.Error(uploadErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("uploadErr"))
-				return uploadErr
+		
+			key, err := repo.fileStorage.Upload(objectName, bucket, fileBuffer)
+			if err != nil {
+				return err
 			}
 			//store new cover to be inserted later
 			bookCoverRows = append(bookCoverRows, goqu.Record{
-				"path":    info.Key,
+				"path":   key,
 				"book_id": bookId,
 			})
-			logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", info.Key))
+			logger.Info("Book cover uploaded.", zap.String("bookId", bookId), zap.String("s3Key", key))
 		}
 		newCoversMap[key] = cover
 	}
@@ -116,14 +109,14 @@ func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader)
 
 	// check if old covers are removed, if removed, delete from object storage
 	for _, oldCover := range oldCoversMap {
-		key := oldCover.Key
+		key := oldCover
 		_, stillExist := newCoversMap[key]
 		if !stillExist {
-			deleteObjErr := repo.minio.RemoveObject(ctx, minioclient.BUCKET, oldCover.Key, minio.RemoveObjectOptions{})
-			if deleteObjErr != nil {
+			err := repo.fileStorage.Delete(key, bucket)
+			if err != nil {
 				transaction.Rollback()
-				logger.Error(deleteObjErr.Error(), slimlog.Function("BookRepository.UpdateBookCover"), slimlog.Error("deleteObjErr"))
-				return deleteObjErr
+		
+				return err
 			}
 			_, deleteErr := transaction.Exec("Delete from catalog.book_cover where book_id= $1 AND path = $2  ", bookId, key)
 			//delete from db
@@ -149,24 +142,20 @@ func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader)
 	return nil
 }
 func (repo *Book) DeleteBookCoversByBookId(bookId string) error {
-	ctx := context.Background()
 	path := fmt.Sprintf("covers/%s/", bookId)
-	objects := repo.minio.ListObjects(ctx, minioclient.BUCKET, minio.ListObjectsOptions{
-		Recursive: true,
-		Prefix:    path,
-	})
-
-	for cover := range objects {
-		deleteCoverErr := repo.minio.RemoveObject(ctx, minioclient.BUCKET, cover.Key, minio.RemoveObjectOptions{})
-		if deleteCoverErr != nil {
-			logger.Error(deleteCoverErr.Error(), slimlog.Function("BookRepository.DeleteBookCoversByBookId"), slimlog.Error("deleteCoverErr "))
-			return deleteCoverErr
-		}
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	objects, err  := repo.fileStorage.ListFiles(path, bucket)
+	if err != nil {
+		return err
 	}
-	_, deleteErr := repo.db.Exec("DELETE FROM catalog.book_cover where book_id = $1", bookId)
-	if deleteErr != nil {
-		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.DeleteBookCoversByBookId"), slimlog.Error("deleteErr"))
-		return deleteErr
+	for _, objectKey := range objects {
+		err := repo.fileStorage.Delete(objectKey, bucket)
+		if err != nil { return err}
+	}
+	_, err = repo.db.Exec("DELETE FROM catalog.book_cover where book_id = $1", bookId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Function("BookRepository.DeleteBookCoversByBookId"), slimlog.Error("deleteErr"))
+		return err
 	}
 	return nil
 }
