@@ -33,6 +33,7 @@ import CreatableSelect from "react-select/creatable";
 import AddAuthorModal from "./AddAuthorModal";
 import AddPublisherModal from "./AddPublisherModal";
 import { AxiosError } from "axios";
+import Compressor from "@uppy/compressor";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -40,12 +41,14 @@ const uppy = new Uppy({
     maxNumberOfFiles: 3,
   },
   infoTimeout: TW0_SECONDS,
-}).use(XHRUpload, {
-  fieldName: "covers",
-  bundle: true,
-  headers: {},
-  endpoint: `${BASE_URL_V1}/books/covers`,
-});
+})
+  .use(Compressor)
+  .use(XHRUpload, {
+    fieldName: "covers",
+    bundle: true,
+    headers: {},
+    endpoint: `${BASE_URL_V1}/books/covers`,
+  });
 
 const eBookUppy = new Uppy({
   restrictions: {

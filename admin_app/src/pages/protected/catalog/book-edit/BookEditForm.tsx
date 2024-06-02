@@ -18,6 +18,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
+import Compressor from "@uppy/compressor";
 import { HttpStatusCode } from "axios";
 import { format, isValid } from "date-fns";
 import { Button } from "flowbite-react";
@@ -37,12 +38,14 @@ const uppy = new Uppy({
     allowedFileTypes: [".png", ".jpg", ".jpeg", ".webp"],
     maxNumberOfFiles: 3,
   },
-}).use(XHRUpload, {
-  fieldName: "covers",
-  bundle: true,
-  method: "PUT",
-  endpoint: `${BASE_URL_V1}/books/covers`,
-});
+})
+  .use(Compressor)
+  .use(XHRUpload, {
+    fieldName: "covers",
+    bundle: true,
+    method: "PUT",
+    endpoint: `${BASE_URL_V1}/books/covers`,
+  });
 
 const BookEditForm = () => {
   const {
