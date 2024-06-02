@@ -4,5 +4,7 @@ import "io"
 
 
 type FileStorage interface{
-	Upload(objectName string, bucketName string , file io.ReadSeeker)(string, error)
+	Upload(key string, bucketName string , file io.ReadSeeker)(string, error)
+	ListFiles(prefix string, bucket string)([]string, error)
+	Delete(key string, bucket string)(error)
 }

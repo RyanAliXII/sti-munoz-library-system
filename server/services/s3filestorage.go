@@ -17,18 +17,41 @@ import (
 type S3FileStorage struct {
 	s3 * s3.S3
 }
-func(fs * S3FileStorage)Upload(objectName string, bucketName string , file io.ReadSeeker)(string, error){
+func(fs * S3FileStorage)Upload(key string, bucketName string , file io.ReadSeeker)(string, error){
 	
 	_, err := fs.s3.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
-		Key: aws.String(objectName),
+		Key: aws.String(key),
 		Body: file,
 	})
-	
 	if err != nil {
-		return objectName, err
+		return key, err
 	}
-	return objectName, nil
+	return key, nil
+}
+func(fs * S3FileStorage)ListFiles(prefix string, bucket string)([]string, error){
+	results, err := fs.s3.ListObjects(&s3.ListObjectsInput{
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(prefix),
+	})
+	if err != nil {
+		return []string{}, err
+	}
+	var lists = make([]string, 0)
+	for _, result := range results.Contents{
+		lists = append(lists, *result.Key)
+	}
+	return lists, err
+}
+func(fs * S3FileStorage)Delete(key string, bucket string)(error){
+	_, err := fs.s3.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(key),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var s3FileStorage filestorage.FileStorage;

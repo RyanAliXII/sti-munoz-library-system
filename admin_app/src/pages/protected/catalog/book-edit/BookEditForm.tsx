@@ -100,11 +100,13 @@ const BookEditForm = () => {
   const { data: publishers } = useQuery<Publisher[]>({
     queryFn: fetchPublishers,
     queryKey: ["publishers", keyword],
+    refetchOnWindowFocus: false,
   });
 
   const { data: sections } = useQuery<Section[]>({
     queryFn: fetchSections,
     queryKey: ["sections"],
+    refetchOnWindowFocus: false,
   });
   const {
     isOpen: isAddPublisherModalOpen,
@@ -155,7 +157,6 @@ const BookEditForm = () => {
       });
       const covers = uppy.getFiles();
       if (covers.length === 0) {
-        console.log(covers);
         deleteBookCovers();
       }
       uppy.setMeta({ bookId: form.id });
