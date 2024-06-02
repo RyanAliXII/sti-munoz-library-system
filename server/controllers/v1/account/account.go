@@ -107,6 +107,7 @@ func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 		return
 	}
 	defer file.Close() 
+
 	err := ctrler.validateCSVHeaders(file, map[string]struct{}{
 		"id": {},
 		"display_name":{},
@@ -140,8 +141,10 @@ func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
+	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
+		return gocsv.LazyCSVReader(in)
+	})
 	parseErr := gocsv.UnmarshalBytes(bytesFile, &accounts)
-
 	if parseErr != nil {
 		logger.Error(parseErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("parseErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))

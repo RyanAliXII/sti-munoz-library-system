@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	validation "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/lib/pq"
@@ -79,7 +80,7 @@ type BookExport struct {
 
 func (book * Book)ValidateIfAccessionExistsOrDuplicate()([]map[string]string,bool, error){
 	accessionTable := ""
-	db := db.Connect()
+	db := postgresdb.GetOrCreateInstance()
 	transaction, err := db.Beginx()
 	accessions := make([]map[string]string, 0)
 	if err != nil {
@@ -174,6 +175,7 @@ type Accession struct {
 	Model
 }
 func(m * Accession)ValidateUpdate() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, validation.Field(&m.Number, 
 		validation.Required.Error("Accession number is required."),
 		validation.Min(1).Error("Accession number must be greater than 0"),
@@ -185,7 +187,7 @@ func(m * Accession)ValidateUpdate() (validation.Errors, error) {
 			where accession.id = $1
 			LIMIT 1
 			`
-			db := db.Connect()
+			
 			err := db.Get(&accessionTable, query, m.Id)
 			if err != nil {
 				return err

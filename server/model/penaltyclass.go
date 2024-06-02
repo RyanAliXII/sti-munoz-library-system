@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
@@ -41,12 +41,13 @@ func (copy PenaltyClassification) Value(value interface{}) (driver.Value, error)
 	return copy, nil
 }
 func (m * PenaltyClassification)ValidateNew() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, 
 	validation.Field(&m.Name, validation.Required.Error("Name is required."), 
 	validation.Length(1, 80).Error("Name should be alteast 1 to 80 characters"),
 	validation.By(func(value interface{}) error {
 		name, _ := value.(string)
-		db := db.Connect()
+		
 		isExists := true
 
 		err := db.Get(&isExists, "SELECT EXISTS(SELECT 1 FROM fee.penalty_classification where name = $1 and deleted_at is null)",  name)
@@ -64,12 +65,13 @@ func (m * PenaltyClassification)ValidateNew() (validation.Errors, error) {
 	)
 }
 func (m * PenaltyClassification)ValidateUpdate() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, 
 	validation.Field(&m.Name, validation.Required.Error("Name is required."), 
 	validation.Length(1, 80).Error("Name should be alteast 1 to 80 characters"),
 	validation.By(func(value interface{}) error {
 		name, _ := value.(string)
-		db := db.Connect()
+	
 		isExists := true
 
 		err := db.Get(&isExists, "SELECT EXISTS(SELECT 1 FROM fee.penalty_classification where name = $1 and id != $2  	and deleted_at is null)",  name, m.Id)

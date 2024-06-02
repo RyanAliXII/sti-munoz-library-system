@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 )
 
 
@@ -29,7 +29,7 @@ func (m * ScannerAccount) Bind(value any) error{
 	return err
 }
 func (m * ScannerAccount) ValidateUsernameIfTaken() ( map[string]string, error,) {
-	db := db.Connect()
+	db := postgresdb.GetOrCreateInstance()
 	recordCount := 0
 	err := db.Get(&recordCount, "SELECT COUNT(1) as recordCount FROM system.scanner_account where UPPER(username) = UPPER($1)", m.Username)
 	if err != nil {
@@ -43,7 +43,7 @@ func (m * ScannerAccount) ValidateUsernameIfTaken() ( map[string]string, error,)
 	return map[string]string{}, nil
 }
 func (m * ScannerAccount) ValidateUsernameIfTakenOnUpdate() ( map[string]string, error,) {
-	db := db.Connect()
+	db := postgresdb.GetOrCreateInstance()
 	recordCount := 0
 	err := db.Get(&recordCount, "SELECT COUNT(1) as recordCount FROM system.scanner_account where UPPER(username) = UPPER($1) and id != $2", m.Username, m.Id)
 	if err != nil {

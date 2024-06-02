@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
@@ -58,6 +58,7 @@ func (publisher PublisherJSON) Value(value interface{}) (driver.Value, error) {
 }
 
 func (m * Publisher) ValidateNew() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, 
 		validation.Field(&m.Name, 
 			validation.Required.Error("Name is required."), 
@@ -69,7 +70,7 @@ func (m * Publisher) ValidateNew() (validation.Errors, error) {
 					return errors.New("invalid name")
 				}
 				isExists := true
-				db := db.Connect()
+			
 				err := db.Get(&isExists, "SELECT EXISTS(SELECT 1 FROM catalog.publisher where name = $1 and deleted_at is null)", name)
 				
 				if err != nil {
@@ -79,11 +80,13 @@ func (m * Publisher) ValidateNew() (validation.Errors, error) {
 					return errors.New("publisher already exists")
 				}
 				return nil
+				
 			}),
 
 			))
 }
 func (m * Publisher) ValidateUpdate() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, 
 		validation.Field(&m.Name, 
 			validation.Required.Error("Name is required."), 
@@ -95,7 +98,7 @@ func (m * Publisher) ValidateUpdate() (validation.Errors, error) {
 					return errors.New("invalid name")
 				}
 				isExists := true
-				db := db.Connect()
+				
 				err := db.Get(&isExists, "SELECT EXISTS(SELECT 1 FROM catalog.publisher where name = $1 and id  != $2 and deleted_at is null)", name, m.Id)
 				
 				if err != nil {

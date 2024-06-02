@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
@@ -16,6 +16,7 @@ type Author struct {
 	Model
 }
 func (m * Author) ValidateNew() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, 
 		validation.Field(&m.Name, 
 			validation.Required.Error("Name is required."), 
@@ -27,7 +28,7 @@ func (m * Author) ValidateNew() (validation.Errors, error) {
 					return errors.New("invalid name")
 				}
 				isExists := true
-				db := db.Connect()
+			
 				err := db.Get(&isExists, "SELECT EXISTS(SELECT 1 FROM catalog.author where name = $1 and deleted_at is null)", name)
 				
 				if err != nil {
@@ -43,6 +44,7 @@ func (m * Author) ValidateNew() (validation.Errors, error) {
 }
 
 func (m * Author) ValidateUpdate() (validation.Errors, error) {
+	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, 
 		validation.Field(&m.Name, 
 			validation.Required.Error("Name is required."), 
@@ -54,7 +56,7 @@ func (m * Author) ValidateUpdate() (validation.Errors, error) {
 					return errors.New("invalid name")
 				}
 				isExists := true
-				db := db.Connect()
+			
 				err := db.Get(&isExists, "SELECT EXISTS(SELECT 1 FROM catalog.author where name = $1 and id != $2  and deleted_at is null)", name, m.Id)
 				
 				if err != nil {

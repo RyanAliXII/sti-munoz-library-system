@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 )
 
 type TimeSlot struct {
@@ -45,7 +45,7 @@ func(m TimeSlot)Validate() (map[string]string, error) {
 		services.time_slot 
 		where ((start_time > $1 and start_time < $2) or (end_time > $1 and end_time < $2)) 
 		and profile_id = $3 and deleted_at is null)`
-	db := db.Connect()
+	db := postgresdb.GetOrCreateInstance()
 	err = db.Get(&isExistOrOverlap, query,m.StartTime, m.EndTime, m.ProfileId)
 	if err != nil{
 		fields["startTime"] = "Start time is required."
@@ -87,7 +87,7 @@ func(m TimeSlot)ValidateUpdate() (map[string]string, error) {
 	(SELECT 1 FROM services.time_slot where 
 		((start_time > $1 and start_time < $2) or (end_time > $1 and end_time < $2)) 
 		and profile_id = $3 and deleted_at is null and id != $4)`
-	db := db.Connect()
+	db := postgresdb.GetOrCreateInstance()
 	err = db.Get(&isExistOrOverlap, query,m.StartTime, m.EndTime, m.ProfileId, m.Id)
 	if err != nil{
 		fields["startTime"] = "Start time is required."
