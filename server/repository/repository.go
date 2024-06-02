@@ -3,6 +3,7 @@ package repository
 import (
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/jmoiron/sqlx"
 	"github.com/minio/minio-go/v7"
 )
@@ -44,7 +45,7 @@ type Repositories struct {
 	NotificationRepository NotificationRepository
 }
 
-func New(db * sqlx.DB, minio * minio.Client) *Repositories {
+func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage) *Repositories {
 	sectionRepo := NewSectionRepository(db);
 	settingsRepo := NewSettingsRepository(db)
 	return &Repositories{
@@ -54,7 +55,7 @@ func New(db * sqlx.DB, minio * minio.Client) *Repositories {
 		SectionRepository: sectionRepo,
 		AuthorNumberRepository: NewAuthorNumberRepository(),
 		DDCRepository:          NewDDCRepository(db),
-		BookRepository:         NewBookRepository(db, minio, sectionRepo),
+		BookRepository:         NewBookRepository(db, minio, sectionRepo, fileStorage),
 		InventoryRepository:    NewInventoryRepository(db),
 		AccountRepository:       NewAccountRepository(db, minio),
 		RecordMetadataRepository: NewRecordMetadataRepository(db, RecordMetadataConfig{
