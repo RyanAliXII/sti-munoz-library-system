@@ -103,7 +103,7 @@ func (repo *Section) Get() []model.Section {
 	inner join accession.counter on accession_table = counter.accession
 	LEFT join catalog.book on section.id = book.section_id 
 	where section.deleted_at is null
-	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
+	GROUP BY section.id, last_value ORDER BY section.name ASC`)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("Section.Get"))
 	}
@@ -128,23 +128,7 @@ func (repo *Section)GetById(id int)(model.Section, error)  {
 	
 	return section, err
 }
-func (repo *Section)GetMainCollections()([]model.Section, error){
-	var sections []model.Section = make([]model.Section, 0)
-	selectErr := repo.db.Select(&sections, `
-	SELECT section.id, 
-	name,
-	prefix,
-	is_non_circulating,
-	accession_table,
-	(case when (count(book.id) > 0) then false else true end) is_deleteable,
-	(case when main_collection_id is null then false else true end) 
-	as is_sub_collection, last_value from catalog.section 
-	inner join accession.counter on accession_table = counter.accession
-	LEFT join catalog.book on section.id = book.section_id
-	where main_collection_id is null and section.deleted_at is null
-	GROUP BY section.id, last_value ORDER BY section.created_at DESC`)
-	return sections, selectErr
-}
+
 
 func (repo * Section)Delete(id int) error {
 	section, err := repo.GetById(id)
@@ -207,7 +191,6 @@ type SectionRepository interface {
 	New(section model.Section) error
 	Get() []model.Section
 	Update(section model.Section) error
-	GetMainCollections()([]model.Section, error )
 	GetById(id int)(model.Section, error)
 	Delete(id int) error
 	GetCollectionTree() []*model.Tree[int,model.Section]
