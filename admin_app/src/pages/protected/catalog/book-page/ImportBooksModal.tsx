@@ -47,7 +47,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
     queryKey: ["sections"],
   });
   const queryClient = useQueryClient();
-  const { form, setForm, errors, validate, handleFormInput } = useForm<
+  const { form, setForm, validate, handleFormInput } = useForm<
     Omit<
       Section,
       | "isDeleteable"
@@ -111,7 +111,7 @@ const ImportBooksModal = ({ closeModal, isOpen }: ModalProps) => {
   }, [isOpen]);
   return (
     <Modal show={isOpen} size={"3xl"} onClose={closeModal} dismissible>
-      <Modal.Header>Import Books</Modal.Header>
+      <Modal.Header>Import</Modal.Header>
       <Modal.Body>
         {error && (
           <div
