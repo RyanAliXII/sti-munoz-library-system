@@ -57,9 +57,8 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 	connection.SetPongHandler(func(string) error { connection.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, _, err := connection.ReadMessage()
-		
 		if err != nil {
-		
+			logger.Error(err.Error())
 			break
 		}
 	}
