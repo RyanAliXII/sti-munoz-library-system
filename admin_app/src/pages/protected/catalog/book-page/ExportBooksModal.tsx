@@ -40,7 +40,7 @@ const ExportBooksModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
   };
   return (
     <Modal show={isOpen} onClose={closeModal} size={"2xl"} dismissible={true}>
-      <Modal.Header>Export Books</Modal.Header>
+      <Modal.Header>Export</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div>
