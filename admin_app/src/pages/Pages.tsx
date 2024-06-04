@@ -111,7 +111,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books"
+        path="/resources"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Book.Read"]}>
@@ -121,7 +121,7 @@ const pages = createRoutesFromChildren(
         }
       ></Route>
       <Route
-        path="/books/accessions"
+        path="/resources/accessions"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Book.Read"]}>
@@ -131,7 +131,7 @@ const pages = createRoutesFromChildren(
         }
       ></Route>
       <Route
-        path="/books/new"
+        path="/resources/new"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Book.Add"]}>
@@ -141,7 +141,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/edit/:id"
+        path="/resources/edit/:id"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Book.Edit"]}>
@@ -151,7 +151,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/authors"
+        path="/resources/authors"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Author.Read"]}>
@@ -161,7 +161,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/collections"
+        path="/resources/collections"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Collection.Read"]}>
@@ -171,7 +171,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/collections/migration-tool"
+        path="/resources/collections/migration-tool"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Collection.Edit"]}>
@@ -181,7 +181,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/collections/bulk-editor"
+        path="/resources/collections/bulk-editor"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Collection.Edit"]}>
@@ -191,7 +191,7 @@ const pages = createRoutesFromChildren(
         }
       />
       <Route
-        path="/books/publishers"
+        path="/resources/publishers"
         element={
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Publisher.Read"]}>

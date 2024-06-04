@@ -39,19 +39,7 @@ func (ctrler *Section) NewCategory(ctx *gin.Context) {
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{}, "model.Section created."))
 }
 func (ctrler *Section)GetCategories(ctx *gin.Context) {
-	filter  := CollectionFilter{}
-	err := ctx.ShouldBindQuery(&filter)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	if filter.IsMain {
-		sections, err := ctrler.services.Repos.SectionRepository.GetMainCollections()
-		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetMainCollectionsErr"))
-		}
-		ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections}, "Main collections fetched."))
-		return
-	}
+
 	var sections = ctrler.services.Repos.SectionRepository.Get()
 	tree := ctrler.services.Repos.SectionRepository.TransformToTree(sections)
 	ctx.JSON(httpresp.Success(http.StatusOK, gin.H{"sections": sections, "tree" : tree}, "Collections fetched."))

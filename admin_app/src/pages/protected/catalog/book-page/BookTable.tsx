@@ -85,11 +85,11 @@ const BookTable: FC<BookTableProps> = ({
                       </Button>
                     </Tippy>
                     <HasAccess requiredPermissions={["Book.Edit"]}>
-                      <Tippy content="Edit Book">
+                      <Tippy content="Edit Resource">
                         <Button
                           as={Link}
                           color="secondary"
-                          to={`/books/edit/${book.id}`}
+                          to={`/resources/edit/${book.id}`}
                         >
                           <AiOutlineEdit className="text-lg cursor-pointer" />
                         </Button>

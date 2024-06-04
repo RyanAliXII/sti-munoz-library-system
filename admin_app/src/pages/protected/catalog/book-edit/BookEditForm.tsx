@@ -249,7 +249,7 @@ const BookEditForm = () => {
             <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
           </div>
           <FieldRow
-            fieldDetails="The title can be found in the cover of the book."
+            fieldDetails="The title can be found in the cover of the reading material"
             isRequired
             label="Title"
             ref={registerFormGroup("title")}
@@ -259,12 +259,12 @@ const BookEditForm = () => {
               error={errors?.title}
               value={form.title}
               onChange={handleFormInput}
-              placeholder="Book title"
+              placeholder="Title"
               name="title"
             />
           </FieldRow>
           <FieldRow
-            fieldDetails="Main topic or theme that a book explores, addressing specific ideas, events, or concepts within a broader field of knowledge or narrative"
+            fieldDetails="Main topic or theme that a reading material explores, addressing specific ideas, events, or concepts within a broader field of knowledge or narrative"
             label="Subject"
             ref={registerFormGroup("subject")}
           >
@@ -273,12 +273,12 @@ const BookEditForm = () => {
               error={errors?.subject}
               value={form.subject}
               onChange={handleFormInput}
-              placeholder="Book subject"
+              placeholder="Subject of the reading material"
               name="subject"
             />
           </FieldRow>
           <FieldRow
-            fieldDetails="ISBN can be 13 or 9 characters."
+            fieldDetails="ISBN can be 13 or 9 characters"
             isRequired={true}
             label="ISBN"
             ref={registerFormGroup("isbn")}
@@ -288,7 +288,7 @@ const BookEditForm = () => {
               error={errors?.isbn}
               value={form.isbn}
               onChange={handleFormInput}
-              placeholder="Book ISBN"
+              placeholder="ISBN"
               name="isbn"
             />
           </FieldRow>
@@ -365,7 +365,7 @@ const BookEditForm = () => {
               type="number"
               value={form.costPrice}
               onChange={handleFormInput}
-              placeholder="Book price"
+              placeholder="Price"
               name="costPrice"
             />
           </FieldRow>
@@ -375,7 +375,7 @@ const BookEditForm = () => {
               type="number"
               value={form.edition}
               onChange={handleFormInput}
-              placeholder="Book copies"
+              placeholder="Edition"
               name="edition"
             />
           </FieldRow>
@@ -411,7 +411,7 @@ const BookEditForm = () => {
           </FieldRow>
           <FieldRow
             label="Description"
-            fieldDetails="Brief Description of the book"
+            fieldDetails="Brief Description of the reading material"
           >
             <Editor
               apiKey="dj5q6q3r4r8f9a9nt139kk6ba97ntgvdn3iiobqmeef4k4ei"
@@ -424,7 +424,7 @@ const BookEditForm = () => {
           </FieldRow>
           <FieldRow
             label="Book Cover"
-            fieldDetails="Add image cover of the book"
+            fieldDetails="Add image cover of the reading material"
           >
             <Dashboard
               uppy={uppy}
@@ -435,7 +435,7 @@ const BookEditForm = () => {
               locale={{
                 strings: {
                   browseFiles: " browse",
-                  dropPasteFiles: "Drop a book image cover, click to %{browse}",
+                  dropPasteFiles: "Drop an image or, click to %{browse}",
                 },
               }}
               hideProgressAfterFinish={true}
