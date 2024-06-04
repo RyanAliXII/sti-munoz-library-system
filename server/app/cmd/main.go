@@ -51,13 +51,13 @@ func main() {
 	azuread.GetOrCreateJwksInstance()
 	permissionstore.GetPermissionStore()
 	r.GET("/", func(ctx *gin.Context) {
-
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "STI MUNOZ LIBRARY",
 			"time":    time.Now(),
 		})
 	})
-	azuread.GetOrCreateJwksInstance()
+	jwks := azuread.GetOrCreateJwksInstance()
+	defer jwks.EndBackground()
 	services := services.BuildServices();
 	realtime.RealtimeRoutes(r.Group("/rt"), &services)
 	controllers.RegisterAPIV1(r, &services)

@@ -58,7 +58,11 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 	for {
 		_, _, err := connection.ReadMessage()
 		if err != nil {
-			logger.Error(err.Error())
+			_, isCloseErr := err.(*websocket.CloseError)
+			if !isCloseErr {
+				logger.Error(err.Error())
+			}
+	
 			break
 		}
 	}
