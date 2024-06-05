@@ -16,11 +16,15 @@ import { useThemeMode } from "flowbite-react";
 const queryClient = new QueryClient();
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
+import { useEffect } from "react";
 
 const App = () => {
   const msalInstance = new PublicClientApplication(msalConfig);
   const router = createBrowserRouter(pages);
   const [currentTheme, ,] = useThemeMode();
+  useEffect(() => {
+    document.title = "STI Munoz Library | Admin";
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <MsalProvider instance={msalInstance}>

@@ -17,7 +17,7 @@ const queryClient = new QueryClient();
 function App() {
   const msalInstance = new PublicClientApplication(msalConfig);
   useEffect(() => {
-    document.title = "Client";
+    document.title = "STI Munoz Library | Patron";
   }, []);
 
   return (
