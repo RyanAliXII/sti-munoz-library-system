@@ -49,7 +49,7 @@ type BookRepository interface {
 	AddEbook(id string, eBook * multipart.FileHeader) error
 	GetEbookById(id string, ) (io.ReadCloser, error)
 	RemoveEbookById(id string, ) error
-	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
+	UpdateEbookByBookId(id string,  objectKey string) error
 	MigrateCollection(sectionId int, bookIds []string)error
 	ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error)
 }

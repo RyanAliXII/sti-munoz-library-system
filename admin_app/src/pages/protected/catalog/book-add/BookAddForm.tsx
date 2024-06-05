@@ -1,39 +1,39 @@
+import { useMsal } from "@azure/msal-react";
 import Container from "@components/ui/container/Container";
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { FieldRow } from "@components/ui/form/FieldRow";
 import { CustomInput } from "@components/ui/form/Input";
+import { BASE_URL_V1 } from "@definitions/configs/api.config";
+import { apiScope } from "@definitions/configs/msal/scopes";
 import { Book, Publisher, Section } from "@definitions/types";
 import { ErrorMsg } from "@definitions/var";
+import useDebounce from "@hooks/useDebounce";
+import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Editor } from "@tinymce/tinymce-react";
+import Compressor from "@uppy/compressor";
+import Uppy from "@uppy/core";
+import Dashboard from "@uppy/react/src/Dashboard";
+import XHRUpload from "@uppy/xhr-upload";
+import { AxiosError } from "axios";
+import { format } from "date-fns";
+import { Button, Table } from "flowbite-react";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { AiOutlinePlus } from "react-icons/ai";
+import { FaTimes } from "react-icons/fa";
+import { useBeforeUnload } from "react-router-dom";
 import { MultiValue, SingleValue } from "react-select";
+import CreatableSelect from "react-select/creatable";
 import { toast } from "react-toastify";
+import AddAuthorModal from "./AddAuthorModal";
+import AddPublisherModal from "./AddPublisherModal";
 import { useBookAddFormContext } from "./BookAddFormContext";
 import DDCSelectionModal from "./DDCSelectionModal";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
-import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import { useRequest } from "@hooks/useRequest";
-import Uppy from "@uppy/core";
-import Dashboard from "@uppy/react/src/Dashboard";
-import XHRUpload from "@uppy/xhr-upload";
-import { useMsal } from "@azure/msal-react";
-import { apiScope } from "@definitions/configs/msal/scopes";
-import useDebounce from "@hooks/useDebounce";
-import { format } from "date-fns";
-import { Button, Table } from "flowbite-react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { FaTimes } from "react-icons/fa";
-import { useBeforeUnload } from "react-router-dom";
-import CreatableSelect from "react-select/creatable";
-import AddAuthorModal from "./AddAuthorModal";
-import AddPublisherModal from "./AddPublisherModal";
-import { AxiosError } from "axios";
-import Compressor from "@uppy/compressor";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -55,10 +55,12 @@ const eBookUppy = new Uppy({
     allowedFileTypes: [".pdf"],
     maxNumberOfFiles: 1,
   },
-}).use(XHRUpload, {
-  fieldName: "ebook",
-  endpoint: "",
-});
+})
+  .use(Compressor)
+  .use(XHRUpload, {
+    endpoint: "",
+    method: "PUT",
+  });
 const BookAddForm = () => {
   const { instance: msalInstance } = useMsal();
   const {
@@ -99,7 +101,7 @@ const BookAddForm = () => {
     setForm,
     setErrors,
   } = useBookAddFormContext();
-  const { Get, Post } = useRequest();
+  const { Get, Post, Put } = useRequest();
   const fetchPublishers = async () => {
     try {
       const { data: response } = await Get("/publishers/", {
@@ -186,16 +188,31 @@ const BookAddForm = () => {
       uppy.upload().finally(() => {
         uppy.cancelAll();
       });
+      const hasFiles = eBookUppy.getFiles().length > 0;
+      if (!hasFiles) return;
+      const uploadRequestResponse = await Get("/books/ebooks/upload-requests");
+      const { data } = uploadRequestResponse.data;
+      const url = data?.url;
+      const key = data?.key;
+      if (!url || !key) return;
       eBookUppy.getPlugin("XHRUpload")?.setOptions({
         headers: {
-          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          "Content-Type": "application/pdf",
         },
+        endpoint: url,
+      });
 
-        endpoint: `${BASE_URL_V1}/books/${bookId}/ebooks`,
-      });
-      eBookUppy.upload().finally(() => {
+      try {
+        await eBookUppy.upload();
+        await Put(`/books/${bookId}/ebooks`, {
+          key,
+        });
+      } catch (error) {
+        toast.error("Unknown error occured while, uploading eBook");
+        console.error(error);
+      } finally {
         eBookUppy.cancelAll();
-      });
+      }
     },
     onError: (error: AxiosError<any, any>) => {
       const { data } = error?.response?.data;
@@ -504,6 +521,7 @@ const BookAddForm = () => {
               width={"100%"}
               height={"450px"}
               hideUploadButton={true}
+              showProgressDetails={true}
               className="bg-gray-50 dark:bg-gray-700"
               locale={{
                 strings: {
@@ -523,6 +541,7 @@ const BookAddForm = () => {
               width={"100%"}
               height={"250px"}
               hideUploadButton={true}
+              showProgressDetails={true}
               className="bg-gray-50 dark:bg-gray-700"
               locale={{
                 strings: {
