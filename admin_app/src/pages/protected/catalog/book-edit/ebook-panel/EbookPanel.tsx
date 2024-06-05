@@ -21,7 +21,6 @@ const EbookPanel = () => {
       if (bufferLength === 0) return "";
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-
       return url;
     } catch (error) {
       console.error(error);
@@ -34,13 +33,15 @@ const EbookPanel = () => {
     refetchOnWindowFocus: false,
     queryKey: ["eBook"],
   });
+  const refetchEbook = () => {
+    refetch();
+  };
   useEffect(() => {
     refetch();
   }, [book.id]);
-
   return (
     <Container>
-      <UploadEbook />
+      <UploadEbook refetch={refetchEbook} eBookUrl={eBookUrl} />
       <div className="flex gap-2"></div>
       <hr className="mb-3 mt-3"></hr>
       <DocumentView eBookUrl={eBookUrl} />

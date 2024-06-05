@@ -1,20 +1,19 @@
 package repository
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"mime"
 	"mime/multipart"
+	"os"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jaevor/go-nanoid"
-	"github.com/minio/minio-go/v7"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -25,7 +24,8 @@ import (
 
 type Account struct {
 	db *sqlx.DB
-	minio * minio.Client
+	fs filestorage.FileStorage
+	
 }
 type AccountFilter struct {
 	Disabled bool `form:"disabled"`
@@ -388,11 +388,10 @@ func (repo * Account) UpdateProfilePictureById(id string, image * multipart.File
 		return fmt.Errorf("no extension for specificied content type")
 	}
 	objectName := fmt.Sprintf("profile-pictures/%s%s", canonicID(), ext[0])
-	fileSize := image.Size
-	ctx := context.Background()
-
-	info, err := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, fileBuffer, fileSize, minio.PutObjectOptions{
-			ContentType: contentType,})
+	defaultBucket := os.Getenv("S3_DEFAULT_BUCKET")
+	
+	key, err := repo.fs.Upload(objectName, defaultBucket, fileBuffer)
+	
 	if err != nil {
 		return err
 	}
@@ -408,37 +407,20 @@ func (repo * Account) UpdateProfilePictureById(id string, image * multipart.File
 		return err
 	}
 	if len(dbAccount.ProfilePicture) > 0 {
-		err = repo.minio.RemoveObject(ctx, minioclient.BUCKET, dbAccount.ProfilePicture, minio.RemoveObjectOptions{})
+		repo.fs.Delete(dbAccount.ProfilePicture, defaultBucket)
 		if err != nil {
 			 transaction.Rollback()
 			 return err
 		}
 	}
-	_, err = transaction.Exec("UPDATE system.account set profile_picture = $1 where id = $2", info.Key, id)
+	_, err = transaction.Exec("UPDATE system.account set profile_picture = $1 where id = $2", key, id)
 	if err != nil {
 		return err
 	}
 	transaction.Commit()
 	return nil
 }
-// func(repo * Account)ActivateAccounts(accountIds []string) error {
-// 	dialect := goqu.Dialect("postgres")
-// 	if len(accountIds) == 0 {
-// 		return nil
-// 	}
-// 	ds := dialect.Update(goqu.T("account").Schema("system"))
-// 	ds = ds.Set(goqu.Record{"active_since": goqu.L("now()")})
-// 	ds = ds.Where(goqu.ExOr{
-// 		"id" : accountIds,
-// 	}).Prepared(true)
-// 	query, args, err := ds.ToSQL()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	_, err = repo.db.Exec(query, args...)
-	
-// 	return err
-// }
+
 
 func(repo * Account)DisableAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
@@ -519,10 +501,11 @@ func (repo * Account) GetAccountStatsById(accountId string)(model.AccountStats, 
 
 
 
-func NewAccountRepository(db *sqlx.DB, minio * minio.Client) AccountRepository {
+func NewAccountRepository(db *sqlx.DB, fs filestorage.FileStorage) AccountRepository {
 	return &Account{
 		db:db,
-		minio: minio,
+		fs: fs,
+		
 	}
 }
 

@@ -76,7 +76,7 @@ const ProfilePage = () => {
     open: openUploadProfile,
   } = useSwitch();
   if (!account) return <Loader />;
-  const avatarUrl = `https://ui-avatars.com/api/?name=${account.givenName}${account.surname}&background=2563EB&color=fff`;
+  const avatarUrl = `https://ui-avatars.com/api/?name=${account.givenName}+${account.surname}&background=2563EB&color=fff`;
   const profilePicUrl =
     account.profilePicture.length > 0
       ? buildS3Url(account.profilePicture)
