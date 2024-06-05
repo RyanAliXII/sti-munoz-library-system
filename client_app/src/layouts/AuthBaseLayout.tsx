@@ -1,4 +1,3 @@
-import HeaderIcon from "@assets/images/sti-logo.png";
 import ProfileDropdown from "@components/ProfileDropdown";
 import { BaseProps } from "@definitions/props.definition";
 import {
@@ -33,7 +32,11 @@ const AuthBaseLayout = ({ children }: BaseProps) => {
         <div className="ml-2">
           <div className="avatar">
             <div className="w-10 lg:w-14 rounded-full">
-              <img src={HeaderIcon} alt="header-icon" />
+              <img
+                src="/library-icon.svg"
+                className="mr-3 h-6 sm:h-9"
+                alt="Library Logo"
+              />
             </div>
           </div>
         </div>

@@ -62,7 +62,7 @@ const NavbarHeader: FC = function () {
               <img
                 src="/library-icon.svg"
                 className="mr-3 h-6 sm:h-9"
-                alt="Flowbite React Logo"
+                alt="Library Logo"
               />
               <span className="self-center whitespace-nowrap text-base  hidden  font-semibold dark:text-white lg:block">
                 STI Munoz Library
