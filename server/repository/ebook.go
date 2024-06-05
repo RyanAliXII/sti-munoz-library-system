@@ -19,9 +19,7 @@ func (repo *Book)AddEbook(id string, eBook * multipart.FileHeader) error {
 	}
 	defer file.Close()
 
-	if err != nil {
-		return err
-	}
+	
 	contentType := eBook.Header["Content-Type"][0]
 	if contentType != "application/pdf" {
 		return fmt.Errorf("content type not suppored: %s", contentType)

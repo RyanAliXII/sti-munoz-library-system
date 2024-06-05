@@ -57,7 +57,7 @@ func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage
 		DDCRepository:          NewDDCRepository(db),
 		BookRepository:         NewBookRepository(db, minio, sectionRepo, fileStorage),
 		InventoryRepository:    NewInventoryRepository(db),
-		AccountRepository:       NewAccountRepository(db, minio),
+		AccountRepository:       NewAccountRepository(db, fileStorage),
 		RecordMetadataRepository: NewRecordMetadataRepository(db, RecordMetadataConfig{
 			CacheExpiration: 5 * time.Minute,
 		}),
