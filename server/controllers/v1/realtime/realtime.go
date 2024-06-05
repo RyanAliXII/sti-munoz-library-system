@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"go.uber.org/zap"
 )
 
 type RealtimeController struct {
@@ -47,9 +45,8 @@ func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
 
 }
 func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Context) {
-	accountId := ctx.Query("accountId")
+
 	defer func() {
-		logger.Info("Reader Exited.", zap.String("accountId", accountId))
 		if(connection != nil){
 			connection.Close()
 		}
@@ -60,9 +57,12 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 	connection.SetPongHandler(func(string) error { connection.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, _, err := connection.ReadMessage()
-		
 		if err != nil {
-			logger.Error(err.Error())
+			_, isCloseErr := err.(*websocket.CloseError)
+			if !isCloseErr {
+				logger.Error(err.Error())
+			}
+	
 			break
 		}
 	}
@@ -75,7 +75,6 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 	hub := ctrler.services.Notification.NewHub()
 	go hub.ListenByRoutingKey(routingKey, context)
 	defer func() {
-		logger.Info("Writer Exited.", zap.String("accountId", accountId))
 		if(connection != nil){
 			connection.Close()
 		}
@@ -92,14 +91,12 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 		case d := <-hub.Message():
 			writeErr := connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
-				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.Writer"), slimlog.Error("writeErr"))
 				cancel()
 				return
 			}
 		case <-ticker.C:
 			connection.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := connection.WriteMessage(websocket.PingMessage, nil); err != nil {	
-				logger.Error(err.Error())
 				cancel()
 				return
 			}

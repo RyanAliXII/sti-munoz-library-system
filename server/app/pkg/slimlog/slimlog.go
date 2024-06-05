@@ -11,6 +11,7 @@ var logger *zap.Logger
 var once sync.Once
 
 func BuildLogger() *zap.Logger {
+	
 	cfg := zap.Config{
 		Encoding:         "json",
 		Level:            zap.NewAtomicLevel(),
@@ -22,6 +23,7 @@ func BuildLogger() *zap.Logger {
 			TimeKey:     "time",
 			EncodeLevel: zapcore.CapitalLevelEncoder,
 			EncodeTime:  zapcore.EpochTimeEncoder,
+
 		},
 	}
 	logger, err := cfg.Build()

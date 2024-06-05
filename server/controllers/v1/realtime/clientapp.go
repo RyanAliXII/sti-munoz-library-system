@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"go.uber.org/zap"
 )
 
 
@@ -30,9 +28,9 @@ func (ctrler *RealtimeController) InitializeClientWebSocket(ctx *gin.Context) {
 
 
 func (ctrler *RealtimeController) ClientReader(connection *websocket.Conn, ctx *gin.Context) {
-	accountId := ctx.Query("accountId")
+
 	defer func() {
-		logger.Info("Reader Exited.", zap.String("accountId", accountId))
+	
 		if connection != nil {
 			connection.Close()
 		}
@@ -43,7 +41,10 @@ func (ctrler *RealtimeController) ClientReader(connection *websocket.Conn, ctx *
 	for {
 		_, _, err := connection.ReadMessage()
 		if err != nil {
-			logger.Error(err.Error())
+			_, isCloseErr := err.(*websocket.CloseError)
+			if !isCloseErr {
+				logger.Error(err.Error())
+			}
 			break
 		}
 	}
@@ -56,7 +57,7 @@ func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *
 	hub := ctrler.services.Notification.NewHub()
 	go hub.ListenByRoutingKey(routingKey, context)
 	defer func() {
-		logger.Info("Writer Exited.", zap.String("accountId", accountId))
+		
 		if connection != nil {
 			connection.Close()
 		}
@@ -73,14 +74,12 @@ func (ctrler *RealtimeController) ClientWriter(connection *websocket.Conn, ctx *
 		case d := <-hub.Message():
 			writeErr := connection.WriteMessage(websocket.TextMessage, d.Body)
 			if writeErr != nil {
-				logger.Error(writeErr.Error(), slimlog.Function("RealtimeController.ClientWriter"), slimlog.Error("writeErr"))
 				cancel()
 				return
 			}
 		case <-ticker.C:
 			connection.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := connection.WriteMessage(websocket.PingMessage, nil); err != nil {	
-				logger.Error(err.Error())
 				cancel()
 				return
 			}
