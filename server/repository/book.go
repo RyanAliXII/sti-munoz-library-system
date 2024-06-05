@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"mime/multipart"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
@@ -16,20 +17,17 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/minio/minio-go/v7"
 )
 
 type Book struct {
 	db                *sqlx.DB
 	sectionRepository SectionRepository
-	minio             *minio.Client
 	fileStorage filestorage.FileStorage
 }
-func NewBookRepository(db * sqlx.DB, minio * minio.Client, sectionRepo SectionRepository, storage filestorage.FileStorage) BookRepository {
+func NewBookRepository(db * sqlx.DB, sectionRepo SectionRepository, storage filestorage.FileStorage) BookRepository {
 	return &Book{
 		db:                db,
 		sectionRepository: sectionRepo,
-		minio:             minio,
 		fileStorage: storage,
 		
 	}
@@ -49,7 +47,7 @@ type BookRepository interface {
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
 	AddEbook(id string, eBook * multipart.FileHeader) error
-	GetEbookById(id string, ) (*minio.Object, error)
+	GetEbookById(id string, ) (io.ReadCloser, error)
 	RemoveEbookById(id string, ) error
 	UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) error
 	MigrateCollection(sectionId int, bookIds []string)error
