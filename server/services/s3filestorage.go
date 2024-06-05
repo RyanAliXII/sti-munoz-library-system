@@ -53,6 +53,17 @@ func(fs * S3FileStorage)Delete(key string, bucket string)(error){
 	}
 	return nil
 }
+func(fs * S3FileStorage)Get(key string, bucket string) (io.ReadCloser, error) {
+	result, err := fs.s3.GetObject(&s3.GetObjectInput{
+		Key: aws.String(key),
+		Bucket: aws.String(bucket),
+	})
+
+	if err != nil {
+		 return nil, err
+	}
+	return result.Body, err
+}
 
 var s3FileStorage filestorage.FileStorage;
 var once sync.Once

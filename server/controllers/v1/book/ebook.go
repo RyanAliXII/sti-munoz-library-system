@@ -41,9 +41,7 @@ func(ctrler *Book) GetEbookById(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	defer func() {
-		object.Close()
-	}()
+	defer object.Close()
 	
     ctx.Header("Content-Disposition", "attachment; filename=ebook.pdf") // Modify the filename accordingl
 	var buffer bytes.Buffer

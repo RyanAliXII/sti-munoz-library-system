@@ -1,12 +1,11 @@
 package repository
 
 import (
-	"context"
 	"fmt"
+	"io"
 	"mime"
 	"mime/multipart"
-
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
+	"os"
 
 	"github.com/jaevor/go-nanoid"
 	"github.com/minio/minio-go/v7"
@@ -18,8 +17,6 @@ func (repo *Book)AddEbook(id string, eBook * multipart.FileHeader) error {
 		return err
 	}
 	defer file.Close()
-
-	
 	contentType := eBook.Header["Content-Type"][0]
 	if contentType != "application/pdf" {
 		return fmt.Errorf("content type not suppored: %s", contentType)
@@ -28,7 +25,6 @@ func (repo *Book)AddEbook(id string, eBook * multipart.FileHeader) error {
 	if err != nil {
 		return err
 	}
-	ctx := context.Background()
 	exts, err  := mime.ExtensionsByType(contentType)
 	if err != nil {
 		return err
@@ -37,20 +33,19 @@ func (repo *Book)AddEbook(id string, eBook * multipart.FileHeader) error {
 		return fmt.Errorf("no extension for specificied content type")
 	}
 	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), exts[0])
-	fileSize := eBook.Size
-	result, err := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, file, fileSize, minio.PutObjectOptions{
-		ContentType: contentType,
-	})
+
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	key, err := repo.fileStorage.Upload(objectName, bucket, file)
 	if err != nil {
 		return err
 	}
-	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", result.Key, id)
+	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", key, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (repo *Book)GetEbookById(id string) (*minio.Object, error) {
+func (repo *Book)GetEbookById(id string) (io.ReadCloser, error) {
 	ebookKey := ""
 	err := repo.db.Get(&ebookKey, "SELECT ebook from book_view where id = $1", id)
 	if err != nil {
@@ -62,8 +57,8 @@ func (repo *Book)GetEbookById(id string) (*minio.Object, error) {
 			BookId: id,
 		}
 	}
-	ctx := context.Background()
-	object, err := repo.minio.GetObject(ctx, minioclient.BUCKET, ebookKey, minio.GetObjectOptions{})
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	object, err := repo.fileStorage.Get(ebookKey, bucket)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +71,8 @@ func (repo *Book)RemoveEbookById(id string) error{
 	if err != nil {
 		return err
 	}
-	ctx := context.Background()
-	err = repo.minio.RemoveObject(ctx, minioclient.BUCKET, ebookKey, minio.RemoveObjectOptions{})
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	err = repo.fileStorage.Delete(ebookKey, bucket)
 	if err != nil {
 		if !(minio.ToErrorResponse(err).Code == "NoSuchKey") {
 				return err
@@ -102,9 +97,9 @@ func (repo *Book)UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) e
 	if err != nil {
 		return err
 	}
-	ctx := context.Background()	
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
 	if len(dbEbookKey) > 0 {
-	err = repo.minio.RemoveObject(ctx, minioclient.BUCKET,dbEbookKey, minio.RemoveObjectOptions{})
+	err = repo.fileStorage.Delete(dbEbookKey, bucket)
 	if err != nil {
 		if !(minio.ToErrorResponse(err).Code == "NoSuchKey") {
 				return err
@@ -126,14 +121,12 @@ func (repo *Book)UpdateEbookByBookId(id string,  eBook * multipart.FileHeader) e
 		return fmt.Errorf("no extension for specificied content type")
 	}
 	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), exts[0])
-	fileSize := eBook.Size
-	result, err := repo.minio.PutObject(ctx, minioclient.BUCKET, objectName, file, fileSize, minio.PutObjectOptions{
-		ContentType: contentType,
-	})
+
+	key, err := repo.fileStorage.Upload(objectName, bucket,  file)
 	if err != nil {
 		return err
 	}	
-	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", result.Key, id)
+	_, err = repo.db.Exec("Update catalog.book set ebook = $1 where id = $2", key, id)
 	if err != nil {
 		return err
 	}
