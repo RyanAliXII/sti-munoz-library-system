@@ -1,7 +1,7 @@
 import { FC, SVGProps } from "react";
 import { AiOutlineDashboard, AiOutlineEdit } from "react-icons/ai";
 import { Bs123 } from "react-icons/bs";
-import { FaMoneyBillWave } from "react-icons/fa";
+import { FaGripLinesVertical, FaMoneyBillWave } from "react-icons/fa";
 import { FiBookOpen, FiSettings } from "react-icons/fi";
 import { GiBookshelf } from "react-icons/gi";
 import {
@@ -39,10 +39,16 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
     isCollapse: false,
     items: [
       {
-        text: "Collections",
+        text: "Collection",
         to: "/resources/collections",
         requiredPermissions: ["Collection.Read"],
         icon: SiBookstack,
+        items: [],
+      },
+      {
+        text: "Accession Number",
+        to: "/resources/accession-numbers",
+        icon: Bs123,
         items: [],
       },
       {
@@ -55,7 +61,7 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
       {
         text: "Accession",
         to: "/resources/accessions",
-        icon: Bs123,
+        icon: FaGripLinesVertical,
         requiredPermissions: ["Book.Read"],
         items: [],
       },

@@ -43,6 +43,7 @@ type Repositories struct {
 	UserRepository UserRepository
 	GameRepository GameRepository
 	NotificationRepository NotificationRepository
+	AccessionNumberRepository AccessionNumberRepository
 }
 
 func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage) *Repositories {
@@ -84,5 +85,6 @@ func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage
 		UserRepository: NewUserRepository(db),
 		GameRepository:  NewGameRepository(db),
 		NotificationRepository: NewNotificationRepository(db) ,
+		AccessionNumberRepository: NewAccessionNumberRepository(db),
 	}
 }

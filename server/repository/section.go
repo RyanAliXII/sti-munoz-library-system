@@ -64,28 +64,10 @@ func (repo *Section) New(section model.Section) error {
 	return nil
 }
 func (repo * Section)Update(section model.Section) error {
-	transaction, err := repo.db.Beginx()
+	_, err  := repo.db.Exec("UPDATE catalog.section set name= $1, prefix = $2, is_non_circulating = $3 where id = $4", section.Name, section.Prefix, section.IsNonCirculating, section.Id)
 	if err != nil {
-		transaction.Rollback()
-		return err
-	}	
-	accessionCounter := ""
-	err = transaction.Get(&accessionCounter, "SELECT accession_table from catalog.section where id = $1", section.Id)
-	if err != nil {
-		transaction.Rollback()
 		return err
 	}
-	_, err  = transaction.Exec("UPDATE accession.counter set last_value = $1 where accession = $2", section.LastValue, accessionCounter)
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
-	_, err  = transaction.Exec("UPDATE catalog.section set name= $1, prefix = $2, is_non_circulating = $3 where id = $4", section.Name, section.Prefix, section.IsNonCirculating, section.Id)
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
-	transaction.Commit()
 	return nil;
 }
 func (repo *Section) Get() []model.Section {

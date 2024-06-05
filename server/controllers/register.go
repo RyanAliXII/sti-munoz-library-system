@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/accessionnumber"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/account"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/author"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/authornumber"
@@ -67,6 +68,7 @@ func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	searchtag.SearchTagRoutes(grp.Group("/search-tags"), services)
 	content.ContentRoutes(grp.Group("/contents"), services)
 	extras.ExtrasRoutes(grp.Group("/"), services)
+	accessionnumber.AccessionNumberRoutes(grp.Group("/accession-numbers"), services)
 }
 
 func Register(r * gin.Engine, services * services.Services){
