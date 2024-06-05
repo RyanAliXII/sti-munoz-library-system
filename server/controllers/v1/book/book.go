@@ -200,7 +200,6 @@ type BookController interface {
 	ImportBooks(ctx * gin.Context)
 	HandleGetBooks(ctx * gin.Context) 
 	HandleGetById(ctx * gin.Context)
-	UploadEBook(ctx * gin.Context)
 	GetEbookById(ctx * gin.Context)
 	RemoveEbookById(ctx * gin.Context)
 	UpdateEbookById(ctx * gin.Context)

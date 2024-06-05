@@ -4,7 +4,6 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMutation } from "@tanstack/react-query";
 import Compressor from "@uppy/compressor";
 import Uppy from "@uppy/core";
-import Dashboard from "@uppy/dashboard";
 import DashboardComponent from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { Button } from "flowbite-react";

@@ -10,23 +10,7 @@ import (
 	"github.com/jaevor/go-nanoid"
 )
 
-func(ctrler *Book) UploadEBook(ctx * gin.Context){
-	//id := ctx.Param("id") // book id
-	body := EbookBody{}
-	err := ctx.Bind(&body)
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-		return
-	}
-	// err = ctrler.services.Repos.BookRepository.AddEbook(id, body.Ebook)
-	// if err != nil {
-	// 	logger.Error(err.Error(), slimlog.Error("AddEbookErr"))
-	// 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-	// 	return
-	// }
-	ctx.JSON(httpresp.Success200(nil, "Ebook successfully added."))
-}
+
 func(ctrler *Book) GetEbookById(ctx * gin.Context){
 	 
 	id := ctx.Param("id") // book id
