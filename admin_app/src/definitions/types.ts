@@ -407,3 +407,8 @@ export type TimeSlot = {
 export interface EditModalProps<T> extends ModalProps {
   formData: T;
 }
+export type AccessionNumber = {
+  accession: string;
+  lastValue: number;
+  collections: string[];
+};

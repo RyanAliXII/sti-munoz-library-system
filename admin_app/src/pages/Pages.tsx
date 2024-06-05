@@ -7,6 +7,7 @@ import UserProgramPage from "./protected/users/UserProgramPage";
 import DeviceLogPage from "./protected/services/devices/device-log/DeviceLogPage";
 import NotificationPage from "./protected/notifications/NotificationPage";
 
+const AccessionNumberPage = lazy(()=>import ( "./protected/accession-numbers/AccessionNumberPage"))
 const LoginPage = lazy(() => import("./Login"));
 const AuthorPage = lazy(() => import("./protected/catalog/author/AuthorPage"));
 const BookAddPage = lazy(
@@ -120,6 +121,7 @@ const pages = createRoutesFromChildren(
           </Suspense>
         }
       ></Route>
+
       <Route
         path="/resources/accessions"
         element={
@@ -196,6 +198,16 @@ const pages = createRoutesFromChildren(
           <Suspense fallback={<Loader />}>
             <PermissionGate requiredPermissions={["Publisher.Read"]}>
               <PublisherPage />
+            </PermissionGate>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/resources/accession-numbers"
+        element={
+          <Suspense fallback={<Loader />}>
+            <PermissionGate requiredPermissions={["Collection.Read"]}>
+              <AccessionNumberPage />
             </PermissionGate>
           </Suspense>
         }
