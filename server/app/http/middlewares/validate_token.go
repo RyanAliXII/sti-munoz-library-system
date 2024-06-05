@@ -109,11 +109,12 @@ func processAdminApplicationToken(token string, ctx * gin.Context)error{
 	claims := jwt.MapClaims{}
 	jwks := azuread.GetOrCreateJwksInstance()
 	_, parseTokenErr := jwt.ParseWithClaims(token, &claims, jwks.Keyfunc)
+	logger.Info("Parsing token validating.")
 	if parseTokenErr != nil {
 		logger.Error(parseTokenErr.Error(), slimlog.Function("middlewares.ValidateToken.processAdminApplicationToken"), slimlog.Error("parseTokenErr"))
 		return parseTokenErr
 	}
-
+	logger.Info("Parsing token done.")
 	id, hasId := claims["oid"]
 	roles, hasRoles := claims["roles"]
 	if !hasId {

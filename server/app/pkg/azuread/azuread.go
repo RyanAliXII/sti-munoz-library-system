@@ -48,7 +48,7 @@ func createJWKS() *keyfunc.JWKS {
 			RefreshErrorHandler: func(err error) {
 				logger.Error(err.Error(), slimlog.Error("jwks.RefreshErrorHandler"))
 			},
-	 })
+	})
 	if err != nil {
 		panic(err)
 	}
