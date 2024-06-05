@@ -210,4 +210,5 @@ type BookController interface {
 	UpdateAccession(ctx * gin.Context)
 	GetAccessionsByCollection(ctx * gin.Context)
 	UpdateAccessionBulk(ctx * gin.Context)
+	GenerateEbookUploadRequestUrl(ctx * gin.Context)
 }

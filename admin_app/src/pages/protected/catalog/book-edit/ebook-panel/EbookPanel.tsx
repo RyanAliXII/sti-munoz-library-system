@@ -13,15 +13,9 @@ const EbookPanel = () => {
   const fetchEbook = async () => {
     if (!book.id) return "";
     try {
-      const response = await Get(`/books/${book.id}/ebooks`, {
-        responseType: "arraybuffer",
-      });
-
-      const bufferLength = response.data?.byteLength ?? 0;
-      if (bufferLength === 0) return "";
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      return url;
+      const response = await Get(`/books/${book.id}/ebooks`);
+      const { data } = await response.data;
+      return data?.url ?? "";
     } catch (error) {
       console.error(error);
       return "";

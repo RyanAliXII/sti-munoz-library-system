@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/aws/aws-sdk-go/aws"
@@ -64,6 +65,28 @@ func(fs * S3FileStorage)Get(key string, bucket string) (io.ReadCloser, error) {
 	}
 	return result.Body, err
 }
+func(fs * S3FileStorage)GenerateUploadRequestUrl(key string, bucket string)(string,error){
+	result, _:= fs.s3.PutObjectRequest(&s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(key),
+	})
+	url, err := result.Presign(15 * time.Minute)
+	if err != nil {
+		return "", err
+	}
+	return url, err
+}
+func(fs * S3FileStorage)GenerateGetRequestUrl(key string, bucket string)(string,error){
+	result, _:= fs.s3.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(key),
+	})
+	url, err := result.Presign(15 * time.Minute)
+	if err != nil {
+		return "", err
+	}
+	return url, err
+}
 
 var s3FileStorage filestorage.FileStorage;
 var once sync.Once
@@ -110,7 +133,6 @@ func initS3FileStorage() (filestorage.FileStorage){
 	storage := &S3FileStorage{
 		s3: svc,
 	}
-	
 	return storage
 }
 

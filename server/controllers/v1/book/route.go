@@ -92,5 +92,6 @@ func BookRoutes(router *gin.RouterGroup, services * services.Services) {
 	
 	router.GET("/exportation", middlewares.ValidatePermissions([]string{"Book.Read"}, true), controller.ExportBooks)
 	router.PUT("/accessions/:id", 	middlewares.ValidatePermissions([]string{"Book.Edit"}, true), controller.UpdateAccession)
-
+    
+	router.GET("/ebooks/upload-requests", middlewares.ValidatePermissions([]string{"Book.Add", "Book.Edit"}, true), controller.GenerateEbookUploadRequestUrl )
 }

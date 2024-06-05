@@ -55,10 +55,12 @@ const eBookUppy = new Uppy({
     allowedFileTypes: [".pdf"],
     maxNumberOfFiles: 1,
   },
-}).use(XHRUpload, {
-  fieldName: "ebook",
-  endpoint: "",
-});
+})
+  .use(Compressor)
+  .use(XHRUpload, {
+    endpoint: "",
+    method: "PUT",
+  });
 const BookAddForm = () => {
   const { instance: msalInstance } = useMsal();
   const {
@@ -99,7 +101,7 @@ const BookAddForm = () => {
     setForm,
     setErrors,
   } = useBookAddFormContext();
-  const { Get, Post } = useRequest();
+  const { Get, Post, Put } = useRequest();
   const fetchPublishers = async () => {
     try {
       const { data: response } = await Get("/publishers/", {
@@ -186,16 +188,31 @@ const BookAddForm = () => {
       uppy.upload().finally(() => {
         uppy.cancelAll();
       });
+      const hasFiles = eBookUppy.getFiles().length > 0;
+      if (!hasFiles) return;
+      const uploadRequestResponse = await Get("/books/ebooks/upload-requests");
+      const { data } = uploadRequestResponse.data;
+      const url = data?.url;
+      const key = data?.key;
+      if (!url || !key) return;
       eBookUppy.getPlugin("XHRUpload")?.setOptions({
         headers: {
-          Authorization: `Bearer ${tokenResponse.accessToken}`,
+          "Content-Type": "application/pdf",
         },
+        endpoint: url,
+      });
 
-        endpoint: `${BASE_URL_V1}/books/${bookId}/ebooks`,
-      });
-      eBookUppy.upload().finally(() => {
+      try {
+        await eBookUppy.upload();
+        await Put(`/books/${bookId}/ebooks`, {
+          key,
+        });
+      } catch (error) {
+        toast.error("Unknown error occured while, uploading eBook");
+        console.error(error);
+      } finally {
         eBookUppy.cancelAll();
-      });
+      }
     },
     onError: (error: AxiosError<any, any>) => {
       const { data } = error?.response?.data;
@@ -504,6 +521,7 @@ const BookAddForm = () => {
               width={"100%"}
               height={"450px"}
               hideUploadButton={true}
+              showProgressDetails={true}
               className="bg-gray-50 dark:bg-gray-700"
               locale={{
                 strings: {
@@ -523,6 +541,7 @@ const BookAddForm = () => {
               width={"100%"}
               height={"250px"}
               hideUploadButton={true}
+              showProgressDetails={true}
               className="bg-gray-50 dark:bg-gray-700"
               locale={{
                 strings: {

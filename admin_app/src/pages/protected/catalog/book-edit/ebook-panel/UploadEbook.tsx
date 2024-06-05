@@ -1,20 +1,16 @@
-import { DangerButton, PrimaryButton } from "@components/ui/button/Button";
-import { ModalProps } from "@definitions/types";
+import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { useRequest } from "@hooks/useRequest";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSwitch } from "@hooks/useToggle";
+import { useMutation } from "@tanstack/react-query";
+import Compressor from "@uppy/compressor";
 import Uppy from "@uppy/core";
+import Dashboard from "@uppy/dashboard";
 import DashboardComponent from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
-import { FormEvent } from "react";
-import { useBookEditFormContext } from "../BookEditFormContext";
-import { useSwitch } from "@hooks/useToggle";
-import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
-import { useMsal } from "@azure/msal-react";
-import { apiScope } from "@definitions/configs/msal/scopes";
-import { BASE_URL_V1 } from "@definitions/configs/api.config";
-import { toast } from "react-toastify";
 import { Button } from "flowbite-react";
-import Compressor from "@uppy/compressor";
+import { FormEvent, useState } from "react";
+import { toast } from "react-toastify";
+import { useBookEditFormContext } from "../BookEditFormContext";
 
 const eBookUppy = new Uppy({
   restrictions: {
@@ -24,38 +20,44 @@ const eBookUppy = new Uppy({
 })
   .use(Compressor)
   .use(XHRUpload, {
-    fieldName: "ebook",
     method: "PUT",
     endpoint: "",
   });
 const UploadEbook = ({ refetch = () => {}, eBookUrl = "" }) => {
-  const { instance } = useMsal();
+  const { Get, Put } = useRequest();
+  const [isUploading, setIsUploading] = useState(false);
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
     const hasFiles = eBookUppy.getFiles().length > 0;
     if (!hasFiles) return;
-    const response = await instance.acquireTokenSilent({
-      scopes: [apiScope("LibraryServer.Access")],
-    });
 
+    const uploadRequestResponse = await Get("/books/ebooks/upload-requests");
+    const { data } = uploadRequestResponse.data;
+    const url = data?.url;
+    const key = data?.key;
+    if (!url || !key) return;
     eBookUppy.getPlugin("XHRUpload")?.setOptions({
       headers: {
-        Authorization: `Bearer ${response.accessToken}`,
+        "Content-Type": "application/pdf",
       },
-      endpoint: `${BASE_URL_V1}/books/${book.id}/ebooks`,
+      endpoint: url,
     });
-    eBookUppy
-      .upload()
-      .then(() => {
-        toast.success("eBook uploaded.");
-        refetch();
-      })
-      .catch(() => {
-        toast.error("Unknown error occured.");
-      })
-      .finally(() => {
-        eBookUppy.cancelAll();
+    setIsUploading(true);
+    try {
+      await eBookUppy.upload();
+      await Put(`/books/${book.id}/ebooks`, {
+        key,
       });
+      refetch();
+      toast.success("eBook uploaded.");
+    } catch (error) {
+      toast.error("Unknown error occured");
+      console.error(error);
+    } finally {
+      eBookUppy.cancelAll();
+      setIsUploading(false);
+    }
   };
   const { form: book } = useBookEditFormContext();
   const { Delete } = useRequest();
@@ -89,10 +91,16 @@ const UploadEbook = ({ refetch = () => {}, eBookUrl = "" }) => {
           width={"100%"}
           hideUploadButton={true}
           uppy={eBookUppy}
+          showProgressDetails={true}
           height={"400px"}
         />
         <div className="mt-3 flex">
-          <Button color="primary" type="submit">
+          <Button
+            color="primary"
+            type="submit"
+            isProcessing={isUploading}
+            disabled={isUploading}
+          >
             Save
           </Button>
           <Button
