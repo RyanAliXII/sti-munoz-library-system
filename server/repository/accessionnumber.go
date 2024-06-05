@@ -7,6 +7,7 @@ import (
 
 type AccessionNumberRepository interface {
 	Get()([]model.AccessionNumber, error)
+	Update(accessionNumber model.AccessionNumber)(error)
 }
 
 type AccessionNumber struct{
@@ -24,4 +25,9 @@ func (repo * AccessionNumber)Get()([]model.AccessionNumber, error){
 	GROUP BY accession, last_value ORDER BY accession DESC `
 	err := repo.db.Select(&accessionNumbers, query)
 	return accessionNumbers, err
+}
+func (repo * AccessionNumber)Update(accessionNumber model.AccessionNumber)(error){
+	query := `UPDATE accession.counter set last_value = $1 where accession = $2`
+	_, err := repo.db.Exec(query, accessionNumber.LastValue, accessionNumber.Accession )
+	return err
 }
