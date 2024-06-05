@@ -14,18 +14,21 @@ import { apiScope } from "@definitions/configs/msal/scopes";
 import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { toast } from "react-toastify";
 import { Button } from "flowbite-react";
+import Compressor from "@uppy/compressor";
 
 const eBookUppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".pdf"],
     maxNumberOfFiles: 1,
   },
-}).use(XHRUpload, {
-  fieldName: "ebook",
-  method: "PUT",
-  endpoint: "",
-});
-const UploadEbook = () => {
+})
+  .use(Compressor)
+  .use(XHRUpload, {
+    fieldName: "ebook",
+    method: "PUT",
+    endpoint: "",
+  });
+const UploadEbook = ({ refetch = () => {}, eBookUrl = "" }) => {
   const { instance } = useMsal();
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -45,23 +48,22 @@ const UploadEbook = () => {
       .upload()
       .then(() => {
         toast.success("eBook uploaded.");
+        refetch();
       })
       .catch(() => {
         toast.error("Unknown error occured.");
       })
       .finally(() => {
         eBookUppy.cancelAll();
-        queryClient.invalidateQueries(["book"]);
       });
   };
   const { form: book } = useBookEditFormContext();
   const { Delete } = useRequest();
-  const queryClient = useQueryClient();
   const removeEbook = useMutation({
     mutationFn: () => Delete(`/books/${book.id}/ebooks`),
     onSuccess: () => {
       toast.success("eBook removed.");
-      queryClient.invalidateQueries(["book"]);
+      refetch();
     },
     onError: () => {
       toast.error("Unknown error occured.");
@@ -97,7 +99,7 @@ const UploadEbook = () => {
             color="failure"
             type="button"
             className="ml-2"
-            disabled={book.ebook.length === 0}
+            disabled={eBookUrl.length === 0}
             onClick={openRemoveDialog}
           >
             Remove eBook
