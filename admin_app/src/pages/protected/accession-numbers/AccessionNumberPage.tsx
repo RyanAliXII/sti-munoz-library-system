@@ -4,12 +4,13 @@ import { AccessionNumber, ModalProps } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Tippy from "@tippyjs/react";
 import { Button, Modal, Table } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { number, object } from "yup";
 
 const AccessionNumberPage = () => {
@@ -19,7 +20,6 @@ const AccessionNumberPage = () => {
     try {
       const response = await Get("/accession-numbers");
       const { data } = await response.data;
-      console.log(data);
       return data?.accessionNumbers ?? [];
     } catch (error) {
       return [];
@@ -102,6 +102,7 @@ const UpdateAccessionNumberModal = ({
         .required("Value is required."),
     }),
   });
+  const { Put } = useRequest();
   useEffect(() => {
     if (!accessionNumber) return;
     setForm({
@@ -109,11 +110,18 @@ const UpdateAccessionNumberModal = ({
       lastValue: accessionNumber.lastValue,
     });
   }, [accessionNumber]);
+  const queryClient = useQueryClient();
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const form = await validate();
-    } catch (error) {}
+      await Put(`/accession-numbers/${form?.accession}`, form);
+      toast.success("Accession number updated.");
+      closeModal();
+      queryClient.invalidateQueries(["accessionNumbers"]);
+    } catch (error) {
+      toast.error("Unknown error occured.");
+    }
   };
   return (
     <Modal onClose={closeModal} show={isOpen} size={"lg"} dismissible>

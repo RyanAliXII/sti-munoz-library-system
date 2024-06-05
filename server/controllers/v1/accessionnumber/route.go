@@ -1,6 +1,7 @@
 package accessionnumber
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
@@ -9,5 +10,5 @@ import (
 func AccessionNumberRoutes(router * gin.RouterGroup, services * services.Services){
 	ctrler := NewAccessionNumberController(services)
 	router.GET("", ctrler.GetAccessionNumbers)
-	router.PUT("/:accession", ctrler.UpdateAccessionNumber)
+	router.PUT("/:accession",middlewares.ValidateBody[UpdateAccessionNumberBody] ,ctrler.UpdateAccessionNumber)
 }

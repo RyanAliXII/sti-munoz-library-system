@@ -6,6 +6,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 
@@ -34,7 +35,7 @@ func(ctrler * AccessionNumber)UpdateAccessionNumber(ctx * gin.Context){
 	accession := ctx.Param("accession")
 	accessionNumber := model.AccessionNumber{}
 	accessionNumber.Accession = accession
-	err := ctx.ShouldBindJSON(&accessionNumber)
+	err := ctx.ShouldBindBodyWith(&accessionNumber, binding.JSON)
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error(), slimlog.Error("AccessionNumberController.UpdateAccessionNumber"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
