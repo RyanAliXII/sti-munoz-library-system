@@ -127,16 +127,6 @@ const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection, initDelete }) => {
             </div>
           )}
         </div>
-        <div className="w-full pt-1">
-          <CustomInput
-            label="Accession number"
-            error={errors?.lastValue}
-            type="number"
-            name="lastValue"
-            value={form.lastValue}
-            onChange={handleFormInput}
-          />
-        </div>
 
         <div className="flex gap-1 items-center">
           <Checkbox

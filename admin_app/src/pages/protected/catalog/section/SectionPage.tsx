@@ -6,7 +6,7 @@ import { useDeleteCollection } from "@hooks/data-fetching/collection";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Tabs } from "flowbite-react";
+import { Alert, Button, Tabs } from "flowbite-react";
 import { useState } from "react";
 import "react-responsive-modal/styles.css";
 import { toast } from "react-toastify";
@@ -14,8 +14,9 @@ import AddSectionModal from "./AddSectionModal";
 import CollectionTableView from "./CollectionTableView";
 import CollectionTreeView from "./CollectionTreeView";
 import EditSectionModal from "./EditSectionModal";
-import { FaTable } from "react-icons/fa";
+import { FaLongArrowAltRight, FaTable } from "react-icons/fa";
 import { MdOutlineAccountTree } from "react-icons/md";
+import { Link } from "react-router-dom";
 
 type Data = {
   collections: Section[];
@@ -109,6 +110,15 @@ const SectionPage = () => {
   return (
     <>
       <Container>
+        <Alert className="mb-2">
+          To monitor or edit last accession number of a collection, Please {""}
+          <Link
+            to="/resources/accession-numbers"
+            className="underline underline-offset-2"
+          >
+            see accession number page.
+          </Link>
+        </Alert>
         <div className="w-full flex justify-end">
           <HasAccess requiredPermissions={["Collection.Add"]}>
             <Button color="primary" onClick={openAddModal}>
