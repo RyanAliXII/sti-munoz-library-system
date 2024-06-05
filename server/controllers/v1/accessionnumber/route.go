@@ -8,5 +8,5 @@ import (
 
 func AccessionNumberRoutes(router * gin.RouterGroup, services * services.Services){
 	ctrler := NewAccessionNumberController(services)
-	router.GET("", ctrler.GetAccessionNumber)
+	router.GET("", ctrler.GetAccessionNumbers)
 }

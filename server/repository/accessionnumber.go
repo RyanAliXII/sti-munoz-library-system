@@ -1,17 +1,27 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/jmoiron/sqlx"
+)
 
-type AccessionNumberRepository interface {}
+type AccessionNumberRepository interface {
+	Get()([]model.AccessionNumber, error)
+}
 
 type AccessionNumber struct{
 	db * sqlx.DB
 }
 func NewAccessionNumberRepository(db * sqlx.DB)AccessionNumberRepository{
-	return AccessionNumber{
+	return &AccessionNumber{
 		db: db,
 	}
 }
-func (repo * AccessionNumber)Get(){
-
+func (repo * AccessionNumber)Get()([]model.AccessionNumber, error){
+	accessionNumbers := make([]model.AccessionNumber, 0)
+	query := `SELECT accession, last_value, ARRAY_AGG(section.name) as collections FROM accession.counter 
+	INNER JOIN catalog.section on counter.accession = section.accession_table
+	GROUP BY accession, last_value ORDER BY accession DESC `
+	err := repo.db.Select(&accessionNumbers, query)
+	return accessionNumbers, err
 }
