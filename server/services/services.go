@@ -2,11 +2,11 @@ package services
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/jmoiron/sqlx"
+	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 )
 
@@ -20,18 +20,21 @@ type Services struct {
 	Broadcaster Broadcaster
 	FileStorage filestorage.FileStorage
 }
-func BuildServices () Services {
-	minioclient := minioclient.GetorCreateInstance()
-	db := postgresdb.GetOrCreateInstance()
-	rabbitmq := rabbitmq.CreateOrGetInstance()
-	fileStorage := GetOrCreateS3FileStorage()
+type ServicesDependency struct {
+	Db * sqlx.DB
+	Minio * minio.Client
+	RabbitMQ * rabbitmq.RabbitMQ
+	FileStorage  filestorage.FileStorage
+}
+func BuildServices (deps * ServicesDependency) Services {
+
 	return Services{
 		Notification: NewNotificationService(),
-		Repos: repository.New(db, minioclient, fileStorage),
+		Repos: repository.New(deps.Db, deps.Minio, deps.FileStorage),
 		ClientLogExport: NewClienLogExporter(),
 		BorrowedBookExport: NewBorrowedBookExporter(),
 		Logger: slimlog.GetInstance(),
-		Broadcaster: NewRabbitMQBroadcast(rabbitmq),
+		Broadcaster: NewRabbitMQBroadcast(deps.RabbitMQ),
 		PenaltyExport: NewPenaltyExporter(),
 		FileStorage:  GetOrCreateS3FileStorage(),
 	}

@@ -39,8 +39,8 @@ func createConnection() *sqlx.DB {
 			time.Sleep(time.Second * 2)
 			continue
 		}
-		tempConnection.DB.SetMaxOpenConns(20)
-		tempConnection.DB.SetMaxIdleConns(5)
+		// tempConnection.DB.SetMaxOpenConns(20)
+		// tempConnection.DB.SetMaxIdleConns(5)
 		connection = tempConnection
 		lastErr = nil
 		break

@@ -10,11 +10,7 @@ import (
 
 
 func(repo * Account)ActivateAccountBulk(accounts []model.AccountActivation) error {
-	transaction, err := repo.db.Beginx()
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
+	
 	dialect := goqu.Dialect("postgres")
 	for _, account := range accounts {
 		name := fmt.Sprintf("%s%s", strings.ToLower(account.GivenName), strings.ToLower(account.Surname))
@@ -43,13 +39,11 @@ func(repo * Account)ActivateAccountBulk(accounts []model.AccountActivation) erro
 			return err
 		}
 
-		_, err = transaction.Exec(query,args...)
-		if err != nil {
-			transaction.Rollback()
+		_, err = repo.db.Exec(query,args...)
+		if err != nil {		
 			return err
 		}
 	}
-	transaction.Commit()
 	return nil;
 }
 func (repo * Account)ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error {
