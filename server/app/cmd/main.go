@@ -10,6 +10,9 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/realtime"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
@@ -48,17 +51,29 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+	
+	minioclient := minioclient.GetorCreateInstance()
+	db := postgresdb.GetOrCreateInstance()
+	defer db.Close()
+	rabbitmq := rabbitmq.CreateOrGetInstance()
+	defer rabbitmq.Connection.Close()
+	fileStorage := services.GetOrCreateS3FileStorage()
 	azuread.GetOrCreateJwksInstance()
 	permissionstore.GetPermissionStore()
+	jwks := azuread.GetOrCreateJwksInstance()
+	defer jwks.EndBackground()
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "STI MUNOZ LIBRARY",
 			"time":    time.Now(),
 		})
 	})
-	jwks := azuread.GetOrCreateJwksInstance()
-	defer jwks.EndBackground()
-	services := services.BuildServices();
+	services := services.BuildServices(&services.ServicesDependency{
+		Db: db,
+		Minio: minioclient,
+		RabbitMQ: rabbitmq,
+		FileStorage: fileStorage,
+	});
 	realtime.RealtimeRoutes(r.Group("/rt"), &services)
 	controllers.RegisterAPIV1(r, &services)
 	controllers.Register(r, &services);

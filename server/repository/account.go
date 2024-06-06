@@ -36,11 +36,7 @@ type AccountFilter struct {
 func (repo *Account) GetAccounts(filter * AccountFilter) ([]model.Account,Metadata, error) {
 	var accounts []model.Account = make([]model.Account, 0)
 	meta := Metadata{}
-	transaction, err := repo.db.Beginx()
-	if err != nil {
-		transaction.Rollback()
-	}
-
+	
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(goqu.C("id"),
 		goqu.C("email"), 
@@ -66,29 +62,25 @@ func (repo *Account) GetAccounts(filter * AccountFilter) ([]model.Account,Metada
 	query, _, err := ds.ToSQL()
 
 	if err != nil {
-		transaction.Rollback()
+		
 		return accounts,meta, err
 	}
-	err = transaction.Select(&accounts,query)
+	err = repo.db.Select(&accounts,query)
 	if err != nil {
-	
-		transaction.Rollback()
 		return accounts,meta, err
 	}
     query, err = repo.buildMetadataQuery(filter)
 	if err != nil {
-		transaction.Rollback()	
 		return accounts, meta, err	
 	}
 
 	
-	err = transaction.Get(&meta, query, filter.Limit)
+	err = repo.db.Get(&meta, query, filter.Limit)
 
 	if err != nil {
-		transaction.Rollback()
 		return accounts,meta, err	
 	}
-	transaction.Commit()
+	
 	return accounts,meta, nil
 }
 
@@ -267,47 +259,37 @@ func (repo *Account) NewAccounts(accounts *[]model.Account) error {
 		logger.Error(toQueryErr.Error(), slimlog.Function("Account.NewAccounts"))
 		return toQueryErr
 	}
-	transaction, transactErr := repo.db.Beginx()
-	if transactErr != nil {
-		transaction.Rollback()
-		return transactErr
-	}
-	insertResult, insertErr := transaction.Exec(query, args...)
+
+	insertResult, insertErr := repo.db.Exec(query, args...)
 	if insertErr != nil {
 		logger.Error(insertErr.Error(), slimlog.Function("Account.NewAccounts"))
-		transaction.Rollback()
+		
 		return insertErr
 	}
 	accountsInserted, _ := insertResult.RowsAffected()
-	transaction.Commit()
+
 	logger.Info("New accounts created.", slimlog.AffectedRows(accountsInserted))
 
 	return nil
 }
 func (repo *Account) VerifyAndUpdateAccount(account model.Account) error {
-	transaction, transactErr := repo.db.Beginx()
-	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("transactErr"))
-		transaction.Rollback()
-		return transactErr
-	}
+
 	registeredAccount := model.Account{}
-	getErr := transaction.Get(&registeredAccount, "Select id, display_name, email, surname, given_name, updated_at from system.account where id = $1 or email = $2", account.Id, account.Email)
+	getErr := repo.db.Get(&registeredAccount, "Select id, display_name, email, surname, given_name, updated_at from system.account where id = $1 or email = $2", account.Id, account.Email)
 	if getErr != nil {
 		if getErr == sql.ErrNoRows {
 				logger.Info("User doesn't not exist inserting in database.")
-			_, insertErr := transaction.Exec("Insert into system.account(id, display_name, email, surname, given_name) VALUES ($1, $2, $3, $4, $5)",
+			_, insertErr := repo.db.Exec("Insert into system.account(id, display_name, email, surname, given_name) VALUES ($1, $2, $3, $4, $5)",
 				account.Id, account.DisplayName, account.Email, account.Surname, account.GivenName)
 			if insertErr != nil {
 				logger.Error(insertErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("insertErr"))
-				transaction.Rollback()
 				return insertErr
 			}
 			logger.Info("Inserting user account.", zap.String("accountId", account.Id), slimlog.Function("Account.VerifyAndUpdateAccount"))
-			transaction.Commit()
+			
 			return nil
 		}
-		transaction.Rollback()
+	
 		logger.Error(getErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("getErr"))
 		return getErr
 	}
@@ -315,18 +297,17 @@ func (repo *Account) VerifyAndUpdateAccount(account model.Account) error {
 
 	if len(registeredAccount.Id) > 0 {
 		if time.Now().Equal(registeredAccount.UpdatedAt.Time.Add(OneMonth)) || time.Now().After(registeredAccount.UpdatedAt.Add(OneMonth)) {
-			_, updateErr := transaction.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
+			_, updateErr := repo.db.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
 				account.DisplayName, account.Email, account.Surname, account.GivenName, account.Id)
 			if updateErr != nil {
 				logger.Error(updateErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("updateErr"))
-				transaction.Rollback()
+				
 				return updateErr
 			}
 			logger.Info("Updating user account.", zap.String("accountId", registeredAccount.Id), slimlog.Function("Account.VerifyAndUpdateAccount"))
 		}
 
 	}
-	transaction.Commit()
 	return nil
 }
 func (repo *Account) GetRoleByAccountId(accountId string) (model.Role, error) {
@@ -407,7 +388,7 @@ func (repo * Account) UpdateProfilePictureById(id string, image * multipart.File
 		return err
 	}
 	if len(dbAccount.ProfilePicture) > 0 {
-		repo.fs.Delete(dbAccount.ProfilePicture, defaultBucket)
+		err := repo.fs.Delete(dbAccount.ProfilePicture, defaultBucket)
 		if err != nil {
 			 transaction.Rollback()
 			 return err
@@ -415,6 +396,7 @@ func (repo * Account) UpdateProfilePictureById(id string, image * multipart.File
 	}
 	_, err = transaction.Exec("UPDATE system.account set profile_picture = $1 where id = $2", key, id)
 	if err != nil {
+		transaction.Rollback()
 		return err
 	}
 	transaction.Commit()

@@ -81,14 +81,11 @@ type BookExport struct {
 func (book * Book)ValidateIfAccessionExistsOrDuplicate()([]map[string]string,bool, error){
 	accessionTable := ""
 	db := postgresdb.GetOrCreateInstance()
-	transaction, err := db.Beginx()
+	
 	accessions := make([]map[string]string, 0)
+	
+	err := db.Get(&accessionTable, "SELECT accession_table from catalog.section where id = $1", book.Section.Id)
 	if err != nil {
-		return  accessions,false, err
-	}
-	err = transaction.Get(&accessionTable, "SELECT accession_table from catalog.section where id = $1", book.Section.Id)
-	if err != nil {
-		transaction.Rollback()
 		return accessions, false, err
 	}
 	hasExistingOrDuplicate := false

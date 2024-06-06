@@ -138,20 +138,14 @@ func (repo * BorrowingQueue)UpdateQueueItems(items []model.BorrowingQueueItem) e
 	if len(items) == 0 {
 		return nil
 	}
-	transaction, err := repo.db.Beginx()
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
 	for idx, item := range items {
 		query := fmt.Sprintf("UPDATE borrowing.queue set queued_at = now() + interval '%d seconds' where id = $1", idx + 1)
-		_, err := transaction.Exec(query, item.Id)
+		_, err := repo.db.Exec(query, item.Id)
 		if err != nil {
-			transaction.Rollback()
+			
 			return err
 		}
 	}
-	transaction.Commit()
 	return nil
 }
 

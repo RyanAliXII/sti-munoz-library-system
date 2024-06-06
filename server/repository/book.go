@@ -78,6 +78,7 @@ func (repo *Book) New(book model.Book) (string, error) {
 	insertBookResult, insertBookErr := transaction.Exec(insertBookQuery, book.Title, book.ISBN, book.Description, book.Pages,
 		book.Section.Id, book.Publisher.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.Id, book.AuthorNumber, book.DDC, book.Subject)
 	if insertBookErr != nil {
+		transaction.Rollback()
 		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
 		return book.Id, insertBookErr
 	}
