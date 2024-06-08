@@ -1,25 +1,24 @@
 package repository
 
 import (
-	"context"
 	"fmt"
 	"mime/multipart"
+	"os"
 	"path/filepath"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jaevor/go-nanoid"
 	"github.com/jmoiron/sqlx"
-	"github.com/minio/minio-go/v7"
 )
 
 type Penalty struct {
 	db *sqlx.DB
-	minio * minio.Client
+	fs  filestorage.FileStorage
 }
 type PenaltyFilter struct {
 	From string 
@@ -31,10 +30,11 @@ type PenaltyFilter struct {
 	Order string 
 	filter.Filter
 }
-func NewPenaltyRepository(db * sqlx.DB, minio * minio.Client) PenaltyRepository{
+func NewPenaltyRepository(db * sqlx.DB, fileStorage  filestorage.FileStorage) PenaltyRepository{
 	return &Penalty{
 		db: db,
-		minio: minio,
+		fs: fileStorage,
+	
 	}
 }
 func(repo *Penalty) GetPenalties(filter * PenaltyFilter)([]model.Penalty, Metadata, error){
@@ -279,18 +279,23 @@ func (repo *Penalty)MarkAsSettled(id string, fileHeader * multipart.FileHeader, 
 		return err
 	}
 	defer proof.Close()
+	contentType := fileHeader.Header["Content-Type"][0]
+	if contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/png" && contentType != "image/webp"{
+		return fmt.Errorf("content type not supported : %s ", contentType)
+	}
 	fileExt := filepath.Ext(fileHeader.Filename) 
 	objectName := fmt.Sprintf("payment-proof/%s%s", canonicID(), fileExt)
-	size := fileHeader.Size
-	contentType := fileHeader.Header["Content-Type"][0]
-	uploadInfo, err := repo.minio.PutObject(context.Background(), minioclient.BUCKET,objectName, proof, size, minio.PutObjectOptions{
-		ContentType: contentType,
-	})
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+    key, err := repo.fs.NewUploader(objectName, bucket, proof ).SetContentType(contentType).Upload()
 	if err != nil {
 		return err
 	}
-	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", uploadInfo.Key,remarks, id)
+	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3",key,remarks, id)
 	if err != nil {
+		err := repo.fs.Delete(objectName, bucket)
+		if err != nil {
+			return err
+		}
 		return err	
 	}
 	return nil
@@ -303,7 +308,8 @@ func (repo *Penalty)UpdateSettlement(id string, fileHeader * multipart.FileHeade
 	if err != nil {
 		return err
 	}
-	err = repo.minio.RemoveObject(context.Background(), minioclient.BUCKET, penalty.Proof, minio.RemoveObjectOptions{})
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	err = repo.fs.Delete(penalty.Proof, bucket)
 	if err != nil {
 		return err
 	}
@@ -317,18 +323,23 @@ func (repo *Penalty)UpdateSettlement(id string, fileHeader * multipart.FileHeade
 		return err
 	}
 	defer proof.Close()
+	contentType := fileHeader.Header["Content-Type"][0]
+	if contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/png" && contentType != "image/webp"{
+		return fmt.Errorf("content type not supported : %s ", contentType)
+	}
 	fileExt := filepath.Ext(fileHeader.Filename) 
 	objectName := fmt.Sprintf("payment-proof/%s%s", canonicID(), fileExt)
-	size := fileHeader.Size
-	contentType := fileHeader.Header["Content-Type"][0]
-	uploadInfo, err := repo.minio.PutObject(context.Background(), minioclient.BUCKET,objectName, proof, size, minio.PutObjectOptions{
-		ContentType: contentType,
-	})
+
+	key, err := repo.fs.NewUploader(objectName, bucket, proof).SetContentType(contentType).Upload()
 	if err != nil {
 		return err
 	}
-	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", uploadInfo.Key,remarks, id)
+	_, err = repo.db.Exec("UPDATE borrowing.penalty SET settled_at = now(), proof = $1, remarks = $2 where id = $3", key,remarks, id)
 	if err != nil {
+		err := repo.fs.Delete(objectName, bucket)
+		if err != nil {
+			return err
+		}
 		return err	
 	}
 	return nil

@@ -71,7 +71,7 @@ func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage
 		ContentRepository: NewContentRepository(minio),
 		ExtrasRepository:  NewExtrasRepository(db),
 		ItemRepository:  NewItemRepository(db),
-		PenaltyRepository:  NewPenaltyRepository(db, minio),
+		PenaltyRepository:  NewPenaltyRepository(db, fileStorage),
 		ReportRepository:  NewReportRepository(db),
 		ReservationRepository: NewReservationRepository(db),
 		ScannerAccount:  NewScannerAccountRepository(db),

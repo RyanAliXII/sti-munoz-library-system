@@ -1,22 +1,21 @@
-import { buildS3Url } from "@definitions/configs/s3";
 import { EditModalProps, Penalty } from "@definitions/types";
 import { useForm } from "@hooks/useForm";
 import useModalToggleListener from "@hooks/useModalToggleListener";
 import { useRequest } from "@hooks/useRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Compressor from "@uppy/compressor";
 import Uppy from "@uppy/core";
 import DashboardComponent from "@uppy/react/src/Dashboard";
 import { Button, Label, Modal, Textarea } from "flowbite-react";
-import { set } from "lodash";
 import { FC, FormEvent } from "react";
 import { FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
 const uppy = new Uppy({
   restrictions: {
-    allowedFileTypes: [".png", ".jpg", ".webp"],
+    allowedFileTypes: [".png", ".jpg", ".webp", ".jpeg"],
     maxNumberOfFiles: 1,
   },
-});
+}).use(Compressor);
 
 const EditSettlementModal: FC<EditModalProps<Penalty>> = ({
   isOpen,
@@ -24,7 +23,7 @@ const EditSettlementModal: FC<EditModalProps<Penalty>> = ({
   formData,
 }) => {
   const queryClient = useQueryClient();
-  const { Patch } = useRequest();
+  const { Patch, Get } = useRequest();
   const { form, handleFormInput, resetForm, setForm } = useForm<{
     remarks: string;
   }>({
@@ -66,10 +65,15 @@ const EditSettlementModal: FC<EditModalProps<Penalty>> = ({
       return;
     }
     setForm({ remarks: formData.remarks ?? "" });
-    const url = buildS3Url(formData.proof ?? "");
+    // const url = buildS3Url(formData.proof ?? "");
     try {
-      const response = await fetch(url);
-      const blob = await response.blob();
+      const response = await Get(`/penalties/${formData.id}/proofs`);
+      const { data } = response.data;
+      const url = data?.url;
+      if (!url) return;
+      const fileResponse = await fetch(url);
+      const blob = await fileResponse.blob();
+      console.log(blob);
       uppy.addFile({
         name: blob.name,
         type: blob.type,
@@ -81,7 +85,7 @@ const EditSettlementModal: FC<EditModalProps<Penalty>> = ({
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible>
-      <Modal.Header>Settle Penalty</Modal.Header>
+      <Modal.Header>Edit Penalty Settlement</Modal.Header>
       <Modal.Body>
         <form onSubmit={onSubmit}>
           <div className="pb-2">

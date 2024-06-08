@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
@@ -232,6 +233,36 @@ func(ctrler * Penalty)ExportPenalties(ctx * gin.Context){
 	}
 	ctx.Data(http.StatusBadRequest, "", []byte{})
 }
+func (ctrler * Penalty)GetProofOfPaymentUrl(ctx * gin.Context){
+	id := ctx.Param("id")
+	penalty, err :=  ctrler.services.Repos.PenaltyRepository.GetPenaltyById(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			logger.Warn("Penalty not found while trying to get proof of payment ", slimlog.Error("GetProofOfPayment"))
+			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+			return 
+		}
+		logger.Error(err.Error(), slimlog.Error("GetPenaltyById"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	if(len(penalty.Proof) == 0){
+		logger.Warn("No payment proof is attached.", slimlog.Error("GetProofOfPayment"))
+		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
+		return 
+	}
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(penalty.Proof, bucket)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("GenerateRequestUrl"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(gin.H{
+		"url" : url,
+	}, "Url fetched."))
+
+}
 func NewPenaltyController(services * services.Services) PenaltyController {
 	return &Penalty{
 			services: services,
@@ -248,4 +279,5 @@ type PenaltyController interface {
 	DeletePenaltyClass(ctx * gin.Context)
 	GetBill(ctx * gin.Context)
 	ExportPenalties(ctx * gin.Context)
+	GetProofOfPaymentUrl(ctx * gin.Context)
 }

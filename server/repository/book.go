@@ -46,7 +46,6 @@ type BookRepository interface {
 	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
-	AddEbook(id string, eBook * multipart.FileHeader) error
 	GetEbookById(id string, ) (io.ReadCloser, error)
 	RemoveEbookById(id string, ) error
 	UpdateEbookByBookId(id string,  objectKey string) error

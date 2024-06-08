@@ -67,7 +67,7 @@ func(ctrler *Book)GenerateEbookUploadRequestUrl(ctx * gin.Context){
 	}
 	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), ".pdf")
 	bucket := os.Getenv("S3_DEFAULT_BUCKET")
-	url, err := ctrler.services.FileStorage.GenerateUploadRequestUrl(objectName, bucket )
+	url, err := ctrler.services.FileStorage.NewUploadUrlGenerator(objectName, bucket).SetContentType("application/pdf").Generate()
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error(), slimlog.Error("GenerateUploadRequestUrl"))
 		ctx.JSON(httpresp.Fail500(gin.H{}, "Unknown error occured."))
