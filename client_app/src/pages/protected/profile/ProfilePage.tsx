@@ -26,12 +26,14 @@ import QRCode from "react-qr-code";
 import Modal from "react-responsive-modal";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import Compressor from "@uppy/compressor";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".webp", ".jpg"],
     maxNumberOfFiles: 1,
   },
 })
+  .use(Compressor)
   .use(Dashboard)
   .use(XHRUpload, {
     headers: {

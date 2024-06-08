@@ -354,7 +354,7 @@ func (repo * Account) UpdateProfilePictureById(id string, image * multipart.File
 	}
 	defer fileBuffer.Close()
 	contentType := image.Header["Content-Type"][0]
-	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/webp"{
+	if contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/png" && contentType != "image/webp"{
 		return fmt.Errorf("content type not supported : %s ", contentType)
 	}
 	canonicID, nanoIdErr := nanoid.Standard(21)
@@ -371,7 +371,7 @@ func (repo * Account) UpdateProfilePictureById(id string, image * multipart.File
 	objectName := fmt.Sprintf("profile-pictures/%s%s", canonicID(), ext[0])
 	defaultBucket := os.Getenv("S3_DEFAULT_BUCKET")
 	
-	key, err := repo.fs.Upload(objectName, defaultBucket, fileBuffer)
+	key, err := repo.fs.NewUploader(objectName, defaultBucket, fileBuffer).SetContentType(contentType).Upload()
 	
 	if err != nil {
 		return err

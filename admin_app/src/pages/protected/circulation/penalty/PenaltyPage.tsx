@@ -1,13 +1,13 @@
 import Container from "@components/ui/container/Container";
 
 import HasAccess from "@components/auth/HasAccess";
+import CustomPagination from "@components/pagination/CustomPagination";
 import CustomSelect from "@components/ui/form/CustomSelect";
 import { CustomInput } from "@components/ui/form/Input";
 import TableContainer from "@components/ui/table/TableContainer";
 import { AccountInitialValue } from "@definitions/defaults";
 import { Penalty, PenaltyClassification } from "@definitions/types";
 import { toReadableDate, toReadableDatetime } from "@helpers/datetime";
-import { usePenaltyBill } from "@hooks/data-fetching/penalty";
 import useDebounce from "@hooks/useDebounce";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
@@ -37,10 +37,9 @@ import { useSearchParamsState } from "react-use-search-params-state";
 import AddPenaltyModal from "./AddPenaltyModal";
 import EditPenaltyModal from "./EditPenaltyModal";
 import EditSettlementModal from "./EditSettlementModal";
+import ExportPenaltiesModal from "./ExportPenaltiesModal";
 import SettleModal from "./SettleModal";
 import ViewPenaltyModal from "./ViewPenaltyModal";
-import CustomPagination from "@components/pagination/CustomPagination";
-import ExportPenaltiesModal from "./ExportPenaltiesModal";
 export type PenaltyForm = {
   id?: string;
   item: string;
@@ -131,8 +130,8 @@ const PenaltyPage = () => {
   });
 
   const initEditSettleMent = (penalty: Penalty) => {
-    editSettlement.open();
     setSelectedPenalty(penalty);
+    editSettlement.open();
   };
 
   const handleFrom = (date: Date) => {
@@ -397,6 +396,7 @@ const PenaltyPage = () => {
                             color="success"
                             onClick={() => {
                               settleModal.open();
+                              setSelectedPenalty(penalty);
                             }}
                           >
                             <AiFillCheckCircle className="text-lg" />

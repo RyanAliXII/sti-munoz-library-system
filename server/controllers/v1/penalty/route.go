@@ -34,4 +34,7 @@ func PenaltyRoutes (router * gin.RouterGroup, services * services.Services){
 	router.DELETE("/classifications/:id",
 	middlewares.ValidatePermissions([]string{"Penalty.Delete"}, true),
 	ctrler.DeletePenaltyClass)
+	router.GET("/:id/proofs",
+	 middlewares.ValidatePermissions([]string{"Penalty.Read"}, true), 
+	 ctrler.GetProofOfPaymentUrl)
 }

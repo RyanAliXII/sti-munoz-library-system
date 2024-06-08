@@ -87,6 +87,95 @@ func(fs * S3FileStorage)GenerateGetRequestUrl(key string, bucket string)(string,
 	}
 	return url, err
 }
+func(fs * S3FileStorage)NewUploader(key string, bucket string, file  io.ReadSeeker) filestorage.Uploader{
+	return &S3FileUploader{
+		key: key,
+		bucket: bucket,
+		file:  file,
+		s3:  fs.s3,
+		contentType: "application/octet-stream",
+	}
+}
+func (fs * S3FileStorage)NewUploadUrlGenerator(key string, bucket string) filestorage.UploadUrlGenerator{
+	return &S3UploadUrlGenerator{
+		key: key,
+		bucket: bucket,
+		s3:  fs.s3,
+		expiration: time.Minute * 15,
+		contentType: "application/octet-stream",
+	}
+}
+type S3FileUploader struct{
+	contentType string
+	key string
+	bucket string
+	file  io.ReadSeeker	
+	s3 * s3.S3
+}
+
+func(fu * S3FileUploader)SetContentType(contentType string) filestorage.Uploader{
+	fu.contentType = contentType
+	return fu
+}
+func(fu * S3FileUploader)SetKey(key string) filestorage.Uploader{
+	fu.key = key
+	return fu
+}
+func(fu * S3FileUploader)SetBucket(bucket string) filestorage.Uploader{
+	fu.bucket = bucket
+	return fu
+}
+func (fu * S3FileUploader)SetFile(file io.ReadSeeker) filestorage.Uploader{
+	fu.file = file
+	return fu
+}
+func (fu * S3FileUploader)Upload()(string, error){
+	_, err := fu.s3.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(fu.bucket),
+		Key: aws.String(fu.key),
+		Body: fu.file,
+		ContentType: aws.String(fu.contentType),
+	})
+	if err != nil {
+		return fu.key, err
+	}
+	return fu.key, nil
+}
+
+type S3UploadUrlGenerator struct {
+	contentType string
+	key string
+	bucket string
+	s3 * s3.S3
+	expiration time.Duration
+}
+func (ug * S3UploadUrlGenerator)SetBucket(bucket string) filestorage.UploadUrlGenerator{
+	ug.bucket = bucket
+	return ug
+}
+func(ug * S3UploadUrlGenerator)SetKey(key string) filestorage.UploadUrlGenerator{
+	ug.key = key
+	return ug
+}
+func(ug * S3UploadUrlGenerator)SetContentType(contentType string) filestorage.UploadUrlGenerator{
+	ug.contentType = contentType
+	return ug
+}
+func (ug * S3UploadUrlGenerator)SetExpiration(expire time.Duration) filestorage.UploadUrlGenerator{
+	ug.expiration = expire
+	return ug
+}
+func(ug * S3UploadUrlGenerator)Generate()(string,error){
+	result, _:= ug.s3.PutObjectRequest(&s3.PutObjectInput{
+		Bucket: aws.String(ug.bucket),
+		Key: aws.String(ug.key),
+	})
+	url, err := result.Presign(ug.expiration)
+	if err != nil {
+		return "", err
+	}
+	return url, err
+}
 
 var s3FileStorage filestorage.FileStorage;
 var once sync.Once

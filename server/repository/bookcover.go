@@ -21,16 +21,29 @@ func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) er
 	}
 	bookCoverRows := make([]goqu.Record, 0)
 	bucket := os.Getenv("S3_DEFAULT_BUCKET")
-	for _, cover := range covers {
+	for idx, cover := range covers {
 		extension := filepath.Ext(cover.Filename)
 		objectName := fmt.Sprintf("covers/%s/%s%s", bookId, canonicID(), extension)
-		fileBuffer, _ := cover.Open()
-		defer fileBuffer.Close()
-		
-		
-		resultKey, err := repo.fileStorage.Upload(objectName, bucket, fileBuffer)
+		fileBuffer, err := cover.Open()
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("NewBookCover"))
+			return err
+		}
+		defer fileBuffer.Close()
+		contentType := cover.Header["Content-Type"][0]
+		if contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/png" && contentType != "image/webp"{
+			err := repo.removeAlreadyUploadedImage(idx, bookCoverRows)
+			if err != nil {
+				return err
+			}
+			return fmt.Errorf("content type not supported : %s ", contentType)
+		}
+		resultKey, err := repo.fileStorage.NewUploader(objectName, bucket, fileBuffer).SetContentType(contentType).Upload()
+		if err != nil {
+			err := repo.removeAlreadyUploadedImage(idx, bookCoverRows)
+			if err != nil {
+				return err
+			}
+			return err
 		}
 		
 		bookCoverRows = append(bookCoverRows, goqu.Record{
@@ -47,8 +60,25 @@ func (repo *Book) NewBookCover(bookId string, covers []*multipart.FileHeader) er
 	_, insertCoverErr := repo.db.Exec(query, args...)
 
 	if insertCoverErr != nil {
+		err := repo.removeAlreadyUploadedImage(len(bookCoverRows), bookCoverRows)
+			if err != nil {
+				return err
+		}
 		logger.Error(insertCoverErr.Error(), slimlog.Function("BookRepository.NewBookCover"), slimlog.Error("insertCoverErr"))
 		return insertCoverErr
+	}
+	return nil
+}
+func(repo * Book) removeAlreadyUploadedImage(idx int, records []goqu.Record)error{
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	for i := 0; i < idx; i++{
+		record := records[i]
+		path := record["path"].(string)
+		err := repo.fileStorage.Delete(path, bucket)
+		if err != nil {
+			return err
+		}
+		
 	}
 	return nil
 }
@@ -78,7 +108,7 @@ func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader)
 	bookCoverRows := make([]goqu.Record, 0)
 
 	//check if book covers are already uploaded. If not, uploud.
-	for _, cover := range covers {
+	for idx, cover := range covers {
 		key := fmt.Sprintf("%s%s", path, cover.Filename)
 		_, isAlreadyUploaded := oldCoversMap[key]
 		if !isAlreadyUploaded {
@@ -86,9 +116,18 @@ func (repo *Book) UpdateBookCover(bookId string, covers []*multipart.FileHeader)
 			objectName := fmt.Sprintf("%s%s%s", path, canonicID(), extension)
 			fileBuffer, _ := cover.Open()
 			defer fileBuffer.Close()
-		
-			key, err := repo.fileStorage.Upload(objectName, bucket, fileBuffer)
+			contentType := cover.Header["Content-Type"][0]
+			if contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/png" && contentType != "image/webp"{
+				err := repo.removeAlreadyUploadedImage(idx,  bookCoverRows)
+				if err != nil {
+					err := repo.removeAlreadyUploadedImage(idx, bookCoverRows)
+					return err
+				}
+				return fmt.Errorf("content type not supported : %s ", contentType)
+			}
+			key, err := repo.fileStorage.NewUploader(objectName, bucket, fileBuffer).SetContentType(contentType).Upload()
 			if err != nil {
+				err := repo.removeAlreadyUploadedImage(idx, bookCoverRows)
 				return err
 			}
 			//store new cover to be inserted later
