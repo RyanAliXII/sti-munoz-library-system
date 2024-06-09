@@ -1,8 +1,8 @@
+import NotificationSound from "@assets/sound/notification-sound.mp3";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, createContext, useRef } from "react";
 import useWebSocket from "react-use-websocket";
 import { useAuthContext } from "./AuthContext";
-import NotificationSound from "@assets/sound/notification-sound.mp3";
 const SocketContext = createContext({});
 
 type SocketProviderProps = {

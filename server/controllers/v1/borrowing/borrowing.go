@@ -1,10 +1,10 @@
 package borrowing
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -141,7 +141,7 @@ func (ctrler *Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	id := ctx.Param("id")
 	borrowedBook, err :=ctrler.services.Repos.BorrowingRepository.GetBorrowedEBookByIdAndStatus(id, status.BorrowStatusCheckedOut)
 	clientId := ctx.GetString("requestorId")
-	fmt.Println(borrowedBook.DueDate)
+
 	if clientId != borrowedBook.Client.Id {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
@@ -163,30 +163,20 @@ func (ctrler *Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail404(nil, "Link expired is expired."))
 		return
 	}
-	object, err := ctrler.services.Repos.BookRepository.GetEbookById(borrowedBook.Book.Id)
-	if err != nil {
-		_, isNotEbook := err.(*repository.IsNotEbook)
-		if isNotEbook {
-			logger.Error(err.Error(), slimlog.Error("GetEbookById"))
-			ctx.JSON(httpresp.Fail404(nil, "Not found"))
-			return
-		}
-
-		logger.Error(err.Error(), slimlog.Error("GetEbookById"))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
+	if(len(borrowedBook.Book.Ebook) == 0){
+		logger.Error("Ebook not found")
+		ctx.JSON(httpresp.Fail404(nil, "Not found"))
 	}
-	defer object.Close()
-	var buffer bytes.Buffer
-	_, err = buffer.ReadFrom(object)
+	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(borrowedBook.Book.Ebook, bucket)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("buffer.ReadFrom"))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return 
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail404(nil, "Unknown error occured"))
+		return
 	}
 	 ctx.JSON(httpresp.Success200(gin.H{
 		"book": borrowedBook.Book,
-		"ebook":  buffer.Bytes(),
+		"url": url,
 	 }, ""))
 	
 }

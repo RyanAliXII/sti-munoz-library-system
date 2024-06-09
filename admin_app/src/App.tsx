@@ -13,7 +13,13 @@ import "@assets/css/global.css";
 import "tippy.js/dist/tippy.css";
 import "react-toastify/dist/ReactToastify.min.css";
 import { useThemeMode } from "flowbite-react";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 import { useEffect } from "react";

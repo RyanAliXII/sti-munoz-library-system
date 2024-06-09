@@ -11,8 +11,6 @@ import (
 )
 
 type RealtimeController struct {
-	// repos *repository.Repositories
-	// broadcasters *broadcasting.Broadcasters
 	services * services.Services
 }
 const (
@@ -23,10 +21,8 @@ const (
 	pongWait = 60 * time.Second
 
 	// Send pings to peer with this period. Must be less than pongWait.
-	//pingPeriod = (pongWait * 9) / 10
+	pingPeriod = (pongWait * 9) / 10
 
-	// Maximum message size allowed from peer.
-	//maxMessageSize = 512
 )
 
 func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
@@ -68,7 +64,7 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 	}
 }
 func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Context) {
-	ticker := time.NewTicker(time.Second * 3)
+	ticker := time.NewTicker(pingPeriod)
 	accountId := ctx.Query("account")
 	context, cancel := context.WithCancel(context.Background())
 	routingKey := fmt.Sprintf("notify_admin_%s", accountId)
