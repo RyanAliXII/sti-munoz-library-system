@@ -13,7 +13,13 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "@assets/css/global.css";
 import { SocketProvider } from "@contexts/SocketContext";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 function App() {
   const msalInstance = new PublicClientApplication(msalConfig);
   useEffect(() => {

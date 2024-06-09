@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -24,6 +25,7 @@ func(n * Notification) NewHub()*NotificationHub{
 	}
 }
 func (hub * NotificationHub) ListenByRoutingKey(routingKey string, context context.Context) error {
+	logger := slimlog.GetInstance()
 	err := hub.rabbit.Channel.ExchangeDeclare(
 		"notification",      // name
 		amqp.ExchangeDirect, // type
@@ -82,11 +84,20 @@ func (hub * NotificationHub) ListenByRoutingKey(routingKey string, context conte
 		
 		select {
 		case <-context.Done():
-			hub.rabbit.Channel.QueueUnbind(queue.Name, routingKey, "notification", nil)
+			err := hub.deleteQueue(queue.Name)
+			if err != nil {
+				logger.Error(err.Error())
+				return err
+			}
 			return nil
 		case d, ok := <-messages:
 			if !ok {
 				hub.stop <- true
+				err := hub.deleteQueue(queue.Name)
+				if err != nil {
+					logger.Error(err.Error())
+					return err
+				}
 				return nil
 			}
 			hub.message <- d
@@ -101,6 +112,13 @@ func (hub *NotificationHub) Message() <-chan amqp.Delivery {
 }
 func (hub *NotificationHub) Stop() <-chan bool {
 	return hub.stop
+}
+func(hub *NotificationHub)deleteQueue(queueName string) error{
+	_, err := hub.rabbit.Channel.QueueDelete(queueName, false, false, false)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 func NewNotificationService() NotificationService{
 	rabbit := rabbitmq.CreateOrGetInstance()

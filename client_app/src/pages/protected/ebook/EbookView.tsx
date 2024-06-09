@@ -19,8 +19,7 @@ const EbookView = () => {
   }> => {
     const response = await Get(`borrowing/ebooks/${id}`);
     const { data } = response.data;
-    const blob = b64toBlob(data?.ebook ?? "", "application/pdf");
-    const url = URL.createObjectURL(blob);
+    const url = data?.url;
     return {
       bookTitle: data?.book?.title ?? "",
       ebook: url,

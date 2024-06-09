@@ -87,6 +87,7 @@ const BorrowedBooksPage = () => {
     isError,
   } = useQuery<BorrowedBook[]>({
     queryFn: () => fetchBorrowedBooks(activeTab),
+    refetchOnWindowFocus: true,
     queryKey: ["borrowedBooks", activeTab],
   });
 
