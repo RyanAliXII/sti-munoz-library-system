@@ -161,7 +161,7 @@ const Dashboard = () => {
         </h1>
         <div className="grid grid-cols-2 w-full gap-5 lg:grid-cols-3">
           <Link
-            to="/books"
+            to="/resources"
             className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow dark:bg-transparent dark:border-gray-700 dark:text-gray-50"
           >
             <ImBooks className="text-3xl lg:text-4xl" />
@@ -181,7 +181,7 @@ const Dashboard = () => {
             <small className="lg:text-lg text-center">Accounts</small>
           </Link>
           <Link
-            to="/circulation/penalties"
+            to="/penalties"
             className="flex flex-col px-20  items-center rounded py-5 justify-center gap-2  border border-gray-50 shadow  text-orange-500 dark:bg-transparent dark:border-gray-700"
           >
             <BiMoney className="text-3xl lg:text-4xl" />
