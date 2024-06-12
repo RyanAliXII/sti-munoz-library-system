@@ -422,8 +422,12 @@ func(repo * Account)DisableAccounts(accountIds []string) error {
 	
 	return err
 }
-
-
+func(repo * Account)GetAccountByStudentNumberOrEmail(input string)(model.Account, error){
+	query := `SELECT id, email, display_name,is_active, given_name, surname, profile_picture, metadata FROM account_view where (lower(email) = lower($1) OR lower(student_number) = lower($1)) and deleted_at is null and is_active LIMIT 1`
+	account := model.Account{}
+	err := repo.db.Get(&account, query, input)
+	return account, err
+}
 func(repo * Account)DeleteAccounts(accountIds []string) error {
 	dialect := goqu.Dialect("postgres")
 	if len(accountIds) == 0 {
@@ -508,4 +512,5 @@ type AccountRepository interface {
 	ActivateAccounts(accountIds []string,  userTypeId int, programId int, activeUntil string, studentNumber string) error
 	DeactiveAccounts(accountIds []string) error
 	GetAccountStatsById(accountId string)(model.AccountStats, error )
+	GetAccountByStudentNumberOrEmail(input string)(model.Account, error)
 }

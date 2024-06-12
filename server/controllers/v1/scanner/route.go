@@ -32,4 +32,5 @@ func ScannerRoutes(router * gin.RouterGroup, services * services.Services){
 	router.POST("/auth", ctrler.IsAuth)
 	router.POST("/logs/clients/:clientId",middlewares.ValidateScannerToken,ctrler.LogClient)
 	router.DELETE("/logout",middlewares.ValidateScannerToken,ctrler.Logout)
+	router.GET("/inquire-account", ctrler.InquireAccount)
 }
