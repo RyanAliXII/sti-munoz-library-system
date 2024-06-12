@@ -25,6 +25,7 @@ type ScannerController interface {
 	IsAuth (ctx * gin.Context)
 	LogClient (ctx * gin.Context)
 	Logout (ctx * gin.Context)
+	InquireAccount(ctx * gin.Context)
 }
 
 type Scanner struct {
@@ -55,11 +56,7 @@ func(c * Scanner) Login (ctx * gin.Context){
 		return
 	}
 	jti := uuid.NewString()
-	if err != nil {
-		logger.Error(err.Error(), zap.String("err", "jtiId" ))
-		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
-		return
-	}
+
 	secret := os.Getenv("JWT_SECRET")
 	iss := os.Getenv("SERVER_URL")
 	aud := os.Getenv("SCANNER_APP_URL")
@@ -177,7 +174,31 @@ func(c * Scanner) Logout (ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(nil, "Ok") )
 }
-
+func (c * Scanner)InquireAccount(ctx * gin.Context){
+	input := ctx.Query("input")
+		input  = strings.TrimSpace(input)
+		if len(input) == 0{
+			ctx.JSON(httpresp.Fail404(nil, "Not found."))
+			return
+		}
+		account, err := c.services.Repos.AccountRepository.GetAccountByStudentNumberOrEmail(input)
+		if err != nil {
+			c.services.Logger.Info(err.Error())
+			if(err != sql.ErrNoRows){
+				c.services.Logger.Info(err.Error())
+			}
+			ctx.JSON(httpresp.Fail404(nil, "Not found."))
+			return
+		}
+	
+		ctx.JSON(httpresp.Success200(gin.H{
+			"account" : gin.H{
+				"id": account.Id,
+				"givenName" : account.GivenName,
+				"surname": account.Surname,
+			},
+		}, "Account fetchted."))
+}
 
 
 

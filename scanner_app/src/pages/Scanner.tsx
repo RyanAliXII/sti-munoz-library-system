@@ -89,7 +89,7 @@ const Scanner = () => {
     scannerRef.current?.start(
       cameraIdOrConfig,
       {
-        fps: 10,
+        fps: 60,
       },
       onSuccessScan,
       onErrorScan
