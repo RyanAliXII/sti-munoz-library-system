@@ -16,7 +16,7 @@ import "@uppy/dashboard/dist/style.min.css";
 import { Dashboard as DashboardComponent } from "@uppy/react";
 import XHRUpload from "@uppy/xhr-upload";
 import html2canvas from "html2canvas";
-import { FormEvent, useRef } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { BsArrowReturnLeft } from "react-icons/bs";
 import { CiCircleRemove } from "react-icons/ci";
@@ -27,6 +27,7 @@ import Modal from "react-responsive-modal";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Compressor from "@uppy/compressor";
+import { ClipLoader } from "react-spinners";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".webp", ".jpg"],
@@ -63,14 +64,22 @@ const ProfilePage = () => {
     queryKey: ["profileAccount"],
   });
   const qrRef = useRef<HTMLDivElement | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const downloadQRCode = async () => {
-    if (!qrRef.current) return;
-    const qrCanvas = await html2canvas(qrRef.current, { scale: 5 });
-    const img = qrCanvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.download = `${user.id}.png`;
-    link.href = img;
-    link.click();
+    try {
+      setIsDownloading(true);
+      if (!qrRef.current) return;
+      const qrCanvas = await html2canvas(qrRef.current, { scale: 5 });
+      const img = qrCanvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `${user.id}.png`;
+      link.href = img;
+      link.click();
+    } catch (error) {
+      toast.error("Unknown error occured.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
   const {
     isOpen: isUploadProfileOpen,
@@ -206,8 +215,13 @@ const ProfilePage = () => {
             <button
               className="text-sm p-2.5 bg-primary rounded text-white mb-2"
               onClick={downloadQRCode}
+              disabled={isDownloading}
             >
-              Download QR
+              <div className="flex items-center gap-2">
+                {isDownloading && <ClipLoader size={20} />}
+
+                <span>Download QR</span>
+              </div>
             </button>
           </div>
         </div>
