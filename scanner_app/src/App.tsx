@@ -25,7 +25,7 @@ const pages = createRoutesFromChildren(
       }
     />
 
-    <Route path="/inquire" element={<Inquire />} />
+    <Route path="/library-pass" element={<Inquire />} />
   </>
 );
 const router = createBrowserRouter(pages);

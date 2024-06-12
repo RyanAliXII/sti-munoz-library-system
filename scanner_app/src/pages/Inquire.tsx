@@ -100,6 +100,9 @@ const Inquire = () => {
             <p className="text-xl font-thin text-gray-900 dark:text-white">
               {account.givenName} {account.surname}
             </p>
+            <small className="text-gray-900 dark:text-gray-400">
+              Take a picture of your QR Code here with your camera.
+            </small>
           </div>
           <div className="flex flex-col items-center px-10 py-20 mt-7 bg-white">
             <QRCode
