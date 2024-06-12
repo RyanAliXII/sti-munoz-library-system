@@ -3,7 +3,9 @@ import { CameraDevice, Html5Qrcode } from "html5-qrcode";
 import { useMutation } from "react-query";
 import axiosClient from "@definitions/config/axios";
 
-const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
+import { useAuth } from "../contexts/AuthContext";
+
+const Scanner = () => {
   const readerRef = useRef<HTMLDivElement | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>("");
@@ -12,6 +14,7 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
     displayName: "",
     email: "",
   });
+  const { revalidateAuth } = useAuth();
   let scannerRef = useRef<Html5Qrcode | null>(null);
   useEffect(() => {
     if (scannerRef.current == null) {
@@ -51,11 +54,10 @@ const Scanner = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
     onSettled: (response) => {
       if (response) {
         const { data } = response.data;
-        console.log(data);
+
         setClient(data?.client);
       }
       if (response?.status === 401) {
-        revalidateAuth();
       }
       setTimeout(() => {
         scannerRef.current?.resume();

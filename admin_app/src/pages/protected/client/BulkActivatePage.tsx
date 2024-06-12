@@ -11,8 +11,8 @@ import XHRUpload from "@uppy/xhr-upload";
 import { Alert, Button, Label } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import BulkActivateErrorModal from "./BulkActivateErrorModal";
+import { toast } from "react-toastify";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
@@ -36,6 +36,7 @@ const BulkActivatePage = () => {
   const navigate = useNavigate();
   useEffect(() => {
     uppy.on("upload-error", (file, err, response) => {
+      toast.error("An error occured while processing request.");
       const messages = response?.body?.data?.errors?.messages;
       if (messages) {
         setMessages(messages ?? []);
@@ -71,7 +72,8 @@ const BulkActivatePage = () => {
     });
     try {
       setMessages([]);
-      await uppy.upload();
+      const response = await uppy.upload();
+      if (response.failed) return;
       navigate("/clients/accounts");
     } finally {
       uppy.cancelAll();

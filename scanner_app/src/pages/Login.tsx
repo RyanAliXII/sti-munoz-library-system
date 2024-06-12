@@ -1,11 +1,15 @@
 import axiosClient from "@definitions/config/axios";
 import { BaseSyntheticEvent, useRef, useState } from "react";
 import { useMutation } from "react-query";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const Login = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
+const Login = () => {
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   );
+  const { revalidateAuth } = useAuth();
+  const navigate = useNavigate();
   const inputUsernameRef = useRef<HTMLInputElement>(null);
   const inputPasswordRef = useRef<HTMLInputElement>(null);
   const login = useMutation({
@@ -16,10 +20,11 @@ const Login = ({ revalidateAuth }: { revalidateAuth: () => void }) => {
           "Content-Type": "application/json",
         },
       }),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       const { data } = response.data;
       localStorage.setItem("token", data?.accessToken ?? "");
-      revalidateAuth();
+      await revalidateAuth();
+      navigate("/scanner");
     },
     onError: () => {
       setErrorMessage("Invalid username or password");
