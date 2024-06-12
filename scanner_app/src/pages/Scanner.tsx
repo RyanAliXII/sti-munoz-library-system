@@ -2,7 +2,6 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { CameraDevice, Html5Qrcode } from "html5-qrcode";
 import { useMutation } from "react-query";
 import axiosClient from "@definitions/config/axios";
-
 import { useAuth } from "../contexts/AuthContext";
 
 const Scanner = () => {
