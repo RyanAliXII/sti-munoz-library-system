@@ -32,7 +32,6 @@ const ReservationPage = () => {
   } = useSwitch();
 
   const onEventClick = useCallback((arg: EventClickArg) => {
-    console.log();
     const dateSlot = arg.event.extendedProps;
     if (!arg?.event?.extendedProps) return;
     setDateSlot(dateSlot as DateSlot);

@@ -1,6 +1,7 @@
 package reservation
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -42,14 +43,30 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	_, err  = ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
+	account, err  := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-
 	if err != nil {
 		logger.Error(err.Error())
 	}
+	message := fmt.Sprintf("%s %s has reserved a device.", account.GivenName, account.Surname)
+	accountIds, err := ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification{
+		Message: message,
+		Link: "/services/reservations",
+		
+	}, "Reservation.Read")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	for _, accountId := range accountIds{
+		routingKey := fmt.Sprintf("notify_admin_%s",  accountId)
+		err := ctrler.services.Broadcaster.Broadcast("notification",  routingKey, []byte(message))
+		if err != nil{
+			logger.Error(err.Error())
+		}
+	}
+	
 	ctx.JSON(httpresp.Success200(nil, "Reservation created."))
 }
 func (ctrler * Reservation)GetReservations(ctx * gin.Context){
