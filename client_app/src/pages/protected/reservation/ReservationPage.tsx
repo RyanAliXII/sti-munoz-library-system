@@ -1,15 +1,15 @@
 import { DateSlot } from "@definitions/types";
-import { EventClickArg } from "@fullcalendar/core";
+import { EventClickArg, EventSourceFunc } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import { useDevices } from "@hooks/data-fetching/device";
 import { useTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
-import { format } from "date-fns";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import ReservationList from "./ReservationList";
 import ReserveModal from "./ReserveModal";
+import { format } from "date-fns";
 const ReservationPage = () => {
   const [dateSlot, setDateSlot] = useState<DateSlot>({
     id: "",
@@ -31,18 +31,46 @@ const ReservationPage = () => {
     open: openReserveModal,
   } = useSwitch();
 
-  const onEventClick = (arg: EventClickArg) => {
+  const onEventClick = useCallback((arg: EventClickArg) => {
     console.log();
     const dateSlot = arg.event.extendedProps;
     if (!arg?.event?.extendedProps) return;
     setDateSlot(dateSlot as DateSlot);
     openReserveModal();
-  };
+  }, []);
   const { Get } = useRequest();
   const { data: devices } = useDevices({});
   const changeTab = (tab: 1 | 2) => {
     setTab(tab);
   };
+
+  const fetchEvents: EventSourceFunc = useCallback(
+    async (info, successCallback) => {
+      try {
+        const { data: response } = await Get("/date-slots", {
+          params: {
+            start: format(info.start, "yyyy-MM-dd"),
+            end: format(info.end, "yyyy-MM-dd"),
+          },
+        });
+
+        const { data } = response;
+        const dateSlots = (data?.dateSlots ?? []) as DateSlot[];
+        successCallback(
+          dateSlots?.map((slot) => {
+            return {
+              className: "p-2 bg-green-500 cursor-pointer text-white",
+              start: slot.date,
+              allDay: true,
+              title: "Open for Reservation",
+              extendedProps: slot,
+            };
+          })
+        );
+      } catch (err) {}
+    },
+    []
+  );
   const fullCalendar = useRef<FullCalendar>(null);
   return (
     <div className="py-4 w-11/12 mx-auto lg:w-9/12">
@@ -74,30 +102,7 @@ const ReservationPage = () => {
           }}
           ref={fullCalendar}
           eventClick={onEventClick}
-          events={async (info, successCallback, failureCallback) => {
-            try {
-              const { data: response } = await Get("/date-slots", {
-                params: {
-                  start: format(info.start, "yyyy-MM-dd"),
-                  end: format(info.end, "yyyy-MM-dd"),
-                },
-              });
-
-              const { data } = response;
-              const dateSlots = (data?.dateSlots ?? []) as DateSlot[];
-              successCallback(
-                dateSlots?.map((slot) => {
-                  return {
-                    className: "p-2 bg-green-500 cursor-pointer text-white",
-                    start: slot.date,
-                    allDay: true,
-                    title: "Open for Reservation",
-                    extendedProps: slot,
-                  };
-                })
-              );
-            } catch (err) {}
-          }}
+          events={fetchEvents}
         />
         <ReserveModal
           timeSlots={profile?.timeSlots ?? []}
