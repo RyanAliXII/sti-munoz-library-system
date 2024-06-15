@@ -12,7 +12,6 @@ func DateSlotRoutes(router * gin.RouterGroup, services * services.Services){
 	middlewares.ValidatePermissions([]string{"DateSlot.Add"}, true),
 	middlewares.ValidateBody[NewSlotBody], ctrler.NewSlot)
 	router.GET("", 
-	middlewares.ValidatePermissions([]string{"DateSlot.Read"}, true),
 	ctrler.GetSlots)
 	router.DELETE("/:id",
 	middlewares.ValidatePermissions([]string{"DateSlot.Delete"}, true), 
