@@ -8,7 +8,15 @@ export const UserTypeValidation = object({
   maxAllowedBorrowedBooks: number()
     .required("Max allowed borrowed books is required.")
     .min(0, "Max allowed borrowed book cannot be less than 1")
+    .integer("Max allowed borrowed book should be an valid integer.")
     .typeError("Max allowed borrowed book should be an valid integer."),
+  maxUniqueDeviceReservationPerDay: number()
+    .required("Max unique device reservation per day is required.")
+    .min(0, "Max unique device reservation per day cannot be less than 1.")
+    .integer("Max unique device reservation per day should be valid integer.")
+    .typeError(
+      "Max unique device reservation per day should be valid integer."
+    ),
 });
 
 export const UserProgramValidation = object({

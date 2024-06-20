@@ -382,6 +382,7 @@ export type UserType = {
   name: string;
   maxAllowedBorrowedBooks: number;
   hasProgram: boolean;
+  maxUniqueDeviceReservationPerDay: number;
 };
 export type UserProgramOrStrand = {
   id: number;
