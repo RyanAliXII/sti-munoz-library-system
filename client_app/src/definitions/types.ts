@@ -47,7 +47,6 @@ export type Device = {
   id: string;
   name: string;
   description: string;
-  available: number;
 };
 export type Reservation = {
   id: string;

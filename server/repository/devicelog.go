@@ -31,8 +31,7 @@ func (repo * Device) GetDeviceLogs(filter * DeviceLogFilter) ([]model.DeviceLog,
 		goqu.L(`
 		json_build_object(
 			'id',device.id, 
-			'name', device.name, 
-			'available', device.available,
+			'name', device.name,
 			'description', device.description)
 	    `).As("device"),
 		goqu.C("created_at").Table("device_log"),
