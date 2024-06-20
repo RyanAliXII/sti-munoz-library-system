@@ -149,17 +149,14 @@ const ReserveModal: FC<ReserveModalProps> = ({
               options={dateAndDevice?.timeSlots ?? []}
               isOptionDisabled={(option: TimeSlot) => {
                 const reservation = currentDateReservations?.get(option.id);
-                if (
-                  (reservation && reservation?.deviceId == form.deviceId) ||
-                  (option?.booked ?? 1) > 0
-                ) {
+                if (reservation || (option?.booked ?? 1) > 0) {
                   return true;
                 }
                 return false;
               }}
               getOptionLabel={(option) => {
                 const reservation = currentDateReservations?.get(option.id);
-                if (reservation && reservation?.deviceId == form.deviceId) {
+                if (reservation) {
                   return `${to12HR(option.startTime)} - ${to12HR(
                     option.endTime
                   )} | Already booked.`.toString();
