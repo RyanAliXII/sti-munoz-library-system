@@ -10,6 +10,7 @@ type UserType struct {
 	Name string `json:"name" db:"name"`
 	HasProgram bool `json:"hasProgram" db:"has_program"`
 	MaxAllowedBorrowedBooks int `json:"maxAllowedBorrowedBooks" db:"max_allowed_borrowed_books"`
+	MaxUniqueDeviceReservationPerDay int `json:"maxUniqueDeviceReservationPerDay" db:"max_unique_device_reservation_per_day"`
 }
 type UserProgramOrStrand struct {
 	Id int `json:"id" db:"id"`
