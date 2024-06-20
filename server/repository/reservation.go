@@ -3,16 +3,28 @@ package repository
 import (
 	"fmt"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 )
 type Reservation struct {
 	db * sqlx.DB
 }
+type ReservationFilter struct {
+	From string
+	To string
+    Status []int
+	Devices []string
+	SortBy string 
+	Order string 
+	filter.Filter
+}
 type ReservationRepository interface{
 	NewReservation(model.Reservation) error 
-	GetReservations()([]model.Reservation, error)
+	GetReservations(filter * ReservationFilter)([]model.Reservation, error)
 	MarkAsAttended(id string) error
 	MarkAsMissed(id string) error
 	CancelReservation(id string, remarks string) error
@@ -99,24 +111,29 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 	return nil
 	
 }
-func (repo * Reservation)GetReservations()([]model.Reservation, error){
+func (repo * Reservation)GetReservations(filter * ReservationFilter)([]model.Reservation, error){
 	reservations := make([]model.Reservation, 0)
-	query := `
-	SELECT id, date_slot_id, 
-	time_slot_id, device_id, 
-	account_id, 
-	remarks,
-	status_id,
-     status,
-	 client, 
-	 date_slot,
-	 time_slot, 
-	 device, 
-	 created_at 
-	 from reservation_view
-	 ORDER BY created_at desc
-	`
-	err := repo.db.Select(&reservations, query)
+	dialect := goqu.Dialect("postgres")
+	ds := dialect.Select(goqu.C("id"),
+	 goqu.C("date_slot_id"),
+	  goqu.C("time_slot_id"), 
+	  goqu.C("device_id"),
+	  goqu.C("account_id"),
+	  goqu.C("remarks"),
+	  goqu.C("status_id"),
+	  goqu.C("status"),
+	  goqu.C("client"),
+	  goqu.C("date_slot"),
+	  goqu.C("time_slot"),
+	  goqu.C("device"),
+	  goqu.C("created_at"),
+	).From(goqu.T("reservation_view")).Order(exp.NewOrderedExpression(goqu.C("created_at"), exp.DescSortDir, exp.NullsLastSortType))
+
+	query, args, err := ds.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+	err = repo.db.Select(&reservations, query, args...)
 	if err != nil {
 		return reservations, err
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 )
 
 type ReservationBody struct {
@@ -14,7 +16,15 @@ type ReservationBody struct {
 type CancellationBody struct {
 	Remarks string `json:"remarks"`
 }
-
+type ReservationFilter struct {
+	From string  `form:"from"`
+	To string `form:"to"`
+    Status []int `form:"status[]"`
+	Devices []string `form:"devices[]"`
+	SortBy string  `form:"sortBy"`
+	Order string  `form:"order"`
+	filter.Filter
+}
 func(b  * CancellationBody)Validate() error {
 	remarks := strings.Map(func(r rune) rune {
 		if(unicode.IsSpace(r)){
