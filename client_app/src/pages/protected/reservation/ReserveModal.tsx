@@ -20,7 +20,6 @@ import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { ReservationValidation } from "./schema";
-import { options } from "@fullcalendar/core/preact";
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];
