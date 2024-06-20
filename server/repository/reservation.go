@@ -52,8 +52,8 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 		transaction.Rollback()
 		return fmt.Errorf("reservation already exists")
 	}
-	hasExistingReservationWithDifferentDevice := true
-	err = transaction.Get(&hasExistingReservationWithDifferentDevice, `
+	hasExistingReservationWithDifferentDeviceButSameTimeSlot := true
+	err = transaction.Get(&hasExistingReservationWithDifferentDeviceButSameTimeSlot, `
 	  SELECT
 	  EXISTS 
 	 (SELECT 1 from reservation_view
@@ -62,17 +62,34 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 	  and time_slot_id = $2 
 	  and account_id = $3  and status_id = 1)`,
 	reservation.DateSlotId, reservation.TimeSlotId, reservation.AccountId)
-
+   
 	if err != nil {
 		transaction.Rollback()
 		return err
 	}
-	if hasExistingReservationWithDifferentDevice {
+	if 	hasExistingReservationWithDifferentDeviceButSameTimeSlot {
 		transaction.Rollback()
 		return fmt.Errorf("has reservation with same timeslot but different device")
-	} 
-	
-	query := `INSERT INTO services.reservation(date_slot_id, time_slot_id, account_id, device_id) VALUES($1, $2, $3, $4)`
+	}
+	maxUniqueDeviceReservation := 0
+	query := `SELECT account.max_unique_device_reservation_per_day FROM account_view as account where id = $1 LIMIT 1`
+    err = repo.db.Get(&maxUniqueDeviceReservation, query, reservation.AccountId)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	totalReservedByDeviceAndDate := 0
+	query = `SELECT COUNT(1) FROM reservation_view where device_id = $1 and date_slot_id = $2`
+	err = repo.db.Get(&totalReservedByDeviceAndDate, query, reservation.DeviceId, reservation.DateSlotId )	
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if(totalReservedByDeviceAndDate >= maxUniqueDeviceReservation){
+		transaction.Rollback()
+		return fmt.Errorf("you have met the maximum number of reservation per device and date")
+	}
+	query = `INSERT INTO services.reservation(date_slot_id, time_slot_id, account_id, device_id) VALUES($1, $2, $3, $4)`
 	_, err = transaction.Exec(query, reservation.DateSlotId, reservation.TimeSlotId, reservation.AccountId, reservation.DeviceId)
 	if err != nil {
 		transaction.Rollback()

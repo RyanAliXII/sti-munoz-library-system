@@ -6,10 +6,10 @@ import { useDevices } from "@hooks/data-fetching/device";
 import { useTimeSlotProfile } from "@hooks/data-fetching/time-slot-profile";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
+import { format } from "date-fns";
 import { useCallback, useRef, useState } from "react";
 import ReservationList from "./ReservationList";
 import ReserveModal from "./ReserveModal";
-import { format } from "date-fns";
 const ReservationPage = () => {
   const [dateSlot, setDateSlot] = useState<DateSlot>({
     id: "",

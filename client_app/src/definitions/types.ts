@@ -86,6 +86,7 @@ export type AccountStats = {
   maxAllowedBorrowedBooks: number;
   isAllowedToBorrow: boolean;
   totalBorrowedBooks: number;
+  maxUniqueDeviceReservationPerDay: number;
 };
 
 export interface Book {
