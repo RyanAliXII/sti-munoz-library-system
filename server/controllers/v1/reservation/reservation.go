@@ -86,7 +86,7 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 	}
 	filter := ReservationFilter{}
 	filter.ExtractFilter(ctx)
-	reservations, err := ctrler.services.Repos.ReservationRepository.GetReservations(&repository.ReservationFilter{
+	reservations, metadata, err := ctrler.services.Repos.ReservationRepository.GetReservations(&repository.ReservationFilter{
 		From: filter.From,
 		To: filter.To,
 		Status: filter.Status,
@@ -100,6 +100,7 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"reservations": reservations,
+		"metadata": metadata,
 	}, "Reservations fetched."))
 }
 func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){

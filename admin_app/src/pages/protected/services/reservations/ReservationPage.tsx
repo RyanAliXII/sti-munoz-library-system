@@ -18,6 +18,7 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import ReservationTableRow from "./ReservationTableRow";
 import EditRemarksModal from "./EditRemarksModal";
+import CustomPagination from "@components/pagination/CustomPagination";
 export type UndetailedReservation = Omit<
   Reservation,
   "client" | "dateSlot" | "timeSlot" | "device" | "createdAt"
@@ -32,7 +33,7 @@ export type ReservationTableRowProps = {
   setReservation: React.Dispatch<UndetailedReservation>;
 };
 const ReservationPage = () => {
-  const { data: reservations } = useReservations({});
+  const { data: reservationData } = useReservations({});
   const cancelConfirm = useSwitch();
   const missedConfirm = useSwitch();
   const attendedConfirm = useSwitch();
@@ -103,7 +104,7 @@ const ReservationPage = () => {
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body>
-            {reservations?.map((reservation) => {
+            {reservationData?.reservations?.map((reservation) => {
               return (
                 <ReservationTableRow
                   key={reservation.id}
@@ -119,7 +120,12 @@ const ReservationPage = () => {
           </Table.Body>
         </Table>
       </TableContainer>
-
+      <div className="py-5">
+        <CustomPagination
+          isHidden={(reservationData?.metadata?.pages ?? 0) <= 1}
+          pageCount={reservationData?.metadata?.pages ?? 0}
+        />
+      </div>
       <WarningConfirmDialog
         title="Mark as missed"
         text="Are you sure you want to mark reservation as missed?"

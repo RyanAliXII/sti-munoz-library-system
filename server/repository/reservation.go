@@ -24,7 +24,7 @@ type ReservationFilter struct {
 }
 type ReservationRepository interface{
 	NewReservation(model.Reservation) error 
-	GetReservations(filter * ReservationFilter)([]model.Reservation, error)
+	GetReservations(filter * ReservationFilter)([]model.Reservation, Metadata, error)
 	MarkAsAttended(id string) error
 	MarkAsMissed(id string) error
 	CancelReservation(id string, remarks string) error
@@ -111,7 +111,8 @@ func(repo * Reservation)NewReservation(reservation model.Reservation) error {
 	return nil
 	
 }
-func (repo * Reservation)GetReservations(filter * ReservationFilter)([]model.Reservation, error){
+func (repo * Reservation)GetReservations(filter * ReservationFilter)([]model.Reservation, Metadata, error){
+	meta := Metadata{}
 	reservations := make([]model.Reservation, 0)
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Select(goqu.C("id"),
@@ -128,18 +129,38 @@ func (repo * Reservation)GetReservations(filter * ReservationFilter)([]model.Res
 	  goqu.C("device"),
 	  goqu.C("created_at"),
 	).From(goqu.T("reservation_view")).Order(exp.NewOrderedExpression(goqu.C("created_at"), exp.DescSortDir, exp.NullsLastSortType))
+	ds.Limit(uint(filter.Limit)).
+	Offset(uint(filter.Offset))
 
 	query, args, err := ds.ToSQL()
 	if err != nil {
-		return nil, err
+		return nil, meta, err
 	}
 	err = repo.db.Select(&reservations, query, args...)
 	if err != nil {
-		return reservations, err
+		return reservations,meta, err
 	}
-	return reservations, nil
+	
+	metadataDs  := repo.buildMetadataQuery(filter)
+	query, args, err = metadataDs.ToSQL()
+	if err != nil {
+		return reservations, meta, err
+	}
+	err = repo.db.Get(&meta, query, args...)
+	if err != nil {
+		return reservations, meta, err
+	}
+	return reservations,meta ,nil
 }
-
+func (repo * Reservation)buildMetadataQuery(filter * ReservationFilter) (*goqu.SelectDataset){
+	dialect := goqu.Dialect("postgres")	
+	ds := dialect.Select(
+		goqu.Case().When(goqu.COUNT(1).Eq(0), 0).Else(goqu.L("Ceil((COUNT(1)/?::numeric))::bigint", filter.Limit)).As("pages"),
+		goqu.COUNT(1).As("records"),
+	).From(goqu.T("reservation_view"))
+	// ds = repo.buildClientLogFilters(ds, filter)
+	return ds
+}
 func (repo * Reservation)GetReservationsByClientId(accountId string)([]model.Reservation, error){
 	reservations := make([]model.Reservation, 0)
 	query := `

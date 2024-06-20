@@ -1,4 +1,4 @@
-import { Reservation } from "@definitions/types";
+import { Metadata, Reservation } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import {
   MutationOptions,
@@ -7,11 +7,15 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 
+type UseReservationData = {
+  reservations: Reservation[];
+  metadata: Metadata;
+};
 export const useReservations = ({
   onSuccess,
   onError,
   onSettled,
-}: UseQueryOptions<Reservation[]>) => {
+}: UseQueryOptions<UseReservationData>) => {
   const { Get } = useRequest();
   const fetchReservations = async () => {
     try {
@@ -20,12 +24,27 @@ export const useReservations = ({
       });
 
       const { data } = response;
-      return data?.reservations ?? [];
-    } catch {
-      return [];
+
+      return (
+        data ?? {
+          reservations: [],
+          metadata: {
+            pages: 1,
+            records: 0,
+          },
+        }
+      );
+    } catch (err) {
+      return {
+        reservations: [],
+        metadata: {
+          pages: 1,
+          records: 0,
+        },
+      };
     }
   };
-  return useQuery<Reservation[]>({
+  return useQuery<UseReservationData>({
     queryFn: fetchReservations,
     onSuccess: onSuccess,
     onError: onError,
