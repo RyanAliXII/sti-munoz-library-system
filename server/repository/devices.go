@@ -27,20 +27,20 @@ func NewDevice()DeviceRepository{
 }
 func(repo * Device)NewDevice(device model.Device)(error){
 	_, err := repo.db.Exec(`INSERT INTO services.device 
-	(name, description, available)VALUES($1, $2, $3)`, device.Name, device.Description, device.Available)
+	(name, description)VALUES($1, $2)`, device.Name, device.Description)
 	return err
 }
 func(repo * Device)GetDevices()([]model.Device, error){
 	devices := make([]model.Device, 0)
-	err := repo.db.Select(&devices, "SELECT id, name, description, available from services.device where deleted_at is null ORDER BY created_at desc")
+	err := repo.db.Select(&devices, "SELECT id, name, description from services.device where deleted_at is null ORDER BY created_at desc")
 	return devices, err
 }
 
 func (repo * Device)UpdateDevice(device model.Device)error{
 	_, err := repo.db.Exec(`
 	UPDATE services.device
-	 SET name = $1, description = $2, available = $3 
-	 WHERE id = $4 and deleted_at is null`, device.Name, device.Description, device.Available, device.Id)
+	 SET name = $1, description = $2
+	 WHERE id = $3 and deleted_at is null`, device.Name, device.Description, device.Id)
 	 return err
 }
 
@@ -53,7 +53,7 @@ func (repo * Device)DeleteDevice(id string )error{
 }
 func (repo * Device)GetDeviceById(id string) (model.Device, error){
 	device := model.Device{}
-	err := repo.db.Get(&device,"SELECT id, name, description, available from services.device where deleted_at is null and id = $1 LIMIT 1", id)
+	err := repo.db.Get(&device,"SELECT id, name, description from services.device where deleted_at is null and id = $1 LIMIT 1", id)
 	return device, err
 }
 

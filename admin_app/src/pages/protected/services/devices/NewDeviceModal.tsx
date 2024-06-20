@@ -29,7 +29,6 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
     initialFormData: {
       description: "",
       name: "",
-      available: 0,
     },
     schema: DeviceValidation,
   });
@@ -68,15 +67,7 @@ const NewDeviceModal: FC<ModalProps> = ({ closeModal, isOpen }) => {
             />
             <FieldError error={errors?.description} />
           </div>
-          <div className="py-2">
-            <CustomInput
-              label="Available Devices"
-              error={errors?.available}
-              type="number"
-              name="available"
-              onChange={handleFormInput}
-            />
-          </div>
+
           <Button
             color="primary"
             type="submit"

@@ -33,7 +33,6 @@ const ReservableDevicePage = () => {
   } = useSwitch();
   const { data: devices } = useDevices({});
   const [device, setDevice] = useState<Device>({
-    available: 0,
     description: "",
     id: "",
     name: "",
@@ -74,7 +73,6 @@ const ReservableDevicePage = () => {
           <Table.Head>
             <Table.HeadCell>Name</Table.HeadCell>
             <Table.HeadCell>Description</Table.HeadCell>
-            <Table.HeadCell>Available Device</Table.HeadCell>
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y dark:divide-gray-700">
@@ -85,7 +83,7 @@ const ReservableDevicePage = () => {
                     <div className="font-semibold">{device.name}</div>
                   </Table.Cell>
                   <Table.Cell>{device.description}</Table.Cell>
-                  <Table.Cell>{device.available}</Table.Cell>
+
                   <Table.Cell>
                     <div className="flex gap-2">
                       <HasAccess requiredPermissions={["Device.Edit"]}>
