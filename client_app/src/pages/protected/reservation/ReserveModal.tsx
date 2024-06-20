@@ -20,6 +20,7 @@ import Modal from "react-responsive-modal";
 import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { ReservationValidation } from "./schema";
+import { options } from "@fullcalendar/core/preact";
 interface ReserveModalProps extends ModalProps {
   devices: Device[];
   timeSlots: TimeSlot[];
@@ -148,23 +149,25 @@ const ReserveModal: FC<ReserveModalProps> = ({
               error={errors?.timeSlotId}
               options={dateAndDevice?.timeSlots ?? []}
               isOptionDisabled={(option: TimeSlot) => {
-                if (currentDateReservations?.has(option.id)) {
+                const reservation = currentDateReservations?.get(option.id);
+                if (
+                  (reservation && reservation?.deviceId == form.deviceId) ||
+                  (option?.booked ?? 1) > 0
+                ) {
                   return true;
                 }
-                if (!option.booked || !device?.available) return false;
-                return option.booked >= device?.available;
+                return false;
               }}
               getOptionLabel={(option) => {
-                if (currentDateReservations?.has(option.id)) {
+                const reservation = currentDateReservations?.get(option.id);
+                if (reservation && reservation?.deviceId == form.deviceId) {
                   return `${to12HR(option.startTime)} - ${to12HR(
                     option.endTime
                   )} | Already booked.`.toString();
                 }
                 let isAvailableText = "Available";
-                if (option.booked && device?.available) {
-                  if (option.booked >= device?.available) {
-                    isAvailableText = "Fully Booked";
-                  }
+                if (option.booked ?? 1 > 0) {
+                  isAvailableText = "Fully Booked";
                 }
                 return `${to12HR(option.startTime)} - ${to12HR(
                   option.endTime
