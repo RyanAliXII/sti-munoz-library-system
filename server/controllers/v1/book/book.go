@@ -218,4 +218,5 @@ type BookController interface {
 	UpdateAccessionBulk(ctx * gin.Context)
 	GenerateEbookUploadRequestUrl(ctx * gin.Context)
 	DeleteBook(ctx * gin.Context)
+	DeleteAccession(ctx * gin.Context) 
 }

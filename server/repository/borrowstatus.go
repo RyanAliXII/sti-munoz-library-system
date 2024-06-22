@@ -357,8 +357,8 @@ func (repo * Borrowing)GetBookStatusBasedOnClient(bookId string, accountId strin
 	) as is_already_borrowed,
 	(
 	  SELECT exists(
-		  SELECT 1 from circulation.bag INNER JOIN catalog.accession on bag.accession_id = accession.id
-		 where accession.book_id = $1 and bag.account_id = $2
+		  SELECT 1 from bag_view as bag
+		 where book_id = $1 and account_id = $2
 	  ) 
 	) as is_already_in_bag,
 	(

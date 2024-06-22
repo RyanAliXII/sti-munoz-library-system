@@ -17,7 +17,7 @@ SELECT book.id,title, isbn,
 	pages,
 	cost_price,
 	edition,
-	count((accession)) as copies,
+	(count(accession) FILTER(where accession.deleted_at is null)) as copies,
 	year_published,
 	received_at,
 	ddc,
@@ -173,12 +173,11 @@ FROM borrowed_ebook_view));
 
 CREATE OR REPLACE VIEW client_book_view as 
 SELECT book.id,title, isbn, 
-	SELECT book.id,title, isbn, 
 	description, 
 	pages,
 	cost_price,
 	edition,
-	(count(accession) FILTER(where accession.weeded_at is null)) as copies,
+	(count(accession) FILTER(where accession.weeded_at is null and accession.missing_at is null)) as copies,
 	year_published,
 	received_at,
 	ddc,
@@ -219,7 +218,7 @@ SELECT book.id,title, isbn,
 	FROM catalog.book
 	INNER JOIN catalog.section on book.section_id = section.id
 	INNER JOIN catalog.publisher on book.publisher_id = publisher.id
-	INNER JOIN catalog.accession as accession on book.id = accession.book_id and accession.weeded_at is null and missing_at is null and accession.deleted_at is null
+	INNER JOIN catalog.accession as accession on book.id = accession.book_id and accession.deleted_at is null and accession.missing_at is null and accession.weeded_at is null
     LEFT JOIN (SELECT book_author.book_id, string_agg(name, ', ') as concatenated, COALESCE(jsonb_agg(jsonb_build_object('id', author.id, 'name', author.name)), '[]') as list
 			   FROM catalog.book_author INNER JOIN catalog.author on book_author.author_id = author.id GROUP BY book_author.book_id) 
 	as authors on book.id = authors.book_id
@@ -247,7 +246,7 @@ SELECT book.id,title, isbn,
 CREATE OR REPLACE VIEW bag_view as
 SELECT bag.id , bag.book_id, bag.account_id, bag.accession_id, bag.accession_number, bag.copy_number,  bv.json_format as book, bag.is_checked,  bag.is_ebook  from ((
 	SELECT bag.id, bag.account_id, bag.accession_id, accession.number as accession_number, accession.copy_number,  accession.book_id as book_id, is_checked, false as is_ebook from circulation.bag
-	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null
+	INNER JOIN catalog.accession as accession on bag.accession_id = accession.id and accession.weeded_at is null and accession.missing_at is null and accession.deleted_at is null
 )
 UNION ALL
 (	SELECT ebook_bag.id, account_id,  '00000000-0000-0000-0000-000000000000', 0, 0, book_id, is_checked, true as is_ebook from circulation.ebook_bag	

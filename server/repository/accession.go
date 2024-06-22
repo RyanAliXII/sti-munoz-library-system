@@ -21,6 +21,7 @@ type AccessionRepository interface {
 	UpdateAccession(accession model.Accession) error
 	GetAccessionByCollection(collectionId int ) ([]model.Accession, error) 
 	UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error 
+	Delete(id string) error
 }
 type Accession struct {
 	db *sqlx.DB
@@ -90,7 +91,7 @@ func (repo *Accession) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	where book_id =  $1
+	where book_id =  $1 AND deleted_at is null
 	ORDER BY copy_number ASC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
@@ -125,7 +126,7 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 	  INNER JOIN book_view as book on accession.book_id = book.id 
 	  LEFT JOIN borrowing.borrowed_book
 	  as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
-	  WHERE book.id = $1 and weeded_at is null and missing_at is null
+	  WHERE book.id = $1 and weeded_at is null and missing_at is null and deleted_at is null
 	  ORDER BY copy_number
 	  `
 	  selectAccessionErr := repo.db.Select(&accessions, query, id)
@@ -204,6 +205,20 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 		return err
 	}
 	return nil
+}
+func(repo * Accession)Delete(id string) error {
+	accession, err := repo.GetAccessionsById(id)
+	if err != nil {
+		return err
+	}
+	accessions := repo.GetAccessionsByBookIdDontIgnoreWeeded(accession.BookId)
+	//if there is only one copy of book, mark the whole book as deleted.
+	if(len(accessions) == 1) {
+		_, err = repo.db.Exec("UPDATE catalog.book set deleted_at = now() where id = $1" , accession.BookId)
+		return  err
+	}
+	_, err = repo.db.Exec("UPDATE catalog.accession set deleted_at = now() where id = $1", id)
+	return err
 }
 func NewAccessionRepository (db * sqlx.DB) AccessionRepository{
 	return &Accession{
