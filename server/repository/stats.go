@@ -15,7 +15,7 @@ func(repo * Stats)GetLibraryStats()model.LibraryStats{
 	query := `
 	SELECT
     (SELECT COUNT(1) FROM account_view where is_active) as accounts,
-    (SELECT COUNT(1) FROM catalog.accession where weeded_at is null and missing_at is null and deleted_at is null) as books,
+    (SELECT COUNT(1) FROM catalog.accession INNER JOIN catalog.book on accession.book_id = book.id and book.deleted_at is null where accession.weeded_at is null and accession.missing_at is null and accession.deleted_at is null) as books,
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty) as penalties,
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NOT NULL) as settled_penalties,
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NULL) as unsettled_penalties`
