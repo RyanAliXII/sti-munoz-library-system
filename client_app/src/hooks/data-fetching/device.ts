@@ -35,7 +35,6 @@ export const useDevices = ({
 };
 
 const DeviceInitalValue = {
-  available: 0,
   description: "",
   id: "",
   name: "",
@@ -54,7 +53,6 @@ export const useDevice = ({
       const deviceId = queryKey[1];
       if (deviceId.length === 0)
         return {
-          available: 0,
           description: "",
           id: "",
           name: "",

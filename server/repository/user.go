@@ -29,16 +29,16 @@ type UserRepository interface {
 
 func (repo * User)GetUserTypes()([]model.UserType, error) {
 	types := make([]model.UserType, 0)
-	err := repo.db.Select(&types,"SELECT id, name, has_program, max_allowed_borrowed_books from system.user_type order by id asc")
+	err := repo.db.Select(&types,"SELECT id, name, has_program, max_allowed_borrowed_books, max_unique_device_reservation_per_day from system.user_type order by id asc")
 	return types, err
 }
 func (repo * User)GetUserTypesWithProgram()([]model.UserType, error) {
 	types := make([]model.UserType, 0)
-	err := repo.db.Select(&types,"SELECT id, name, has_program from system.user_type where has_program order by id asc")
+	err := repo.db.Select(&types,"SELECT id, name, has_program, max_unique_device_reservation_per_day  from system.user_type where has_program order by id asc")
 	return types, err
 }
 func (repo * User)NewUserType(userType model.UserType)(error){
-	_, err := repo.db.Exec("INSERT INTO system.user_type (name, has_program, max_allowed_borrowed_books)VALUES($1, $2, $3)", userType.Name, userType.HasProgram, userType.MaxAllowedBorrowedBooks)
+	_, err := repo.db.Exec("INSERT INTO system.user_type (name, has_program, max_allowed_borrowed_books, max_unique_device_reservation_per_day)VALUES($1, $2, $3, $4)", userType.Name, userType.HasProgram, userType.MaxAllowedBorrowedBooks, userType.MaxUniqueDeviceReservationPerDay)
 	return err
 }
 func (repo * User)GetUserProgramsAndStrands()([]model.UserProgramOrStrand,error){
@@ -75,7 +75,9 @@ func (repo * User)GetUserTypesToMap() (map[int]model.UserType, error){
 	return typesMap, nil
 }
 func(repo * User)UpdateUserType(userType model.UserType)(error){
-	_, err := repo.db.Exec("UPDATE system.user_type set name = $1, has_program = $2, max_allowed_borrowed_books = $3 where id =$4", userType.Name, userType.HasProgram,userType.MaxAllowedBorrowedBooks, userType.Id)
+	_, err := repo.db.Exec(
+	"UPDATE system.user_type set name = $1, has_program = $2, max_allowed_borrowed_books = $3, max_unique_device_reservation_per_day = $4 where id =$5", userType.Name, 
+	userType.HasProgram,userType.MaxAllowedBorrowedBooks, userType.MaxUniqueDeviceReservationPerDay, userType.Id)
 	return err
 }
 func (repo * User)GetUserProgramsAndStrandsToMap()(map[string]model.UserProgramOrStrand,error){

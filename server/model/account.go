@@ -30,6 +30,7 @@ type AccountStats struct{
 	MaxAllowedBorrowedBooks int `json:"maxAllowedBorrowedBooks" db:"max_allowed_borrowed_books"`
 	TotalBorrowedBooks int `json:"totalBorrowedBooks" db:"total_borrowed_books"`
 	IsAllowedToBorrow bool `json:"isAllowedToBorrow" db:"is_allowed_to_borrow"`
+	MaxUniqueDeviceReservationPerDay int `json:"maxUniqueDeviceReservationPerDay" db:"max_unique_device_reservation_per_day"`
 }
 
 type AccountJSON struct {

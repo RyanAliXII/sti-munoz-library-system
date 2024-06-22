@@ -69,7 +69,7 @@ func (repo * DateSlot)GetSlotsByRange(startDateStr string, endDateStr string)([]
 	slots := make([]model.DateSlot, 0)
 	query := `
 		SELECT ds.id, 
-		ds.date :: date,
+		ds.date::date,
 		ds.profile_id,
 		JSON_BUILD_OBJECT('id', tsp.id, 'name', tsp.name) as time_slot_profile
 		FROM services.date_slot as ds

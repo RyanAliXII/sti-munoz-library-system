@@ -43,11 +43,7 @@ func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
 		}, "Validation err"))
 		return
 	}
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ValidateTime"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-		return 
-	}
+
 	err = ctrler.services.Repos.TimeSlotRepository.NewSlot(slot)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("NewSlotErr"))
@@ -77,11 +73,7 @@ func(ctrler * TimeSlot)UpdateTimeSlot(ctx * gin.Context){
 		}, "Validation err"))
 		return
 	}
-	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ValidateTime"))
-		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
-		return 
-	}
+	
 	err = ctrler.services.Repos.TimeSlotRepository.UpdateSlot(slot)
 	if err != nil{
 		logger.Error(err.Error(), slimlog.Error("UpdateSlotErr"))

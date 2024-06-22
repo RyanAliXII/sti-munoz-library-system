@@ -1,19 +1,19 @@
+import HasAccess from "@components/auth/HasAccess";
 import Container from "@components/ui/container/Container";
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
 import { DateSlot } from "@definitions/types";
-import {
-  useDateSlots,
-  useDeleteDateSlots,
-} from "@hooks/data-fetching/date-slot";
+import { EventClickArg, EventInput, EventSourceFunc } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import FullCalendar from "@fullcalendar/react";
+import { useDeleteDateSlots } from "@hooks/data-fetching/date-slot";
+import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
-import { useQueryClient } from "@tanstack/react-query";
-import { Button, Table } from "flowbite-react";
-import { useState } from "react";
-import { FaTrash } from "react-icons/fa";
+import { format } from "date-fns";
+import { Button } from "flowbite-react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "react-toastify";
+import EditDateSlotModal from "./EditDateSlotModalProps";
 import NewDateSlotModal from "./NewDateSlotModal";
-import HasAccess from "@components/auth/HasAccess";
-
 const DateSlotPage = () => {
   const {
     close: closeNewSlotModal,
@@ -25,27 +25,28 @@ const DateSlotPage = () => {
     isOpen: isDeleteConfirmOpen,
     open: openDeleteConfirm,
   } = useSwitch();
-  const [dateSlot, setDateSlot] = useState<Omit<DateSlot, "timeSlotProfile">>({
+  const editModal = useSwitch();
+  const [dateSlot, setDateSlot] = useState<DateSlot>({
     date: "",
     id: "",
     profileId: "",
+    timeSlotProfile: {
+      id: "",
+      name: "",
+      timeSlots: [],
+    },
   });
-  const { data: slots } = useDateSlots({});
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      month: "long",
-      day: "2-digit",
-      year: "numeric",
-    });
-  };
-  const queryClient = useQueryClient();
+
   const deleteSlot = useDeleteDateSlots({
     onSuccess: () => {
-      toast.success("Slot deleleted.");
-      queryClient.invalidateQueries(["dateSlots"]);
+      toast.success("Slot deleted.");
+      refetchEvents();
     },
     onError: () => {
       toast.error("Unknown error occured.");
+    },
+    onSettled: () => {
+      closeDeleteConfirm();
     },
   });
   const initDelete = (slot: DateSlot) => {
@@ -55,6 +56,40 @@ const DateSlotPage = () => {
   const onConfirmDelete = () => {
     deleteSlot.mutate(dateSlot.id);
   };
+  const { Get } = useRequest();
+  const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null);
+  const refetchEvents = () => {
+    calendarRef.current?.getApi().refetchEvents();
+  };
+  const fetchSlots: EventSourceFunc = useCallback(async (args, success) => {
+    try {
+      const response = await Get("/date-slots", {
+        params: {
+          start: format(args.start, "yyyy-MM-dd"),
+          end: format(args.end, "yyyy-MM-dd"),
+        },
+      });
+
+      const { data } = await response.data;
+      const slots = (data?.dateSlots ?? []) as DateSlot[];
+      const events: EventInput[] = slots?.map((slot) => ({
+        allDay: true,
+        title: "Open for reservation",
+        className: "cursor-pointer bg-green-500",
+        date: slot.date,
+        extendedProps: slot,
+      }));
+
+      success(events ?? {});
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+  const handleEventClick = useCallback((arg: EventClickArg) => {
+    const slot = arg.event.extendedProps as DateSlot;
+    setDateSlot(slot);
+    editModal.open();
+  }, []);
   return (
     <Container>
       <div className="py-3">
@@ -64,7 +99,15 @@ const DateSlotPage = () => {
           </Button>
         </HasAccess>
       </div>
-      <Table>
+
+      <FullCalendar
+        ref={calendarRef}
+        plugins={[dayGridPlugin]}
+        initialView="dayGridMonth"
+        events={fetchSlots}
+        eventClick={handleEventClick}
+      ></FullCalendar>
+      {/* <Table>
         <Table.Head>
           <Table.HeadCell>Date</Table.HeadCell>
           <Table.HeadCell>Time Slot Profile</Table.HeadCell>
@@ -94,10 +137,19 @@ const DateSlotPage = () => {
             );
           })}
         </Table.Body>
-      </Table>
+      </Table> */}
+
       <NewDateSlotModal
+        refetchEvents={refetchEvents}
         closeModal={closeNewSlotModal}
         isOpen={isNewSlotModalOpen}
+      />
+      <EditDateSlotModal
+        refetchEvents={refetchEvents}
+        initDelete={initDelete}
+        isOpen={editModal.isOpen}
+        closeModal={editModal.close}
+        slot={dateSlot}
       />
       <DangerConfirmDialog
         title="Delete Date Slot"

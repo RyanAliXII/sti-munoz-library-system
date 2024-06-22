@@ -17,6 +17,7 @@ const NewUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
       name: "",
       maxAllowedBorrowedBooks: 0,
       hasProgram: false,
+      maxUniqueDeviceReservationPerDay: 0,
     },
     schema: UserTypeValidation,
   });
@@ -67,6 +68,15 @@ const NewUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
               name="maxAllowedBorrowedBooks"
               value={form.maxAllowedBorrowedBooks}
               error={errors?.maxAllowedBorrowedBooks}
+              onChange={handleFormInput}
+            />
+          </div>
+          <div className="pb-2">
+            <CustomInput
+              label="Max Unique Device Reservation Per Day"
+              name="maxUniqueDeviceReservationPerDay"
+              value={form.maxUniqueDeviceReservationPerDay}
+              error={errors?.maxUniqueDeviceReservationPerDay}
               onChange={handleFormInput}
             />
           </div>

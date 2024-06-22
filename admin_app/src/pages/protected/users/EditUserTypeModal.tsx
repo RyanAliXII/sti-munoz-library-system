@@ -21,6 +21,7 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
         id: 0,
         name: "",
         maxAllowedBorrowedBooks: 0,
+        maxUniqueDeviceReservationPerDay: 0,
         hasProgram: false,
       },
       schema: UserTypeValidation,
@@ -71,6 +72,15 @@ const EditUserTypeModal: FC<EditModalProps<UserType>> = ({
               name="maxAllowedBorrowedBooks"
               value={form.maxAllowedBorrowedBooks}
               error={errors?.maxAllowedBorrowedBooks}
+              onChange={handleFormInput}
+            />
+          </div>
+          <div className="pb-2">
+            <CustomInput
+              label="Max Unique Device Reservation Per Day"
+              name="maxUniqueDeviceReservationPerDay"
+              value={form.maxUniqueDeviceReservationPerDay}
+              error={errors?.maxUniqueDeviceReservationPerDay}
               onChange={handleFormInput}
             />
           </div>

@@ -32,7 +32,6 @@ const DeviceLogPage = () => {
     client: AccountInitialValue,
     createdAt: "",
     device: {
-      available: 0,
       description: "",
       id: "",
       name: "",

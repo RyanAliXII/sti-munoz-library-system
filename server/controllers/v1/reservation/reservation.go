@@ -1,6 +1,7 @@
 package reservation
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
@@ -8,6 +9,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -42,18 +44,34 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	_, err  = ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
+	account, err  := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-
 	if err != nil {
 		logger.Error(err.Error())
 	}
+	message := fmt.Sprintf("%s %s has reserved a device.", account.GivenName, account.Surname)
+	accountIds, err := ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification{
+		Message: message,
+		Link: "/services/reservations",
+		
+	}, "Reservation.Read")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	for _, accountId := range accountIds{
+		routingKey := fmt.Sprintf("notify_admin_%s",  accountId)
+		err := ctrler.services.Broadcaster.Broadcast("notification",  routingKey, []byte(message))
+		if err != nil{
+			logger.Error(err.Error())
+		}
+	}
+	
 	ctx.JSON(httpresp.Success200(nil, "Reservation created."))
 }
 func (ctrler * Reservation)GetReservations(ctx * gin.Context){
-
+   
 	requestorApp := ctx.GetString("requestorApp")
 	if requestorApp == azuread.ClientAppClientId{
 		accountId := ctx.GetString("requestorId")
@@ -66,12 +84,23 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 		}, "Reservations fetched for client."))
 		return
 	}
-	reservations, err := ctrler.services.Repos.ReservationRepository.GetReservations()
+	filter := ReservationFilter{}
+	filter.ExtractFilter(ctx)
+	reservations, metadata, err := ctrler.services.Repos.ReservationRepository.GetReservations(&repository.ReservationFilter{
+		From: filter.From,
+		To: filter.To,
+		Status: filter.Status,
+		Devices: filter.Devices,
+		SortBy: filter.SortBy,
+		Order: filter.Order,
+		Filter: filter.Filter,
+	})
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("GetReservationsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"reservations": reservations,
+		"metadata": metadata,
 	}, "Reservations fetched."))
 }
 func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
