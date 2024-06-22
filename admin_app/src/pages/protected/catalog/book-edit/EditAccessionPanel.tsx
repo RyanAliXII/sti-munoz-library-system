@@ -3,6 +3,7 @@ import { LoadingBoundaryV2 } from "@components/loader/LoadingBoundary";
 import Container from "@components/ui/container/Container";
 import {
   ConfirmDialog,
+  DangerConfirmDialog,
   PromptInputDialog,
   PromptTextAreaDialog,
 } from "@components/ui/dialog/Dialog";
@@ -16,8 +17,8 @@ import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 import { AiOutlineEdit, AiOutlinePlus } from "react-icons/ai";
-import { FaQuestion, FaTimes, FaUndo } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { FaQuestion, FaTimes, FaTrash, FaUndo } from "react-icons/fa";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { number, object } from "yup";
 import EditAccessionModal from "./EditAccessionModal";
@@ -28,7 +29,7 @@ enum Action {
   Missing = 3,
 }
 type NewCopiesBody = {
-  copies: number;
+  accessionNumber: number;
 };
 const EditAccessionPanel = () => {
   const [selectedAccession, setSelectedAccession] = useState<string>("");
@@ -48,17 +49,17 @@ const EditAccessionPanel = () => {
     open: openRecirculateConfirmation,
     isOpen: isReculateConfirmationOpen,
   } = useSwitch();
-  const { Patch } = useRequest();
+  const { Patch, Delete } = useRequest();
   const queryClient = useQueryClient();
   const [action, setAction] = useState<Action>(1);
 
   const { errors, handleFormInput, validate, removeFieldError } =
     useForm<NewCopiesBody>({
       initialFormData: {
-        copies: 0,
+        accessionNumber: 0,
       },
       schema: object({
-        copies: number()
+        accessionNumber: number()
           .required("Number of copies is required.")
           .typeError("Number of copies is required.")
           .min(1, "Number of copies must be greater than zero."),
@@ -134,10 +135,32 @@ const EditAccessionPanel = () => {
     remarks: "",
     id: "",
   });
-
+  const navigate = useNavigate();
+  const deleteAccession = useMutation({
+    mutationFn: (id: string) => Delete(`/books/accessions/${id}`),
+    onSuccess: () => {
+      toast.success("Accession deleted.");
+      if (accessions?.length === 1) {
+        navigate("/resources");
+      }
+      queryClient.invalidateQueries(["bookAccessions"]);
+    },
+    onError: () => {
+      toast.error("Unknown error occured.");
+    },
+  });
   const initEdit = (accession: Accession) => {
     editAccessionModal.open();
     setAccession(accession);
+  };
+  const confirmDelete = useSwitch();
+  const initDelete = (accession: Accession) => {
+    confirmDelete.open();
+    setAccession(accession);
+  };
+  const onConfirmDelete = () => {
+    confirmDelete.close();
+    deleteAccession.mutate(accession.id ?? "");
   };
   return (
     <Container>
@@ -243,6 +266,17 @@ const EditAccessionPanel = () => {
                               </Button>
                             </Tippy>
                           )}
+                          <Tippy content="Delete Accession">
+                            <Button
+                              color="failure"
+                              size={"xs"}
+                              onClick={() => {
+                                initDelete(accession);
+                              }}
+                            >
+                              <FaTrash />
+                            </Button>
+                          </Tippy>
                         </div>
                       </Table.Cell>
                     </Table.Row>
@@ -281,9 +315,9 @@ const EditAccessionPanel = () => {
         title="Add Copy"
         error={errors?.copies}
         inputProps={{
-          label: "Number of copies",
+          label: "Accession Number",
           type: "number",
-          name: "copies",
+          name: "accessionNumber",
           onChange: handleFormInput,
           error: errors?.copies,
           placeholder: "Enter number of new copies to add",
@@ -292,7 +326,7 @@ const EditAccessionPanel = () => {
         onProceed={async () => {
           try {
             const parsed = await validate();
-            newCopies.mutate(parsed ?? { copies: 0 });
+            newCopies.mutate(parsed ?? { accessionNumber: 0 });
             closeAddCopyDialog();
           } catch (error) {
             console.log(error);
@@ -309,6 +343,14 @@ const EditAccessionPanel = () => {
           updateAccessionStatus.mutate({ action: Action.Recirculate });
         }}
         text="Are you sure you want to undo this book status? This copy will be available again?"
+      />
+      <DangerConfirmDialog
+        key={"deleteAccession"}
+        close={confirmDelete.close}
+        isOpen={confirmDelete.isOpen}
+        title="Delete Accession"
+        onConfirm={onConfirmDelete}
+        text="Are you sure you want to delete this accession? This action is irreversible."
       />
       <EditAccessionModal
         formData={accession}

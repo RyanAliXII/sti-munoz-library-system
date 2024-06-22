@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const Page404 = ({
-  redirectTo = "/search",
+  redirectTo = "/catalog",
   redirectText = "Return to searching",
 }) => {
   return (

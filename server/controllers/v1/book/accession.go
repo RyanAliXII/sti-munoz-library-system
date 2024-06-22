@@ -147,7 +147,7 @@ func(ctrler *Book)AddBookCopies(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.services.Repos.BookRepository.AddBookCopies(id, body.Copies)
+err = ctrler.services.Repos.BookRepository.AddBookCopy(id, body.AccessionNumber)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("addBookCopiesErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
@@ -226,5 +226,15 @@ func (ctrler  *Book)UpdateAccessionBulk(ctx * gin.Context) {
 		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Accession updated."))
+}
+func(ctrler * Book)DeleteAccession(ctx * gin.Context) {
+	id := ctx.Param("id")
+	err := ctrler.services.Repos.AccessionRepository.Delete(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteAccessionError"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	ctx.JSON(httpresp.Success200(nil, "Accession Deleted."))
 }
 

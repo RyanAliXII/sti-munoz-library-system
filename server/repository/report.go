@@ -218,7 +218,6 @@ func(repo * Report)GetDeviceLogs(start string, end string)([]model.DeviceLogRepo
 		SELECT account.json_format as client, jsonb_build_object(
 					'id',device.id, 
 					'name', device.name, 
-					'available', device.available,
 					'description', device.description) as device, (device_log.created_at at time zone 'PHT')  as event_time FROM services.device_log 
 		INNER JOIN services.device on device_log.device_id = device.id
 		INNER JOIN account_view as account on device_log.account_id = account.id)

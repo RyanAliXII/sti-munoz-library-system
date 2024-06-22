@@ -1,9 +1,10 @@
 import HasAccess from "@components/auth/HasAccess";
 import { Book } from "@definitions/types";
 import Tippy from "@tippyjs/react";
-import { Button, Checkbox, Table } from "flowbite-react";
+import { Button, Table } from "flowbite-react";
 import { ChangeEvent, FC } from "react";
 import { AiOutlineEdit, AiOutlineEye, AiOutlinePrinter } from "react-icons/ai";
+import { FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 type BookTableProps = {
@@ -14,6 +15,7 @@ type BookTableProps = {
   onSelect: (event: ChangeEvent<HTMLInputElement>, book: Book) => void;
   setBookForPrintingAndOpenModal: (book: Book) => void;
   previewBook: (book: Book) => void;
+  initDelete: (book: Book) => void;
 };
 const BookTable: FC<BookTableProps> = ({
   books,
@@ -21,13 +23,14 @@ const BookTable: FC<BookTableProps> = ({
   onSelect,
   previewBook,
   setBookForPrintingAndOpenModal,
+  initDelete,
 }) => {
   return (
     <div className="overflow-x-auto">
       <div className="inline-block min-w-full align-middle">
         <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <Table.Head>
-            <Table.HeadCell></Table.HeadCell>
+            {/* <Table.HeadCell></Table.HeadCell> */}
             <Table.HeadCell>Title</Table.HeadCell>
             <Table.HeadCell>Authors</Table.HeadCell>
             <Table.HeadCell>Copies</Table.HeadCell>
@@ -39,7 +42,7 @@ const BookTable: FC<BookTableProps> = ({
               const author = book.authors?.[0]?.name ?? "";
               return (
                 <Table.Row key={book.id}>
-                  <Table.Cell>
+                  {/* <Table.Cell>
                     <Checkbox
                       color="primary"
                       checked={bookSelections.books.has(book?.id ?? "")}
@@ -47,7 +50,7 @@ const BookTable: FC<BookTableProps> = ({
                         onSelect(event, book);
                       }}
                     />
-                  </Table.Cell>
+                  </Table.Cell> */}
 
                   <Table.Cell>
                     <div className="text-base font-semibold text-gray-900 dark:text-white">
@@ -92,6 +95,18 @@ const BookTable: FC<BookTableProps> = ({
                           to={`/resources/edit/${book.id}`}
                         >
                           <AiOutlineEdit className="text-lg cursor-pointer" />
+                        </Button>
+                      </Tippy>
+                    </HasAccess>
+                    <HasAccess requiredPermissions={["Book.Delete"]}>
+                      <Tippy content="Delete Resource">
+                        <Button
+                          color="failure"
+                          onClick={() => {
+                            initDelete(book);
+                          }}
+                        >
+                          <FaTrash />
                         </Button>
                       </Tippy>
                     </HasAccess>

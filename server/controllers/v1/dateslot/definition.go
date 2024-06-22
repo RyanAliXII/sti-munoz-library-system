@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 )
 
@@ -47,7 +48,7 @@ func (body NewSlotBody)ToModel()([]model.DateSlot) {
 	for i := 0; i <= days; i++ {
 		currentDate := from.Add(time.Duration(i) * 24 * time.Hour)
 		slots = append(slots, model.DateSlot{
-			Date: currentDate.Format(time.DateOnly),
+			Date: db.NullableDate( currentDate.Format(time.DateOnly)),
 			ProfileId: body.ProfileId,
 		})
 	}

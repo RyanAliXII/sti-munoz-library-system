@@ -12,6 +12,7 @@ export const useAccountStats = () => {
           maxAllowedBorrowedBooks: 0,
           isAllowedToBorrow: false,
           totalBorrowedBooks: 0,
+          maxUniqueDeviceReservationPerDay: 0,
         }
       );
     } catch (error) {
@@ -19,6 +20,7 @@ export const useAccountStats = () => {
         maxAllowedBorrowedBooks: 0,
         isAllowedToBorrow: false,
         totalBorrowedBooks: 0,
+        maxUniqueDeviceReservationPerDay: 0,
       };
     }
   };

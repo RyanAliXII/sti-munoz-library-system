@@ -24,7 +24,11 @@ var Permissions = []Permission{
 		Value:"Book.Edit",
 		Description: "Allows user to edit books.",
 	},
-
+	{
+		Name: "Delete Book",
+		Value: "Book.Delete",
+		Description: "Allows user to delete books.",
+	},
 	{
 		Name: "View Author",
 		Value:"Author.Read",

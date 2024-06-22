@@ -163,8 +163,6 @@ func (ctrler *Book) getBookByIdOnClientView(ctx *gin.Context) {
 		"status": bookStatus,
 	}, "Book fetched."))
 }
-
-
 func (ctrler *Book) UpdateBook(ctx *gin.Context) {
 	body := model.Book{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
@@ -180,7 +178,16 @@ func (ctrler *Book) UpdateBook(ctx *gin.Context) {
 	}
 	ctx.JSON(httpresp.Success200(nil, "model.Book updated."))
 }
-
+func(ctrler * Book)DeleteBook(ctx * gin.Context) {
+	id := ctx.Param("id")
+	err := ctrler.services.Repos.BookRepository.Delete(id)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("DeleteBookErr"))
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	}
+	ctx.JSON(httpresp.Success200(nil, "Book deleted."))
+	
+}
 func NewBookController(services * services.Services) BookController {
 	return &Book{
 		services: services,
@@ -210,4 +217,6 @@ type BookController interface {
 	GetAccessionsByCollection(ctx * gin.Context)
 	UpdateAccessionBulk(ctx * gin.Context)
 	GenerateEbookUploadRequestUrl(ctx * gin.Context)
+	DeleteBook(ctx * gin.Context)
+	DeleteAccession(ctx * gin.Context) 
 }

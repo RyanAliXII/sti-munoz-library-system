@@ -468,7 +468,7 @@ func(repo * Account)RestoreAccounts(accountIds []string) error {
 func (repo * Account) GetAccountStatsById(accountId string)(model.AccountStats, error ){
 	accountStats := model.AccountStats{}
 	query := `
-	SELECT  account.max_allowed_borrowed_books, 
+	SELECT  account.max_allowed_borrowed_books, account.max_unique_device_reservation_per_day, 
 	COUNT(bbv.id) FILTER(where is_ebook = false)  +
 	COUNT(bbv.id) FILTER (where is_ebook = true and (due_date is null OR current_date AT TIME ZONE 'PHT' <= due_date))  as total_borrowed_books,
 	(
@@ -479,7 +479,7 @@ func (repo * Account) GetAccountStatsById(accountId string)(model.AccountStats, 
 	LEFT JOIN borrowed_book_all_view as bbv on account.id = bbv.account_id 
 	and (bbv.status_id = 1 or bbv.status_id = 2 or bbv.status_id = 3)
 	where account.id = $1
-	GROUP BY account.id, account.max_allowed_borrowed_books	
+	GROUP BY account.id, account.max_allowed_borrowed_books,account.max_unique_device_reservation_per_day
 	`
 	err := repo.db.Get(&accountStats, query, accountId )
 	return accountStats, err

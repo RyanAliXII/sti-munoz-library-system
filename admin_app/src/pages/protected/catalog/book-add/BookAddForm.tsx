@@ -157,7 +157,7 @@ const BookAddForm = () => {
   };
 
   const newBook = useMutation({
-    mutationFn: (parsedForm: Book) =>
+    mutationFn: (parsedForm: Omit<Book, "copies">) =>
       Post(
         "/books/",
         {

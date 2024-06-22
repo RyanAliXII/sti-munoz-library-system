@@ -2,7 +2,6 @@ package repository
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
@@ -15,52 +14,22 @@ type Section struct {
 }
 
 func (repo *Section) New(section model.Section) error {
-	transaction, transactErr := repo.db.Beginx()
-	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("Section.New"))
-		return transactErr
-	}
-	const TABLE_PREFIX = "accession_"
-	var tableName string
-
 	if section.MainCollectionId == 0 {
-		t := time.Now().Unix()
-		tableName = fmt.Sprint(TABLE_PREFIX, t)
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, is_non_circulating)VALUES($1, $2, $3, $4)", section.Name, tableName, section.Prefix, section.IsNonCirculating)
+		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, prefix, is_non_circulating)VALUES($1, $2, $3)", section.Name, section.Prefix, section.IsNonCirculating)
 		if insertErr != nil {
-			transaction.Rollback()
+			
 			logger.Error(insertErr.Error(), slimlog.Function("Section.New"))
 			return insertErr
 		}
-	} else {
-		if(section.UseParentAccessionCounter){
-			collection := model.Section{}
-			err := transaction.Get(&collection, "SELECT id, name, accession_table from catalog.section where id = $1 LIMIT 1", section.MainCollectionId)
-			if err != nil {
-				logger.Error(err.Error(), slimlog.Error("GetCollectionErr"))
-				transaction.Rollback()
-				return err
-			}
-			tableName = collection.AccessionTable
-		}else{
-			t := time.Now().Unix()
-			tableName = fmt.Sprint(TABLE_PREFIX, t)
-		}
-		_, insertErr := transaction.Exec("INSERT INTO catalog.section(name, accession_table, prefix, main_collection_id, is_non_circulating)VALUES($1,$2,$3,$4,$5)", section.Name, tableName, section.Prefix, section.MainCollectionId, section.IsNonCirculating)
+	}else{
+		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, prefix, is_non_circulating, main_collection_id)VALUES($1, $2, $3, $4)", section.Name, section.Prefix, 
+		section.IsNonCirculating, section.MainCollectionId)
 		if insertErr != nil {
-			transaction.Rollback()
-			logger.Error(insertErr.Error(), slimlog.Function("Section.New"), slimlog.Error("insertErr"))
+		
+			logger.Error(insertErr.Error(), slimlog.Function("Section.New"))
 			return insertErr
 		}
 	}
-
-	_, createCounterErr := transaction.Exec("INSERT into accession.counter(accession) VALUES($1) ON CONFLICT (accession) DO NOTHING", tableName)
-	if createCounterErr != nil {
-		transaction.Rollback()
-		logger.Error(createCounterErr.Error(), slimlog.Function("Section.New"), slimlog.Error("createCounterErr"))
-		return createCounterErr
-	}
-	transaction.Commit()
 	return nil
 }
 func (repo * Section)Update(section model.Section) error {
@@ -78,14 +47,12 @@ func (repo *Section) Get() []model.Section {
 	prefix,
 	is_non_circulating,
 	(case when main_collection_id is null then 0 else main_collection_id end) as main_collection_id,
-	accession_table,
 	(case when (count(book.id) > 0) OR (count_children_of_collection(section.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
-	as is_sub_collection, last_value from catalog.section 
-	inner join accession.counter on accession_table = counter.accession
+	as is_sub_collection from catalog.section 
 	LEFT join catalog.book on section.id = book.section_id 
 	where section.deleted_at is null
-	GROUP BY section.id, last_value ORDER BY section.name ASC`)
+	GROUP BY section.id ORDER BY section.name ASC`)
 	if selectErr != nil {
 		logger.Error(selectErr.Error(), slimlog.Function("Section.Get"))
 	}
@@ -99,14 +66,12 @@ func (repo *Section)GetById(id int)(model.Section, error)  {
 	name,
 	prefix,
 	is_non_circulating,
-	accession_table,
 	(case when (count(book.id) > 0) OR (count_children_of_collection(section.id) > 0) then false else true end) is_deleteable,
 	(case when main_collection_id is null then false else true end) 
-	as is_sub_collection, last_value from catalog.section 
-	inner join accession.counter on accession_table = counter.accession
+	as is_sub_collection from catalog.section 
 	LEFT join catalog.book on section.id = book.section_id 
 	where section.deleted_at is null and section.id = $1
-	GROUP BY section.id, last_value ORDER BY section.created_at DESC LIMIT 1`, id)
+	GROUP BY section.id ORDER BY section.created_at DESC LIMIT 1`, id)
 	
 	return section, err
 }

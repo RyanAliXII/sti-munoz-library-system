@@ -14,11 +14,11 @@ func DeviceRoutes(router * gin.RouterGroup){
 	middlewares.ValidateBody[DeviceBody], ctrler.NewDevice)
 	
 	router.GET("", 
-	middlewares.ValidatePermissions([]string{"Device.Read"}, true), 
+	middlewares.ValidatePermissions([]string{"Device.Read"}, false), 
 	ctrler.GetDevices)
 
 	router.GET("/:id",
-	middlewares.ValidatePermissions([]string{"Device.Read"}, true),
+	middlewares.ValidatePermissions([]string{"Device.Read"}, false),
 	 ctrler.GetDeviceById)
 
 	router.PUT("/:id", 

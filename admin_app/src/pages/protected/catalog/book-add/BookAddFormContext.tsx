@@ -5,12 +5,12 @@ import React, { createContext, useContext } from "react";
 import { NewBookSchemaValidation } from "../schema";
 import { format } from "date-fns";
 export const BookAddFormContext = createContext({} as BookAddContextType);
-interface BookAddContextType extends UseFormType<Book> {}
+interface BookAddContextType extends UseFormType<Omit<Book, "copies">> {}
 export const useBookAddFormContext = () => {
   return useContext(BookAddFormContext);
 };
 export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
-  const formClient = useForm<Book>({
+  const formClient = useForm<Omit<Book, "copies">>({
     initialFormData: {
       title: "",
       isbn: "",
@@ -18,7 +18,6 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
       sourceOfFund: "",
       ebook: "",
       section: {
-        accessionTable: "",
         isDeleteable: false,
         isSubCollection: false,
         mainCollectionId: 0,
@@ -32,7 +31,6 @@ export const BookAddFormProvider: React.FC<BaseProps> = ({ children }) => {
         id: "",
       },
       authors: [],
-      copies: 1,
       receivedAt: format(new Date(), "yyyy-MM-dd"),
       authorNumber: "",
       ddc: "",

@@ -21,6 +21,7 @@ type AccessionRepository interface {
 	UpdateAccession(accession model.Accession) error
 	GetAccessionByCollection(collectionId int ) ([]model.Accession, error) 
 	UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error 
+	Delete(id string) error
 }
 type Accession struct {
 	db *sqlx.DB
@@ -90,7 +91,7 @@ func (repo *Accession) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.
 	INNER JOIN book_view as book on accession.book_id = book.id 
 	LEFT JOIN borrowing.borrowed_book
 	as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3 OR status_id = 6) 
-	where book_id =  $1
+	where book_id =  $1 AND deleted_at is null
 	ORDER BY copy_number ASC
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
@@ -125,7 +126,7 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 	  INNER JOIN book_view as book on accession.book_id = book.id 
 	  LEFT JOIN borrowing.borrowed_book
 	  as bb on accession.id = bb.accession_id AND (status_id = 1 OR status_id = 2 OR status_id = 3) 
-	  WHERE book.id = $1 and weeded_at is null and missing_at is null
+	  WHERE book.id = $1 and weeded_at is null and missing_at is null and deleted_at is null
 	  ORDER BY copy_number
 	  `
 	  selectAccessionErr := repo.db.Select(&accessions, query, id)
@@ -179,15 +180,7 @@ func (repo * Accession)UpdateAccession(accession model.Accession) error {
 	return err
 }
 func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, collectionId int) error {
-	transaction, err := repo.db.Beginx()
-	if err != nil {
-		return err
-	}
-	_, err = transaction.Exec("DROP INDEX IF EXISTS catalog.unique_idx_accession_number_section")
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
+
 	dialect := goqu.Dialect("postgres")
 	ds := dialect.Update(goqu.T("accession").Schema("catalog")).Prepared(true)
 	ids := make([]string, 0)
@@ -205,25 +198,27 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 	})
 	query, args, err := ds.ToSQL()
 	if err != nil {
-		transaction.Rollback()
 		return err
 	}
-	_, err = transaction.Exec(query, args...)
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
-	_, err = transaction.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS unique_idx_accession_number_section
-	ON catalog.accession(section_id, number)`)
-	if err != nil {
-		transaction.Rollback()
-		return err
-	}
-	err = transaction.Commit()
+	_, err = repo.db.Exec(query, args...)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+func(repo * Accession)Delete(id string) error {
+	accession, err := repo.GetAccessionsById(id)
+	if err != nil {
+		return err
+	}
+	accessions := repo.GetAccessionsByBookIdDontIgnoreWeeded(accession.BookId)
+	//if there is only one copy of book, mark the whole book as deleted.
+	if(len(accessions) == 1) {
+		_, err = repo.db.Exec("UPDATE catalog.book set deleted_at = now() where id = $1" , accession.BookId)
+		return  err
+	}
+	_, err = repo.db.Exec("UPDATE catalog.accession set deleted_at = now() where id = $1", id)
+	return err
 }
 func NewAccessionRepository (db * sqlx.DB) AccessionRepository{
 	return &Accession{

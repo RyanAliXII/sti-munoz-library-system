@@ -16,6 +16,9 @@ export const AddUserTypeModal: FC<ModalProps> = ({ isOpen, closeModal }) => {
           <div className="py-1">
             <CustomInput name="name" label="Name" />
           </div>
+          <div className="py-1">
+            <CustomInput name="name" label="Name" />
+          </div>
           <Button color="primary">
             <div className="flex items-center gap-2">
               <FaSave /> Save

@@ -47,7 +47,6 @@ export type Device = {
   id: string;
   name: string;
   description: string;
-  available: number;
 };
 export type Reservation = {
   id: string;
@@ -87,6 +86,7 @@ export type AccountStats = {
   maxAllowedBorrowedBooks: number;
   isAllowedToBorrow: boolean;
   totalBorrowedBooks: number;
+  maxUniqueDeviceReservationPerDay: number;
 };
 
 export interface Book {

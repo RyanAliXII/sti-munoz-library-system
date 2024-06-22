@@ -1,9 +1,10 @@
 import CustomDatePicker from "@components/ui/form/CustomDatePicker";
 import CustomSelect from "@components/ui/form/CustomSelect";
-import { ModalProps, TimeSlotProfile } from "@definitions/types";
+import { DateSlot, ModalProps, TimeSlotProfile } from "@definitions/types";
 import { useNewDateSlots } from "@hooks/data-fetching/date-slot";
 import { useTimeSlotProfiles } from "@hooks/data-fetching/time-slot-profile";
 import { useForm } from "@hooks/useForm";
+import useModalToggleListener from "@hooks/useModalToggleListener";
 import { format } from "date-fns";
 import { Button, Modal } from "flowbite-react";
 import { FC, FormEvent } from "react";
@@ -11,18 +12,27 @@ import { FaSave } from "react-icons/fa";
 import { SingleValue } from "react-select";
 import { toast } from "react-toastify";
 import { object, string } from "yup";
-
+import { FaTrash } from "react-icons/fa";
 type DateSlotForm = {
   from: string;
   to: string;
   profileId: string;
+  timeSlotProfile: {
+    id: string;
+    name: string;
+  };
 };
-interface NewDateSlotModalProps extends ModalProps {
+
+interface EditDateSlotModalProps extends ModalProps {
+  slot: DateSlot;
+  initDelete: (slot: DateSlot) => void;
   refetchEvents: () => void;
 }
-const NewDateSlotModal: FC<NewDateSlotModalProps> = ({
+const EditDateSlotModal: FC<EditDateSlotModalProps> = ({
   isOpen,
   closeModal,
+  slot,
+  initDelete,
   refetchEvents,
 }) => {
   const { removeFieldError, setForm, form, setErrors, errors, validate } =
@@ -31,6 +41,10 @@ const NewDateSlotModal: FC<NewDateSlotModalProps> = ({
         from: format(new Date(), "yyyy-MM-dd"),
         to: format(new Date(), "yyyy-MM-dd"),
         profileId: "",
+        timeSlotProfile: {
+          name: "",
+          id: "",
+        },
       },
       schema: object({
         profileId: string()
@@ -56,13 +70,20 @@ const NewDateSlotModal: FC<NewDateSlotModalProps> = ({
   ) => {
     if (!profile) return;
     removeFieldError("profileId");
-    setForm((prev) => ({ ...prev, profileId: profile.id }));
+    setForm((prev) => ({
+      ...prev,
+      profileId: profile.id,
+      timeSlotProfile: {
+        id: profile.id,
+        name: profile.name,
+      },
+    }));
   };
 
   const newSlots = useNewDateSlots({
     onSuccess: () => {
       closeModal();
-      toast.success("New slot/s have been added.");
+      toast.success("Slot/s have been updated.");
       refetchEvents();
     },
     onError: (error) => {
@@ -86,9 +107,22 @@ const NewDateSlotModal: FC<NewDateSlotModalProps> = ({
       console.error(error);
     }
   };
+  useModalToggleListener(isOpen, () => {
+    if (isOpen) {
+      setForm({
+        from: slot.date,
+        to: slot.date,
+        profileId: slot.profileId,
+        timeSlotProfile: {
+          id: slot.timeSlotProfile.id,
+          name: slot.timeSlotProfile.name,
+        },
+      });
+    }
+  });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
-      <Modal.Header>New Slots</Modal.Header>
+      <Modal.Header>Edit Slots</Modal.Header>
       <Modal.Body className="overflow-visible">
         <form onSubmit={onSubmit}>
           <div className="py-2">
@@ -115,20 +149,35 @@ const NewDateSlotModal: FC<NewDateSlotModalProps> = ({
               options={profiles ?? []}
               onChange={handleTimeSlotProfileSelect}
               label="Time Slot Profile"
+              value={form.timeSlotProfile}
               getOptionLabel={(option) => option.name}
               getOptionValue={(option) => option?.id?.toString() ?? ""}
             />
           </div>
-          <Button color="primary" type="submit">
-            <div className="flex items-center gap-2">
-              <FaSave />
-              Save
-            </div>
-          </Button>
+          <div className="flex gap-2">
+            <Button color="primary" type="submit">
+              <div className="flex items-center gap-2">
+                <FaSave />
+                Save
+              </div>
+            </Button>
+            <Button
+              color="failure"
+              onClick={() => {
+                closeModal();
+                initDelete(slot);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <FaTrash />
+                Delete
+              </div>
+            </Button>
+          </div>
         </form>
       </Modal.Body>
     </Modal>
   );
 };
 
-export default NewDateSlotModal;
+export default EditDateSlotModal;

@@ -43,11 +43,9 @@ export type Section = {
   id?: number;
   name: string;
   prefix: string;
-  lastValue?: number;
   isSubCollection: boolean;
   isDeleteable: boolean;
   isNonCirculating: boolean;
-  accessionTable: string;
   mainCollectionId: number;
 };
 export type Item = {
@@ -194,7 +192,6 @@ export type Device = {
   id: string;
   name: string;
   description: string;
-  available: number;
 };
 export type TimeSlotProfile = {
   id: string;
@@ -383,6 +380,7 @@ export type UserType = {
   name: string;
   maxAllowedBorrowedBooks: number;
   hasProgram: boolean;
+  maxUniqueDeviceReservationPerDay: number;
 };
 export type UserProgramOrStrand = {
   id: number;

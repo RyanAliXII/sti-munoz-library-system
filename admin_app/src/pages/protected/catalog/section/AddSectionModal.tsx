@@ -15,9 +15,10 @@ import { toast } from "react-toastify";
 import { SectionSchema } from "../schema";
 
 interface AddCollectionForm
-  extends Omit<Section, "isDeleteable" | "isSubCollection" | "accessionTable"> {
-  useParentAccessionCounter: boolean;
-}
+  extends Omit<
+    Section,
+    "isDeleteable" | "isSubCollection" | "accessionTable"
+  > {}
 interface AddCollectionModalProps extends ModalProps {
   collections: Section[];
 }
@@ -31,7 +32,6 @@ const AddSectionModal: React.FC<AddCollectionModalProps> = ({
     prefix: "",
     isNonCirculating: false,
     mainCollectionId: 0,
-    useParentAccessionCounter: true,
   };
   const {
     form,
@@ -172,23 +172,6 @@ const AddSectionModal: React.FC<AddCollectionModalProps> = ({
                 onChange={handleFormInput}
               />
               <Label>Is collection non-circulating?</Label>
-            </div>
-
-            <div className="flex gap-1 ">
-              <Checkbox
-                color="primary"
-                checked={form.useParentAccessionCounter}
-                className="disabled:opacity-75"
-                onChange={handleFormInput}
-                disabled={form.mainCollectionId === 0}
-                name="useParentAccessionCounter"
-              />
-              <Label
-                className="disabled:opacity-75"
-                disabled={form.mainCollectionId === 0}
-              >
-                Use parent collection's accession number counter?
-              </Label>
             </div>
           </div>
 

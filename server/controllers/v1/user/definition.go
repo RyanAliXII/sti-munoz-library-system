@@ -1,6 +1,8 @@
 package user
 type UserType struct {
 	Name string `json:"name" binding:"required,max=50"`
+	MaxAllowedBorrowedBooks int `json:"maxAllowedBorrowedBooks" binding:"required,min=0"`
+	MaxUniqueDeviceReservationPerDay int `json:"maxUniqueDeviceReservationPerDay" binding:"required,min=0"`
 	HasProgram bool `json:"hasProgram"`
 }
 

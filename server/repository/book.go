@@ -37,10 +37,9 @@ type BookRepository interface {
 	Get(filter * BookFilter) ([]model.Book, Metadata)
 	GetOne(id string) model.Book
 	Update(model.Book) error
-	Search(filter.Filter) []model.Book
 	NewBookCover(bookId string, covers []*multipart.FileHeader) error
 	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
-	AddBookCopies(id string, copies int) error
+	AddBookCopy(id string, accessionNumber int) error
 	DeleteBookCoversByBookId(bookId string) error 
 	ImportBooks(books []model.BookImport, sectionId int) error
 	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
@@ -51,6 +50,7 @@ type BookRepository interface {
 	UpdateEbookByBookId(id string,  objectKey string) error
 	MigrateCollection(sectionId int, bookIds []string)error
 	ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error)
+	Delete(id string) error
 }
 type BookFilter struct {
 	filter.Filter
@@ -82,14 +82,7 @@ func (repo *Book) New(book model.Book) (string, error) {
 		return book.Id, insertBookErr
 	}
 
-	var section model.Section
-	selectSectionErr := transaction.Get(&section, "SELECT id, accession_table from catalog.section where id = $1 ", book.Section.Id)
-	if selectSectionErr != nil {
-		transaction.Rollback()
-		logger.Error(selectSectionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("selectSectionErr"))
-		return book.Id, selectSectionErr
-
-	}
+	
 	dialect := goqu.Dialect("postgres")
 
 	// insert book accession.
@@ -99,11 +92,8 @@ func (repo *Book) New(book model.Book) (string, error) {
 		copyNumber := idx + 1
 		if(accession.Number > 0){
 			accessionRows = append(accessionRows, goqu.Record{"number": accession.Number,
-			 "book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
+			 "book_id": book.Id, "copy_number": copyNumber, "section_id": book.Section.Id})
 
-		}else{
-			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", section.AccessionTable)), 
-			"book_id": book.Id, "copy_number": copyNumber, "section_id": section.Id})
 		}
 	}	
 	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
@@ -165,7 +155,6 @@ func (repo *Book) Get(filter * BookFilter) ([]model.Book, Metadata) {
 		goqu.C("copies"),
 		goqu.C("subject"),
 		goqu.C("ebook"),
-		goqu.C("accession_table"),
 		goqu.C("pages"),
 		goqu.C("cost_price"),
 		goqu.C("edition"),
@@ -292,7 +281,6 @@ func (repo *Book) GetClientBookView(filter * BookFilter) ([]model.Book, Metadata
 		goqu.C("copies"),
 		goqu.C("subject"),
 		goqu.C("ebook"),
-		goqu.C("accession_table"),
 		goqu.C("pages"),
 		goqu.C("cost_price"),
 		goqu.C("edition"),
@@ -353,7 +341,6 @@ func (repo *Book) GetOne(id string) model.Book {
 	description, 
 	copies, pages,
 	cost_price,
-	accession_table,
 	edition,
 	year_published, 
 	received_at, 
@@ -469,39 +456,7 @@ func (repo *Book) Update(book model.Book) error {
 	transaction.Commit()
 	return nil
 }
-func (repo *Book) Search(filter filter.Filter) []model.Book {
-	var books []model.Book = make([]model.Book, 0)
-	query := `
-	SELECT id, 
-	title, 
-	isbn, 
-	description, 
-	pages,
-	accession_table,
-	ebook,
-	copies,
-	cost_price,
-	edition,
-	year_published, 
-	received_at, 
-	ddc, 
-	author_number, 
-	created_at, 
-	section, publisher, authors, accessions, covers FROM book_view
-	WHERE search_vector @@ websearch_to_tsquery('english', $1) 
-	OR search_vector @@ plainto_tsquery('simple', $1) 
-	OR search_tag_vector @@ websearch_to_tsquery('english', $1) 
-	OR search_tag_vector @@ plainto_tsquery('simple', $1)
-	ORDER BY created_at DESC
-	LIMIT $2 OFFSET $3
-	`
 
-	selectErr := repo.db.Select(&books, query, filter.Keyword, filter.Limit, filter.Offset)
-	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepository.Search"), slimlog.Error("selectErr"))
-	}
-	return books
-}
 func (repo *Book) SearchClientView(filter filter.Filter) []model.Book {
 	var books []model.Book = make([]model.Book, 0)
 	query := `
@@ -551,34 +506,21 @@ func(repo *Book)buildClientBookMetadataQuery(filters * BookFilter)(*goqu.SelectD
 	ds, err  := repo.buildBookFilters(ds,  filters)
 	return ds, err
 }
-func (repo *Book)AddBookCopies(id string, copies int) error{
-	if copies == 0 { 
-		return nil
-	}
-	transaction, err := repo.db.Beginx()
-	if err != nil{ 
-		transaction.Rollback()
-		return err
-	}
+func (repo *Book)AddBookCopy(id string, accessionNumber int) error{
 	book := model.Book{}
-	err = transaction.Get(&book, "SELECT section, copies FROM book_view where id = $1", id)
-	if err  != nil{
-		transaction.Rollback()
+	err := repo.db.Get(&book, "SELECT section, copies FROM book_view where id = $1", id)
+	if err != nil{
 		return err
 	}
-	dialect := goqu.Dialect("postgres")
-	var accessionRows []goqu.Record = make([]goqu.Record, 0)
-	for i := 0; i < copies; i++{
-			book.Copies++
-			accessionRows = append(accessionRows, goqu.Record{"number": goqu.L(fmt.Sprintf("get_next_id('%s')", book.Section.AccessionTable)), "book_id": id, "copy_number": book.Copies, "section_id": book.Section.Id})
+	copyNumber := book.Copies + 1;
+	_, err = repo.db.Exec("INSERT INTO catalog.accession(number, book_id, copy_number, section_id) VALUES($1, $2, $3, $4)", accessionNumber, id, copyNumber, book.Section.Id )
+	if err != nil{
+		return err
 	}
-	accessionDs := dialect.From(goqu.T("accession").Schema("catalog")).Prepared(true).Insert().Rows(accessionRows)
-	insertAccessionQuery, accesionArgs, _ := accessionDs.ToSQL()
-	_, insertAccessionErr := transaction.Exec(insertAccessionQuery, accesionArgs...)
-	if insertAccessionErr != nil {
-		transaction.Rollback()
-		return insertAccessionErr
-	}
-	transaction.Commit()
+	
 	return nil
+}
+func (repo *Book)Delete(id string) error{
+    _, err :=  repo.db.Exec("UPDATE catalog.book set deleted_at = now() where id = $1", id)
+	return err
 }

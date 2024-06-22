@@ -20,7 +20,6 @@ const INITIAL_FORM_DATA: Book = {
   ebook: "",
   sourceOfFund: "",
   section: {
-    accessionTable: "",
     isDeleteable: false,
     isNonCirculating: false,
     isSubCollection: false,

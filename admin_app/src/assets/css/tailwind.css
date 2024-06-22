@@ -121,3 +121,32 @@
 .react-datepicker__time-list-item {
   @apply focus:bg-none hover:bg-none;
 }
+
+.event {
+  @apply bg-blue-600 cursor-pointer hover:bg-blue-500;
+}
+.fc-scrollgrid {
+  @apply text-gray-900 dark:text-gray-100;
+}
+.fc-toolbar-title {
+  @apply text-gray-900 dark:text-gray-100;
+}
+.fc .fc-timegrid-slot-minor {
+  @apply border border-gray-200 dark:border-gray-700 border-solid;
+}
+.fc-theme-standard .fc-scrollgrid {
+  @apply border border-gray-200 dark:border-gray-700;
+}
+.fc-theme-standard td,
+.fc-theme-standard th {
+  @apply border border-gray-200 dark:border-gray-700 border-solid;
+}
+.fc .fc-day-today {
+  @apply !bg-white dark:!bg-gray-800;
+}
+.fc-h-event {
+  @apply border border-none p-1;
+}
+.fc-daygrid-day {
+  @apply cursor-pointer;
+}

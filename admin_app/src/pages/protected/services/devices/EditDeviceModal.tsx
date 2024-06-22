@@ -32,7 +32,6 @@ const EditDeviceModal: FC<EditModalProps<Device>> = ({
       id: "",
       description: "",
       name: "",
-      available: 0,
     },
     schema: DeviceValidation,
   });
@@ -74,16 +73,7 @@ const EditDeviceModal: FC<EditModalProps<Device>> = ({
             />
             <FieldError error={errors?.description} />
           </div>
-          <div className="py-2">
-            <CustomInput
-              value={form.available}
-              label="Available Devices"
-              error={errors?.available}
-              type="number"
-              name="available"
-              onChange={handleFormInput}
-            />
-          </div>
+
           <Button
             color="primary"
             type="submit"
