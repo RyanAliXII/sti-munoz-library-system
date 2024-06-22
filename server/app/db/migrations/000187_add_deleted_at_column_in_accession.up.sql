@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS catalog.accession
+ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;
