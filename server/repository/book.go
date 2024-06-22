@@ -50,6 +50,7 @@ type BookRepository interface {
 	UpdateEbookByBookId(id string,  objectKey string) error
 	MigrateCollection(sectionId int, bookIds []string)error
 	ExportBooks(collectionId int, fileType string)(*bytes.Buffer, error)
+	Delete(id string) error
 }
 type BookFilter struct {
 	filter.Filter
@@ -518,4 +519,8 @@ func (repo *Book)AddBookCopy(id string, accessionNumber int) error{
 	}
 	
 	return nil
+}
+func (repo *Book)Delete(id string) error{
+    _, err :=  repo.db.Exec("UPDATE catalog.book set deleted_at = now() where id = $1", id)
+	return err
 }

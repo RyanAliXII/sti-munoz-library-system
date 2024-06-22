@@ -11,7 +11,7 @@ import { useCollections } from "@hooks/data-fetching/collection";
 import { useSearchTags } from "@hooks/data-fetching/search-tag";
 import useDebounce from "@hooks/useDebounce";
 import { useSwitch } from "@hooks/useToggle";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Checkbox, Dropdown, Label, TextInput } from "flowbite-react";
 import { ChangeEvent, useMemo, useReducer, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
@@ -29,6 +29,7 @@ import { bookSelectionReducer } from "./bookselection-reducer";
 import PreviewModal from "./PreviewModal";
 import { BookInitialValue } from "@definitions/defaults";
 import ExportBooksModal from "./ExportBooksModal";
+import { useRequest } from "@hooks/useRequest";
 
 const BookPage = () => {
   const {
@@ -123,7 +124,7 @@ const BookPage = () => {
 
   const migrateModal = useSwitch();
   const confirmMigration = useSwitch();
-
+  const confirmDelete = useSwitch();
   const queryClient = useQueryClient();
   const [sectionId, setSectionId] = useState<number>(0);
   const migrateCollection = useMigrateCollection({
@@ -193,6 +194,25 @@ const BookPage = () => {
     });
   };
   const exportModal = useSwitch();
+  const { Delete } = useRequest();
+  const deleteBook = useMutation({
+    mutationFn: (bookId: string) => Delete(`/books/${bookId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["books"]);
+      toast.success("Book has been deleted.");
+    },
+    onError: () => {
+      toast.error("Unknown error occured, please try again later.");
+    },
+  });
+  const initDelete = (book: Book) => {
+    setBook(book);
+    confirmDelete.open();
+  };
+  const onConfirmDelete = () => {
+    deleteBook.mutate(book.id ?? "");
+    confirmDelete.close();
+  };
   return (
     <>
       <Container>
@@ -316,6 +336,7 @@ const BookPage = () => {
         <LoadingBoundaryV2 isLoading={isFetching} isError={isError}>
           <BookTable
             previewBook={previewBook}
+            initDelete={initDelete}
             books={bookData?.books ?? []}
             bookSelections={bookSelections}
             onSelect={onSelect}
@@ -357,6 +378,14 @@ const BookPage = () => {
         title="Book Migration to another collection"
         onConfirm={onConfirmMigrate}
         text="Are you sure you want to migrate selected books? This action may cause book copies to generate new accession number."
+      />
+      <DangerConfirmDialog
+        key="bookDeleteConfirmModal"
+        close={confirmDelete.close}
+        isOpen={confirmDelete.isOpen}
+        title="Delete Book"
+        onConfirm={onConfirmDelete}
+        text="Are you sure you want to delete this book? This action is irreversible."
       />
       <PreviewModal
         book={book}

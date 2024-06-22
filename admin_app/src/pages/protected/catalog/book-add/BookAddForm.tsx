@@ -277,7 +277,7 @@ const BookAddForm = () => {
       return { ...prev, accessions: accessions };
     });
   };
-  console.log(errors);
+
   return (
     <>
       <form onSubmit={submit}>

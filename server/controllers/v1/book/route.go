@@ -19,6 +19,8 @@ func BookRoutes(router *gin.RouterGroup, services * services.Services) {
 	middlewares.ValidatePermissions([]string{"Book.Edit"}, true),
 	middlewares.ValidateBody[AddBookCopyBody],
 	controller.AddBookCopies)
+	
+	router.DELETE("/:id", middlewares.ValidatePermissions([]string{"Book.Delete"}, true), controller.DeleteBook)
 
 	router.POST("/",
 	middlewares.ValidatePermissions([]string{"Book.Add"}, true),

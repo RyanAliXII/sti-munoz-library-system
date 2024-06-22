@@ -4,6 +4,7 @@ import Tippy from "@tippyjs/react";
 import { Button, Table } from "flowbite-react";
 import { ChangeEvent, FC } from "react";
 import { AiOutlineEdit, AiOutlineEye, AiOutlinePrinter } from "react-icons/ai";
+import { FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 type BookTableProps = {
@@ -14,6 +15,7 @@ type BookTableProps = {
   onSelect: (event: ChangeEvent<HTMLInputElement>, book: Book) => void;
   setBookForPrintingAndOpenModal: (book: Book) => void;
   previewBook: (book: Book) => void;
+  initDelete: (book: Book) => void;
 };
 const BookTable: FC<BookTableProps> = ({
   books,
@@ -21,6 +23,7 @@ const BookTable: FC<BookTableProps> = ({
   onSelect,
   previewBook,
   setBookForPrintingAndOpenModal,
+  initDelete,
 }) => {
   return (
     <div className="overflow-x-auto">
@@ -92,6 +95,18 @@ const BookTable: FC<BookTableProps> = ({
                           to={`/resources/edit/${book.id}`}
                         >
                           <AiOutlineEdit className="text-lg cursor-pointer" />
+                        </Button>
+                      </Tippy>
+                    </HasAccess>
+                    <HasAccess requiredPermissions={["Book.Delete"]}>
+                      <Tippy content="Delete Resource">
+                        <Button
+                          color="failure"
+                          onClick={() => {
+                            initDelete(book);
+                          }}
+                        >
+                          <FaTrash />
                         </Button>
                       </Tippy>
                     </HasAccess>
