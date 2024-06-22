@@ -22,7 +22,6 @@ const TreeDataPanel: FC<TreeDataPanelProps> = ({ collection, initDelete }) => {
       prefix: "",
       isSubCollection: false,
       mainCollectionId: 0,
-      lastValue: 0,
       isNonCirculating: false,
     };
   const { form, errors, handleFormInput, validate, setForm, setErrors } =

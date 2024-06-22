@@ -16,7 +16,6 @@ export const BookInitialValue: Book = {
     id: 0,
     prefix: "",
     isNonCirculating: false,
-    accessionTable: "",
     isDeleteable: false,
     isSubCollection: false,
     mainCollectionId: 0,
@@ -50,6 +49,7 @@ export const AccountInitialValue: Account = {
     hasProgram: false,
     id: 0,
     maxAllowedBorrowedBooks: 0,
+    maxUniqueDeviceReservationPerDay: 0,
     name: "",
   },
   givenName: "",
@@ -91,6 +91,7 @@ export const BorrowingTransactionInitialValue: BorrowingTransaction = {
   client: {
     userGroup: {
       hasProgram: false,
+      maxUniqueDeviceReservationPerDay: 0,
       id: 0,
       maxAllowedBorrowedBooks: 0,
       name: "",

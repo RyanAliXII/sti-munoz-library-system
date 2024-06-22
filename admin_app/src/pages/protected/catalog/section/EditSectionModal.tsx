@@ -23,7 +23,6 @@ const EditSectionModal: React.FC<EditModalProps<Section>> = ({
       prefix: "",
       isSubCollection: false,
       mainCollectionId: 0,
-      lastValue: 0,
       isNonCirculating: false,
     };
   const {

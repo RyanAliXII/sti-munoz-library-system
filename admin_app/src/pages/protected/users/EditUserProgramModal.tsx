@@ -43,6 +43,7 @@ export const EditUserProgramModal: FC<EditUserProgramModalProps> = ({
       userTypeId: 0,
       userType: {
         hasProgram: false,
+        maxUniqueDeviceReservationPerDay: 0,
         id: 0,
         name: "",
         maxAllowedBorrowedBooks: 0,

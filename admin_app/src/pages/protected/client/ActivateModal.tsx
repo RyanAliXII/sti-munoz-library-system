@@ -54,6 +54,7 @@ const ActivateModal: FC<ActivateModalProps> = ({
       },
       userType: {
         hasProgram: false,
+        maxUniqueDeviceReservationPerDay: 0,
         id: 0,
         maxAllowedBorrowedBooks: 0,
         name: "",
