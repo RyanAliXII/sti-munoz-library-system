@@ -54,6 +54,7 @@ const CLIENT_INITIAL_DATA: Account = {
   isDeleted: false,
   userGroup: {
     hasProgram: false,
+    maxUniqueDeviceReservationPerDay: 0,
     id: 0,
     maxAllowedBorrowedBooks: 0,
     name: "",

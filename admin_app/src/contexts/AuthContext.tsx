@@ -20,6 +20,7 @@ const userInitialData: Account = {
     hasProgram: false,
     id: 0,
     maxAllowedBorrowedBooks: 0,
+    maxUniqueDeviceReservationPerDay: 0,
     name: "",
   },
   studentNumber: "",
