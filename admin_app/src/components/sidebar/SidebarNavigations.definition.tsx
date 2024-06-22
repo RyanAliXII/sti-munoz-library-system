@@ -45,12 +45,12 @@ export const SidebarNavigationItems: SidebarNavItem[] = [
         icon: SiBookstack,
         items: [],
       },
-      {
-        text: "Accession Number",
-        to: "/resources/accession-numbers",
-        icon: Bs123,
-        items: [],
-      },
+      // {
+      //   text: "Accession Number",
+      //   to: "/resources/accession-numbers",
+      //   icon: Bs123,
+      //   items: [],
+      // },
       {
         text: "Resources",
         to: "/resources",

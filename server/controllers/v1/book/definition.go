@@ -38,7 +38,7 @@ type BookBody struct {
 	Authors       Authors   `json:"authors" binding:"dive"`
 }
 type AccessionBody struct {
-	Number int `json:"number" binding:"min=0"`
+	Number int `json:"number" binding:"required,min=1"`
 }
 
 

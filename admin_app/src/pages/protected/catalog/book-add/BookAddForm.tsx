@@ -34,6 +34,7 @@ import DDCSelectionModal from "./DDCSelectionModal";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
+import { error } from "console";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -277,7 +278,7 @@ const BookAddForm = () => {
       return { ...prev, accessions: accessions };
     });
   };
-
+  console.log(errors);
   return (
     <>
       <form onSubmit={submit}>

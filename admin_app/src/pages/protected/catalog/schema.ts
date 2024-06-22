@@ -89,15 +89,17 @@ export const NewBookSchemaValidation = object().shape({
       if (value.length === 0) return true;
       return isISBN(value ?? " ");
     }),
-  accessions: array().of(
-    object({
-      number: number()
-        .integer(NUMBER_NO_DECIMAL)
-        .required("Invalid accession number")
-        .min(0, "Accession should not be less than 0")
-        .typeError("Invalid accession number"),
-    })
-  ),
+  accessions: array()
+    .of(
+      object({
+        number: number()
+          .integer(NUMBER_NO_DECIMAL)
+          .required("Invalid accession number")
+          .min(1, "Accession should not be less than 0")
+          .typeError("Invalid accession number"),
+      })
+    )
+    .min(1),
   pages: number()
     .integer(NUMBER_NO_DECIMAL)
     .notRequired()
