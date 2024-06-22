@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/db"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	validation "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/lib/pq"
@@ -79,15 +78,7 @@ type BookExport struct {
 }
 
 func (book * Book)ValidateIfAccessionExistsOrDuplicate()([]map[string]string,bool, error){
-	accessionTable := ""
-	db := postgresdb.GetOrCreateInstance()
-	
 	accessions := make([]map[string]string, 0)
-	
-	err := db.Get(&accessionTable, "SELECT accession_table from catalog.section where id = $1", book.Section.Id)
-	if err != nil {
-		return accessions, false, err
-	}
 	hasExistingOrDuplicate := false
 	occured := make(map[int]struct{})
 	for _, accession := range book.Accessions {
@@ -105,26 +96,7 @@ func (book * Book)ValidateIfAccessionExistsOrDuplicate()([]map[string]string,boo
 			})
 			continue;
 		} 
-		isExists := true
-		query := `SELECT EXISTS( SELECT 1 from catalog.accession 
-			INNER JOIN catalog.book on accession.book_id = book.id
-			INNER JOIN catalog.section on book.section_id = section.id
-			where number = $1 and section.deleted_at is null and accession_table = $2
-		)`
-		err := db.Get(&isExists, query, accession.Number, accessionTable)
-		if err != nil {
-			return accessions,false,err
-		}
-		if isExists {
-			hasExistingOrDuplicate = true
-			accessions = append(accessions, map[string]string{
-				"number": "Accession number already exists.",
-			})
-		}else{
-			accessions = append(accessions, map[string]string{
-				"number": "",
-			})
-		}
+	
 		occured[accession.Number] = struct{}{}
 		
 	}
@@ -172,37 +144,9 @@ type Accession struct {
 	Model
 }
 func(m * Accession)ValidateUpdate() (validation.Errors, error) {
-	db := postgresdb.GetOrCreateInstance()
 	return m.Model.Validate(m, validation.Field(&m.Number, 
 		validation.Required.Error("Accession number is required."),
 		validation.Min(1).Error("Accession number must be greater than 0"),
-		validation.By(func(value interface{}) error {
-			accessionTable := ""
-			query := `SELECT accession_table from catalog.accession
-			INNER JOIN catalog.book on accession.book_id = book.id
-			INNER JOIN catalog.section on book.section_id = section.id
-			where accession.id = $1
-			LIMIT 1
-			`
-			
-			err := db.Get(&accessionTable, query, m.Id)
-			if err != nil {
-				return err
-			}
-			query = `SELECT EXISTS (SELECT 1 from catalog.accession
-			INNER JOIN catalog.book on accession.book_id = book.id
-			INNER JOIN catalog.section on book.section_id = section.id
-			where accession.number = $1 and section.accession_table = $2)`
-			isExists := true
-			err = db.Get(&isExists, query, m.Number, accessionTable)
-			if err != nil {
-				return err
-			}
-			if(isExists){
-				return fmt.Errorf("accession number exists")
-			}
-			return nil
-		}),
 	   ))
 	
 

@@ -28,7 +28,7 @@ enum Action {
   Missing = 3,
 }
 type NewCopiesBody = {
-  copies: number;
+  accessionNumber: number;
 };
 const EditAccessionPanel = () => {
   const [selectedAccession, setSelectedAccession] = useState<string>("");
@@ -55,10 +55,10 @@ const EditAccessionPanel = () => {
   const { errors, handleFormInput, validate, removeFieldError } =
     useForm<NewCopiesBody>({
       initialFormData: {
-        copies: 0,
+        accessionNumber: 0,
       },
       schema: object({
-        copies: number()
+        accessionNumber: number()
           .required("Number of copies is required.")
           .typeError("Number of copies is required.")
           .min(1, "Number of copies must be greater than zero."),
@@ -281,9 +281,9 @@ const EditAccessionPanel = () => {
         title="Add Copy"
         error={errors?.copies}
         inputProps={{
-          label: "Number of copies",
+          label: "Accession Number",
           type: "number",
-          name: "copies",
+          name: "accessionNumber",
           onChange: handleFormInput,
           error: errors?.copies,
           placeholder: "Enter number of new copies to add",
@@ -292,7 +292,7 @@ const EditAccessionPanel = () => {
         onProceed={async () => {
           try {
             const parsed = await validate();
-            newCopies.mutate(parsed ?? { copies: 0 });
+            newCopies.mutate(parsed ?? { accessionNumber: 0 });
             closeAddCopyDialog();
           } catch (error) {
             console.log(error);

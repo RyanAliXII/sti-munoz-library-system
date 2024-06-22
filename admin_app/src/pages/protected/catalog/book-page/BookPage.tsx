@@ -121,23 +121,9 @@ const BookPage = () => {
     | Book
     | undefined;
 
-  const isSelectionsSameAccessionTable = useMemo(
-    () =>
-      Array.from(bookSelections.books).every(([key, book]) => {
-        return (
-          firstSelectedBook?.section?.accessionTable ===
-          book.section.accessionTable
-        );
-      }),
-    [bookSelections.books]
-  );
   const migrateModal = useSwitch();
   const confirmMigration = useSwitch();
-  const migrate = () => {
-    if (isSelectionsSameAccessionTable && bookSelections.books.size > 0) {
-      migrateModal.open();
-    }
-  };
+
   const queryClient = useQueryClient();
   const [sectionId, setSectionId] = useState<number>(0);
   const migrateCollection = useMigrateCollection({
@@ -146,18 +132,6 @@ const BookPage = () => {
       toast.success("Books migrated to another collection.");
     },
   });
-  const onProceedMigration = (section: Section) => {
-    if (!firstSelectedBook) return;
-    if (section.accessionTable != firstSelectedBook.section.accessionTable) {
-      confirmMigration.open();
-      setSectionId(section.id ?? 0);
-      return;
-    }
-    migrateCollection.mutate({
-      sectionId: section.id ?? 0,
-      bookIds: Array.from(bookSelections.books.keys()),
-    });
-  };
   const onConfirmMigrate = () => {
     confirmMigration.close();
     migrateCollection.mutate({
@@ -363,11 +337,11 @@ const BookPage = () => {
           </div>
         </LoadingBoundaryV2>
       </Container>
-      <MigrateModal
-        closeModal={migrateModal.close}
-        isOpen={migrateModal.isOpen}
-        onProceed={onProceedMigration}
-      />
+      {/* <MigrateModal
+          closeModal={migrateModal.close}
+          isOpen={migrateModal.isOpen}
+          onProceed={onProceedMigration}
+        /> */}
       <BookPrintablesModal
         closeModal={closePrintablesModal}
         isOpen={isPrintablesModalOpen}

@@ -1,7 +1,7 @@
 import HasAccess from "@components/auth/HasAccess";
 import { Book } from "@definitions/types";
 import Tippy from "@tippyjs/react";
-import { Button, Checkbox, Table } from "flowbite-react";
+import { Button, Table } from "flowbite-react";
 import { ChangeEvent, FC } from "react";
 import { AiOutlineEdit, AiOutlineEye, AiOutlinePrinter } from "react-icons/ai";
 import { Link } from "react-router-dom";
@@ -27,7 +27,7 @@ const BookTable: FC<BookTableProps> = ({
       <div className="inline-block min-w-full align-middle">
         <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <Table.Head>
-            <Table.HeadCell></Table.HeadCell>
+            {/* <Table.HeadCell></Table.HeadCell> */}
             <Table.HeadCell>Title</Table.HeadCell>
             <Table.HeadCell>Authors</Table.HeadCell>
             <Table.HeadCell>Copies</Table.HeadCell>
@@ -39,7 +39,7 @@ const BookTable: FC<BookTableProps> = ({
               const author = book.authors?.[0]?.name ?? "";
               return (
                 <Table.Row key={book.id}>
-                  <Table.Cell>
+                  {/* <Table.Cell>
                     <Checkbox
                       color="primary"
                       checked={bookSelections.books.has(book?.id ?? "")}
@@ -47,7 +47,7 @@ const BookTable: FC<BookTableProps> = ({
                         onSelect(event, book);
                       }}
                     />
-                  </Table.Cell>
+                  </Table.Cell> */}
 
                   <Table.Cell>
                     <div className="text-base font-semibold text-gray-900 dark:text-white">

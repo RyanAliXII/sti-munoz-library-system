@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -34,28 +32,28 @@ func (repo *Book)MigrateCollection(sectionId int, bookIds []string)error{
 	if err != nil {
 		return err
 	}
-	for _, book := range books{
-		_, err := transaction.Exec("UPDATE catalog.book SET section_id = $1 where id = $2", collection.Id, book.Id)
-		if err != nil {
-			transaction.Rollback()
-			return err
-		}
-		if(book.AccessionTable != collection.AccessionTable){
-			query := fmt.Sprintf("UPDATE catalog.accession SET number = get_next_id('%s'), section_id = $1  where book_id = $2", collection.AccessionTable)
-			_, err := transaction.Exec(query, collection.Id, book.Id)
-			if err != nil {
-				transaction.Rollback()
-				return err
-			}
-		}else{
-			query := "UPDATE catalog.accession SET section_id = $1 where book_id = $2"
-			_, err := transaction.Exec(query, collection.Id, book.Id)
-			if err != nil {
-				transaction.Rollback()
-				return err
-			}
-		}
-	}
+	// for _, book := range books{
+	// 	_, err := transaction.Exec("UPDATE catalog.book SET section_id = $1 where id = $2", collection.Id, book.Id)
+	// 	if err != nil {
+	// 		transaction.Rollback()
+	// 		return err
+	// 	}
+	// 	if(book.AccessionTable != collection.AccessionTable){
+	// 		query := fmt.Sprintf("UPDATE catalog.accession SET number = get_next_id('%s'), section_id = $1  where book_id = $2", collection.AccessionTable)
+	// 		_, err := transaction.Exec(query, collection.Id, book.Id)
+	// 		if err != nil {
+	// 			transaction.Rollback()
+	// 			return err
+	// 		}
+	// 	}else{
+	// 		query := "UPDATE catalog.accession SET section_id = $1 where book_id = $2"
+	// 		_, err := transaction.Exec(query, collection.Id, book.Id)
+	// 		if err != nil {
+	// 			transaction.Rollback()
+	// 			return err
+	// 		}
+	// 	}
+	// }
 	transaction.Commit()
 	return nil
 }

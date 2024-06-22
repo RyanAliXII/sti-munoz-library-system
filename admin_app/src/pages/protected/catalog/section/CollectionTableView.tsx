@@ -28,7 +28,6 @@ const CollectionTableView: FC<CollectionTableViewProps> = ({
             <Table.HeadCell>Collection</Table.HeadCell>
             <Table.HeadCell>Sub-collection(Yes/No)</Table.HeadCell>
             <Table.HeadCell>Non-Circulating(Yes/No)</Table.HeadCell>
-            <Table.HeadCell>Accession Number</Table.HeadCell>
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y dark:divide-gray-700">
@@ -54,7 +53,7 @@ const CollectionTableView: FC<CollectionTableViewProps> = ({
                       <span className="text-gray-600">No</span>
                     )}
                   </Table.Cell>
-                  <Table.Cell>{section.lastValue}</Table.Cell>
+
                   <Table.Cell className="p-2 flex gap-2 items-center">
                     <HasAccess requiredPermissions={["Collection.Edit"]}>
                       <Tippy content="Edit">

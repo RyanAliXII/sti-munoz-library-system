@@ -15,10 +15,7 @@ type Section struct {
 	Name            string `json:"name" db:"name"`
 	IsSubCollection bool   `json:"isSubCollection" db:"is_sub_collection"`
 	Prefix 			string `json:"prefix" db:"prefix"`
-	LastValue 		int `json:"lastValue" db:"last_value"`
-	AccessionTable  string `json:"accessionTable" db:"accession_table"`
 	MainCollectionId int `json:"mainCollectionId" db:"main_collection_id"`
-	UseParentAccessionCounter bool `json:"useParentAccessionCounter"`
 	IsDeletable bool `json:"isDeleteable" db:"is_deleteable"`
 	IsNonCirculating bool `json:"isNonCirculating" db:"is_non_circulating"`
 	Model
@@ -70,8 +67,6 @@ func (section * Section) ValidateUpdate() (validation.Errors, error) {
 				}
 				return nil
 		})),
-		validation.Field(&section.LastValue, 
-		validation.Min(0).Error("Counter must be atleast 0.")),
 		validation.Field(&section.Prefix, validation.Required.Error("Prefix is required."),validation.Length(1, 6).Error("Prefix should be atleast 1 to 6 characters."),),
 	)
 	

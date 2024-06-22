@@ -197,7 +197,6 @@ func (repo * Accession)UpdateBulkByCollectionId(accessions []model.Accession, co
 	})
 	query, args, err := ds.ToSQL()
 	if err != nil {
-		
 		return err
 	}
 	_, err = repo.db.Exec(query, args...)

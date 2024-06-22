@@ -52,8 +52,7 @@ type BookCoverUploadBody struct {
 }
 
 type AddBookCopyBody struct {
-	Copies int `json:"copies" binding:"required,min=1"`
-
+	AccessionNumber int `json:"accessionNumber" binding:"required,min=1"`
 }
 type EbookBody struct {
 	Key string `json:"key" binding:"required"`

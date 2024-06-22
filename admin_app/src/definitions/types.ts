@@ -43,11 +43,9 @@ export type Section = {
   id?: number;
   name: string;
   prefix: string;
-  lastValue?: number;
   isSubCollection: boolean;
   isDeleteable: boolean;
   isNonCirculating: boolean;
-  accessionTable: string;
   mainCollectionId: number;
 };
 export type Item = {

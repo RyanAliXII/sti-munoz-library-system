@@ -147,7 +147,7 @@ func(ctrler *Book)AddBookCopies(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	err = ctrler.services.Repos.BookRepository.AddBookCopies(id, body.Copies)
+err = ctrler.services.Repos.BookRepository.AddBookCopy(id, body.AccessionNumber)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("addBookCopiesErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
