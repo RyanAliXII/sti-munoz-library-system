@@ -1,6 +1,8 @@
 package book
 
 import (
+	"fmt"
+
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/gin-gonic/gin"
@@ -10,30 +12,40 @@ import (
 
 func (ctrler *Book) UploadBookCover(ctx *gin.Context) {
 	body := BookCoverUploadBody{}
-
-	bindErr := ctx.ShouldBind(&body)
-
-	if bindErr != nil {
-		logger.Error(bindErr.Error())
+	err := ctx.ShouldBind(&body)
+	if err != nil {
+		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
 		return
 	}
-
-	_, parseIdErr := uuid.Parse(body.BookId)
-	if parseIdErr != nil {
+	_, err = uuid.Parse(body.BookId)
+	if err != nil {
+		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	uploadErr := ctrler.services.Repos.BookRepository.NewBookCover(body.BookId, body.Covers)
-	if uploadErr != nil {
+	result, err := ctrler.services.BookCoverService.NewCovers(body.BookId, body.Covers)
+	if err != nil {
+		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
+	}
+	err = ctrler.services.Repos.BookRepository.NewCovers(body.BookId, result)
+	if err != nil {
+		deleteErr := ctrler.services.BookCoverService.DeleteCovers(result)
+		if deleteErr != nil {
+			logger.Error(fmt.Sprintf("Error deleting already uploaded images: %s", err.Error()))
+			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+			return 
+		}
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book covers uploaded."))
 }
 func (ctrler *Book) UpdateBookCover(ctx *gin.Context) {
 	body := BookCoverUploadBody{}
-
 	bindErr := ctx.ShouldBind(&body)
 	if bindErr != nil {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid request body."))
@@ -44,7 +56,12 @@ func (ctrler *Book) UpdateBookCover(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	updateCoverErr := ctrler.services.Repos.BookRepository.UpdateBookCover(body.BookId, body.Covers)
+	uploaded, deleted, err := ctrler.services.BookCoverService.UpdateBookCovers(body.BookId, body.Covers)
+	if err != nil {
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return 
+	}
+	updateCoverErr := ctrler.services.Repos.BookRepository.UpdateCovers(body.BookId, uploaded, deleted)
 	if updateCoverErr != nil {
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
@@ -53,14 +70,21 @@ func (ctrler *Book) UpdateBookCover(ctx *gin.Context) {
 }
 func (ctrler *Book) DeleteBookCovers(ctx * gin.Context){
 	bookId := ctx.Param("id")
-	_, parseIdErr := uuid.Parse(bookId)
-	if parseIdErr != nil {
-		logger.Error(parseIdErr.Error(), slimlog.Error("parseIdErr"))
+	_, err := uuid.Parse(bookId)
+	if err != nil {
+		logger.Error(err.Error(), slimlog.Error("parseIdErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
-	deleteCoverErr := ctrler.services.Repos.BookRepository.DeleteBookCoversByBookId(bookId)
-	if deleteCoverErr != nil {
+	err = ctrler.services.BookCoverService.DeleteCoversByBook(bookId)
+	if err != nil {
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.services.Repos.BookRepository.DeleteBookCoversByBookId(bookId)
+	if err != nil {
+		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}

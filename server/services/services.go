@@ -19,6 +19,7 @@ type Services struct {
 	PenaltyExport PenaltyExporter
 	Broadcaster Broadcaster
 	FileStorage filestorage.FileStorage
+	BookCoverService BookCoverService
 }
 type ServicesDependency struct {
 	Db * sqlx.DB
@@ -37,5 +38,6 @@ func BuildServices (deps * ServicesDependency) Services {
 		Broadcaster: NewRabbitMQBroadcast(deps.RabbitMQ),
 		PenaltyExport: NewPenaltyExporter(),
 		FileStorage:  GetOrCreateS3FileStorage(),
+		BookCoverService: NewBookCoverService(s3FileStorage),
 	}
 }

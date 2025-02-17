@@ -14,7 +14,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/realtime"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/realtime"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"

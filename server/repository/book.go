@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
@@ -37,8 +36,8 @@ type BookRepository interface {
 	Get(filter * BookFilter) ([]model.Book, Metadata)
 	GetOne(id string) model.Book
 	Update(model.Book) error
-	NewBookCover(bookId string, covers []*multipart.FileHeader) error
-	UpdateBookCover(bookId string, covers []*multipart.FileHeader) error
+	NewCovers(bookId string, covers []string) error
+	UpdateCovers(bookId string, uploadedCovers []string, deletedCovers []string) error
 	AddBookCopy(id string, accessionNumber int) error
 	DeleteBookCoversByBookId(bookId string) error 
 	ImportBooks(books []model.BookImport, sectionId int) error

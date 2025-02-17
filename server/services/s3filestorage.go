@@ -3,6 +3,7 @@ package services
 import (
 	"io"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -202,8 +203,8 @@ var PolicyJSONStr  = `
 	]
 }
 `
-const Region = "ap-southeast-1"
-const HostAddress = "libraryminio:9000"
+var Region = os.Getenv("S3_REGION")
+var Endpoint = os.Getenv("S3_ENDPOINT")
 func initS3FileStorage() (filestorage.FileStorage){
 	var AccessKey = os.Getenv("S3_ACCESS_KEY")
     var SecretKey = os.Getenv("S3_SECRET_KEY")
@@ -211,12 +212,16 @@ func initS3FileStorage() (filestorage.FileStorage){
 	if(len(AccessKey) == 0 || len(SecretKey) == 0 || len(S3Endpoint) == 0){
 		panic("S3_ACCESS_KEY, S3_SECRET_KEY and S3_ENDPOINT cannot be empty.")
 	}
-	
+	var forcePathConfig = strings.ToUpper(os.Getenv("S3_FORCE_PATH_STYLE"))
+	var forcePathStyle = false;
+	if(forcePathConfig == "TRUE"){
+		forcePathStyle = true;
+	}
 	session, err := session.NewSession(&aws.Config{
 		Region: aws.String(Region),
-		S3ForcePathStyle: aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(forcePathStyle),
 		Credentials: credentials.NewStaticCredentials(AccessKey, SecretKey, ""),
-		Endpoint: aws.String(HostAddress),
+		Endpoint: aws.String(Endpoint),
 		DisableSSL: aws.Bool(true),
 	})
 	
@@ -240,16 +245,7 @@ func createBucket(svc * s3.S3){
 	svc.CreateBucket(&s3.CreateBucketInput{
 		Bucket: aws.String(Bucket)  ,
 	})
-	// if err != nil {
-	// 	panic(err)
-	// }
 }
-// func createPolicy(svc * s3.S3){
-// 	svc.PutBucketPolicy(&s3.PutBucketPolicyInput{
-// 		Bucket: ,
-// 	})
-// }
-
 
 func GetOrCreateS3FileStorage()filestorage.FileStorage{
 	once.Do(func ()  {

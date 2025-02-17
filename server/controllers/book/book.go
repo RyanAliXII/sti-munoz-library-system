@@ -18,7 +18,6 @@ import (
 type Book struct {
 	services * services.Services
 }
-
 func (ctrler *Book) NewBook(ctx *gin.Context) {
 	var book = model.Book{}
 	err := ctx.ShouldBindBodyWith(&book, binding.JSON)
