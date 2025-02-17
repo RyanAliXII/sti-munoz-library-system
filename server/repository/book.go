@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
@@ -21,14 +19,11 @@ import (
 type Book struct {
 	db                *sqlx.DB
 	sectionRepository SectionRepository
-	fileStorage filestorage.FileStorage
 }
-func NewBookRepository(db * sqlx.DB, sectionRepo SectionRepository, storage filestorage.FileStorage) BookRepository {
+func NewBookRepository(db * sqlx.DB, sectionRepo SectionRepository) BookRepository {
 	return &Book{
 		db:                db,
 		sectionRepository: sectionRepo,
-		fileStorage: storage,
-		
 	}
 }
 type BookRepository interface {
@@ -44,7 +39,7 @@ type BookRepository interface {
 	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
 	SearchClientView(filter filter.Filter) []model.Book
 	GetOneOnClientView(id string) model.Book
-	GetEbookById(id string, ) (io.ReadCloser, error)
+	GetEbookById(id string, ) (string, error)
 	RemoveEbookById(id string, ) error
 	UpdateEbookByBookId(id string,  objectKey string) error
 	MigrateCollection(sectionId int, bookIds []string)error

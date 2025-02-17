@@ -31,9 +31,21 @@ func(ctrler *Book) GetEbookById(ctx * gin.Context){
 
 func(ctrler *Book) RemoveEbookById(ctx * gin.Context){
 	id := ctx.Param("id") // book id
-	err := ctrler.services.Repos.BookRepository.RemoveEbookById(id)
+	eBook, err := ctrler.services.Repos.BookRepository.GetEbookById(id)
+	if(err != nil ){
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+	}
+	var bucket = os.Getenv("S3_DEFAULT_BUCKET")
+	err = ctrler.services.FileStorage.Delete(eBook, bucket)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("RemoveBookByIdErr"))
+		logger.Error(err.Error())
+		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
+		return
+	}
+	err = ctrler.services.Repos.BookRepository.RemoveEbookById(id)
+	if err != nil {
+		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -55,7 +67,7 @@ func(ctrler *Book) UpdateEbookById(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-    ctx.JSON(httpresp.Success200(nil, "Ebook removed."))
+    ctx.JSON(httpresp.Success200(nil, "Ebook updated."))
 }
 
 func(ctrler *Book)GenerateEbookUploadRequestUrl(ctx * gin.Context){
