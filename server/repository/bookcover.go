@@ -57,7 +57,7 @@ func (repo *Book) UpdateCovers(bookId string, uploadedCovers []string, deletedCo
 	transaction.Commit()
 	return nil
 }
-func (repo *Book) DeleteBookCoversByBookId(bookId string) error {
+func (repo *Book) DeleteCoversByBookId(bookId string) error {
 	_, err := repo.db.Exec("DELETE FROM catalog.book_cover where book_id = $1", bookId)
 	if err != nil {
 		return err

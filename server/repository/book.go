@@ -39,7 +39,7 @@ type BookRepository interface {
 	NewCovers(bookId string, covers []string) error
 	UpdateCovers(bookId string, uploadedCovers []string, deletedCovers []string) error
 	AddBookCopy(id string, accessionNumber int) error
-	DeleteBookCoversByBookId(bookId string) error 
+	DeleteCoversByBookId(bookId string) error 
 	ImportBooks(books []model.BookImport, sectionId int) error
 	GetClientBookView(filter * BookFilter) ([]model.Book, Metadata)
 	SearchClientView(filter filter.Filter) []model.Book

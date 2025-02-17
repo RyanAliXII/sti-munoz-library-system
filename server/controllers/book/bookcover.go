@@ -82,7 +82,7 @@ func (ctrler *Book) DeleteBookCovers(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
-	err = ctrler.services.Repos.BookRepository.DeleteBookCoversByBookId(bookId)
+	err = ctrler.services.Repos.BookRepository.DeleteCoversByBookId(bookId)
 	if err != nil {
 		logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
