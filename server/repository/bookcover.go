@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"os"
-
 	"github.com/doug-martin/goqu/v9"
 )
 func (repo *Book) NewCovers(bookId string, keys []string) error {
@@ -22,20 +20,6 @@ func (repo *Book) NewCovers(bookId string, keys []string) error {
 	}
 	return nil
 }
-func(repo * Book) removeAlreadyUploadedImage(idx int, records []goqu.Record)error{
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
-	for i := 0; i < idx; i++{
-		record := records[i]
-		path := record["path"].(string)
-		err := repo.fileStorage.Delete(path, bucket)
-		if err != nil {
-			return err
-		}
-		
-	}
-	return nil
-}
-
 func (repo *Book) UpdateCovers(bookId string, uploadedCovers []string, deletedCovers []string) error {
 	dialect := goqu.Dialect("postgres")
 	bookCoverRows := make([]goqu.Record, 0)
