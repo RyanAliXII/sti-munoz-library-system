@@ -50,7 +50,7 @@ func ValidateToken(ctx *gin.Context) {
 		return
 	}
 	//if token audience is not for this app.
-	if aud != azuread.AppId{
+	if aud != azuread.AudienceClaim{
 		 ctx.AbortWithStatus(http.StatusUnauthorized)
 		 return
 	}
