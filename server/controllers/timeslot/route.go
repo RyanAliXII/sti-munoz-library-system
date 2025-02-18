@@ -15,30 +15,30 @@ func TimeSlotRoutes(router* gin.RouterGroup, services * services.Services){
 	privateRouter := router.Group("")
 
 	privateRouter.POST("/profiles",  
-	middlewares.ValidatePermissions([]string{"TimeSlot.Add"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Add"}, true),
 	middlewares.ValidateBody[TimeSlotProfileBody], ctrler.NewProfile)
 
 	privateRouter.GET("/profiles",
-	middlewares.ValidatePermissions([]string{"TimeSlot.Read"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Read"}, true),
 	ctrler.GetProfiles)
 
 	privateRouter.PUT("/profiles/:id",  
-	middlewares.ValidatePermissions([]string{"TimeSlot.Edit"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Edit"}, true),
 	middlewares.ValidateBody[TimeSlotProfileBody], ctrler.UpdateProfile)
 
 	privateRouter.DELETE("/profiles/:id",  
-	middlewares.ValidatePermissions([]string{"TimeSlot.Delete"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Delete"}, true),
 	ctrler.DeleteProfile)
 
 	privateRouter.POST("/profiles/:id/slots",  
-	middlewares.ValidatePermissions([]string{"TimeSlot.Add"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Add"}, true),
 	middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.NewTimeSlot)
 	
 	privateRouter.PUT("/profiles/:id/slots/:slotId", 
-	middlewares.ValidatePermissions([]string{"TimeSlot.Edit"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Edit"}, true),
 	middlewares.ValidateBody[TimeSlotBody], timeSlotCtrler.UpdateTimeSlot)
 	
 	privateRouter.DELETE("/profiles/:id/slots/:slotId", 
-	middlewares.ValidatePermissions([]string{"TimeSlot.Delete"}, true),
+	services.PermissionValidator.Validate([]string{"TimeSlot.Delete"}, true),
 	timeSlotCtrler.DeleteTimeSlot)
 }

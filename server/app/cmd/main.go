@@ -2,15 +2,14 @@ package main
 
 import (
 	"net/http"
-	"os"
 
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/minioclient"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers"
@@ -27,17 +26,12 @@ import (
 
 func main() {
 	var logger *zap.Logger = slimlog.GetInstance()
-
-	ADMIN_APP := os.Getenv("ADMIN_APP_URL")
-	CLIENT_APP := os.Getenv("CLIENT_APP_URL")
-
-	SCANNER_APP := os.Getenv("SCANNER_APP_URL")
+	var config = configmanager.LoadConfig();
 	browser, err  := browser.NewBrowser()
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	defer browser.Close()
-
 	r := gin.New()
 	r.SetFuncMap(funcmap.FuncMap)
 	r.LoadHTMLFiles(loadtmpl.LoadHTMLFiles("./templates")...)
@@ -45,34 +39,34 @@ func main() {
 	r.Use(gin.Recovery())
 	r.Use(CustomLogger(logger))
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{ADMIN_APP, CLIENT_APP, SCANNER_APP},
+		AllowOrigins:     []string{config.AdminAppURL, config.ClientAppURL, config.ScannerAppURL},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "x-xsrf-token", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
 	
-	minioclient := minioclient.GetorCreateInstance()
-	db := postgresdb.GetOrCreateInstance()
+	db := postgresdb.New(config)
 	defer db.Close()
-	rabbitmq := rabbitmq.CreateOrGetInstance()
+	rabbitmq := rabbitmq.New(config)
 	defer rabbitmq.Connection.Close()
 	fileStorage := services.GetOrCreateS3FileStorage()
 	azuread.GetOrCreateJwksInstance()
-	permissionstore.GetPermissionStore()
+	var postgresPermissionStore = permissionstore.NewPostgresPermissionStore(db)
+	var permissionStore = permissionstore.New(postgresPermissionStore)
 	jwks := azuread.GetOrCreateJwksInstance()
 	defer jwks.EndBackground()
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "STI MUNOZ LIBRARY",
-			"time":    time.Now(),
 		})
 	})
 	services := services.BuildServices(&services.ServicesDependency{
 		Db: db,
-		Minio: minioclient,
 		RabbitMQ: rabbitmq,
 		FileStorage: fileStorage,
+		ConfigManager: config,
+		PermissionStore: permissionStore,
 	});
 	realtime.RealtimeRoutes(r.Group("/rt"), &services)
 	controllers.RegisterAPIV1(r, &services)

@@ -30,11 +30,6 @@ type ScannerController interface {
 
 type Scanner struct {
 	services * services.Services
-	// ScannerAccountRepo repository.ScannerAccountRepository
-	// ClientLogRepo repository.ClientLogRepository
-	// accountRepo repository.AccountRepositoryInterface
-	// tokenRepo repository.TokenRepository
-
 }
 func(c * Scanner) Login (ctx * gin.Context){
 	body := LoginBody{}

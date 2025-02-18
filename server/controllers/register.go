@@ -55,7 +55,7 @@ func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"), services)
 	clientlog.ClientLogRoutes(grp.Group("/client-logs"), services)
 	game.GameRoutes(grp.Group("/games"), services)
-	device.DeviceRoutes(grp.Group("/devices"))
+	device.DeviceRoutes(grp.Group("/devices"), services)
 	timeslot.TimeSlotRoutes(grp.Group("/time-slots"), services)
 	dateslot.DateSlotRoutes(grp.Group("/date-slots"), services)
 	reservation.ReservationRoutes(grp.Group("/reservations"), services)

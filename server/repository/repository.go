@@ -5,7 +5,6 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/jmoiron/sqlx"
-	"github.com/minio/minio-go/v7"
 )
 
 type Repositories struct {
@@ -44,9 +43,10 @@ type Repositories struct {
 	GameRepository GameRepository
 	NotificationRepository NotificationRepository
 	AccessionNumberRepository AccessionNumberRepository
+	DeviceRepository DeviceRepository
 }
 
-func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage) *Repositories {
+func New(db * sqlx.DB, fileStorage filestorage.FileStorage) *Repositories {
 	sectionRepo := NewSectionRepository(db);
 	settingsRepo := NewSettingsRepository(db)
 	return &Repositories{
@@ -54,7 +54,7 @@ func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage
 		PublisherRepository:    NewPublisherRepository(db),
 		SOFRepository:          NewFundSourceRepository(db),
 		SectionRepository: sectionRepo,
-		AuthorNumberRepository: NewAuthorNumberRepository(),
+		AuthorNumberRepository: NewAuthorNumberRepository(db),
 		DDCRepository:          NewDDCRepository(db),
 		BookRepository:         NewBookRepository(db, sectionRepo),
 		InventoryRepository:    NewInventoryRepository(db),
@@ -68,7 +68,7 @@ func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage
 		SettingsRepository:  settingsRepo,
 		BorrowingQueueRepository: NewBorrowingQueueRepository(db),
 		ClientLogRepository:  NewClientLogRepository(db),
-		ContentRepository: NewContentRepository(minio),
+		ContentRepository: NewContentRepository(),
 		ExtrasRepository:  NewExtrasRepository(db),
 		ItemRepository:  NewItemRepository(db),
 		PenaltyRepository:  NewPenaltyRepository(db, fileStorage),
@@ -81,10 +81,11 @@ func New(db * sqlx.DB, minio * minio.Client, fileStorage filestorage.FileStorage
 		SystemRepository: NewSystemRepository(db),
 		TimeSlotRepository:  NewTimeSlotRepository(db),
 		TimeSlotProfileRepository: NewTimeSlotProfileRepository(db),
-		DateSlotRepository: NewDateSlotRepository(),
+		DateSlotRepository: NewDateSlotRepository(db),
 		UserRepository: NewUserRepository(db),
 		GameRepository:  NewGameRepository(db),
 		NotificationRepository: NewNotificationRepository(db) ,
 		AccessionNumberRepository: NewAccessionNumberRepository(db),
+		DeviceRepository: NewDevice(db),
 	}
 }

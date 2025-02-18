@@ -5,7 +5,6 @@ import (
 
 	cutters "github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
@@ -44,11 +43,11 @@ func (repo *AuthorNumber) Search(filter filter.Filter) []model.AuthorNumber {
 }
 
 
-func NewAuthorNumberRepository() AuthorNumberRepository {
+func NewAuthorNumberRepository(db * sqlx.DB) AuthorNumberRepository {
 
 	return &AuthorNumber{
 		cutters: cutters.NewCuttersTable(),
-		db:      postgresdb.GetOrCreateInstance(),
+		db:      db,
 	}
 }
 

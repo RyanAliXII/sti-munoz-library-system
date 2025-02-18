@@ -10,19 +10,19 @@ func ScannerAccountRoutes (router * gin.RouterGroup, services * services.Service
 	ctrler := NewScannerAccountController(services)
 
 	router.POST("/",
-	middlewares.ValidatePermissions([]string{"ScannerAccount.Add"}, true),
+	services.PermissionValidator.Validate([]string{"ScannerAccount.Add"}, true),
 	middlewares.ValidateBody[NewAccountBody] ,ctrler.NewAccount)
 	
 	router.GET("/", 
-	middlewares.ValidatePermissions([]string{"ScannerAccount.Read"}, true),
+	services.PermissionValidator.Validate([]string{"ScannerAccount.Read"}, true),
 	ctrler.GeAccounts)
 	
 	router.PUT("/:id",
-	middlewares.ValidatePermissions([]string{"ScannerAccount.Edit"}, true),
+	services.PermissionValidator.Validate([]string{"ScannerAccount.Edit"}, true),
 	middlewares.ValidateBody[UpdateAccountBody] ,ctrler.UpdateAccount)
 	
 	router.DELETE("/:id",
-	middlewares.ValidatePermissions([]string{"ScannerAccount.Delete"}, false),
+	services.PermissionValidator.Validate([]string{"ScannerAccount.Delete"}, false),
 	ctrler.DeleteAccount )
 }
 

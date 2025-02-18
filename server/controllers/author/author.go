@@ -18,7 +18,7 @@ type Author struct {
 func (ctrler *Author) NewAuthor(ctx *gin.Context) {
 	var author model.Author= model.Author{}
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
-	fieldErr, err := author.ValidateNew()
+	fieldErr, err := ctrler.services.Validator.AuthorValidator.ValidateNew(&author)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("Validation error"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
@@ -80,7 +80,7 @@ func (ctrler *Author) UpdateAuthor(ctx *gin.Context) {
 		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
 	}
 	author.Id = id
-	fieldErr, err := author.ValidateUpdate()
+	fieldErr, err := ctrler.services.Validator.AuthorValidator.ValidateUpdate(&author)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("Validation error"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -11,9 +10,9 @@ import (
 type DateSlot struct {
 	db * sqlx.DB
 }
-func NewDateSlotRepository () DateSlotRepository {
+func NewDateSlotRepository (db *sqlx.DB) DateSlotRepository {
 	return &DateSlot{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 	}
 }
 type DateSlotRepository interface{

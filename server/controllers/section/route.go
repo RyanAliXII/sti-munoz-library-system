@@ -1,7 +1,6 @@
 package section
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
@@ -11,12 +10,12 @@ func SectionRoutes(router *gin.RouterGroup, services * services.Services) {
 	router.GET("/", 
 	controller.GetCategories)
 	router.POST("/",
-	middlewares.ValidatePermissions([]string{"Collection.Add"}, true), 
+	services.PermissionValidator.Validate([]string{"Collection.Add"}, true), 
 	controller.NewCategory)
 	router.PUT("/:id",
-	middlewares.ValidatePermissions([]string{"Collection.Edit"}, true), 
+	services.PermissionValidator.Validate([]string{"Collection.Edit"}, true), 
 	controller.UpdateSection)
 	router.DELETE("/:id", 
-	middlewares.ValidatePermissions([]string{"Collection.Delete"}, true), 
+	services.PermissionValidator.Validate([]string{"Collection.Delete"}, true), 
 	controller.DeleteCollection)
 }

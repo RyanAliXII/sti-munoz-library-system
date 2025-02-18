@@ -11,38 +11,38 @@ import (
 func GameRoutes(router * gin.RouterGroup, services * services.Services) {
 	ctrler := NewGameController(services)
 	router.GET("", 
-	middlewares.ValidatePermissions([]string{"Game.Read"}, true),
+	services.PermissionValidator.Validate([]string{"Game.Read"}, true),
 	ctrler.GetGames)
 
 	router.POST("",
-	middlewares.ValidatePermissions([]string{"Game.Read"}, true),
+	services.PermissionValidator.Validate([]string{"Game.Read"}, true),
 	middlewares.ValidateBody[GameBody], 
 	ctrler.NewGame)
 	
 	router.PUT("/:id",
-	middlewares.ValidatePermissions([]string{"Game.Edit"}, true),
+	services.PermissionValidator.Validate([]string{"Game.Edit"}, true),
 	middlewares.ValidateBody[GameBody], ctrler.UpdateGame)
 	router.DELETE("/:id",
-	middlewares.ValidatePermissions([]string{"Game.Delete"}, true),
+	services.PermissionValidator.Validate([]string{"Game.Delete"}, true),
 	ctrler.DeleteGame)
 	
 	router.POST("/logs", 
-	middlewares.ValidatePermissions([]string{"GameLog.Add"}, true),
+	services.PermissionValidator.Validate([]string{"GameLog.Add"}, true),
 	middlewares.ValidateBody[GameLogBody],  ctrler.LogGame)
 	
 	router.GET("/logs", 
-	middlewares.ValidatePermissions([]string{"GameLog.Read"}, true),
+	services.PermissionValidator.Validate([]string{"GameLog.Read"}, true),
 	ctrler.GetGameLogs)
 
 	router.DELETE("/logs/:id",
-	middlewares.ValidatePermissions([]string{"GameLog.Delete"}, true),
+	services.PermissionValidator.Validate([]string{"GameLog.Delete"}, true),
 	ctrler.DeleteGameLog)
 
 	router.PUT("/logs/:id",
-	middlewares.ValidatePermissions([]string{"GameLog.Edit"}, true),
+	services.PermissionValidator.Validate([]string{"GameLog.Edit"}, true),
 	ctrler.UpdateGameLog)
 	
 	router.PATCH("/logs/:id/logout",
-	middlewares.ValidatePermissions([]string{"GameLog.Edit"}, true), 
+	services.PermissionValidator.Validate([]string{"GameLog.Edit"}, true), 
 	ctrler.LogoutGame)
 } 

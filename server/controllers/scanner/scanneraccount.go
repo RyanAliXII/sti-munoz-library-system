@@ -23,7 +23,7 @@ type ScannerAccount struct{
 func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 	body := model.ScannerAccount{}
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	fieldsErr, err := body.ValidateUsernameIfTaken()
+	fieldsErr, err := ctrler.services.Validator.ScannerAcountValidator.ValidateUsernameIfTaken(&body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ValidateUsernameIfTaken"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
@@ -66,7 +66,7 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 	body := model.ScannerAccount{}
 	body.Id = id
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	fieldsErr, err := body.ValidateUsernameIfTakenOnUpdate()
+	fieldsErr, err := ctrler.services.Validator.ScannerAcountValidator.ValidateUsernameIfTakenOnUpdate(&body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ValidateUsernameIfTaken"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))

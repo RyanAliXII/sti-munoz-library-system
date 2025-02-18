@@ -20,7 +20,7 @@ type Section struct {
 func (ctrler *Section) NewCategory(ctx *gin.Context) {
 	var body model.Section
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
-	fields, err := body.ValidateSection()
+	fields, err := ctrler.services.Validator.CollectionValidator.ValidateNew(&body)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("validation error."))
 		ctx.JSON(httpresp.Fail400(gin.H{
@@ -56,7 +56,7 @@ func(ctrler * Section)UpdateSection(ctx * gin.Context){
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("BindErr"))
 	}
-	fieldsErr, err := section.ValidateUpdate()
+	fieldsErr, err := ctrler.services.Validator.CollectionValidator.ValidateUpdate(&section)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("collection update error"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldsErr}, "Validation error."),)

@@ -5,6 +5,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -14,9 +15,9 @@ type Device struct {
 	deviceRepo repository.DeviceRepository
 }
 
-func NewDeviceController() DeviceController{
+func NewDeviceController(service * services.Services) DeviceController{
 	return &Device{
-		deviceRepo: repository.NewDevice(),
+		deviceRepo: service.Repos.DeviceRepository,
 	}
 }
 type DeviceController interface{

@@ -15,7 +15,7 @@ func (ctrler * Penalty)NewClassfication(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
 		return
 	}
-	fieldErrs, err := class.ValidateNew()
+	fieldErrs, err := ctrler.services.Validator.PenaltyClassValidator.ValidateNew(&class)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("validateErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{
@@ -49,7 +49,7 @@ func (ctrler * Penalty)UpdatePenaltyClass(ctx * gin.Context) {
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
 		return
 	}
-	fieldErrs, err := class.ValidateUpdate()
+	fieldErrs, err := ctrler.services.Validator.PenaltyClassValidator.ValidateUpdate(&class)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("validateErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{

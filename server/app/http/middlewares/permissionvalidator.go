@@ -8,8 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-func ValidatePermissions(permissions []string, blockRequestFromClientApp bool)gin.HandlerFunc{
+type PermissionValidator struct {
+	store  permissionstore.PermissionStore
+}
+func NewPermissionValidator(store  permissionstore.PermissionStore)PermissionValidator{
+	return PermissionValidator{
+		store: store,
+	}
+}
+func (pv * PermissionValidator) Validate(permissions []string, blockRequestFromClientApp bool)gin.HandlerFunc{
 	return func (ctx * gin.Context)  {
 		requestorId := ctx.GetString("requestorId")
 		requestorApp := ctx.GetString("requestorApp")
@@ -28,8 +35,8 @@ func ValidatePermissions(permissions []string, blockRequestFromClientApp bool)gi
 				return
 			}
 		}
-		store  := permissionstore.GetPermissionStore()
-		hasPermission := store.HasPermission(requestorId, permissions)
+		
+		hasPermission := pv.store.HasPermission(requestorId, permissions)
 		if !hasPermission {
 			ctx.AbortWithStatus(http.StatusForbidden)
 			return 

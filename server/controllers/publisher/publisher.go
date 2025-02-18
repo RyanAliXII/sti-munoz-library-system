@@ -18,7 +18,7 @@ type Publisher struct {
 func (ctrler *Publisher) NewPublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
-	fieldErrs, err  := publisher.ValidateNew()
+	fieldErrs, err  := ctrler.services.Validator.PublisherValidator.ValidateNew(&publisher)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("new publisher validation"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErrs}, "Validation error."))
@@ -70,7 +70,7 @@ func (ctrler *Publisher) UpdatePublisher(ctx *gin.Context) {
 	var publisher model.Publisher
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
 	publisher.Id = id
-	fieldErrs, err  := publisher.ValidateUpdate()
+	fieldErrs, err  := ctrler.services.Validator.PublisherValidator.ValidateUpdate(&publisher)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("new publisher validation"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErrs}, "Validation error."))

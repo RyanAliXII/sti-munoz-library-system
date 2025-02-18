@@ -35,7 +35,7 @@ func(ctrler * TimeSlot)NewTimeSlot(ctx * gin.Context){
 		return
 	}
 	slot.ProfileId = profileId
-	fields, err := slot.Validate()
+	fields, err := ctrler.services.Validator.TimeSlotValidator.Validate(&slot)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ValidationErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{
@@ -65,7 +65,7 @@ func(ctrler * TimeSlot)UpdateTimeSlot(ctx * gin.Context){
 	}
 	slot.ProfileId = profileId
 	slot.Id = slotId
-	fields, err := slot.ValidateUpdate()
+	fields, err := ctrler.services.Validator.TimeSlotValidator.ValidateUpdate(&slot)
 	if err != nil {
 		logger.Error(err.Error(), slimlog.Error("ValidationErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{

@@ -9,7 +9,7 @@ import (
 
 func InventoryRoutes(router *gin.RouterGroup, services* services.Services) {
 	controller  := NewInventoryController(services)
-	router.Use(middlewares.ValidatePermissions([]string{"Audit.Access"}, true))
+	router.Use(services.PermissionValidator.Validate([]string{"Audit.Access"}, true))
 	router.GET("/audits", controller.GetAudits)
 
 	router.POST("/audits", middlewares.ValidateBody[InventoryBody], controller.NewAudit)

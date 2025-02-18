@@ -120,8 +120,8 @@ func(hub *NotificationHub)deleteQueue(queueName string) error{
 	}
 	return nil
 }
-func NewNotificationService() NotificationService{
-	rabbit := rabbitmq.CreateOrGetInstance()
+func NewNotificationService(rabbitMQ * rabbitmq.RabbitMQ) NotificationService{
+	rabbit := rabbitMQ
 	return &Notification{
 		rabbit:  rabbit,
 	}

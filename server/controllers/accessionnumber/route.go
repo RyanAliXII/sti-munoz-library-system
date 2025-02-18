@@ -9,9 +9,9 @@ import (
 
 func AccessionNumberRoutes(router * gin.RouterGroup, services * services.Services){
 	ctrler := NewAccessionNumberController(services)
-	router.GET("", middlewares.ValidatePermissions([]string{"Collection.Read"}, true), ctrler.GetAccessionNumbers)
+	router.GET("", services.PermissionValidator.Validate([]string{"Collection.Read"}, true), ctrler.GetAccessionNumbers)
 	router.PUT("/:accession", 
-	middlewares.ValidatePermissions([]string{"Collection.Edit"}, true),
+	services.PermissionValidator.Validate([]string{"Collection.Edit"}, true),
 	middlewares.ValidateBody[UpdateAccessionNumberBody], 
 	ctrler.UpdateAccessionNumber)
 }

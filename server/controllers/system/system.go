@@ -199,7 +199,7 @@ func (ctrler * System) RemoveRoleAssignment(ctx * gin.Context){
 func NewSystemConctroller(services * services.Services) SystemController {
 	return &System{
 		services: services,
-		permissionStore: permissionstore.GetPermissionStore(),
+		permissionStore: services.PermissionStore,
 	}
 }
 
