@@ -124,9 +124,9 @@ func(hub *NotificationHub)deleteQueue(queueName string) error{
 	return nil
 }
 func NewNotificationService(rabbitMQ * rabbitmq.RabbitMQ, logger *zap.Logger) NotificationService{
-	rabbit := rabbitMQ
+	
 	return &Notification{
-		rabbit:  rabbit,
+		rabbit:  rabbitMQ,
 		logger: logger,
 	}
 }
