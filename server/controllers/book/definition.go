@@ -97,21 +97,7 @@ func (body * BulkAccessionUpdateBody) ValidateDuplicateAccessionNumber()([]strin
 
 func NewBookFilter(ctx * gin.Context) *BookFilter{
 	filter := &BookFilter{}
-	err := ctx.BindQuery(&filter)
-	if err != nil {
-		logger.Error(err.Error())
-	}
+	ctx.BindQuery(&filter)
 	filter.Filter.ExtractFilter(ctx)
-
-	// _, err  = time.Parse(time.DateOnly, filter.From)
-	// if err != nil {
-	// 	filter.From = ""
-	// 	filter.To = ""
-	// }
-	// _, err = time.Parse(time.DateOnly, filter.To)
-	// if(err != nil){
-	// 	filter.From = ""
-	// 	filter.To = ""
-	// }
 	return filter
 }

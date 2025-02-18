@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -49,7 +49,7 @@ func (ctrler * Bag) AddBagItem (ctx * gin.Context){
 	item.AccountId = parsedAccountId
     addItemErr := ctrler.services.Repos.BagRepository.AddItemToBag(item)
 	if(addItemErr != nil){
-		logger.Error(addItemErr.Error(), slimlog.Error("addItemErr"))
+		ctrler.services.Logger.Error(addItemErr.Error(), applog.Error("addItemErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
@@ -100,7 +100,7 @@ func (ctrler * Bag)CheckItemFromBag(ctx * gin.Context){
 	})
 
 	if checkErr != nil {
-		logger.Error(checkErr.Error(), slimlog.Error("CheckItemFromBagErr"))
+		ctrler.services.Logger.Error(checkErr.Error(), applog.Error("CheckItemFromBagErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
@@ -158,13 +158,13 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 	}
 	_, checkoutErr :=  ctrler.services.Repos.BagRepository.CheckoutCheckedItems(parsedAccountId)
 	if checkoutErr != nil{
-		logger.Error(checkoutErr.Error(), slimlog.Error("checkoutErr"))
+		ctrler.services.Logger.Error(checkoutErr.Error(), applog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured. Please try again later."))
 		return
 	}
 	account, err := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(parsedAccountId)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	message := fmt.Sprintf("%s %s has requested to borrow a book.", account.GivenName, account.Surname)
 	accountIds, err := ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification{
@@ -172,7 +172,7 @@ func (ctrler * Bag) CheckoutCheckedItems(ctx *gin.Context){
 		Link: "/borrowing/requests",
 	}, "BorrowedBook.Read")
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	for _, accountId := range accountIds {
 		routingKey := fmt.Sprintf("notify_admin_%s", accountId)

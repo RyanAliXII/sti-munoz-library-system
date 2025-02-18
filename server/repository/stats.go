@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -21,7 +21,7 @@ func(repo * Stats)GetLibraryStats()model.LibraryStats{
     (SELECT COALESCE(SUM(amount), 0) FROM borrowing.penalty WHERE settled_at IS NULL) as unsettled_penalties`
     getErr := repo.db.Get(&stats, query)
     if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("StatsRepository.GetLibraryStats"), slimlog.Error("getErrd"))
+		logger.Error(getErr.Error(), applog.Function("StatsRepository.GetLibraryStats"), applog.Error("getErrd"))
     }
     return stats
 }

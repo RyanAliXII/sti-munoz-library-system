@@ -3,17 +3,19 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
 	"github.com/gin-gonic/gin"
 )
 
 type PermissionValidator struct {
 	store  permissionstore.PermissionStore
+	config * configmanager.Config
 }
-func NewPermissionValidator(store  permissionstore.PermissionStore)PermissionValidator{
+func NewPermissionValidator(store  permissionstore.PermissionStore, config * configmanager.Config)PermissionValidator{
 	return PermissionValidator{
 		store: store,
+		config:  config,
 	}
 }
 func (pv * PermissionValidator) Validate(permissions []string, blockRequestFromClientApp bool)gin.HandlerFunc{
@@ -21,7 +23,7 @@ func (pv * PermissionValidator) Validate(permissions []string, blockRequestFromC
 		requestorId := ctx.GetString("requestorId")
 		requestorApp := ctx.GetString("requestorApp")
 		requestorRole := ctx.GetString("requestorRole")
-		if(requestorApp == azuread.ClientAppClientId ) {
+		if(requestorApp == pv.config.ClientAppClientID ) {
 			if(blockRequestFromClientApp){
 				ctx.AbortWithStatus(http.StatusForbidden)
 				return 
@@ -29,7 +31,7 @@ func (pv * PermissionValidator) Validate(permissions []string, blockRequestFromC
 			ctx.Next()
 			return 
 		}
-		if requestorApp == azuread.AdminAppClientId{
+		if requestorApp == pv.config.AdminAppClientID{
 			if requestorRole == "Root" {
 				ctx.Next()
 				return

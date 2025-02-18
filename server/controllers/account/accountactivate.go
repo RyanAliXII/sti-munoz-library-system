@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -30,7 +30,7 @@ func (ctrler *Account) ActivateBulk (ctx * gin.Context){
 	}
 	file, fileErr := fileHeader.Open()
 	if fileErr != nil {
-		logger.Error(fileErr.Error(), slimlog.Function("AccountController.ActivateBulk"), slimlog.Error("fileErr"))
+		ctrler.services.Logger.Error(fileErr.Error(), applog.Function("AccountController.ActivateBulk"), applog.Error("fileErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -65,7 +65,7 @@ func(ctrler *Account) handleCSV(file multipart.File, ctx * gin.Context){
 	}
 	_, err = file.Seek(0, 0)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("SeekingErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("SeekingErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknowne error occured."))
 		return 
 	}
@@ -74,19 +74,19 @@ func(ctrler *Account) handleCSV(file multipart.File, ctx * gin.Context){
 	bytesFile, toBytesErr := io.ReadAll(file)
 	accounts := make([]model.AccountActivation, 0)
 	if toBytesErr != nil {
-		logger.Error(toBytesErr.Error(), slimlog.Function("AccountController.ActivateBulk"), slimlog.Error("toBytesErr"))
+		ctrler.services.Logger.Error(toBytesErr.Error(), applog.Function("AccountController.ActivateBulk"), applog.Error("toBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = gocsv.UnmarshalBytes(bytesFile, &accounts)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("UnmarshalBytesErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Function("AccountController.ImportAccount"), applog.Error("UnmarshalBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.validateTypeAndProgram(&accounts)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		activateBulkErr, isActiveBulkErr := err.(*ActivateBulkError)
 		if isActiveBulkErr {
 			ctx.JSON(httpresp.Fail400(gin.H{
@@ -100,7 +100,7 @@ func(ctrler *Account) handleCSV(file multipart.File, ctx * gin.Context){
 	}
 	err = ctrler.services.Repos.AccountRepository.ActivateAccountBulk(accounts)
 	if err != nil{
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(gin.H{
 			"errors":gin.H{
 				"messages": []string{"Unknown error occured."},
@@ -155,7 +155,7 @@ func (ctrler *Account)ActivateAccounts(ctx * gin.Context) {
 	    body := AccountsActivateBody{}
 		err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 			return
 		}
@@ -163,7 +163,7 @@ func (ctrler *Account)ActivateAccounts(ctx * gin.Context) {
 		
 		err = ctrler.services.Repos.AccountRepository.ActivateAccounts(body.AccountIds, body.UserTypeId, body.ProgramId, settings.AccountValidity.Value, body.StudentNumber)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("account activation error"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("account activation error"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return
 		}
@@ -175,13 +175,13 @@ func (ctrler *Account)DeactiveAccounts(ctx * gin.Context) {
 	body := AccountsDeactivateBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err =  ctrler.services.Repos.AccountRepository.DeactiveAccounts(body.AccountIds)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("account activation error"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("account activation error"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}

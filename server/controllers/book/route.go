@@ -76,7 +76,7 @@ func BookRoutes(router *gin.RouterGroup, services * services.Services) {
 	controller.UpdateAccessionStatus)
 
 	router.GET("/:id/ebooks", 
-	middlewares.BlockRequestFromClientApp, 
+	middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), 
 	controller.GetEbookById)
 
 	deleteGrp := router.Group("/:id")

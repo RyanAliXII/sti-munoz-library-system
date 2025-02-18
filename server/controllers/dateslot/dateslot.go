@@ -2,7 +2,7 @@ package dateslot
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -26,7 +26,7 @@ func (ctrler * DateSlot)NewSlot(ctx * gin.Context){
 	body := NewSlotBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("BindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("BindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
 		return
 	}
@@ -40,7 +40,7 @@ func (ctrler * DateSlot)NewSlot(ctx * gin.Context){
 	dateSlots := body.ToModel()
 	err = ctrler.services.Repos.DateSlotRepository.NewSlots(dateSlots)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewSlotsError"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NewSlotsError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -50,7 +50,7 @@ func (ctrler * DateSlot)DeleteSlot(ctx * gin.Context) {
 	id := ctx.Param("id")
 	err := ctrler.services.Repos.DateSlotRepository.DeleteSlot(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DeleteSlotErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DeleteSlotErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -60,7 +60,7 @@ func (ctrler * DateSlot)GetSlots(ctx * gin.Context){
 	body := DateSlotRange{}
 	err := ctx.BindQuery(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Success200(gin.H{
 			"dateSlots": []struct{}{},
 		}, "Slots fetched."))
@@ -68,7 +68,7 @@ func (ctrler * DateSlot)GetSlots(ctx * gin.Context){
 	}
 	err = body.Validate()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("validateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("validateErr"))
 		ctx.JSON(httpresp.Success200(gin.H{
 			"dateSlots": []struct{}{},
 		}, "Slots fetched."))
@@ -76,7 +76,7 @@ func (ctrler * DateSlot)GetSlots(ctx * gin.Context){
 	}
 	slots, err := ctrler.services.Repos.DateSlotRepository.GetSlotsByRange(body.Start, body.End)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetSlotsByRangeErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetSlotsByRangeErr"))
 	}
 	 ctx.JSON(httpresp.Success200(gin.H{
 		"dateSlots": slots,

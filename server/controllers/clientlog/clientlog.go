@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -31,11 +31,11 @@ func (ctrler * ClientLog) GetClientLogs(ctx * gin.Context){
 	})
 	
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetLogsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetLogsErr"))
 	}
 
 	if err != nil {
-		logger.Error(err.Error(),)
+		ctrler.services.Logger.Error(err.Error(),)
 	}
 	
 	ctx.JSON(httpresp.Success200(gin.H{
@@ -61,13 +61,13 @@ func (ctrler * ClientLog)ExportClientLogs(ctx * gin.Context){
 			Filter: filter.Filter,
 		})
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
 		buffer, err := ctrler.services.ClientLogExport.ExportCSV(logs)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
@@ -85,13 +85,13 @@ func (ctrler * ClientLog)ExportClientLogs(ctx * gin.Context){
 			Filter: filter.Filter,
 		})
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
 		buffer, err := ctrler.services.ClientLogExport.ExportExcel(logs)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}

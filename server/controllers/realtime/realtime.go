@@ -3,8 +3,10 @@ package realtime
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -24,15 +26,29 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 )
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+func(ctrler * RealtimeController) newWebSocket(writer gin.ResponseWriter, request *http.Request) (*websocket.Conn, error) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	connection, connectionErr := upgrader.Upgrade(writer, request, nil)
 
-func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
-	connection, connectionErr := NewWebSocket(ctx.Writer, ctx.Request)
 	if connectionErr != nil {
-		logger.Error(connectionErr.Error())
+		ctrler.services.Logger.Error(connectionErr.Error(), applog.Function("Websocket.New"), applog.Error("connectionErr"))
+
+	}
+
+	return connection, nil
+}
+func (ctrler *RealtimeController) InitializeWebSocket(ctx *gin.Context) {
+	connection, connectionErr := ctrler.newWebSocket(ctx.Writer, ctx.Request)
+	if connectionErr != nil {
+		ctrler.services.Logger.Error(connectionErr.Error())
 		return
 	}
 	if connection == nil {
-		logger.Error("websocket connection is nil")
+		ctrler.services.Logger.Error("websocket connection is nil")
 		return
 	}
 	
@@ -56,7 +72,7 @@ func (ctrler *RealtimeController) Reader(connection *websocket.Conn, ctx *gin.Co
 		if err != nil {
 			_, isCloseErr := err.(*websocket.CloseError)
 			if !isCloseErr {
-				logger.Error(err.Error())
+				ctrler.services.Logger.Error(err.Error())
 			}
 	
 			break
@@ -102,13 +118,13 @@ func (ctrler *RealtimeController) Writer(connection *websocket.Conn, ctx *gin.Co
 	}
 	
 }
-func NewController(s * services.Services) RealtimeControllerInteface {
+func NewController(s * services.Services) RealtimeControllerInterface {
 	return &RealtimeController{
 		services: s,
 	}
 }
 
-type RealtimeControllerInteface interface {
+type RealtimeControllerInterface interface {
 	InitializeWebSocket(ctx *gin.Context)
 	InitializeClientWebSocket(ctx *gin.Context)
 }

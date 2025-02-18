@@ -11,6 +11,6 @@ import (
 
 func ItemRoutes(router * gin.RouterGroup, services * services.Services){
 	ctrler := NewItemController(services)
-	router.Use(middlewares.BlockRequestFromClientApp)
+	router.Use(middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID))
 	router.GET("", ctrler.GetItems)
 }

@@ -9,8 +9,8 @@ import (
 
 func ExtrasRoutes (router * gin.RouterGroup, services * services.Services ){
 	ctrler := NewExtrasController(services)
-	router.PUT("/faqs", middlewares.BlockRequestFromClientApp, ctrler.UpdateFAQsPage )
-	router.GET("/faqs", middlewares.BlockRequestFromClientApp, ctrler.GetFAQsContent)
-	router.PUT("/policy", middlewares.BlockRequestFromClientApp, ctrler.UpdatePolicyPage )
-	router.GET("/policy", middlewares.BlockRequestFromClientApp, ctrler.GetPolicyContent)
+	router.PUT("/faqs", middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), ctrler.UpdateFAQsPage )
+	router.GET("/faqs", middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), ctrler.GetFAQsContent)
+	router.PUT("/policy", middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), ctrler.UpdatePolicyPage )
+	router.GET("/policy", middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), ctrler.GetPolicyContent)
 }

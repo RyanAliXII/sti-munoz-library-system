@@ -2,9 +2,8 @@ package device
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -12,12 +11,12 @@ import (
 
 
 type Device struct {
-	deviceRepo repository.DeviceRepository
+	services * services.Services
 }
 
-func NewDeviceController(service * services.Services) DeviceController{
+func NewDeviceController(services * services.Services) DeviceController{
 	return &Device{
-		deviceRepo: service.Repos.DeviceRepository,
+		services: services ,
 	}
 }
 type DeviceController interface{
@@ -35,23 +34,23 @@ func(ctrler * Device) NewDevice (ctx * gin.Context){
 
   err := ctx.ShouldBindBodyWith(&device, binding.JSON)
   if err != nil {
-	logger.Error(err.Error(), slimlog.Error("BindErr"))
+	ctrler.services.Logger.Error(err.Error(), applog.Error("BindErr"))
 	ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 	return 
   }
 
-  err = ctrler.deviceRepo.NewDevice(device)
+  err = ctrler.services.Repos.DeviceRepository.NewDevice(device)
   if err != nil {
-	logger.Error(err.Error(), slimlog.Error("NewDeviceErr"))
+	ctrler.services.Logger.Error(err.Error(), applog.Error("NewDeviceErr"))
 	ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 	return
   }
   ctx.JSON(httpresp.Success200(nil, "Device added."))
 }
 func(ctrler * Device)GetDevices(ctx * gin.Context){
-	devices, err := ctrler.deviceRepo.GetDevices()
+	devices, err := ctrler.services.Repos.DeviceRepository.GetDevices()
 	if err != nil {
-		logger.Error(err.Error() , slimlog.Error("GetDevicesErr"))
+		ctrler.services.Logger.Error(err.Error() , applog.Error("GetDevicesErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"devices": devices,
@@ -63,14 +62,14 @@ func(ctrler * Device)UpdateDevice(ctx * gin.Context){
 	device := model.Device{}
 	err := ctx.ShouldBindBodyWith(&device, binding.JSON)
 	if err != nil {
-	  logger.Error(err.Error(), slimlog.Error("BindErr"))
+	  ctrler.services.Logger.Error(err.Error(), applog.Error("BindErr"))
 	  ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 	  return 
 	}
 	device.Id = id
-	err = ctrler.deviceRepo.UpdateDevice(device)
+	err = ctrler.services.Repos.DeviceRepository.UpdateDevice(device)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("UpdateDeviceErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateDeviceErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
@@ -79,9 +78,9 @@ func(ctrler * Device)UpdateDevice(ctx * gin.Context){
 
 func(ctrler * Device)DeleteDevice(ctx * gin.Context){
 	id := ctx.Param("id")
-	err := ctrler.deviceRepo.DeleteDevice(id)
+	err := ctrler.services.Repos.DeviceRepository.DeleteDevice(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DeleteDeviceErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DeleteDeviceErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
@@ -90,9 +89,9 @@ func(ctrler * Device)DeleteDevice(ctx * gin.Context){
 
 func(ctrler * Device)GetDeviceById(ctx * gin.Context){
 	id := ctx.Param("id")
-	device, err := ctrler.deviceRepo.GetDeviceById(id)
+	device, err := ctrler.services.Repos.DeviceRepository.GetDeviceById(id)
 	if err != nil {
-		logger.Error(err.Error() , slimlog.Error("GetDevicesErr"))
+		ctrler.services.Logger.Error(err.Error() , applog.Error("GetDevicesErr"))
 		ctx.JSON(httpresp.Fail404(nil, "Device not found."))
 		return 
 	}

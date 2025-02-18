@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/doug-martin/goqu/v9"
@@ -98,7 +98,7 @@ func (repo *System) GetRoles() []model.Role {
 	selectErr := repo.db.Select(&roles, `Select role.id, name, COALESCE(ARRAY_AGG(role_permission.value),'{}') as permissions from system.role 
 	INNER JOIN system.role_permission on role.id = role_permission.role_id GROUP BY role.id order by role.created_at desc`)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("System.GetRoles"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("System.GetRoles"), applog.Error("selectErr"))
 	}
 	return roles
 }
@@ -121,7 +121,7 @@ func (repo *System) AssignRole(accountRoles model.AccountRoles) error {
 
 	_, insertErr := repo.db.Exec(query, args...)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("System.AssignRole"), slimlog.Error("insertErr"))
+		logger.Error(insertErr.Error(), applog.Function("System.AssignRole"), applog.Error("insertErr"))
 	}
 	return insertErr
 }
@@ -142,7 +142,7 @@ func(repo * System) GetAccountsWithAssignedRoles() model.AccountRoles{
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
-		logger.Error(selectErr.Error(), slimlog.Function("System.GetAccountWithAssignedRoles"), slimlog.Error("getErr"))
+		logger.Error(selectErr.Error(), applog.Function("System.GetAccountWithAssignedRoles"), applog.Error("getErr"))
 		
 	}
 	return accountRoles
@@ -151,7 +151,7 @@ func (repo * System) RemoveRoleAssignment(roleId int , accountId string)error{
 
 	_, deleteErr := repo.db.Exec("DELETE FROM system.account_role where role_id = $1 AND account_id = $2", roleId, accountId)
 	if deleteErr != nil{
-		logger.Error(deleteErr.Error(), slimlog.Function("System.RemoveRoleAssignments"), slimlog.Error("deleteErr"))
+		logger.Error(deleteErr.Error(), applog.Function("System.RemoveRoleAssignments"), applog.Error("deleteErr"))
 		return deleteErr
 	}	
 	return nil

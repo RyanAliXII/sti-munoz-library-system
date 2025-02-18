@@ -6,10 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
-
-
 func BagRoutes (router * gin.RouterGroup, services * services.Services) {
 	controller := NewBagController(services)
 	router.POST("/",middlewares.ValidateBody[BagItem]  ,controller.AddBagItem)

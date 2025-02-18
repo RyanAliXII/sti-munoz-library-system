@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,7 +12,7 @@ import (
 func(ctrler *Book)ExportBooks(ctx * gin.Context){
 	collectionId, err  := strconv.Atoi(ctx.Query("collectionId"))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ConvErrr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ConvErrr"))
 		ctx.Data(http.StatusBadRequest, "application/octet-stream", []byte{})
 		return 
 	}
@@ -30,7 +30,7 @@ func(ctrler *Book)ExportBooks(ctx * gin.Context){
 	
 	buffer, err := ctrler.services.Repos.BookRepository.ExportBooks(collectionId, fileType)	
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ExportBooks"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ExportBooks"))
 		ctx.Data(http.StatusInternalServerError, "application/octet-stream", []byte{})
 		return
 	}

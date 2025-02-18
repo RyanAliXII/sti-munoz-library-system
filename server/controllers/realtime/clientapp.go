@@ -12,13 +12,13 @@ import (
 
 
 func (ctrler *RealtimeController) InitializeClientWebSocket(ctx *gin.Context) {
-	connection, connectionErr := NewWebSocket(ctx.Writer, ctx.Request)
+	connection, connectionErr := ctrler.newWebSocket(ctx.Writer, ctx.Request)
 	if connectionErr != nil {
-		logger.Error(connectionErr.Error())
+		ctrler.services.Logger.Error(connectionErr.Error())
 		return
 	}
 	if connection == nil {
-		logger.Error("websocket connection is nil")
+		ctrler.services.Logger.Error("websocket connection is nil")
 		return
 	}
 	
@@ -43,7 +43,7 @@ func (ctrler *RealtimeController) ClientReader(connection *websocket.Conn, ctx *
 		if err != nil {
 			_, isCloseErr := err.(*websocket.CloseError)
 			if !isCloseErr {
-				logger.Error(err.Error())
+				ctrler.services.Logger.Error(err.Error())
 			}
 			break
 		}

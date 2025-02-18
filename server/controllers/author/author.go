@@ -2,8 +2,8 @@ package author
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
@@ -20,7 +20,7 @@ func (ctrler *Author) NewAuthor(ctx *gin.Context) {
 	ctx.ShouldBindBodyWith(&author, binding.JSON)
 	fieldErr, err := ctrler.services.Validator.AuthorValidator.ValidateNew(&author)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("Validation error"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("Validation error"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
 		return
 	}
@@ -39,7 +39,7 @@ func (ctrler *Author) GetAuthors(ctx *gin.Context) {
 	if len(filter.Keyword) > 0 {
 		metaData, metaErr := ctrler.services.Repos.RecordMetadataRepository.GetAuthorSearchMetadata(filter)
 		if metaErr != nil {
-			logger.Error(metaErr.Error(), slimlog.Error("AuthorSearchMetadataErr"))
+			ctrler.services.Logger.Error(metaErr.Error(), applog.Error("AuthorSearchMetadataErr"))
 			ctx.JSON(httpresp.Fail500(gin.H{
 				"message": "Unknown error occured",
 			}, "Invalid page number."))
@@ -76,13 +76,13 @@ func (ctrler *Author) UpdateAuthor(ctx *gin.Context) {
 	var author model.Author;
 	bindingErr := ctx.ShouldBindBodyWith(&author, binding.JSON)
 	if bindingErr != nil {
-		logger.Error(bindingErr.Error())
+		ctrler.services.Logger.Error(bindingErr.Error())
 		ctx.JSON(httpresp.Fail400(gin.H{}, bindingErr.Error()))
 	}
 	author.Id = id
 	fieldErr, err := ctrler.services.Validator.AuthorValidator.ValidateUpdate(&author)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("Validation error"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("Validation error"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErr}, "Validation error."))
 		return
 	}

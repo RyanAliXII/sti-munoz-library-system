@@ -11,8 +11,7 @@ import (
 	_ "time/tzdata"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -44,7 +43,7 @@ func (ctrler *Borrowing)HandleBorrowing(ctx * gin.Context){
 	body := CheckoutBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occurred."))
 		return 
 	}
@@ -55,20 +54,20 @@ func (ctrler *Borrowing)HandleBorrowing(ctx * gin.Context){
 	}
 	borrowedBooks,err := ctrler.toBorrowedBookModel(body, status.BorrowStatusCheckedOut, grpId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("toBorrowedBookModel"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("toBorrowedBookModel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
 
 	borrowedEbooks, err := ctrler.toBorrowedEbookModel(body, status.BorrowStatusCheckedOut, grpId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("toBorrowedEBookModel"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("toBorrowedEBookModel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
 	err  = ctrler.services.Repos.BorrowingRepository.BorrowBook(borrowedBooks, borrowedEbooks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("checkoutErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("checkoutErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occurred."))
 		return
 	}
@@ -81,7 +80,7 @@ func (ctrler *Borrowing)GetBorrowedBookByAccessionId(ctx * gin.Context){
 	accessionId := ctx.Param("accessionId")
 	borrowedBook, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByAccessionId(accessionId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 		if err == sql.ErrNoRows {
 			ctx.JSON(httpresp.Fail404(nil, "Not found"))
 			return
@@ -97,14 +96,14 @@ func (ctrler *Borrowing)ReturnBorrowedBooksBulk(ctx * gin.Context){
 	body := ReturnBulkBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	for _, b := range body.BorrowedBookIds{
 		_, err := ctrler.services.Repos.BorrowingRepository.MarkAsReturned(b, body.Remarks)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error(err.Error()))
+			ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 			return
 		}
@@ -143,34 +142,34 @@ func (ctrler *Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 	clientId := ctx.GetString("requestorId")
 
 	if clientId != borrowedBook.Client.Id {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
 		return
 	}
 	if err != nil {
 		if err == sql.ErrNoRows {
-			 logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))
+			 ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookyId"))
 			 ctx.JSON(httpresp.Fail404(nil, "Not found"))
 			 return
 		}
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookyId"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookyId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
 	err = ctrler.isValidDueDate(borrowedBook.DueDate.ToString())
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("IsValidDueDate"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("IsValidDueDate"))
 		ctx.JSON(httpresp.Fail404(nil, "Link expired is expired."))
 		return
 	}
 	if(len(borrowedBook.Book.Ebook) == 0){
-		logger.Error("Ebook not found")
+		ctrler.services.Logger.Error("Ebook not found")
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
 	}
 	bucket := os.Getenv("S3_DEFAULT_BUCKET")
 	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(borrowedBook.Book.Ebook, bucket)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail404(nil, "Unknown error occured"))
 		return
 	}
@@ -228,7 +227,7 @@ func (ctrler *Borrowing)GetBorrowRequests(ctx * gin.Context){
 	})
 	
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowingRequestsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowingRequestsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"borrowRequests": requests,
@@ -249,13 +248,13 @@ func(ctrler * Borrowing)ExportBorrowedBooks(ctx * gin.Context){
 			Filter: filter.Filter,
 		})
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetCSVDataErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetCSVDataErr"))
 			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
 			return
 		}
 		file, err := ctrler.services.BorrowedBookExport.ExportCSV(data)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("ExportCSVErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("ExportCSVErr"))
 			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
 		}
 		ctx.Data(http.StatusOK, "text/csv", file.Bytes())
@@ -270,13 +269,13 @@ func(ctrler * Borrowing)ExportBorrowedBooks(ctx * gin.Context){
 			Filter: filter.Filter,
 		})
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetCSVDataErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetCSVDataErr"))
 			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
 			return
 		}
 		file, err := ctrler.services.BorrowedBookExport.ExportExcel(data)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("ExportCSVErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("ExportCSVErr"))
 			ctx.Data(http.StatusInternalServerError, "", ([]byte{}))
 		}
 		ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", file.Bytes())
@@ -288,8 +287,8 @@ func (ctrler *Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
 	appId, _ := ctx.Get("requestorApp")
 	requestorId, _ :=ctx.Get("requestorId")
 	accountId := requestorId.(string)
-	if appId != azuread.ClientAppClientId {
-		logger.Warn("Someone tried to access endpoints that is made for client", zap.String("endpoint", "GetBorrowedBooksByAccountId"))	
+	if appId != ctrler.services.Config.ClientAppClientID{
+		ctrler.services.Logger.Warn("Someone tried to access endpoints that is made for client", zap.String("endpoint", "GetBorrowedBooksByAccountId"))	
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
 		return
 	}
@@ -306,7 +305,7 @@ func (ctrler *Borrowing)GetBorrowedBookByAccountId(ctx * gin.Context){
 		borrowedBooks, err = ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByAccountIdAndStatusId(accountId,  statusId)
 	}
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBooksErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBooksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -318,7 +317,7 @@ func (ctrler *Borrowing)GetBorrowedBooksByGroupId(ctx * gin.Context){
 	groupId := ctx.Param("id")
 	requests, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBooksByGroupId(groupId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBooksByGroupId")) 
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBooksByGroupId")) 
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
 		return
 	}
@@ -332,13 +331,13 @@ func (ctrler * Borrowing)UpdateRemarks(ctx * gin.Context){
 	body := UpdateBorrowStatusBody{}
 	err := ctx.ShouldBind(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
 	err = ctrler.services.Repos.BorrowingRepository.UpdateRemarks(id, body.Remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("updateRemarksErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("updateRemarksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -348,7 +347,7 @@ func (ctrler * Borrowing)UpdateRemarks(ctx * gin.Context){
 func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	 statusId, err := strconv.Atoi(ctx.Query("statusId"))
 	 if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ConvertErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ConvertErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid Status Id"))
 		return
 	}
@@ -358,7 +357,7 @@ func(ctrler * Borrowing) UpdateBorrowingStatus (ctx * gin.Context){
 	 if  statusId != status.BorrowStatusCheckedOut {
 		err =  ctx.ShouldBindBodyWith(&body, binding.JSON)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("BindErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("BindErr"))
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 			return
 		}
@@ -387,13 +386,13 @@ func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Conte
 	returnBody := model.ReturnBook{}
 	err := ctx.ShouldBindBodyWith(&returnBody, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail400(nil, "bindErr"))
 		return
 	}
 	fieldErr, err := returnBody.Validate()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ValidationErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ValidationErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{
 			"errors": fieldErr,
 		}, "Validation error"))
@@ -402,7 +401,7 @@ func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Conte
 	if !returnBody.HasAdditionaPenalty {
 		result, err := ctrler.services.Repos.BorrowingRepository.MarkAsReturned(id, remarks)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsReturnedErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
@@ -412,7 +411,7 @@ func (ctrler * Borrowing)handleReturn(id string, remarks string, ctx * gin.Conte
 		result, err := ctrler.services.Repos.BorrowingRepository.MarkAsReturnedWithAddtionalPenalty(id, returnBody)
 		fmt.Println(result.NextAccountId)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("MarkAsReturnedErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsReturnedErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
@@ -427,7 +426,7 @@ func (ctrler * Borrowing)notifyAdminsAndClientIfThereIsNextInQueue(id string, ne
 	}
 	borrowedBook, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBookById(id)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	message := fmt.Sprintf(`The book titled "%s" that you hold is now pending. Please wait for approval.`, borrowedBook.Book.Title)
 	err = ctrler.services.Repos.NotificationRepository.NotifyClient(model.ClientNotification{
@@ -436,13 +435,13 @@ func (ctrler * Borrowing)notifyAdminsAndClientIfThereIsNextInQueue(id string, ne
 		Link: fmt.Sprintf("/borrowed-books?statusId=%d", status.BorrowStatusPending),
 	})
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	routingKey := fmt.Sprintf("notify_client_%s", nextAccountId)
 	go ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
 	account, err := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(nextAccountId)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	message = fmt.Sprintf("%s %s has requested to borrow a book.", account.GivenName, account.Surname)
 	accountIds, err := ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification{
@@ -450,7 +449,7 @@ func (ctrler * Borrowing)notifyAdminsAndClientIfThereIsNextInQueue(id string, ne
 		Link: "/borrowing/requests",
 	}, "BorrowedBook.Read")
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	for _, accountId := range accountIds {
 		routingKey := fmt.Sprintf("notify_admin_%s", accountId)
@@ -460,7 +459,7 @@ func (ctrler * Borrowing)notifyAdminsAndClientIfThereIsNextInQueue(id string, ne
 func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Context){
 	err := ctrler.services.Repos.BorrowingRepository.MarkAsUnreturned(id, remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsUnreturnedErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsUnreturnedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -470,13 +469,13 @@ func (ctrler * Borrowing)handleUnreturn(id string, remarks string, ctx * gin.Con
 func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Context){
 	err := ctrler.services.Repos.BorrowingRepository.MarkAsApproved(id, remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsApproved"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsApproved"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
 	borrowedBook, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBookById(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookByIdErr"))
 	}
 
 	routingKey := fmt.Sprintf("notify_client_%s", borrowedBook.Client.Id)
@@ -487,11 +486,11 @@ func (ctrler * Borrowing) handleApproval(id string, remarks string, ctx * gin.Co
 		AccountId: borrowedBook.Client.Id,
 	})
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookByIdErr"))
 	}
 	err = ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookByIdErr"))
 	}
 	
 	
@@ -501,7 +500,7 @@ func (ctrler * Borrowing) handleCancellation(id string, remarks string, ctx * gi
 	result, err := ctrler.services.Repos.BorrowingRepository.MarkAsCancelled(id, remarks)
 	ctrler.notifyAdminsAndClientIfThereIsNextInQueue(id, result.NextAccountId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsCancelled"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsCancelled"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -515,7 +514,7 @@ func (ctrler * Borrowing) HandleCancellationByIdAndAccountId( ctx * gin.Context)
 	accountId := ctx.GetString("requestorId")
 	result, err := ctrler.services.Repos.BorrowingRepository.CancelByIdAndAccountId(id, body.Remarks, accountId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("Cancel"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("Cancel"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -526,25 +525,25 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 	body := UpdateBorrowStatusCheckout{}
 	err :=  ctx.Bind(&body)
 	if err != nil {
-	   logger.Error(err.Error(), slimlog.Error("BindErr"))
+	   ctrler.services.Logger.Error(err.Error(), applog.Error("BindErr"))
 	   ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	   return
    	}
 	err = ctrler.isValidDueDate(string(body.DueDate))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("isValideDueDate"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("isValideDueDate"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 }
 	err = ctrler.services.Repos.BorrowingRepository.MarkAsCheckedOut(id, body.Remarks, body.DueDate)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsCheckedOut"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsCheckedOut"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
 	borrowedBook, err := ctrler.services.Repos.BorrowingRepository.GetBorrowedBookById(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookByIdErr"))
 	}
 	routingKey := fmt.Sprintf("notify_client_%s", borrowedBook.Client.Id)
 	message := fmt.Sprintf(`You have successfully checked-out "%s"`, borrowedBook.Book.Title);
@@ -554,11 +553,11 @@ func (ctrler * Borrowing) handleCheckout(id string, ctx * gin.Context){
 		AccountId: borrowedBook.Client.Id,
 	})
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookByIdErr"))
 	}
 	err = ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBorrowedBookByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBorrowedBookByIdErr"))
 	}
 }
 

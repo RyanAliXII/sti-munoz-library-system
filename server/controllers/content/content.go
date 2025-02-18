@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
@@ -24,13 +24,13 @@ func NewContentController (services * services.Services)ContentController{
 func (ctrler * Content)UploadFile(ctx * gin.Context) {
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("Get file err"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("Get file err"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	}
 	path, err := ctrler.services.Repos.ContentRepository.UploadFile(file)
 	
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("Get file err"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("Get file err"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	}
 	s3Url := os.Getenv("S3_URL")

@@ -8,9 +8,8 @@ import (
 	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
@@ -24,7 +23,7 @@ type Penalty struct{
 }
 func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 	requestorApp := ctx.GetString("requestorApp")
-	if requestorApp == azuread.AdminAppClientId {
+	if requestorApp == ctrler.services.Config.AdminAppClientID {
 		filter := NewPenaltyFilter(ctx)
 		penalties, metadata, err := ctrler.services.Repos.PenaltyRepository.GetPenalties(&repository.PenaltyFilter{
 			From: filter.From,
@@ -37,7 +36,7 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 			Filter: filter.Filter,
 		})
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltiesErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetPenaltiesErr"))
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 				"penalties": penalties,
@@ -45,11 +44,11 @@ func (ctrler * Penalty) GetPenalties (ctx * gin.Context){
 		}, "penalties has been fetched."))
 		return
 	}
-	if requestorApp == azuread.ClientAppClientId{
+	if requestorApp == ctrler.services.Config.ClientAppClientID{
 		requestorId := ctx.GetString("requestorId")
 		penalties, err := ctrler.services.Repos.PenaltyRepository.GetPenaltiesByAccountId(requestorId)
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltiesByAccountId"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetPenaltiesByAccountId"))
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"penalties": penalties,
@@ -68,7 +67,7 @@ func (ctrler * Penalty)UpdatePenaltySettlement(ctx *gin.Context){
 	if isUpdate == "true"{
 		err := ctrler.services.Repos.PenaltyRepository.UpdateSettlement(penaltyId, body.Proof, body.Remarks)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("UpdateSettlement"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateSettlement"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
@@ -76,13 +75,13 @@ func (ctrler * Penalty)UpdatePenaltySettlement(ctx *gin.Context){
 		return
 	}
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("BindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("BindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
 	err = ctrler.services.Repos.PenaltyRepository.MarkAsSettled(penaltyId, body.Proof, body.Remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("	MarkAsSettled"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("	MarkAsSettled"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -99,7 +98,7 @@ func (ctrler * Penalty)AddPenalty(ctx * gin.Context){
 	}
 	dbPenalty, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyById(id)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Success200(nil, "Penalty has been added."))
 		return 
 	}
@@ -111,11 +110,11 @@ func (ctrler * Penalty)AddPenalty(ctx * gin.Context){
 		Link: "/penalties",
 	})
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	err = ctrler.services.Broadcaster.Broadcast("notification", routingKey, []byte(message))
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(nil, "Penalty has been added."))
 }
@@ -136,11 +135,11 @@ func(ctrler * Penalty)GetBill(ctx * gin.Context){
 		Check if request comes from client application and validate by 
 		checking if user is trying to fetch his/her own bill
 	*/
-	if requestorApp == azuread.ClientAppClientId {
+	if requestorApp == ctrler.services.Config.ClientAppClientID{
 		accountId := ctx.GetString("requestorId")
 		_, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyByIdAndAccountId(id, accountId)
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltyByIdAndAccountIdErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetPenaltyByIdAndAccountIdErr"))
 			if err == sql.ErrNoRows {
 				ctx.Data(http.StatusNotFound, "application/pdf", []byte{})
 				return
@@ -151,7 +150,7 @@ func(ctrler * Penalty)GetBill(ctx * gin.Context){
 	}
 	browser, err := browser.NewBrowser()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewBrowserErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NewBrowserErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
@@ -160,13 +159,13 @@ func(ctrler * Penalty)GetBill(ctx * gin.Context){
 	defer browser.ReturnPageToPool(page)
 	err = page.Navigate(url)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NavigateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NavigateErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
 	err = page.WaitLoad()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("waitLoadErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
@@ -176,14 +175,14 @@ func(ctrler * Penalty)GetBill(ctx * gin.Context){
 		
 	})
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("PDFError"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("PDFError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
 	var buffer bytes.Buffer
 	_, err = buffer.ReadFrom(pdf)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
@@ -203,13 +202,13 @@ func(ctrler * Penalty)ExportPenalties(ctx * gin.Context){
 	if fileType == ".csv"{
 		data, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyCSVData(repoFilter)
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetPenaltyCSVData"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetPenaltyCSVData"))
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
 		bytes, err := ctrler.services.PenaltyExport.ExportCSV(data)
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportCSVErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("ExportCSVErr"))
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
@@ -219,13 +218,13 @@ func(ctrler * Penalty)ExportPenalties(ctx * gin.Context){
 	if fileType == ".xlsx"{
 		data, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyExcelData(repoFilter)
 		if err != nil{
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("GetExcelData"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetExcelData"))
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
 		bytes, err := ctrler.services.PenaltyExport.ExportExcel(data)
 		if err != nil {
-			ctrler.services.Logger.Error(err.Error(), slimlog.Error("ExportExcelErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("ExportExcelErr"))
 			ctx.Data(http.StatusInternalServerError, "", []byte{})
 			return
 		}
@@ -238,23 +237,23 @@ func (ctrler * Penalty)GetProofOfPaymentUrl(ctx * gin.Context){
 	penalty, err :=  ctrler.services.Repos.PenaltyRepository.GetPenaltyById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			logger.Warn("Penalty not found while trying to get proof of payment ", slimlog.Error("GetProofOfPayment"))
+			ctrler.services.Logger.Warn("Penalty not found while trying to get proof of payment ", applog.Error("GetProofOfPayment"))
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 			return 
 		}
-		logger.Error(err.Error(), slimlog.Error("GetPenaltyById"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetPenaltyById"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
 	if(len(penalty.Proof) == 0){
-		logger.Warn("No payment proof is attached.", slimlog.Error("GetProofOfPayment"))
+		ctrler.services.Logger.Warn("No payment proof is attached.", applog.Error("GetProofOfPayment"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
 	bucket := os.Getenv("S3_DEFAULT_BUCKET")
 	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(penalty.Proof, bucket)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GenerateRequestUrl"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GenerateRequestUrl"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}

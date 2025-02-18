@@ -2,18 +2,15 @@ package postgresdb
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
 )
-
-var logger = slimlog.GetInstance()
 func createConnection(config * configmanager.Config) *sqlx.DB {
-	logger.Info("Connecting to Postgres database.")
+	log.Println("Connecting to PostgreSQL Server")
 	var driver = config.PostgreSQL.Driver
 	var host = config.PostgreSQL.Host
 	var port = config.PostgreSQL.Port
@@ -28,7 +25,7 @@ func createConnection(config * configmanager.Config) *sqlx.DB {
 
 		tempConnection, connectErr := sqlx.Connect(driver, connectionString)
 		if connectErr != nil {
-			logger.Warn(connectErr.Error(), zap.String("nextAction", "Will Attempt to reconnect to Postgres Database."))
+			log.Printf("Error: %s, NextAction: Attempt to reconnect.", connectErr.Error())
 			lastErr = connectErr
 			time.Sleep(time.Second * 2)
 			continue
@@ -38,10 +35,10 @@ func createConnection(config * configmanager.Config) *sqlx.DB {
 		break
 	}
 	if lastErr != nil {
-		logger.Error(lastErr.Error(), slimlog.Error("Failed to connect to postgres database."))
+
 		panic(lastErr.Error())
 	}
-	logger.Info("Successfully connected to Postgres database.")
+	log.Println("Successfully connected to PostgreSQL Server.")
 	return connection
 }
 func New(config * configmanager.Config) *sqlx.DB {

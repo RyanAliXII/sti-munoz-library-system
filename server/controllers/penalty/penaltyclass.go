@@ -2,7 +2,7 @@ package penalty
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 )
@@ -11,13 +11,13 @@ func (ctrler * Penalty)NewClassfication(ctx * gin.Context){
 	class := model.PenaltyClassification{}
 	err := ctx.Bind(&class)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("binderr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("binderr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
 		return
 	}
 	fieldErrs, err := ctrler.services.Validator.PenaltyClassValidator.ValidateNew(&class)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("validateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("validateErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{
 			"errors" : fieldErrs,
 		}, "Validation error."))
@@ -25,7 +25,7 @@ func (ctrler * Penalty)NewClassfication(ctx * gin.Context){
 	}
 	err = ctrler.services.Repos.PenaltyRepository.NewPenaltyClassification(class)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewPenaltyClassErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NewPenaltyClassErr"))
 		ctx.JSON(httpresp.Fail500(nil, "NewPenaltyClassErr "))
 		return
 	}
@@ -34,7 +34,7 @@ func (ctrler * Penalty)NewClassfication(ctx * gin.Context){
 func (ctrler * Penalty)GetPenaltyClasses(ctx * gin.Context){
 	classes, err := ctrler.services.Repos.PenaltyRepository.GetPenaltyClassifications()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"penaltyClasses" : classes,
@@ -45,13 +45,13 @@ func (ctrler * Penalty)UpdatePenaltyClass(ctx * gin.Context) {
 	class := model.PenaltyClassification{}
 	err := ctx.Bind(&class)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("binderr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("binderr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
 		return
 	}
 	fieldErrs, err := ctrler.services.Validator.PenaltyClassValidator.ValidateUpdate(&class)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("validateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("validateErr"))
 		ctx.JSON(httpresp.Fail400(gin.H{
 			"errors" : fieldErrs,
 		}, "Validation error."))
@@ -61,7 +61,7 @@ func (ctrler * Penalty)UpdatePenaltyClass(ctx * gin.Context) {
 	class.Id = id
 	err = ctrler.services.Repos.PenaltyRepository.UpdatePenaltyClassification(class)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("UpdatePenaltyClassErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("UpdatePenaltyClassErr"))
 		ctx.JSON(httpresp.Fail500(nil, "UpdatePenaltyClassErr "))
 		return	
 	}
@@ -71,7 +71,7 @@ func (ctrler * Penalty)DeletePenaltyClass(ctx * gin.Context) {
 	id := ctx.Param("id")
 	err := ctrler.services.Repos.PenaltyRepository.DeletePenaltyClassification(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("deleteErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("deleteErr"))
 		ctx.JSON(httpresp.Fail500(nil, "DeletePenaltyClassErr "))
 		return
 	}

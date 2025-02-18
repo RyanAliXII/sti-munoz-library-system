@@ -2,8 +2,8 @@ package publisher
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
@@ -20,7 +20,7 @@ func (ctrler *Publisher) NewPublisher(ctx *gin.Context) {
 	ctx.ShouldBindBodyWith(&publisher, binding.JSON)
 	fieldErrs, err  := ctrler.services.Validator.PublisherValidator.ValidateNew(&publisher)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("new publisher validation"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("new publisher validation"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErrs}, "Validation error."))
 		return
 	}
@@ -40,7 +40,7 @@ func (ctrler *Publisher) GetPublishers(ctx *gin.Context) {
 		publishers := ctrler.services.Repos.PublisherRepository.Search(&filter)
 		metaData, metaErr := ctrler.services.Repos.RecordMetadataRepository.GetAccountSearchMetadata(&filter)
 		if metaErr != nil {
-			logger.Error(metaErr.Error(), slimlog.Error("account search metadata"))
+			ctrler.services.Logger.Error(metaErr.Error(), applog.Error("account search metadata"))
 			ctx.JSON(httpresp.Fail500(gin.H{
 				"message": "Unknown error occured",
 			}, "Invalid page number."))
@@ -72,7 +72,7 @@ func (ctrler *Publisher) UpdatePublisher(ctx *gin.Context) {
 	publisher.Id = id
 	fieldErrs, err  := ctrler.services.Validator.PublisherValidator.ValidateUpdate(&publisher)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("new publisher validation"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("new publisher validation"))
 		ctx.JSON(httpresp.Fail400(gin.H{"errors": fieldErrs}, "Validation error."))
 		return
 	}

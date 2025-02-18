@@ -9,6 +9,6 @@ import (
 func AuthorNumberRoutes(router *gin.RouterGroup, services * services.Services) {
 	controller := NewAuthorNumberController(services)
 	router.GET("/", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID),
 	controller.GetAuthorNumbers)
 }

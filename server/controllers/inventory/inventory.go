@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/go-rod/rod/lib/proto"
@@ -43,7 +43,7 @@ func (ctrler *Inventory) GetAuditedAccession(ctx *gin.Context) {
 	id := ctx.Param("id")
 	audited, err  :=ctrler.services.Repos.InventoryRepository.GetAuditedAccessionById(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAuditedAccessionByIdErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{"audits": audited}, "Accession fetched."))
 }
@@ -64,7 +64,7 @@ func (ctrler *Inventory)GenerateReport(ctx *gin.Context){
 	auditId := ctx.Param("id")
 	browser, err := browser.NewBrowser()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
@@ -73,13 +73,13 @@ func (ctrler *Inventory)GenerateReport(ctx *gin.Context){
 	defer browser.ReturnPageToPool(page)
 	err = page.Navigate(url)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NavigateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NavigateErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
 	err = page.WaitLoad()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("waitLoadErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
@@ -89,13 +89,13 @@ func (ctrler *Inventory)GenerateReport(ctx *gin.Context){
 		
 	})
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("PDFError"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("PDFError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 	}
 	var buffer bytes.Buffer
 	_, err = buffer.ReadFrom(pdf)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }
@@ -138,7 +138,7 @@ func (ctrler *Inventory) UpdateAudit(ctx *gin.Context) {
 	id := ctx.Param("id")
 	_, err := uuid.Parse(id)
 	if err != nil {
-		logger.Warn("Invalid UUID value", slimlog.Function("InventoryController.UpdateAudit"), zap.String("uuid", id))
+		ctrler.services.Logger.Warn("Invalid UUID value", applog.Function("InventoryController.UpdateAudit"), zap.String("uuid", id))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid id param."))
 		return
 	}
@@ -150,7 +150,7 @@ func (ctrler *Inventory) UpdateAudit(ctx *gin.Context) {
 	}
 	updatErr := ctrler.services.Repos.InventoryRepository.UpdateAudit(audit)
 	if updatErr != nil {
-		logger.Error(updatErr.Error(), slimlog.Function("InventoryController.UpdateAudit"), slimlog.Error("updateErr"))
+		ctrler.services.Logger.Error(updatErr.Error(), applog.Function("InventoryController.UpdateAudit"), applog.Error("updateErr"))
 		ctx.JSON(httpresp.Fail400(nil, updatErr.Error()))
 		return
 	}

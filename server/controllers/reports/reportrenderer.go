@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 )
@@ -31,62 +31,62 @@ func (ctrler  * Report)RenderReport(ctx * gin.Context){
 	
 	walkIns, err := ctrler.services.Repos.ReportRepository.GetWalkIns(reportBody.ClientStatsFrom, reportBody.ClientStatsTo, reportBody.ClientStatsFrequency)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	walkInsJSON, err  := json.Marshal(walkIns)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	clientStats, err := ctrler.services.Repos.ReportRepository.GetClientStats(reportBody.ClientStatsFrom, reportBody.ClientStatsTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	walkInsTable := generateClientWalkInsTable(walkIns)
 	
 	
 	borrowingReportData, err := ctrler.services.Repos.ReportRepository.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	borrowingData, err := ctrler.services.Repos.ReportRepository.GetBorrowingReportData(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	borrowedBooks, err :=ctrler.services.Repos.ReportRepository.GetBorrowedBooks(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	
 	borrowedSections, err :=ctrler.services.Repos.ReportRepository.GetBorrowedSection(reportBody.BorrowedBooksFrom, reportBody.BorrowedBooksTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 
 
 	gameLogData, err := ctrler.services.Repos.ReportRepository.GetGameLogsData(reportBody.GameStatsFrom, reportBody.GameStatsTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	gameLogJSON, err  := json.Marshal(gameLogData)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 
 	gameLogs, err := ctrler.services.Repos.ReportRepository.GetGameLogs(reportBody.GameStatsFrom, reportBody.GameStatsTo)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("gameLogsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("gameLogsErr"))
 	}
 	deviceLogsGrouped, err := ctrler.services.Repos.ReportRepository.GetDeviceLogsData(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	deviceLogsGroupedJSON, err  := json.Marshal(deviceLogsGrouped)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	deviceLogs, err := ctrler.services.Repos.ReportRepository.GetDeviceLogs(reportBody.DeviceStatsFrom, reportBody.DeviceStatsTo)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.HTML(http.StatusOK, "report/index", gin.H{
 		"reportData": borrowingReportData,
@@ -128,14 +128,14 @@ func (ctrler  * Report)RenderAuditReport(ctx * gin.Context){
 	auditId := ctx.Param("auditId")
 	found, err := ctrler.services.Repos.InventoryRepository.GetFoundBooksByAuditId(auditId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAuditedAccessionById"))
 	}
 	missing, err := ctrler.services.Repos.InventoryRepository.GetMissingBooksByAuditId(auditId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAuditedAccessionById"))
 	}
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAuditedAccessionById"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAuditedAccessionById"))
 	}
 	ctx.HTML(http.StatusOK, "report/audit/index", gin.H{
 		"foundBooks" : found,

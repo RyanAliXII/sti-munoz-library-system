@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -44,7 +44,7 @@ func (repo *Accession) GetAccessions(filter filter.Filter) []model.Accession {
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, filter.Limit, filter.Offset)
 	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessions"), slimlog.Error("selectAccessionErr"))
+		logger.Error(selectAccessionErr.Error(), applog.Function("BookRepository.GetAccessions"), applog.Error("selectAccessionErr"))
 		return accessions
 	}
 	return accessions
@@ -72,7 +72,7 @@ func (repo *Accession) SearchAccession(filter filter.Filter) []model.Accession {
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, filter.Keyword, filter.Limit, filter.Offset)
 	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.SearchAccessions"), slimlog.Error("searchAccessionErr"))
+		logger.Error(selectAccessionErr.Error(), applog.Function("BookRepository.SearchAccessions"), applog.Error("searchAccessionErr"))
 		return accessions
 	}
 	return accessions
@@ -96,7 +96,7 @@ func (repo *Accession) GetAccessionsByBookIdDontIgnoreWeeded(id string) []model.
 	`
 	selectAccessionErr := repo.db.Select(&accessions, query, id)
 	if selectAccessionErr != nil {
-		logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionsByBookIdDontIgnoreWeeded"), slimlog.Error("selectAccessionErr"))
+		logger.Error(selectAccessionErr.Error(), applog.Function("BookRepository.GetAccessionsByBookIdDontIgnoreWeeded"), applog.Error("selectAccessionErr"))
 		return accessions
 	}
 	return accessions
@@ -131,7 +131,7 @@ func (repo *Accession)WeedAccession(id string, remarks string) error{
 	  `
 	  selectAccessionErr := repo.db.Select(&accessions, query, id)
 	  if selectAccessionErr != nil {
-		  logger.Error(selectAccessionErr.Error(), slimlog.Function("BookRepository.GetAccessionByBookId"), slimlog.Error("selectAccessionErr"))
+		  logger.Error(selectAccessionErr.Error(), applog.Function("BookRepository.GetAccessionByBookId"), applog.Error("selectAccessionErr"))
 		  return accessions
 	  }
 	  return accessions

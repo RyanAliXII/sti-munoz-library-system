@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/accessionnumber"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/account"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/author"
@@ -38,7 +37,7 @@ import (
 
 func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	grp := router.Group("/api/1")
-	grp.Use(middlewares.ValidateToken)
+	grp.Use(services.TokenValidator.ValidateToken)
 	author.AuthorRoutes(grp.Group("/authors"), services)
 	publisher.PublisherRoutes(grp.Group("/publishers"), services)
 	section.SectionRoutes(grp.Group("/sections"), services)

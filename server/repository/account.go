@@ -11,7 +11,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jaevor/go-nanoid"
 
@@ -163,7 +163,7 @@ func (repo *Account) GetAccount(filter * filter.Filter) []model.Account {
 
 	selectErr := repo.db.Select(&accounts, query, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("Account.GetAccounts"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("Account.GetAccounts"), applog.Error("selectErr"))
 	}
 	return accounts
 }
@@ -256,19 +256,19 @@ func (repo *Account) NewAccounts(accounts *[]model.Account) error {
 				"given_name": goqu.L("EXCLUDED.given_name"), "email": goqu.L("EXCLUDED.email")}))
 	query, args, toQueryErr := accountDs.ToSQL()
 	if toQueryErr != nil {
-		logger.Error(toQueryErr.Error(), slimlog.Function("Account.NewAccounts"))
+		logger.Error(toQueryErr.Error(), applog.Function("Account.NewAccounts"))
 		return toQueryErr
 	}
 
 	insertResult, insertErr := repo.db.Exec(query, args...)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("Account.NewAccounts"))
+		logger.Error(insertErr.Error(), applog.Function("Account.NewAccounts"))
 		
 		return insertErr
 	}
 	accountsInserted, _ := insertResult.RowsAffected()
 
-	logger.Info("New accounts created.", slimlog.AffectedRows(accountsInserted))
+	logger.Info("New accounts created.", applog.AffectedRows(accountsInserted))
 
 	return nil
 }
@@ -282,15 +282,15 @@ func (repo *Account) VerifyAndUpdateAccount(account model.Account) error {
 			_, insertErr := repo.db.Exec("Insert into system.account(id, display_name, email, surname, given_name) VALUES ($1, $2, $3, $4, $5)",
 				account.Id, account.DisplayName, account.Email, account.Surname, account.GivenName)
 			if insertErr != nil {
-				logger.Error(insertErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("insertErr"))
+				logger.Error(insertErr.Error(), applog.Function("Account.VerifyAndUpdateAccount"), applog.Error("insertErr"))
 				return insertErr
 			}
-			logger.Info("Inserting user account.", zap.String("accountId", account.Id), slimlog.Function("Account.VerifyAndUpdateAccount"))
+			logger.Info("Inserting user account.", zap.String("accountId", account.Id), applog.Function("Account.VerifyAndUpdateAccount"))
 			
 			return nil
 		}
 	
-		logger.Error(getErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), applog.Function("Account.VerifyAndUpdateAccount"), applog.Error("getErr"))
 		return getErr
 	}
 	OneMonth := time.Hour * 730
@@ -300,11 +300,11 @@ func (repo *Account) VerifyAndUpdateAccount(account model.Account) error {
 			_, updateErr := repo.db.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
 				account.DisplayName, account.Email, account.Surname, account.GivenName, account.Id)
 			if updateErr != nil {
-				logger.Error(updateErr.Error(), slimlog.Function("Account.VerifyAndUpdateAccount"), slimlog.Error("updateErr"))
+				logger.Error(updateErr.Error(), applog.Function("Account.VerifyAndUpdateAccount"), applog.Error("updateErr"))
 				
 				return updateErr
 			}
-			logger.Info("Updating user account.", zap.String("accountId", registeredAccount.Id), slimlog.Function("Account.VerifyAndUpdateAccount"))
+			logger.Info("Updating user account.", zap.String("accountId", registeredAccount.Id), applog.Function("Account.VerifyAndUpdateAccount"))
 		}
 
 	}
@@ -321,7 +321,7 @@ func (repo *Account) GetRoleByAccountId(accountId string) (model.Role, error) {
 
 	getErr := repo.db.Get(&role, query, accountId)
 	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("Account.GetRoleByAccountId"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), applog.Function("Account.GetRoleByAccountId"), applog.Error("getErr"))
 	}
 	return role, getErr
 }
@@ -341,7 +341,7 @@ func(repo * Account) GetAccountsWithAssignedRoles()model.AccountRoles{
 
 	selectErr := repo.db.Select(&accountRoles, query)
 	if selectErr != nil{
-		logger.Error(selectErr.Error(), slimlog.Function("Account.GetRoles"), slimlog.Error("getErr"))
+		logger.Error(selectErr.Error(), applog.Function("Account.GetRoles"), applog.Error("getErr"))
 		
 	}
 	return accountRoles

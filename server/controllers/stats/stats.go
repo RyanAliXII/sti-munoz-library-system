@@ -14,19 +14,19 @@ func (ctrler *Stats) GetLibraryStats(ctx *gin.Context) {
 	stats := ctrler.services.Repos.StatsRepository.GetLibraryStats()
 	weeklyWalkIns, err := ctrler.services.Repos.StatsRepository.GetWeeklyLogs()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	monthlyWalkIns, err :=  ctrler.services.Repos.StatsRepository.GetMonthlyLogs()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	weeklyBorrowedSection, err :=ctrler.services.Repos.StatsRepository.GetWeeklyBorrowedSection()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	monthlyBorrowedSection, err := ctrler.services.Repos.StatsRepository.GetMonthlyBorrowedSection()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 
 	stats.MonthlyWalkIns = monthlyWalkIns

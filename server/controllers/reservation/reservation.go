@@ -5,8 +5,7 @@ import (
 	"strconv"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
@@ -33,23 +32,23 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 	reservation := model.Reservation{}
 	err := ctx.ShouldBindBodyWith(&reservation, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
 	reservation.AccountId = ctx.GetString("requestorId")
 	err = ctrler.services.Repos.ReservationRepository.NewReservation(reservation)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewReservationErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NewReservationErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 	account, err  := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(reservation.AccountId)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	message := fmt.Sprintf("%s %s has reserved a device.", account.GivenName, account.Surname)
 	accountIds, err := ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification{
@@ -58,13 +57,13 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 		
 	}, "Reservation.Read")
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	for _, accountId := range accountIds{
 		routingKey := fmt.Sprintf("notify_admin_%s",  accountId)
 		err := ctrler.services.Broadcaster.Broadcast("notification",  routingKey, []byte(message))
 		if err != nil{
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 		}
 	}
 	
@@ -73,11 +72,11 @@ func(ctrler  * Reservation)NewReservation(ctx * gin.Context){
 func (ctrler * Reservation)GetReservations(ctx * gin.Context){
    
 	requestorApp := ctx.GetString("requestorApp")
-	if requestorApp == azuread.ClientAppClientId{
+	if requestorApp == ctrler.services.Config.ClientAppClientID{
 		accountId := ctx.GetString("requestorId")
 		reservations, err :=ctrler.services.Repos.ReservationRepository.GetReservationsByClientId(accountId)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetReservationsErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetReservationsErr"))
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"reservations": reservations,
@@ -96,7 +95,7 @@ func (ctrler * Reservation)GetReservations(ctx * gin.Context){
 		Filter: filter.Filter,
 	})
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetReservationsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetReservationsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"reservations": reservations,
@@ -107,13 +106,13 @@ func (ctrler * Reservation)UpdateStatus(ctx * gin.Context){
 	id := ctx.Param("id")
 	statusId, err  := strconv.Atoi(ctx.Query("statusId"))
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("convErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("convErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 
 	requestorApp := ctx.GetString("requestorApp")
-	if requestorApp == azuread.ClientAppClientId{
+	if requestorApp == ctrler.services.Config.ClientAppClientID{
 		ctrler.handleUpdateStatusRequestFromClient(ctx, id)
 		return
 	}
@@ -138,13 +137,13 @@ func(ctrler * Reservation)handleEditRemarks(ctx * gin.Context, id string) {
 	body := CancellationBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("editRemarksErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("editRemarksErr"))
 		ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
 		return
 	}
 	err = ctrler.services.Repos.ReservationRepository.UpdateRemarks(id, body.Remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("EditRemarksErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("EditRemarksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -154,19 +153,19 @@ func(ctrler * Reservation)handleUpdateStatusRequestFromClient(ctx * gin.Context,
 	body := CancellationBody{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("CancellationErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("CancellationErr"))
 		ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
 		return
 	}
 	err = body.Validate()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("validateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("validateErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 	}
 	accountId := ctx.GetString("requestorId")
 	err = ctrler.services.Repos.ReservationRepository.CancelReservationByClientAndId(id, accountId, body.Remarks)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("CancelErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("CancelErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -175,7 +174,7 @@ func(ctrler * Reservation)handleUpdateStatusRequestFromClient(ctx * gin.Context,
 func (ctrler * Reservation)handleMarkAsAttended(ctx * gin.Context, id string){
 	err := ctrler.services.Repos.ReservationRepository.MarkAsAttended(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsAttendedErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsAttendedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -184,7 +183,7 @@ func (ctrler * Reservation)handleMarkAsAttended(ctx * gin.Context, id string){
 func (ctrler * Reservation)handleMarkAsMissed(ctx * gin.Context, id string){
 	err := ctrler.services.Repos.ReservationRepository.MarkAsMissed(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("MarkAsMissedErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAsMissedErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -194,13 +193,13 @@ func (ctrler * Reservation)handleCancellation(ctx * gin.Context, id string){
 		body := CancellationBody{}
 		err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("CancellationErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("CancellationErr"))
 			ctx.JSON(httpresp.Success200(nil, "Reservation repo"))
 			return
 		}
 		err = ctrler.services.Repos.ReservationRepository.CancelReservation(id, body.Remarks)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("CancelErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("CancelErr"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return
 		}

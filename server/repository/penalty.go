@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -245,13 +245,13 @@ func (repo *Penalty)UpdatePenaltySettlement(id string, isSettle bool) error{
 	if(isSettle){
 		_,settleErr := repo.db.Exec(settleQuery, id)
 		if settleErr != nil {
-			logger.Error(settleErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenaltySettlement") , slimlog.Error("settleErr"))
+			logger.Error(settleErr.Error(), applog.Function("PenaltyRepository.UpdatePenaltySettlement") , applog.Error("settleErr"))
 			return settleErr
 		}
 	}else{
 		_,unSettleErr := repo.db.Exec(unSettleQuery, id)
         if unSettleErr!= nil {
-            logger.Error(unSettleErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenaltySettlement"), slimlog.Error("unSettleErr"))
+            logger.Error(unSettleErr.Error(), applog.Function("PenaltyRepository.UpdatePenaltySettlement"), applog.Error("unSettleErr"))
             return unSettleErr
         }
 	}
@@ -271,7 +271,7 @@ func (repo *Penalty)MarkAsSettled(id string, fileHeader * multipart.FileHeader, 
 	}
 	canonicID, nanoIdErr := nanoid.Standard(21)
 	if nanoIdErr != nil {
-		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("nanoIdErr"))
+		logger.Error(nanoIdErr.Error(), applog.Function("BookRepository.UploadBookCover"), applog.Error("nanoIdErr"))
 		return nanoIdErr
 	}
 	proof, err := fileHeader.Open()
@@ -315,7 +315,7 @@ func (repo *Penalty)UpdateSettlement(id string, fileHeader * multipart.FileHeade
 	}
 	canonicID, nanoIdErr := nanoid.Standard(21)
 	if nanoIdErr != nil {
-		logger.Error(nanoIdErr.Error(), slimlog.Function("BookRepository.UploadBookCover"), slimlog.Error("nanoIdErr"))
+		logger.Error(nanoIdErr.Error(), applog.Function("BookRepository.UploadBookCover"), applog.Error("nanoIdErr"))
 		return nanoIdErr
 	}
 	proof, err := fileHeader.Open()
@@ -353,14 +353,14 @@ func (repo *Penalty) AddPenalty(penalty model.Penalty ) (string, error) {
 		query = `INSERT INTO borrowing.penalty (account_id, item, class_id) VALUES ($1, $2, $3) RETURNING id`
 		insertErr := repo.db.Get(&id,query, penalty.AccountId, penalty.Item, penalty.ClassId)
 		if insertErr != nil {
-			logger.Error(insertErr.Error(), slimlog.Function("PenaltyRepository.AddPenalty"), slimlog.Error("inserErr"))
+			logger.Error(insertErr.Error(), applog.Function("PenaltyRepository.AddPenalty"), applog.Error("inserErr"))
 			return id, insertErr
 		}
 		return id, nil
 	}
     insertErr := repo.db.Get(&id,query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Item)
     if insertErr != nil {
-        logger.Error(insertErr.Error(), slimlog.Function("PenaltyRepository.AddPenalty"), slimlog.Error("inserErr"))
+        logger.Error(insertErr.Error(), applog.Function("PenaltyRepository.AddPenalty"), applog.Error("inserErr"))
         return id, insertErr
     }
 	
@@ -375,14 +375,14 @@ func (repo *Penalty)UpdatePenalty(penalty model.Penalty) error {
 		UPDATE borrowing.penalty SET description = $1, account_id = $2, amount = $3, item = $4, class_id= $5  where id = $6`
 		_,updateErr := repo.db.Exec(query, "", penalty.AccountId, 0, penalty.Item,penalty.ClassId, penalty.Id )
 		if updateErr != nil {
-			logger.Error(updateErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenalty"), slimlog.Error("updateErr"))
+			logger.Error(updateErr.Error(), applog.Function("PenaltyRepository.UpdatePenalty"), applog.Error("updateErr"))
 			return updateErr
 		}
 		return nil
 	}
     _,updateErr := repo.db.Exec(query, penalty.Description, penalty.AccountId, penalty.Amount, penalty.Item, penalty.Id)
     if updateErr != nil {
-        logger.Error(updateErr.Error(), slimlog.Function("PenaltyRepository.UpdatePenalty"), slimlog.Error("updateErr"))
+        logger.Error(updateErr.Error(), applog.Function("PenaltyRepository.UpdatePenalty"), applog.Error("updateErr"))
         return updateErr
     }
 	return nil

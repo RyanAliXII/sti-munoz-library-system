@@ -2,7 +2,7 @@ package game
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -34,13 +34,13 @@ func (ctrler * Game)NewGame(ctx * gin.Context) {
 	game := model.Game{}
 	err := ctx.ShouldBindBodyWith(&game, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.GameRepository.NewGame(game)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -53,14 +53,14 @@ func (ctrler * Game)UpdateGame(ctx * gin.Context){
 	game := model.Game{}
 	err := ctx.ShouldBindBodyWith(&game, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	game.Id = id
 	err =  ctrler.services.Repos.GameRepository.UpdateGame(game)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -80,7 +80,7 @@ func (ctrler * Game)DeleteGame(ctx * gin.Context){
 func (ctrler * Game)GetGames(ctx * gin.Context){
 	games, err :=  ctrler.services.Repos.GameRepository.GetGames()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetGamesErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetGamesErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"games": games,

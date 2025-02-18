@@ -5,8 +5,7 @@ import (
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -36,11 +35,11 @@ func (ctrler * BorrowingQueue) Queue(ctx * gin.Context) {
 	app := ctx.GetString("requestorApp")
 	err := ctx.ShouldBindBodyWith(&queueBody, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured"))
 		return
 	}
-	if app == azuread.ClientAppClientId{
+	if app == ctrler.services.Config.ClientAppClientID{
 		ctrler.handleClientQueue(ctx, &queueBody)
 		return
 	}
@@ -51,13 +50,13 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 	body.AccountId = accountId
 	err := ctrler.services.Repos.BorrowingQueueRepository.Queue(*body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("QueueErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("QueueErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
 	account, err := ctrler.services.Repos.AccountRepository.GetAccountByIdDontIgnoreIfDeletedOrInactive(accountId)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	} 
 	message := fmt.Sprintf("%s %s has place a hold on a book.", account.GivenName, account.Surname)
 	accountIds, err :=  ctrler.services.Repos.NotificationRepository.NotifyAdminsWithPermission(model.AdminNotification	{
@@ -65,7 +64,7 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 		Link: "/borrowing/queues",
 	}, "Queue.Read")
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	} 
 	for _, accountId := range accountIds {
 		routingKey := fmt.Sprintf("notify_admin_%s", accountId)
@@ -75,12 +74,12 @@ func(ctrler * BorrowingQueue) handleClientQueue (ctx * gin.Context, body * model
 }
 func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {
 	app := ctx.GetString("requestorApp")
-	if app == azuread.ClientAppClientId{
+	if app == ctrler.services.Config.ClientAppClientID{
 		ctrler.handleGetClientActiveQueues(ctx)
 		return
 	}
 
-	if(app == azuread.AdminAppClientId){
+	if(app == ctrler.services.Config.AdminAppClientID){
 		ctrler.getActiveQueuesGroupByBook(ctx)
 		return
 	}
@@ -89,7 +88,7 @@ func (ctrler * BorrowingQueue)GetActiveQueues(ctx * gin.Context) {
 func(ctrler * BorrowingQueue)getActiveQueuesGroupByBook(ctx * gin.Context) {
 	queues, err := ctrler.services.Repos.BorrowingQueueRepository.GetActiveQueuesGroupByBook()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -102,7 +101,7 @@ func(ctrler * BorrowingQueue)DequeueByBookId(ctx * gin.Context) {
 	id := ctx.Param("id")
 	err := ctrler.services.Repos.BorrowingQueueRepository.DequeueByBookId(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DequeueByBookId"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DequeueByBookId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -113,7 +112,7 @@ func (ctrler * BorrowingQueue )handleGetClientActiveQueues(ctx * gin.Context)  {
 	accountId := ctx.GetString("requestorId")
 	queues, err := ctrler.services.Repos.BorrowingQueueRepository.GetClientActiveQueueItems(accountId)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetClientActiveQueues"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetClientActiveQueues"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return 
 	}
@@ -126,7 +125,7 @@ func (ctrler * BorrowingQueue)GetQueueItemsByBookId(ctx * gin.Context) {
 	id := ctx.Param("id")
 	items, err := ctrler.services.Repos.BorrowingQueueRepository.GetQueueItemsByBookId(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetQueueItemsByBookIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetQueueItemsByBookIdErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return 
 	}
@@ -139,11 +138,11 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 	body :=  UpdateQueueItemsModel{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 	}
 	err = ctrler.services.Repos.BorrowingQueueRepository.UpdateQueueItems(body.Items)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("UpdateQueueItemsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateQueueItemsErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -153,13 +152,13 @@ func (ctrler * BorrowingQueue)UpdateQueueItems(ctx * gin.Context) {
 func (ctrler * BorrowingQueue)DequeueItem(ctx * gin.Context) {
 	id := ctx.Param("id")
 	requestorApp := ctx.GetString("requestorApp")
-	if requestorApp == azuread.ClientAppClientId {
+	if requestorApp == ctrler.services.Config.ClientAppClientID{
 		ctrler.handleClientDequeueing(ctx, id)
 		return 
 	}
 	err := ctrler.services.Repos.BorrowingQueueRepository.DequeueItem(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DequeueItem"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DequeueItem"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -169,7 +168,7 @@ func(ctrler * BorrowingQueue)handleClientDequeueing(ctx * gin.Context, id string
 	accountId := ctx.GetString("requestorId")
 	err := ctrler.services.Repos.BorrowingQueueRepository.DequeueItemByIdAndAccountId(id,accountId )
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DequeueItemByIdAndAccountId"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DequeueItemByIdAndAccountId"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -178,14 +177,14 @@ func(ctrler * BorrowingQueue)handleClientDequeueing(ctx * gin.Context, id string
 
 func (ctrler * BorrowingQueue)GetInactiveQueueItems(ctx * gin.Context){
 	app := ctx.GetString("requestorApp")
-	if app == azuread.ClientAppClientId{
+	if app == ctrler.services.Config.ClientAppClientID{
 		ctrler.handleGetClientInactiveQueues(ctx)
 		return
 	}
 
 	items, err := ctrler.services.Repos.BorrowingQueueRepository.GetInactiveQueues()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetInactiveItemsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetInactiveItemsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"inactiveItems": items,
@@ -196,7 +195,7 @@ func (ctrler * BorrowingQueue)handleGetClientInactiveQueues(ctx * gin.Context) {
 	accountId := ctx.GetString("requestorId")
 	items, err := ctrler.services.Repos.BorrowingQueueRepository.GetClientInactiveQueues(accountId)
 	if err != nil {
-			logger.Error(err.Error(), slimlog.Error("GetClientInactiveQueuesErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("GetClientInactiveQueuesErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"inactiveItems": items,

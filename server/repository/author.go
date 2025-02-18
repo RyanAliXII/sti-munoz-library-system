@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/jmoiron/sqlx"
@@ -28,7 +28,7 @@ func (repo *Author) New(author model.Author) (model.Author, error) {
 	 newAuthor := model.Author{}
 	 insertErr := repo.db.Get(&newAuthor, "INSERT INTO catalog.author(name)VALUES($1) RETURNING id, name",author.Name)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function(NEW_AUTHOR))
+		logger.Error(insertErr.Error(), applog.Function(NEW_AUTHOR))
 	}
 	return newAuthor, insertErr
 }
@@ -37,7 +37,7 @@ func (repo *Author) Get(filter * filter.Filter) ([]model.Author) {
 
 	selectErr := repo.db.Select(&authors, "SELECT id, name FROM catalog.author where deleted_at IS NULL ORDER BY created_at DESC LIMIT  $1 OFFSET $2", filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function(GET_AUTHORS), applog.Error("selectErr"))
 	}
 	return authors
 }
@@ -45,23 +45,23 @@ func (repo *Author) Search(filter * filter.Filter) ([]model.Author) {
 	authors := make([]model.Author, 0)
 	selectErr := repo.db.Select(&authors, "SELECT id, name FROM catalog.author where deleted_at IS NULL AND name ILIKE '%' || $1 || '%'  ORDER BY created_at DESC LIMIT  $2 OFFSET $3", filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHORS), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function(GET_AUTHORS), applog.Error("selectErr"))
 	}
 	return authors
 }
 func (repo *Author) Delete(id string) error {
 	deleteStmt, prepareErr := repo.db.Preparex("UPDATE catalog.author SET deleted_at = now() where id=$1")
 	if prepareErr != nil {
-		logger.Error(prepareErr.Error(), zap.String("authorId", id), slimlog.Function(DELETE_AUTHOR), slimlog.Error("prepareErr"))
+		logger.Error(prepareErr.Error(), zap.String("authorId", id), applog.Function(DELETE_AUTHOR), applog.Error("prepareErr"))
 		return prepareErr
 	}
 	deleteResult, deleteErr := deleteStmt.Exec(id)
 	affected, getAffectedErr := deleteResult.RowsAffected()
 	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
-		logger.Warn(getAffectedErr.Error(), zap.String("authorId", id), slimlog.Function(DELETE_AUTHOR))
+		logger.Warn(getAffectedErr.Error(), zap.String("authorId", id), applog.Function(DELETE_AUTHOR))
 	}
-	logger.Info("model.Author deleted", zap.String("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(DELETE_AUTHOR))
+	logger.Info("model.Author deleted", zap.String("authorId", id), applog.AffectedRows(affected), applog.Function(DELETE_AUTHOR))
 	return deleteErr
 }
 func (repo *Author) GetAuthoredBook(bookId string) []model.Author {
@@ -75,7 +75,7 @@ func (repo *Author) GetAuthoredBook(bookId string) []model.Author {
 	`
 	selectErr := repo.db.Select(&authors, query, bookId)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("AuthorRepository.GetBookById"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("AuthorRepository.GetBookById"), applog.Error("selectErr"))
 	}
 	return authors
 }
@@ -83,20 +83,20 @@ func (repo *Author) Update(id string, author model.Author) error {
 
 	updateStmt, prepareErr := repo.db.Preparex("Update catalog.author SET name = $1 where id = $2")
 	if prepareErr != nil {
-		logger.Error(prepareErr.Error(), zap.String("authorId", id), slimlog.Function(UPDATE_AUTHOR), slimlog.Error("prepareErr"))
+		logger.Error(prepareErr.Error(), zap.String("authorId", id), applog.Function(UPDATE_AUTHOR), applog.Error("prepareErr"))
 		return prepareErr
 	}
 	updateResult, updateErr := updateStmt.Exec(author.Name, id)
 	if updateErr != nil {
-		logger.Error(updateErr.Error(), zap.String("authorId", id), slimlog.Function(UPDATE_AUTHOR), slimlog.Error("updateErr"))
+		logger.Error(updateErr.Error(), zap.String("authorId", id), applog.Function(UPDATE_AUTHOR), applog.Error("updateErr"))
 		return updateErr
 	}
 	affected, getAffectedErr := updateResult.RowsAffected()
 	const SINGLE_RESULT = 1
 	if getAffectedErr != nil || affected > SINGLE_RESULT {
-		logger.Warn(getAffectedErr.Error(), zap.String("authordId", id), slimlog.Function(UPDATE_AUTHOR))
+		logger.Warn(getAffectedErr.Error(), zap.String("authordId", id), applog.Function(UPDATE_AUTHOR))
 	}
-	logger.Info("model.Author updated", zap.String("authorId", id), slimlog.AffectedRows(affected), slimlog.Function(UPDATE_AUTHOR))
+	logger.Info("model.Author updated", zap.String("authorId", id), applog.AffectedRows(affected), applog.Function(UPDATE_AUTHOR))
 	return updateErr
 }
 

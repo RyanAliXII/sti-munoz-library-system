@@ -9,5 +9,5 @@ import (
 
 func ContentRoutes(router * gin.RouterGroup, services * services.Services){
 	ctrler := NewContentController(services)
-	router.POST("",middlewares.BlockRequestFromClientApp, ctrler.UploadFile)
+	router.POST("",middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), ctrler.UploadFile)
 }

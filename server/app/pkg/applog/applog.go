@@ -1,17 +1,12 @@
-package slimlog
+package applog
 
 import (
-	"sync"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var logger *zap.Logger
-var once sync.Once
 
 func BuildLogger() *zap.Logger {
-	
 	cfg := zap.Config{
 		Encoding:         "json",
 		Level:            zap.NewAtomicLevel(),
@@ -33,10 +28,8 @@ func BuildLogger() *zap.Logger {
 	return logger
 
 }
-func GetInstance() *zap.Logger {
-	once.Do(func() {
-		logger = BuildLogger()
-	})
+func New() *zap.Logger {
+	var logger = BuildLogger()
 	return logger
 }
 func Function(name string) zapcore.Field {

@@ -2,7 +2,7 @@ package system
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -17,13 +17,13 @@ func (ctrler * System)UpdateAppSettings(ctx * gin.Context){
 	settings := model.SettingsValue{}
 	err := ctx.ShouldBindBodyWith(&settings, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("UpdateAppSettingsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateAppSettingsErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.SettingsRepository.UpdateSettings(settings)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("UpdateAppSettingsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateAppSettingsErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 	}
 	ctx.JSON(httpresp.Success200(nil, "App settings updated."))

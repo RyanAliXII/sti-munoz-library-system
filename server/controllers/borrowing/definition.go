@@ -59,12 +59,9 @@ type BorrowingRequestFilter struct {
 }
 func NewBorrowingRequestFilter(ctx * gin.Context) *BorrowingRequestFilter{
 	filter := &BorrowingRequestFilter{}
-	err := ctx.BindQuery(&filter)
-	if err != nil {
-		logger.Error(err.Error())
-	}
+	ctx.BindQuery(&filter)
 	filter.Filter.ExtractFilter(ctx)
-	_, err  = time.Parse(time.DateOnly, filter.From)
+	_, err  := time.Parse(time.DateOnly, filter.From)
 	if err != nil {
 		filter.From = ""
 		filter.To = ""

@@ -4,8 +4,7 @@ import (
 	"net/http"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
@@ -22,13 +21,13 @@ func (ctrler *Book) NewBook(ctx *gin.Context) {
 	var book = model.Book{}
 	err := ctx.ShouldBindBodyWith(&book, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
 		return 
 	}
 	errorDesc, hasExisting, err := book.ValidateIfAccessionExistsOrDuplicate()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
 		return 
 	}
@@ -55,10 +54,10 @@ func (ctrler *Book) NewBook(ctx *gin.Context) {
 func (ctrler * Book) HandleGetBooks(ctx * gin.Context) {
 	requestorApp := ctx.GetString("requestorApp")
 	switch(requestorApp){
-		case azuread.AdminAppClientId:
+		case ctrler.services.Config.AdminAppClientID:
 			ctrler.getBooksAdmin(ctx)
 			return
-		case azuread.ClientAppClientId:
+		case ctrler.services.Config.ClientAppClientID:
 			ctrler.getBooksClient(ctx)
 			return
 		default:
@@ -71,7 +70,7 @@ func (ctrler *Book) getBooksAdmin(ctx *gin.Context) {
 	f := NewBookFilter(ctx)
 	err := ctx.ShouldBindQuery(&f)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	books, metadata := ctrler.services.Repos.BookRepository.Get(&repository.BookFilter{
 		 Filter: f.Filter,
@@ -91,7 +90,7 @@ func (ctrler *Book) getBooksClient(ctx *gin.Context) {
 	f := NewBookFilter(ctx)
 	err := ctx.ShouldBindQuery(&f)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	books, metadata := ctrler.services.Repos.BookRepository.GetClientBookView(&repository.BookFilter{
 		Filter: f.Filter,
@@ -110,10 +109,10 @@ func (ctrler *Book) getBooksClient(ctx *gin.Context) {
 func (ctrler * Book) HandleGetById(ctx * gin.Context) {
 	requestorApp := ctx.GetString("requestorApp")
 	switch(requestorApp){
-		case azuread.AdminAppClientId:
+		case ctrler.services.Config.AdminAppClientID:
 			ctrler.getBookById(ctx)
 			return
-		case azuread.ClientAppClientId:
+		case ctrler.services.Config.ClientAppClientID:
 			ctrler.getBookByIdOnClientView(ctx)
 			return
 		default:
@@ -153,7 +152,7 @@ func (ctrler *Book) getBookByIdOnClientView(ctx *gin.Context) {
 	}
 	bookStatus, err  := ctrler.services.Repos.BorrowingRepository.GetBookStatusBasedOnClient(id, accountId )
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetBookStatusBasedOnClient"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetBookStatusBasedOnClient"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}
@@ -166,7 +165,7 @@ func (ctrler *Book) UpdateBook(ctx *gin.Context) {
 	body := model.Book{}
 	err := ctx.ShouldBindBodyWith(&body, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Invalid body."))
 		return 
 	}
@@ -181,7 +180,7 @@ func(ctrler * Book)DeleteBook(ctx * gin.Context) {
 	id := ctx.Param("id")
 	err := ctrler.services.Repos.BookRepository.Delete(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DeleteBookErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DeleteBookErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 	}
 	ctx.JSON(httpresp.Success200(nil, "Book deleted."))

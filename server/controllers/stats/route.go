@@ -8,5 +8,5 @@ import (
 
 func StatsRoutes (router * gin.RouterGroup, services * services.Services){
 	ctrler := NewStatsController(services)
-	router.GET("/", middlewares.BlockRequestFromClientApp, ctrler.GetLibraryStats)
+	router.GET("/", middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID), ctrler.GetLibraryStats)
 }

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/gin-gonic/gin"
@@ -65,7 +65,7 @@ func (ctrler *Book) ImportBooks(ctx * gin.Context) {
 
 	if fileErr != nil {
 		file.Close()
-		logger.Error(fileErr.Error(), slimlog.Function("BookController.ImportBooks"), slimlog.Error("fileErr"))
+		ctrler.services.Logger.Error(fileErr.Error(), applog.Function("BookController.ImportBooks"), applog.Error("fileErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -84,7 +84,7 @@ func (ctrler *Book) ImportBooks(ctx * gin.Context) {
 	}
 	_, err = file.Seek(0,0)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("seekErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("seekErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -92,7 +92,7 @@ func (ctrler *Book) ImportBooks(ctx * gin.Context) {
 	bytesFile, toBytesErr := io.ReadAll(file)
 
 	if toBytesErr != nil {
-		logger.Error(toBytesErr.Error(), slimlog.Function("BookController.ImportBook"), slimlog.Error("toBytesErr"))
+		ctrler.services.Logger.Error(toBytesErr.Error(), applog.Function("BookController.ImportBook"), applog.Error("toBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -121,7 +121,7 @@ func (ctrler *Book) ImportBooks(ctx * gin.Context) {
 			}, "Invalid CSV structure or format."))
 			return
 		} 
-		logger.Error(parseErr.Error(), slimlog.Function("BookController.ImportBook"), slimlog.Error("parseErr"))
+		ctrler.services.Logger.Error(parseErr.Error(), applog.Function("BookController.ImportBook"), applog.Error("parseErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -139,7 +139,7 @@ func (ctrler *Book) ImportBooks(ctx * gin.Context) {
 			}, "Duplicate error"))
 			return 
 		}
-		logger.Error(err.Error(), slimlog.Error("ImportBooksErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ImportBooksErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured"))
 		return
 	}

@@ -107,8 +107,8 @@ func LoadConfig() *Config {
 		ClientAppClientID: os.Getenv("CLIENT_APP_CLIENT_ID"),
 		ClientAppTenantID: os.Getenv("CLIENT_APP_TENANT_ID"),
 		ClientAppID:       os.Getenv("CLIENT_APP_ID"),
-		APIAppID:          os.Getenv("API_APP_ID"),
-		APIAppTenantID:    os.Getenv("API_APP_TENANT_ID"),
-		APIAppClientID:    os.Getenv("API_APP_CLIENT_ID"),
+		APIAppID:          os.Getenv("APP_ID"),
+		APIAppTenantID:    os.Getenv("TENANT_ID"),
+		APIAppClientID:    os.Getenv("CLIENT_ID"),
 	}
 }

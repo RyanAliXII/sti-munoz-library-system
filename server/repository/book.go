@@ -7,7 +7,7 @@ import (
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -60,7 +60,7 @@ func (repo *Book) New(book model.Book) (string, error) {
 	book.Id = id
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), applog.Function("BookRepository.New"), applog.Error("transactErr"))
 		return book.Id, transactErr
 	}
 
@@ -72,7 +72,7 @@ func (repo *Book) New(book model.Book) (string, error) {
 		book.Section.Id, book.Publisher.Id, book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.Id, book.AuthorNumber, book.DDC, book.Subject)
 	if insertBookErr != nil {
 		transaction.Rollback()
-		logger.Error(insertBookErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertBookErr"))
+		logger.Error(insertBookErr.Error(), applog.Function("BookRepository.New"), applog.Error("insertBookErr"))
 		return book.Id, insertBookErr
 	}
 
@@ -96,14 +96,14 @@ func (repo *Book) New(book model.Book) (string, error) {
 
 	if insertAccessionErr != nil {
 		transaction.Rollback()
-		logger.Error(insertAccessionErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertAccessionErr"))
+		logger.Error(insertAccessionErr.Error(), applog.Function("BookRepository.New"), applog.Error("insertAccessionErr"))
 		return book.Id, insertAccessionErr
 	}
 
 	insertedBookRows, _ := insertBookResult.RowsAffected()
 	insertedAccessionRows, _ := insertAccessionResult.RowsAffected()
-	logger.Info("Added new book.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedBookRows))
-	logger.Info("model.Accession added.", slimlog.Function("BookRepository.New"), slimlog.AffectedRows(insertedAccessionRows))
+	logger.Info("Added new book.", applog.Function("BookRepository.New"), applog.AffectedRows(insertedBookRows))
+	logger.Info("model.Accession added.", applog.Function("BookRepository.New"), applog.AffectedRows(insertedAccessionRows))
 
 	if len(book.Authors) > 0 {
 		rows := make([]goqu.Record, 0)
@@ -116,7 +116,7 @@ func (repo *Book) New(book model.Book) (string, error) {
 		_, insertAuthorErr := transaction.Exec(query, args...)
 		if insertAuthorErr != nil {
 			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("error at insert people"))
+			logger.Error(insertAuthorErr.Error(), applog.Function("BookRepository.New"), applog.Error("error at insert people"))
 			return book.Id, insertAuthorErr
 		}
 	}
@@ -130,7 +130,7 @@ func (repo *Book) New(book model.Book) (string, error) {
 		_, insertTagsErr:= transaction.Exec(query, args...)
 		if insertTagsErr != nil {
 			transaction.Rollback()
-			logger.Error(insertTagsErr.Error(), slimlog.Function("BookRepository.New"), slimlog.Error("insertTagsErr"))
+			logger.Error(insertTagsErr.Error(), applog.Function("BookRepository.New"), applog.Error("insertTagsErr"))
 			return book.Id, insertTagsErr
 		}
 	}
@@ -182,7 +182,7 @@ func (repo *Book) Get(filter * BookFilter) ([]model.Book, Metadata) {
 	}
 	selectErr := repo.db.Select(&books, query, args...)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.Get"), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), applog.Function("BookRepostory.Get"), applog.Error("SelectErr"))
 	}
 	ds, err  = repo.buildBookMetadataQuery(filter)
 	if err != nil {
@@ -308,7 +308,7 @@ func (repo *Book) GetClientBookView(filter * BookFilter) ([]model.Book, Metadata
 	}
 	selectErr := repo.db.Select(&books, query, args...)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetClientBookView"), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), applog.Function("BookRepostory.GetClientBookView"), applog.Error("SelectErr"))
 	}
 
 	ds, err  = repo.buildClientBookMetadataQuery(filter)
@@ -345,7 +345,7 @@ func (repo *Book) GetOne(id string) model.Book {
 	where id = $1 ORDER BY created_at DESC`
 	selectErr := repo.db.Get(&book, query, id)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOne"), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), applog.Function("BookRepostory.GetOne"), applog.Error("SelectErr"))
 	}
 	return book
 }
@@ -370,7 +370,7 @@ func (repo *Book) GetOneOnClientView(id string) model.Book {
 	where id = $1 ORDER BY created_at DESC`
 	selectErr := repo.db.Get(&book, query, id)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepostory.GetOneOnClientView"), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), applog.Function("BookRepostory.GetOneOnClientView"), applog.Error("SelectErr"))
 	}
 	return book
 }
@@ -384,7 +384,7 @@ func (repo *Book) Update(book model.Book) error {
 	dialect := goqu.Dialect("postgres")
 	if transactErr != nil {
 		transaction.Rollback()
-		logger.Error(transactErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), applog.Function("BookRepository.Update"), applog.Error("transactErr"))
 		return transactErr
 	}
 
@@ -396,7 +396,7 @@ func (repo *Book) Update(book model.Book) error {
 		book.CostPrice, book.Edition, book.YearPublished, book.ReceivedAt, book.AuthorNumber, book.DDC, book.Subject, book.Id)
 	if updateErr != nil {
 		transaction.Rollback()
-		logger.Error(updateErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("updateErr"))
+		logger.Error(updateErr.Error(), applog.Function("BookRepository.Update"), applog.Error("updateErr"))
 		return updateErr
 	}
 	_, deleteAuthorErr:= transaction.Exec("DELETE FROM catalog.book_author where book_id = $1", book.Id)
@@ -404,13 +404,13 @@ func (repo *Book) Update(book model.Book) error {
 	if deleteAuthorErr != nil{
 		transaction.Rollback()
 		deleteErr := errors.New("a problem has been encountered while deleting authors")
-		logger.Error(deleteErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("deleteErr"))
+		logger.Error(deleteErr.Error(), applog.Function("BookRepository.Update"), applog.Error("deleteErr"))
 		return deleteErr
 	}
 	_, deleteSearchTagsErr := transaction.Exec("DELETE FROM catalog.search_tag where book_id = $1 ", book.Id)
 	if deleteSearchTagsErr != nil {
 		transaction.Rollback()
-		logger.Error(deleteSearchTagsErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("deleteErr"))
+		logger.Error(deleteSearchTagsErr.Error(), applog.Function("BookRepository.Update"), applog.Error("deleteErr"))
 		return deleteSearchTagsErr
 	}
 	if len(book.Authors) > 0 {
@@ -425,7 +425,7 @@ func (repo *Book) Update(book model.Book) error {
 		_, insertAuthorErr := transaction.Exec(query, args...)
 		if insertAuthorErr != nil {
 			transaction.Rollback()
-			logger.Error(insertAuthorErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertAuthorErr"))
+			logger.Error(insertAuthorErr.Error(), applog.Function("BookRepository.Update"), applog.Error("insertAuthorErr"))
 			return insertAuthorErr
 		}
 	}
@@ -439,13 +439,13 @@ func (repo *Book) Update(book model.Book) error {
 		_, insertTagsErr:= transaction.Exec(query, args...)
 		if insertTagsErr != nil {
 			transaction.Rollback()
-			logger.Error(insertTagsErr.Error(), slimlog.Function("BookRepository.Update"), slimlog.Error("insertTagsErr"))
+			logger.Error(insertTagsErr.Error(), applog.Function("BookRepository.Update"), applog.Error("insertTagsErr"))
 			return insertTagsErr
 		}
 	}
 	
 	updatedBookRows, _ := updateResult.RowsAffected()
-	logger.Info("Book updated.", slimlog.AffectedRows(updatedBookRows))
+	logger.Info("Book updated.", applog.AffectedRows(updatedBookRows))
 
 	transaction.Commit()
 	return nil
@@ -478,7 +478,7 @@ func (repo *Book) SearchClientView(filter filter.Filter) []model.Book {
 	`
 	selectErr := repo.db.Select(&books, query, filter.Keyword, filter.Limit, filter.Offset)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("BookRepository.Search"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("BookRepository.Search"), applog.Error("selectErr"))
 	}
 	return books
 }

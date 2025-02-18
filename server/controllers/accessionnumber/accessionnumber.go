@@ -2,7 +2,7 @@ package accessionnumber
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,7 @@ func NewAccessionNumberController (services * services.Services) AccessionNumber
 func(ctrler * AccessionNumber)GetAccessionNumbers(ctx * gin.Context){
 	accessionNumbers, err := ctrler.services.Repos.AccessionNumberRepository.Get()
 	if err != nil {
-		ctrler.services.Logger.Info(err.Error(), slimlog.Error("AccessionNumberController.GetAccessioNumbers"))
+		ctrler.services.Logger.Info(err.Error(), applog.Error("AccessionNumberController.GetAccessioNumbers"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"accessionNumbers": accessionNumbers,
@@ -37,13 +37,13 @@ func(ctrler * AccessionNumber)UpdateAccessionNumber(ctx * gin.Context){
 	accessionNumber.Accession = accession
 	err := ctx.ShouldBindBodyWith(&accessionNumber, binding.JSON)
 	if err != nil {
-		ctrler.services.Logger.Error(err.Error(), slimlog.Error("AccessionNumberController.UpdateAccessionNumber"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("AccessionNumberController.UpdateAccessionNumber"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
 	err = ctrler.services.Repos.AccessionNumberRepository.Update(accessionNumber)
 	if err != nil {
-		ctrler.services.Logger.Error(err.Error(), slimlog.Error("AccessionNumberController.UpdateAccessionNumber"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("AccessionNumberController.UpdateAccessionNumber"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}

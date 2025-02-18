@@ -21,12 +21,9 @@ type ClientLogFilter struct {
 
 func NewFilter(ctx * gin.Context) *ClientLogFilter {
 	filter := ClientLogFilter{}
-	err := ctx.BindQuery(&filter)
-	if err != nil {
-		logger.Error(err.Error())
-	}
+	ctx.BindQuery(&filter)
 	filter.Filter.ExtractFilter(ctx)
-	_, err  = time.Parse(time.DateOnly, filter.From)
+	_, err  := time.Parse(time.DateOnly, filter.From)
 	if err != nil {
 		filter.From = ""
 		filter.To = ""

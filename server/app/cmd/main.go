@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/loadtmpl/funcmap"
@@ -16,8 +15,8 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/realtime"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -25,7 +24,7 @@ import (
 )
 
 func main() {
-	var logger *zap.Logger = slimlog.GetInstance()
+	var logger *zap.Logger = applog.New()
 	var config = configmanager.LoadConfig();
 	browser, err  := browser.NewBrowser()
 	if err != nil {
@@ -51,27 +50,30 @@ func main() {
 	rabbitmq := rabbitmq.New(config)
 	defer rabbitmq.Connection.Close()
 	fileStorage := services.GetOrCreateS3FileStorage()
-	azuread.GetOrCreateJwksInstance()
+	
 	var postgresPermissionStore = permissionstore.NewPostgresPermissionStore(db)
 	var permissionStore = permissionstore.New(postgresPermissionStore)
-	jwks := azuread.GetOrCreateJwksInstance()
+	jwks := services.NewJWKS(*config)
 	defer jwks.EndBackground()
-	r.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": "STI MUNOZ LIBRARY",
-		})
-	})
+
 	services := services.BuildServices(&services.ServicesDependency{
 		Db: db,
 		RabbitMQ: rabbitmq,
 		FileStorage: fileStorage,
-		ConfigManager: config,
+		Config: config,
 		PermissionStore: permissionStore,
+		Logger: logger,
+		Jwks: jwks,
 	});
 	realtime.RealtimeRoutes(r.Group("/rt"), &services)
 	controllers.RegisterAPIV1(r, &services)
 	controllers.Register(r, &services);
 	logger.Info("Server starting")
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "STI MUNOZ LIBRARY",
+		})
+	})
     r.Run(":5200")
 }
 

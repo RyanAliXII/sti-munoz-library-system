@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/repository"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
@@ -36,7 +36,7 @@ func (ctrler *Account) GetAccounts(ctx *gin.Context) {
 			Filter: accountFilter.Filter,
 		})
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("SearchAccountsError"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("SearchAccountsError"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
@@ -56,7 +56,7 @@ func (ctrler *Account) GetAccounts(ctx *gin.Context) {
 	})
 	
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAccountsError"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAccountsError"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
@@ -102,7 +102,7 @@ func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 	}
 	file, fileErr := fileHeader.Open()
 	if fileErr != nil {
-		logger.Error(fileErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("fileErr"))
+		ctrler.services.Logger.Error(fileErr.Error(), applog.Function("AccountController.ImportAccount"), applog.Error("fileErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -123,21 +123,21 @@ func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 	}
 	_, err = file.Seek(0, 0)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("SeekingErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("SeekingErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknowne error occured."))
 		return 
 	}
 	const ExpectedFileExtension = ".csv"
 	fileExtension := filepath.Ext(fileHeader.Filename)
 	if(fileExtension != ExpectedFileExtension){
-		logger.Error("File is not csv.", slimlog.Function("AccountController.ImportAccount"), slimlog.Error("WrongFileExtensionErr"))
+		ctrler.services.Logger.Error("File is not csv.", applog.Function("AccountController.ImportAccount"), applog.Error("WrongFileExtensionErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	bytesFile, toBytesErr := io.ReadAll(file)
 	var accounts []model.Account = make([]model.Account, 0)
 	if toBytesErr != nil {
-		logger.Error(toBytesErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("toBytesErr"))
+		ctrler.services.Logger.Error(toBytesErr.Error(), applog.Function("AccountController.ImportAccount"), applog.Error("toBytesErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -146,7 +146,7 @@ func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 	})
 	parseErr := gocsv.UnmarshalBytes(bytesFile, &accounts)
 	if parseErr != nil {
-		logger.Error(parseErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("parseErr"))
+		ctrler.services.Logger.Error(parseErr.Error(), applog.Function("AccountController.ImportAccount"), applog.Error("parseErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -154,14 +154,14 @@ func (ctrler *Account) ImportAccount(ctx *gin.Context) {
 		Accounts: accounts,
 	})
 	if validateErr != nil {
-		logger.Error(validateErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("validateErr"))
+		ctrler.services.Logger.Error(validateErr.Error(), applog.Function("AccountController.ImportAccount"), applog.Error("validateErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	newAccountsErr := ctrler.services.Repos.AccountRepository.NewAccounts(&accounts)
 	
 	if newAccountsErr != nil {
-		logger.Error(newAccountsErr.Error(), slimlog.Function("AccountController.ImportAccount"), slimlog.Error("newAccountsErr"))
+		ctrler.services.Logger.Error(newAccountsErr.Error(), applog.Function("AccountController.ImportAccount"), applog.Error("newAccountsErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
@@ -178,7 +178,7 @@ func (ctrler *Account)GetAccountById(ctx * gin.Context){
 
 	account, err := ctrler.services.Repos.AccountRepository.GetAccountById(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("GetAccountByIdErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAccountByIdErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -191,14 +191,14 @@ func (ctrler *Account)UpdateProfilePicture(ctx * gin.Context){
 		profilePicture := ProfilePictureBody{}
 		err := ctx.Bind(&profilePicture)
 		if err != nil {
-			logger.Error(err.Error(), slimlog.Error("bindErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 			return 
 		}
 		id := ctx.GetString("requestorId")
 		err =ctrler.services.Repos.AccountRepository.UpdateProfilePictureById(id, profilePicture.Image)
 		if err != nil{
-			logger.Error(err.Error(), slimlog.Error("UpdateProfilePictureError"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateProfilePictureError"))
 			ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 			return 
 		}
@@ -208,13 +208,13 @@ func (ctrler *Account)UpdateProfilePicture(ctx * gin.Context){
 // 	body := SelectedAccountIdsBody{}
 // 	err := ctx.Bind(&body)
 // 	if err != nil {
-// 		logger.Error(err.Error(), slimlog.Error("bindErr"))
+// 		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 // 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 // 		return
 // 	}
 // 	err = ctrler.accountRepository.ActivateAccounts(body.AccountIds)
 // 	if err != nil {
-// 		logger.Error(err.Error(), slimlog.Error("MarkAccountsAsActive"))
+// 		ctrler.services.Logger.Error(err.Error(), applog.Error("MarkAccountsAsActive"))
 // 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 // 		return
 // 	}
@@ -226,13 +226,13 @@ func (ctrler *Account)DisableAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
 	err := ctx.Bind(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.AccountRepository.DisableAccounts(body.AccountIds)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DisableAccounts"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DisableAccounts"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -243,13 +243,13 @@ func (ctrler *Account)DeleteAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
 	err := ctx.Bind(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.AccountRepository.DeleteAccounts(body.AccountIds)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("DeleteAccounts"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("DeleteAccounts"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -261,13 +261,13 @@ func (ctrler *Account)RestoreAccounts(ctx * gin.Context) {
 	body := SelectedAccountIdsBody{}
 	err := ctx.Bind(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.AccountRepository.RestoreAccounts(body.AccountIds)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("RestoreAccounts"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("RestoreAccounts"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -278,7 +278,7 @@ func (ctrler *Account)GetAccountStats(ctx * gin.Context) {
 	requestorId := ctx.GetString("requestorId")
 	stats, err :=ctrler.services.Repos.AccountRepository.GetAccountStatsById(requestorId)
 	if err != nil{
-		logger.Error(err.Error(), slimlog.Error("getStatsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("getStatsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"stats": stats,

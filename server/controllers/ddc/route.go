@@ -9,6 +9,6 @@ import (
 func DDCRoutes(router *gin.RouterGroup, services * services.Services) {
 	controller := NewDDCController(services)
 	router.GET("/", 
-	middlewares.BlockRequestFromClientApp,
+	middlewares.BlockRequestFromClientApp(services.Config.AdminAppClientID),
 	controller.GetDDC)
 }

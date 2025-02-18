@@ -2,7 +2,7 @@ package scanner
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,7 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	fieldsErr, err := ctrler.services.Validator.ScannerAcountValidator.ValidateUsernameIfTaken(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ValidateUsernameIfTaken"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ValidateUsernameIfTaken"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
 		return
 	}
@@ -37,14 +37,14 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("hashingErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("hashingErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
 		return
 	}
 	body.Password = string(hashedPassword)
 	err =  ctrler.services.Repos.ScannerAccount.NewAccount(body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NewAccountErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NewAccountErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
 		return
 	}
@@ -54,7 +54,7 @@ func(ctrler * ScannerAccount) NewAccount(ctx * gin.Context ){
 func(ctrler * ScannerAccount) GeAccounts(ctx * gin.Context ){
 	accounts, err := ctrler.services.Repos.ScannerAccount.GetAccounts()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("getAccountsErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("getAccountsErr"))
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"scannerAccounts": accounts, 
@@ -68,7 +68,7 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 	ctx.ShouldBindBodyWith(&body, binding.JSON)
 	fieldsErr, err := ctrler.services.Validator.ScannerAcountValidator.ValidateUsernameIfTakenOnUpdate(&body)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("ValidateUsernameIfTaken"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("ValidateUsernameIfTaken"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
 		return
 	}
@@ -82,7 +82,7 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 	if(len(body.Password) > 0) {
 		hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 		if hashErr != nil {
-			logger.Error(err.Error(), slimlog.Error("hashingErr"))
+			ctrler.services.Logger.Error(err.Error(), applog.Error("hashingErr"))
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
 			return
 		}
@@ -92,7 +92,7 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 		err = ctrler.services.Repos.ScannerAccount.UpdateAccount(body)
 	}
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("UpdateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("UpdateErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
 		return
 	}
@@ -103,7 +103,7 @@ func(ctrler  *ScannerAccount)DeleteAccount(ctx * gin.Context) {
 	id := ctx.Param("id")
 	err := ctrler.services.Repos.ScannerAccount.DeleteAccountById(id)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("deleteErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("deleteErr"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error ocurred."))
 		return
 	}

@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/browser"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -38,7 +38,7 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 	u, err := url.Parse("http://localhost:5200/renderer/reports")
 	query  := u.Query()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	
 	query.Set("clientStatsEnabled", strconv.FormatBool(body.ClientStatistics.Enabled))
@@ -56,10 +56,10 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 	query.Set("deviceStatsTo", body.DeviceStatistics.To)
 	cfg := query.Encode()
 	u.RawQuery = cfg
-	logger.Info("Generating reports", zap.String("config",cfg))
+	ctrler.services.Logger.Info("Generating reports", zap.String("config",cfg))
     browser, err := browser.NewBrowser()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 		ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
 		return
 	}
@@ -67,13 +67,13 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 	defer browser.ReturnPageToPool(page)
 	err = page.Navigate(u.String())
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("NavigateErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("NavigateErr"))
 		ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
 		return
 	}
 	err = page.WaitLoad()
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("waitLoadErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("waitLoadErr"))
 		ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
 		return
 	}
@@ -83,13 +83,13 @@ func(ctrler * Report)NewReport(ctx * gin.Context){
 		
 	})
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("PDFError"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("PDFError"))
 		ctx.Data(http.StatusInternalServerError, "application/pdf", []byte{})
 	}
 	var buffer bytes.Buffer
 	_, err = buffer.ReadFrom(pdf)
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.Data(http.StatusOK, "application/pdf", buffer.Bytes())
 }

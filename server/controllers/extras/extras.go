@@ -2,7 +2,7 @@ package extras
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
@@ -30,13 +30,13 @@ func (ctrler * Extras)UpdateFAQsPage(ctx  * gin.Context){
 
 	err := ctx.ShouldBindBodyWith(&content, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.ExtrasRepository.UpdateFAQsContent(content)
 	if err != nil{ 
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -46,7 +46,7 @@ func (ctrler * Extras)UpdateFAQsPage(ctx  * gin.Context){
 func (ctrler * Extras)GetFAQsContent(ctx  * gin.Context){
 	content, err := ctrler.services.Repos.ExtrasRepository.GetFAQsContent()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"content": content,
@@ -58,13 +58,13 @@ func (ctrler * Extras)UpdatePolicyPage(ctx  * gin.Context){
 
 	err := ctx.ShouldBindBodyWith(&content, binding.JSON)
 	if err != nil {
-		logger.Error(err.Error(), slimlog.Error("bindErr"))
+		ctrler.services.Logger.Error(err.Error(), applog.Error("bindErr"))
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return
 	}
 	err = ctrler.services.Repos.ExtrasRepository.UpdatePolicyContent(content)
 	if err != nil{ 
-		logger.Error(err.Error(), slimlog.Error(err.Error()))
+		ctrler.services.Logger.Error(err.Error(), applog.Error(err.Error()))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -74,7 +74,7 @@ func (ctrler * Extras)UpdatePolicyPage(ctx  * gin.Context){
 func (ctrler * Extras)GetPolicyContent(ctx  * gin.Context){
 	content, err := ctrler.services.Repos.ExtrasRepository.GetPolicyContent()
 	if err != nil {
-		logger.Error(err.Error())
+		ctrler.services.Logger.Error(err.Error())
 	}
 	ctx.JSON(httpresp.Success200(gin.H{
 		"content": content,

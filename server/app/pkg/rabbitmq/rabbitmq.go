@@ -2,13 +2,12 @@ package rabbitmq
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"go.uber.org/zap"
 )
 
 
@@ -16,7 +15,7 @@ type RabbitMQ struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 }
-var logger = slimlog.GetInstance()
+
 func createConnection(config * configmanager.Config) *RabbitMQ {
 	var connection *amqp.Connection
 	var channel *amqp.Channel
@@ -24,17 +23,17 @@ func createConnection(config * configmanager.Config) *RabbitMQ {
 	const retries = 10
 	var connectionString = fmt.Sprintf("amqp://%s:%s@%s:%s", config.RabbitMQ.User, config.RabbitMQ.Password, config.RabbitMQ.Host, config.RabbitMQ.Port)
 	for i := 0; i < retries; i++ {
-		logger.Info("Connecting to RabbitMQ")
+		log.Println("Connecting to RabbitMQ")
 		tempConnection, connectionErr := amqp.Dial(connectionString)
 		if connectionErr != nil {
-			logger.Warn(connectionErr.Error(), zap.String("nextAction", "Will attempt to redial RabbitMQ."))
+			log.Printf("Error: %s, NextAction: Attempt to reconnect.", connectionErr.Error())
 			lastError = connectionErr
 			time.Sleep(time.Second * 2)
 			continue
 		}
 		tempChannel, channelErr := tempConnection.Channel()
 		if channelErr != nil {
-			logger.Warn(channelErr.Error(), zap.String("nextAction", "Will attempt to redial RabbitMQ."))
+			log.Printf("Error: %s, NextAction: Attempt to reconnect channel.", channelErr.Error())
 			lastError = channelErr
 			time.Sleep(time.Second * 2)
 			continue
@@ -46,10 +45,10 @@ func createConnection(config * configmanager.Config) *RabbitMQ {
 	}
 
 	if lastError != nil {
-		logger.Error(lastError.Error(), slimlog.Error("Failed to dial RabbitMQ."))
+		log.Println(lastError.Error())
 		panic(lastError.Error())
 	}
-	logger.Info("Successfully connected to RabbitMQ.")
+	log.Println("Successfully connected to RabbitMQ.")
 	return &RabbitMQ{
 		Connection: connection,
 		Channel:    channel,

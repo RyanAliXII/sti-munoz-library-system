@@ -70,7 +70,6 @@ type ReturnBook struct {
 	HasAdditionaPenalty bool `json:"hasAdditionalPenalty"`
 	PenaltyDescription string `json:"penaltyDescription"`
 	PenaltyAmount float64 `json:"penaltyAmount"`
-	Model
 }
 
 type BorrowedBookExport struct {
@@ -93,7 +92,13 @@ func (m * ReturnBook)Validate() (validation.Errors, error){
 		fieldRules = append(fieldRules, validation.Field(&m.PenaltyDescription, validation.Required.Error("Description is required.")))
 		fieldRules = append(fieldRules, validation.Field(&m.PenaltyAmount, validation.Required.Error("Amount is required."), validation.Min(float64(0)).Error("Amount cannot be less than or equal 0")))
 	}
-
-	return m.Model.Validate(m, fieldRules...)
+	err := validation.ValidateStruct(m, fieldRules...)
+	if err != nil {
+		validationErrors, isValidationErr := err.(validation.Errors)
+		if isValidationErr {
+			return validationErrors, err
+		}
+	}
+	return validation.Errors{}, nil
 }
 

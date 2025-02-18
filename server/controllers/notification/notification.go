@@ -2,7 +2,6 @@ package notification
 
 import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
 	"github.com/gin-gonic/gin"
 )
@@ -24,20 +23,20 @@ func NewNotificationController(services * services.Services) NotificationControl
 func (ctrler *Notification) GetNotifications(ctx * gin.Context){
 	accountId := ctx.GetString("requestorId")
 	app := ctx.GetString("requestorApp")
-	if app == azuread.AdminAppClientId{
+	if app == ctrler.services.Config.AdminAppClientID{
 		notifications, err := ctrler.services.Repos.NotificationRepository.GetAdminNotificationByAccountId(accountId)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"notifications": notifications,
 		}, "Notifications fetched."))
 		return
 	}
-	if app == azuread.ClientAppClientId{
+	if app == ctrler.services.Config.ClientAppClientID{
 		notifications, err :=ctrler.services.Repos.NotificationRepository.GetClientNotificationByAccountId(accountId)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 		}
 		ctx.JSON(httpresp.Success200(gin.H{
 			"notifications": notifications,
@@ -51,18 +50,18 @@ func (ctrler *Notification) GetNotifications(ctx * gin.Context){
 func (ctrler * Notification)MarkAsRead(ctx * gin.Context) {
 	accountId := ctx.GetString("requestorId")
 	app := ctx.GetString("requestorApp")
-	if app == azuread.AdminAppClientId{
+	if app == ctrler.services.Config.AdminAppClientID{
 		err := ctrler.services.Repos.NotificationRepository.MarkAdminNotificationsAsRead(accountId)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 		}
 		ctx.JSON(httpresp.Success200(gin.H{}, "Notifications read."))
 		return
 	}
-	if app == azuread.ClientAppClientId{
+	if app == ctrler.services.Config.ClientAppClientID{
 	 err := ctrler.services.Repos.NotificationRepository.MarkClientNotificationsAsRead(accountId)
 		if err != nil {
-			logger.Error(err.Error())
+			ctrler.services.Logger.Error(err.Error())
 		}
 		ctx.JSON(httpresp.Success200(nil, "Notifications read."))
 		return
