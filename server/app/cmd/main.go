@@ -49,8 +49,7 @@ func main() {
 	defer db.Close()
 	rabbitmq := rabbitmq.New(config)
 	defer rabbitmq.Connection.Close()
-	fileStorage := services.GetOrCreateS3FileStorage()
-	
+	fileStorage := services.NewS3FileStorge(config)
 	var postgresPermissionStore = permissionstore.NewPostgresPermissionStore(db)
 	var permissionStore = permissionstore.New(postgresPermissionStore)
 	jwks := services.NewJWKS(*config)

@@ -3,7 +3,6 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/MicahParks/keyfunc"
@@ -167,7 +166,7 @@ func(tv * TokenValidator) ValidateScannerToken(ctx * gin.Context){
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	secret := os.Getenv("JWT_SECRET")
+	secret := tv.config.JWTSecret
 	accessToken := authorizationHeader[1]
 
 	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
@@ -188,8 +187,8 @@ func(tv * TokenValidator) ValidateScannerToken(ctx * gin.Context){
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	} 
-	iss := os.Getenv("SERVER_URL")
-	aud := os.Getenv("SCANNER_APP_URL")
+	iss := tv.config.ServerURL;
+	aud := tv.config.ScannerAppURL;
 	isAudOk := claims.VerifyAudience(aud, true)
 	isIssuerOk := claims.VerifyIssuer(iss, true)
 	jti := claims["jti"].(string)

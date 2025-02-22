@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
@@ -250,7 +249,7 @@ func (ctrler * Penalty)GetProofOfPaymentUrl(ctx * gin.Context){
 		ctx.JSON(httpresp.Fail400(nil, "Unknown error occured."))
 		return 
 	}
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := ctrler.services.Config.AWS.DefaultBucket
 	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(penalty.Proof, bucket)
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error(), applog.Error("GenerateRequestUrl"))

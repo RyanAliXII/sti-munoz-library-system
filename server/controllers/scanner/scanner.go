@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -52,9 +51,9 @@ func(ctrler * Scanner) Login (ctx * gin.Context){
 	}
 	jti := uuid.NewString()
 
-	secret := os.Getenv("JWT_SECRET")
-	iss := os.Getenv("SERVER_URL")
-	aud := os.Getenv("SCANNER_APP_URL")
+	secret := ctrler.services.Config.JWTSecret
+	iss := ctrler.services.Config.ServerURL;
+	aud := ctrler.services.Config.ScannerAppURL
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss": iss,
 		"aud": aud,
@@ -95,7 +94,7 @@ func(ctrler * Scanner) IsAuth (ctx * gin.Context){
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	secret := os.Getenv("JWT_SECRET")
+	secret := ctrler.services.Config.JWTSecret
 	accessToken := authorizationHeader[1]
 
 	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
@@ -116,8 +115,8 @@ func(ctrler * Scanner) IsAuth (ctx * gin.Context){
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	} 
-	iss := os.Getenv("SERVER_URL")
-	aud := os.Getenv("SCANNER_APP_URL")
+	iss := ctrler.services.Config.ServerURL;
+	aud := ctrler.services.Config.ScannerAppURL;
 	isAudOk := claims.VerifyAudience(aud, true)
 	isIssuerOk := claims.VerifyIssuer(iss, true)
 	jti := claims["jti"].(string)

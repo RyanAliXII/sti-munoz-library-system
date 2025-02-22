@@ -58,11 +58,13 @@ func (ctrler *Book) UpdateBookCover(ctx *gin.Context) {
 	}
 	uploaded, deleted, err := ctrler.services.BookCoverService.UpdateBookCovers(body.BookId, body.Covers)
 	if err != nil {
+		ctrler.services.Logger.Error(err.Error(), applog.Function("UpdateBookCover"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return 
 	}
-	updateCoverErr := ctrler.services.Repos.BookRepository.UpdateCovers(body.BookId, uploaded, deleted)
-	if updateCoverErr != nil {
+	err = ctrler.services.Repos.BookRepository.UpdateCovers(body.BookId, uploaded, deleted)
+	if err != nil {
+		ctrler.services.Logger.Error(err.Error(), applog.Function("UpdateBookCover"))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}

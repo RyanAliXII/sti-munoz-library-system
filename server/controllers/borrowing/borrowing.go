@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -166,7 +165,7 @@ func (ctrler *Borrowing)GetEbookByBorrowedBookId(ctx * gin.Context){
 		ctrler.services.Logger.Error("Ebook not found")
 		ctx.JSON(httpresp.Fail404(nil, "Not found"))
 	}
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := ctrler.services.Config.AWS.DefaultBucket
 	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(borrowedBook.Book.Ebook, bucket)
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error())

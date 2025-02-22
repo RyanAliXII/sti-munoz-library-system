@@ -40,7 +40,6 @@ type ServicesDependency struct {
 	Jwks *keyfunc.JWKS
 }
 func BuildServices (deps * ServicesDependency) Services {
-
 	return Services{
 		Notification: NewNotificationService(deps.RabbitMQ, deps.Logger),
 		Repos: repository.New(deps.Db, deps.FileStorage),
@@ -49,8 +48,8 @@ func BuildServices (deps * ServicesDependency) Services {
 		Logger: deps.Logger,
 		Broadcaster: NewRabbitMQBroadcast(deps.RabbitMQ),
 		PenaltyExport: NewPenaltyExporter(),
-		FileStorage:  GetOrCreateS3FileStorage(),
-		BookCoverService: NewBookCoverService(s3FileStorage),
+		FileStorage:  deps.FileStorage,
+		BookCoverService: NewBookCoverService(deps.FileStorage),
 		PermissionValidator: middlewares.NewPermissionValidator(deps.PermissionStore, deps.Config),
 		TokenValidator: middlewares.NewTokenValidator(deps.Db, deps.Logger, deps.Jwks, deps.Config),
 		Validator: validator.NewValidator(deps.Db),

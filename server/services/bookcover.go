@@ -3,15 +3,16 @@ package services
 import (
 	"fmt"
 	"mime/multipart"
-	"os"
 	"path/filepath"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/jaevor/go-nanoid"
 )
 
 type BookCoverService struct{
 	storage  filestorage.FileStorage
+	config * configmanager.Config
 }
 func NewBookCoverService(fileStorage filestorage.FileStorage) BookCoverService{
 	return BookCoverService{
@@ -25,7 +26,7 @@ func(service * BookCoverService)NewCovers(bookId string, covers []*multipart.Fil
 		return result, err
 	}
 	
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := service.config.AWS.DefaultBucket
 	for _, cover := range covers {
 		extension := filepath.Ext(cover.Filename)
 		objectName := fmt.Sprintf("covers/%s/%s%s", bookId, canonicID(), extension)
@@ -53,7 +54,7 @@ func(service * BookCoverService)NewCovers(bookId string, covers []*multipart.Fil
 	return result, nil
 }	
 func(service * BookCoverService)DeleteCovers(keys []string) error{
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := service.config.AWS.DefaultBucket
 	for _, key := range keys{
 		err := service.storage.Delete(key, bucket)
 		if err != nil {
@@ -72,7 +73,7 @@ func(service *BookCoverService)UpdateBookCovers(bookId string,  covers []*multip
 		return uploaded, deleted, err
 	}
     
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := service.config.AWS.DefaultBucket
 	objectKeys, err := service.storage.ListFiles(path,  bucket)
 
 	if err != nil {
@@ -135,7 +136,7 @@ func(service *BookCoverService)UpdateBookCovers(bookId string,  covers []*multip
 }
 func(service * BookCoverService)DeleteCoversByBook(id string)error{
 	path := fmt.Sprintf("covers/%s/", id)
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := service.config.AWS.DefaultBucket
 	objects, err  := service.storage.ListFiles(path, bucket)
 	if err != nil {
 		return err

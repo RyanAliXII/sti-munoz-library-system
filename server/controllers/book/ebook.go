@@ -2,7 +2,6 @@ package book
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
@@ -19,7 +18,7 @@ func(ctrler *Book) GetEbookById(ctx * gin.Context){
 		ctx.JSON(httpresp.Success200(gin.H{"url":""}, "Url fetched."))
 		return
 	} 
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := ctrler.services.Config.AWS.DefaultBucket
 	url, err := ctrler.services.FileStorage.GenerateGetRequestUrl(book.Ebook, bucket)
 	if err != nil {
 	   ctrler.services.Logger.Error(err.Error(), applog.Error("GeEbookByIdErr"))
@@ -36,7 +35,7 @@ func(ctrler *Book) RemoveEbookById(ctx * gin.Context){
 		ctrler.services.Logger.Error(err.Error())
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 	}
-	var bucket = os.Getenv("S3_DEFAULT_BUCKET")
+	var bucket = ctrler.services.Config.AWS.DefaultBucket
 	err = ctrler.services.FileStorage.Delete(eBook, bucket)
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error())
@@ -78,7 +77,7 @@ func(ctrler *Book)GenerateEbookUploadRequestUrl(ctx * gin.Context){
 		return
 	}
 	objectName := fmt.Sprintf("ebook/%s%s", nanoid(), ".pdf")
-	bucket := os.Getenv("S3_DEFAULT_BUCKET")
+	bucket := ctrler.services.Config.AWS.DefaultBucket
 	url, err := ctrler.services.FileStorage.NewUploadUrlGenerator(objectName, bucket).SetContentType("application/pdf").Generate()
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error(), applog.Error("GenerateUploadRequestUrl"))

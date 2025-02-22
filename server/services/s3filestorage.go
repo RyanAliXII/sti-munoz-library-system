@@ -2,11 +2,10 @@ package services
 
 import (
 	"io"
-	"os"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -177,9 +176,6 @@ func(ug * S3UploadUrlGenerator)Generate()(string,error){
 	}
 	return url, err
 }
-
-var s3FileStorage filestorage.FileStorage;
-var once sync.Once
 var PolicyJSONStr  = `
 {
 	"Version": "2012-10-17",
@@ -203,18 +199,19 @@ var PolicyJSONStr  = `
 	]
 }
 `
-var Region = os.Getenv("S3_REGION")
-var Endpoint = os.Getenv("S3_ENDPOINT")
-func initS3FileStorage() (filestorage.FileStorage){
-	var AccessKey = os.Getenv("S3_ACCESS_KEY")
-    var SecretKey = os.Getenv("S3_SECRET_KEY")
-	var S3Endpoint= os.Getenv("S3_ENDPOINT")
+
+func initS3FileStorage(config * configmanager.Config) (filestorage.FileStorage){
+	var AccessKey = config.AWS.AccessKey
+    var SecretKey = config.AWS.SecretKey
+	var S3Endpoint= config.AWS.Endpoint
+	var Region = config.AWS.Region
+	var Endpoint = config.AWS.Endpoint
+	var isForcePathStyle = strings.ToUpper(config.AWS.ForcePathStyle)
 	if(len(AccessKey) == 0 || len(SecretKey) == 0 || len(S3Endpoint) == 0){
 		panic("S3_ACCESS_KEY, S3_SECRET_KEY and S3_ENDPOINT cannot be empty.")
 	}
-	var forcePathConfig = strings.ToUpper(os.Getenv("S3_FORCE_PATH_STYLE"))
 	var forcePathStyle = false;
-	if(forcePathConfig == "TRUE"){
+	if(isForcePathStyle == "TRUE"){
 		forcePathStyle = true;
 	}
 	session, err := session.NewSession(&aws.Config{
@@ -230,14 +227,14 @@ func initS3FileStorage() (filestorage.FileStorage){
 	}
 	var
 	svc = s3.New(session)
-	createBucket(svc)
+	createBucket(svc, config)
 	storage := &S3FileStorage{
 		s3: svc,
 	}
 	return storage
 }
-func createBucket(svc * s3.S3){
-	var Bucket = os.Getenv("S3_DEFAULT_BUCKET");
+func createBucket(svc * s3.S3, config * configmanager.Config){
+	var Bucket = config.AWS.DefaultBucket
 	if(len(Bucket) == 0){
 		panic("S3 bucket is required in env")
 	}
@@ -247,11 +244,8 @@ func createBucket(svc * s3.S3){
 	})
 }
 
-func GetOrCreateS3FileStorage()filestorage.FileStorage{
-	once.Do(func ()  {
-       s3FileStorage = initS3FileStorage()
-	})
-	return s3FileStorage
+func  NewS3FileStorge(config * configmanager.Config)filestorage.FileStorage{
+    return initS3FileStorage(config)
 }
 
 
