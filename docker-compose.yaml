@@ -84,17 +84,17 @@ services:
       VITE_API_CLIENT_ID: ${API_APP_CLIENT_ID}
       VITE_WS_URL: ${WS_CLIENT_URL}
       VITE_S3_URL: ${S3_URL}
-  # scanner_app:
-  #   container_name: scanner_app
-  #   image: ryanali12/sti-munoz-library-scanner-app
-  #   ports:
-  #     - "5209:5209"
-  #   volumes:
-  #     - ./scanner_app:/node/dev/scanner
-  #   depends_on:
-  #     - server
-  #   environment:
-  #     VITE_SERVER_URL: ${SERVER_URL}
+  scanner_app:
+    container_name: scanner_app
+    image: ryanali12/sti-munoz-library-scanner-app
+    ports:
+      - "5209:5209"
+    volumes:
+      - ./scanner_app/src:/node/dev/scanner/src
+    depends_on:
+      - server
+    environment:
+      VITE_SERVER_URL: ${SERVER_URL}
   postgres:
     container_name: postgres
     restart: always

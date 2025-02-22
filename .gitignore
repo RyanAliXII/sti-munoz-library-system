@@ -8,3 +8,4 @@
 node_modules
 /metabase
 /minio_data
+*.meta
