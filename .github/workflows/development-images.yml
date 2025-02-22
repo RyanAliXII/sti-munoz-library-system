@@ -25,6 +25,8 @@ jobs:
         run: docker build ./admin_app --file ./admin_app/Dockerfile --tag ryanali12/sti-munoz-library-admin-app:latest
       - name: Build Development Client Application Docker Images
         run: docker build ./client_app --file ./client_app/Dockerfile --tag ryanali12/sti-munoz-library-client-app:latest
+      - name: Build Development Scanner Application Docker Images
+        run: docker build ./scanner_app --file ./scanner_app/Dockerfile --tag ryanali12/sti-munoz-library-scanner-app:latest
 
       - name: Push Development Server Image
         run: docker push ryanali12/sti-munoz-library-server:latest
@@ -32,3 +34,5 @@ jobs:
         run: docker push ryanali12/sti-munoz-library-admin-app:latest
       - name: Push Development Client Application Image
         run: docker push ryanali12/sti-munoz-library-client-app:latest
+      - name: Push Development Scanner Application Docker Images
+        run: docker push ryanali12/sti-munoz-library-scanner-app:latest

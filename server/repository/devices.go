@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -20,9 +19,9 @@ type DeviceRepository interface {
 	GetDeviceLogs(*DeviceLogFilter) ([]model.DeviceLog, Metadata, error)
 	DeviceLogout(id string) error 
 }
-func NewDevice()DeviceRepository{
+func NewDevice(db *sqlx.DB)DeviceRepository{
 	return &Device{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 	}
 }
 func(repo * Device)NewDevice(device model.Device)(error){

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/jmoiron/sqlx"
 )
@@ -16,7 +16,7 @@ func(repo * Settings) Get()model.SettingsValue{
 	query := `SELECT value from system.settings limit 1`;
 	getErr := repo.db.Get(&settings, query)
 	if getErr != nil {
-		logger.Error(getErr.Error(), slimlog.Function("Settings.Get"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), applog.Function("Settings.Get"), applog.Error("getErr"))
 	}
 	return settings.Value
 }

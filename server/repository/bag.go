@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/status"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/google/uuid"
@@ -52,7 +52,7 @@ func (repo * Bag) GetItemsFromBagByAccountId(accountId string) []model.BagItem{
 	`
 	selectErr := repo.db.Select(&items, query, accountId,)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("Bag.GetItemsFromBagByAccountId"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("Bag.GetItemsFromBagByAccountId"), applog.Error("selectErr"))
 	}
 	return items
 }
@@ -184,14 +184,14 @@ func (repo * Bag) CheckoutCheckedItems(accountId string) (string, error) {
 	settings := repo.settingsRepo.Get()
 	if settings.DuePenalty.Value == 0 {
 		settingsErr := fmt.Errorf("due penalty value is 0")
-		logger.Error(settingsErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("DuePenaltySettings"))
+		logger.Error(settingsErr.Error(), applog.Function("BagRepository.CheckoutCheckedItems"), applog.Error("DuePenaltySettings"))
 		return "", settingsErr
 	}
 
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
 		transaction.Rollback()
-		logger.Error(transactErr.Error(), slimlog.Function("BagRepository.CheckoutCheckedItems"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), applog.Function("BagRepository.CheckoutCheckedItems"), applog.Error("transactErr"))
 		return "", transactErr
 	}
 	query:= `

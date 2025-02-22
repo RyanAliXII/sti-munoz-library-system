@@ -1,6 +1,6 @@
 import "./assets/css/tailwind.css";
 import Login from "./pages/Login";
-
+import {useEffect} from "react"
 import {
   createBrowserRouter,
   createRoutesFromChildren,
@@ -30,6 +30,9 @@ const pages = createRoutesFromChildren(
 );
 const router = createBrowserRouter(pages);
 const App = () => {
+  useEffect(()=>{
+    document.title = "STI Munoz Library | Scanner"
+  },[])
   return (
     <AuthProvider>
       <RouterProvider router={router} />;

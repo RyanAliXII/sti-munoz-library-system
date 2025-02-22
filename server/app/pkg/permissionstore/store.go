@@ -10,14 +10,14 @@ type PermissionStore interface {
 	Invalidate()
 }
 
-var postgresstore PermissionStore;
+var store PermissionStore;
 var once sync.Once
 
-func GetPermissionStore() PermissionStore{
+func New(storeImpl  PermissionStore) PermissionStore{
 	once.Do(func(){
-		postgresstore = NewPostgresPermissionStore()
+		store = storeImpl
 	})
-	return postgresstore
+	return store
 }
 
 

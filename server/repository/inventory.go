@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/jmoiron/sqlx"
@@ -18,7 +18,7 @@ func (repo *Inventory) GetAudit() []model.Audit {
 
 	selectErr := repo.db.Select(&audit, query)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("Inventory.GetAudit"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("Inventory.GetAudit"), applog.Error("selectErr"))
 	}
 	return audit
 }
@@ -29,7 +29,7 @@ func (repo *Inventory) GetById(id string) model.Audit {
 
 	selectErr := repo.db.Get(&audit, query, id)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("Inventory.GetAudit"), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function("Inventory.GetAudit"), applog.Error("selectErr"))
 	}
 	return audit
 }
@@ -60,7 +60,7 @@ func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 	const UNIQUE_VIOLATION_ERROR = "unique_violation"
 	transaction, transactErr := repo.db.Beginx()
 	if transactErr != nil {
-		logger.Error(transactErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("transactErr"))
+		logger.Error(transactErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("transactErr"))
 		transaction.Rollback()
 		return transactErr
 	}
@@ -72,7 +72,7 @@ func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 	
 	 getErr := transaction.Get(&accession, query, accessionId)
 	if(getErr != nil ){
-		logger.Error(getErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("getErr"))
+		logger.Error(getErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("getErr"))
 		transaction.Rollback()
 		return getErr
 	}
@@ -82,7 +82,7 @@ func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 	checkBookisAuditedErr := transaction.Get(&exists, query, auditId, accession.BookId)
 
 	if checkBookisAuditedErr != nil{
-		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("checkBookisAuditedErr"))
+		logger.Error(checkBookisAuditedErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("checkBookisAuditedErr"))
 		transaction.Rollback()
 		return checkBookisAuditedErr
 	}
@@ -91,7 +91,7 @@ func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 		query = `INSERT INTO inventory.audited_book(book_id, audit_id) VALUES ($1,$2)`
 		_, auditBookErr := transaction.Exec(query, accession.BookId, auditId)
 		if auditBookErr != nil {
-			logger.Error(auditBookErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAuditedBookErr"))
+			logger.Error(auditBookErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("insertAuditedBookErr"))
 			transaction.Rollback()
 			return auditBookErr
 		}
@@ -103,19 +103,19 @@ func (repo *Inventory) AddToAudit(auditId string, accessionId string) error {
 	if insertAccessionToAuditErr != nil {
 		err, ok := insertAccessionToAuditErr.(*pq.Error)
 		if !ok {
-			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
+			logger.Error(insertAccessionToAuditErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("insertAccessionToAuditErr"))
 			transaction.Rollback()
 			return insertAccessionToAuditErr
 		}
 
 		if err.Code.Name() != UNIQUE_VIOLATION_ERROR {
 			
-			logger.Error(insertAccessionToAuditErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("insertAccessionToAuditErr"))
+			logger.Error(insertAccessionToAuditErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("insertAccessionToAuditErr"))
 			transaction.Rollback()
 			return insertAccessionToAuditErr
 		}
 		//if already inserted
-		logger.Info("Accession Already scanned.", slimlog.Function("Inventory.AddToAudit"))
+		logger.Info("Accession Already scanned.", applog.Function("Inventory.AddToAudit"))
 		transaction.Rollback()
 		return nil
 	}
@@ -128,7 +128,7 @@ func (repo *Inventory) AddBookToAudit(auditId string, bookId string) error {
 	checkBookisAuditedErr := repo.db.Get(&exists, query, auditId, bookId)
 
 	if checkBookisAuditedErr != nil{
-		logger.Error(checkBookisAuditedErr.Error(), slimlog.Function("Inventory.AddBookToAudit"), slimlog.Error("checkBookisAuditedErr"))
+		logger.Error(checkBookisAuditedErr.Error(), applog.Function("Inventory.AddBookToAudit"), applog.Error("checkBookisAuditedErr"))
 
 		return checkBookisAuditedErr
 	}
@@ -137,7 +137,7 @@ func (repo *Inventory) AddBookToAudit(auditId string, bookId string) error {
 		query = `INSERT INTO inventory.audited_book(book_id, audit_id) VALUES ($1,$2)`
 		_, auditBookErr := repo.db.Exec(query, bookId, auditId)
 		if auditBookErr != nil {
-			logger.Error(auditBookErr.Error(), slimlog.Function("Inventory.AddBookToAudit"), slimlog.Error("insertAuditedBookErr"))
+			logger.Error(auditBookErr.Error(), applog.Function("Inventory.AddBookToAudit"), applog.Error("insertAuditedBookErr"))
 			
 			return auditBookErr
 		}
@@ -189,7 +189,7 @@ func (repo *Inventory) DeleteBookCopyFromAudit(auditId string, accessionId strin
 		query := `DELETE FROM inventory.audited_accession where audit_id = $1 and accession_id = $2`
 		_, deleteErr := repo.db.Exec(query, auditId, accessionId)
 		if deleteErr != nil {
-			logger.Error(deleteErr.Error(), slimlog.Function("Inventory.AddToAudit"), slimlog.Error("deleteAuditErr"))
+			logger.Error(deleteErr.Error(), applog.Function("Inventory.AddToAudit"), applog.Error("deleteAuditErr"))
 			return deleteErr
 		}
 	
@@ -199,14 +199,14 @@ func (repo *Inventory) DeleteBookCopyFromAudit(auditId string, accessionId strin
 func (repo *Inventory) NewAudit(audit model.Audit) error {
 	_, insertErr := repo.db.NamedExec("INSERT INTO inventory.audit(name)VALUES(:name)", audit)
 	if insertErr != nil {
-		logger.Error(insertErr.Error(), slimlog.Function("Inventory.NewAudit"), slimlog.Error("insertErr"))
+		logger.Error(insertErr.Error(), applog.Function("Inventory.NewAudit"), applog.Error("insertErr"))
 	}
 	return insertErr
 }
 func (repo *Inventory) UpdateAudit(audit model.Audit) error {
 	_, updateErr := repo.db.Exec("UPDATE inventory.audit SET name = $1 WHERE id = $2", audit.Name, audit.Id)
 	if updateErr != nil {
-		logger.Error(updateErr.Error(), slimlog.Function("Inventory.UpdateAudit"), slimlog.Error("updateErr"))
+		logger.Error(updateErr.Error(), applog.Function("Inventory.UpdateAudit"), applog.Error("updateErr"))
 	}
 	return updateErr
 }

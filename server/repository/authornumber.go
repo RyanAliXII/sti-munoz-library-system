@@ -3,10 +3,9 @@ package repository
 import (
 	"fmt"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	cutters "github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/cutters"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/jmoiron/sqlx"
@@ -29,7 +28,7 @@ func (repo *AuthorNumber) Get(filter filter.Filter) []model.AuthorNumber {
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutter_sanborn LIMIT $1 OFFSET $2", filter.Limit, filter.Offset)
 
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(GET_AUTHOR_NUMBERS), slimlog.Error("SelectErr"))
+		logger.Error(selectErr.Error(), applog.Function(GET_AUTHOR_NUMBERS), applog.Error("SelectErr"))
 	}
 	return table
 }
@@ -38,17 +37,17 @@ func (repo *AuthorNumber) Search(filter filter.Filter) []model.AuthorNumber {
 	selectErr := repo.db.Select(&table, "SELECT id,surname, number from catalog.cutter_sanborn WHERE surname ILIKE $1 OR number ILIKE $1 LIMIT $2 OFFSET $3", fmt.Sprint("%", filter.Keyword, "%"), filter.Limit, filter.Offset)
 
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function(SEARCH_AUTHOR_NUMBERS), slimlog.Error("selectErr"))
+		logger.Error(selectErr.Error(), applog.Function(SEARCH_AUTHOR_NUMBERS), applog.Error("selectErr"))
 	}
 	return table
 }
 
 
-func NewAuthorNumberRepository() AuthorNumberRepository {
+func NewAuthorNumberRepository(db * sqlx.DB) AuthorNumberRepository {
 
 	return &AuthorNumber{
 		cutters: cutters.NewCuttersTable(),
-		db:      postgresdb.GetOrCreateInstance(),
+		db:      db,
 	}
 }
 

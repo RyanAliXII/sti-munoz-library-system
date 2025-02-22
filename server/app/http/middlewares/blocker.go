@@ -3,25 +3,18 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/azuread"
 	"github.com/gin-gonic/gin"
 )
 
 
-
-
-
-func BlockRequestFromClientApp(ctx * gin.Context) {
-	requestorApp := ctx.GetString("requestorApp")
-	if requestorApp == azuread.ClientAppClientId{
+func BlockRequestFromClientApp(adminAppClientId string) func(ctx * gin.Context) {
+	return func  (ctx * gin.Context)  {
+		requestorApp := ctx.GetString("requestorApp")
+		if requestorApp == adminAppClientId{
+			ctx.Next()
+			return
+		}
 		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
 	}
-
-	if requestorApp == azuread.AdminAppClientId{
-		ctx.Next()
-		return
-	}
-
-	ctx.AbortWithStatus(http.StatusUnauthorized)
+	
 }

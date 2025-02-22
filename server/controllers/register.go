@@ -1,46 +1,43 @@
 package controllers
 
 import (
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/middlewares"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/accessionnumber"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/account"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/author"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/authornumber"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/billing"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/printables"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/accessionnumber"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/account"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/author"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/authornumber"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/bag"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/billing"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/book"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/borrowing"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/clientlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/content"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/dateslot"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/ddc"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/device"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/extras"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/game"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/inventory"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/item"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/notification"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/penalty"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/printables"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/publisher"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/reports"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/reservation"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/scanner"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/searchtag"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/section"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/stats"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/system"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/timeslot"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/user"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
-
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/bag"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/book"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/borrowing"
-
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/clientlog"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/content"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/dateslot"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/ddc"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/device"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/extras"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/game"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/inventory"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/item"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/notification"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/penalty"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/publisher"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/reports"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/reservation"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/scanner"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/searchtag"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/section"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/stats"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/system"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/timeslot"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/controllers/v1/user"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	grp := router.Group("/api/1")
-	grp.Use(middlewares.ValidateToken)
+	grp.Use(services.TokenValidator.ValidateToken)
 	author.AuthorRoutes(grp.Group("/authors"), services)
 	publisher.PublisherRoutes(grp.Group("/publishers"), services)
 	section.SectionRoutes(grp.Group("/sections"), services)
@@ -57,7 +54,7 @@ func RegisterAPIV1(router *gin.Engine, services * services.Services) {
 	scanner.ScannerAccountRoutes(grp.Group("/scanner-accounts"), services)
 	clientlog.ClientLogRoutes(grp.Group("/client-logs"), services)
 	game.GameRoutes(grp.Group("/games"), services)
-	device.DeviceRoutes(grp.Group("/devices"))
+	device.DeviceRoutes(grp.Group("/devices"), services)
 	timeslot.TimeSlotRoutes(grp.Group("/time-slots"), services)
 	dateslot.DateSlotRoutes(grp.Group("/date-slots"), services)
 	reservation.ReservationRoutes(grp.Group("/reservations"), services)

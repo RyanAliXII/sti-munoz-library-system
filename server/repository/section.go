@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 
 	"github.com/jmoiron/sqlx"
@@ -18,7 +18,7 @@ func (repo *Section) New(section model.Section) error {
 		_, insertErr := repo.db.Exec("INSERT INTO catalog.section(name, prefix, is_non_circulating)VALUES($1, $2, $3)", section.Name, section.Prefix, section.IsNonCirculating)
 		if insertErr != nil {
 			
-			logger.Error(insertErr.Error(), slimlog.Function("Section.New"))
+			logger.Error(insertErr.Error(), applog.Function("Section.New"))
 			return insertErr
 		}
 	}else{
@@ -26,7 +26,7 @@ func (repo *Section) New(section model.Section) error {
 		section.IsNonCirculating, section.MainCollectionId)
 		if insertErr != nil {
 		
-			logger.Error(insertErr.Error(), slimlog.Function("Section.New"))
+			logger.Error(insertErr.Error(), applog.Function("Section.New"))
 			return insertErr
 		}
 	}
@@ -54,7 +54,7 @@ func (repo *Section) Get() []model.Section {
 	where section.deleted_at is null
 	GROUP BY section.id ORDER BY section.name ASC`)
 	if selectErr != nil {
-		logger.Error(selectErr.Error(), slimlog.Function("Section.Get"))
+		logger.Error(selectErr.Error(), applog.Function("Section.Get"))
 	}
 	return sections
 }

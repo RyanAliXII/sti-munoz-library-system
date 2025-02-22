@@ -4,15 +4,17 @@ import (
 	"context"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/rabbitmq"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 )
 
 type Notification struct {
 	rabbit  *rabbitmq.RabbitMQ
+	logger *zap.Logger
 }
 type NotificationHub struct {
 	rabbit  *rabbitmq.RabbitMQ
+	logger *zap.Logger
 	message chan amqp.Delivery
 	stop    chan bool
 }
@@ -22,10 +24,11 @@ func(n * Notification) NewHub()*NotificationHub{
 			rabbit: n.rabbit,
 			message: make(chan amqp.Delivery),
 			stop: make(chan bool),
+			logger: n.logger,
 	}
 }
 func (hub * NotificationHub) ListenByRoutingKey(routingKey string, context context.Context) error {
-	logger := slimlog.GetInstance()
+	
 	err := hub.rabbit.Channel.ExchangeDeclare(
 		"notification",      // name
 		amqp.ExchangeDirect, // type
@@ -86,7 +89,7 @@ func (hub * NotificationHub) ListenByRoutingKey(routingKey string, context conte
 		case <-context.Done():
 			err := hub.deleteQueue(queue.Name)
 			if err != nil {
-				logger.Error(err.Error())
+				hub.logger.Error(err.Error())
 				return err
 			}
 			return nil
@@ -95,7 +98,7 @@ func (hub * NotificationHub) ListenByRoutingKey(routingKey string, context conte
 				hub.stop <- true
 				err := hub.deleteQueue(queue.Name)
 				if err != nil {
-					logger.Error(err.Error())
+					hub.logger.Error(err.Error())
 					return err
 				}
 				return nil
@@ -120,10 +123,11 @@ func(hub *NotificationHub)deleteQueue(queueName string) error{
 	}
 	return nil
 }
-func NewNotificationService() NotificationService{
-	rabbit := rabbitmq.CreateOrGetInstance()
+func NewNotificationService(rabbitMQ * rabbitmq.RabbitMQ, logger *zap.Logger) NotificationService{
+	
 	return &Notification{
-		rabbit:  rabbit,
+		rabbit:  rabbitMQ,
+		logger: logger,
 	}
 }
 type NotificationService interface {
