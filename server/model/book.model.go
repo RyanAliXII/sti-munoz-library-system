@@ -141,15 +141,19 @@ type Accession struct {
 	IsMissing    bool `json:"isMissing" db:"is_missing"`
 	Remarks     string `json:"remarks" db:"remarks"`
 	Book         BookJSON `json:"book" db:"book"`
-	Model
 }
 func(m * Accession)ValidateUpdate() (validation.Errors, error) {
-	return m.Model.Validate(m, validation.Field(&m.Number, 
+	err := validation.ValidateStruct(m, validation.Field(&m.Number, 
 		validation.Required.Error("Accession number is required."),
 		validation.Min(1).Error("Accession number must be greater than 0"),
-	   ))
-	
-
+	))
+	if err != nil {
+		validationErrors, isValidationErr := err.(validation.Errors)
+		if isValidationErr {
+			return validationErrors, err
+		}
+	}
+	return validation.Errors{}, nil
 }
 type AccessionsJSON []struct {
 	Id         string `json:"id"`

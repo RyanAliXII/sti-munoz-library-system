@@ -222,12 +222,13 @@ const Catalog = () => {
         </div>
         <input
           type="text"
-          className="input input-bordered w-full text-xs h-10 lg:text-sm"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           onChange={handleSearch}
           onKeyDown={handleKeydown}
           placeholder="Search by title, subject ,description or authors"
           defaultValue={filterParams?.keyword}
         ></input>
+       
       </div>
       <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
         <div className="w-full grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 p-5 lg:p-10 ">

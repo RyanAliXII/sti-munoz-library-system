@@ -5,7 +5,6 @@ import (
 	"slices"
 	"time"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/postgresdb"
 	"github.com/jmoiron/sqlx"
 )
 type PostgresPermissionCache struct {
@@ -16,9 +15,9 @@ type PostgresPermissionStore struct {
 	db    *sqlx.DB
 	store map[string]PostgresPermissionCache
 }
-func NewPostgresPermissionStore() PermissionStore{
+func NewPostgresPermissionStore(db *sqlx.DB) PermissionStore{
 	return &PostgresPermissionStore{
-		db: postgresdb.GetOrCreateInstance(),
+		db: db,
 		store: make(map[string]PostgresPermissionCache),
 	}
 }

@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/filter"
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -103,7 +103,7 @@ func (repo *RecordMetadataRepository) GetAccountSearchMetadata (filter * filter.
 		`
 	getMetaErr := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	if getMetaErr != nil {
-			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetAccountMetadata"))
+			logger.Error(getMetaErr.Error(), applog.Error("getMetaErr"), applog.Function("RecordMetadataRepository.GetAccountMetadata"))
 	}
 	return meta, getMetaErr
 }
@@ -136,7 +136,7 @@ func (repo *RecordMetadataRepository) GetDDCSearchMetadata(filter * filter.Filte
   `
 	getMetaErr := repo.db.Get(&meta, query, filter.Limit, filter.Keyword)
 	if getMetaErr != nil {
-			logger.Error(getMetaErr.Error(), slimlog.Error("getMetaErr"), slimlog.Function("RecordMetadataRepository.GetDDCMetadata"))
+			logger.Error(getMetaErr.Error(), applog.Error("getMetaErr"), applog.Function("RecordMetadataRepository.GetDDCMetadata"))
 	}
 	return meta, getMetaErr
 }

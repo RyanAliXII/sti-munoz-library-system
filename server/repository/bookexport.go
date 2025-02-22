@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/slimlog"
+	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/model"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -83,7 +83,7 @@ func(repo *Book)processExcel(collectionId int) (*excelize.File, error) {
 	}
     defer func() {
         if err := f.Close(); err != nil {
-			logger.Error(err.Error(), slimlog.Error("error while closing excel file"))
+			logger.Error(err.Error(), applog.Error("error while closing excel file"))
         }
     }()
 	sheetIdx, err := f.NewSheet(excelSheet)
