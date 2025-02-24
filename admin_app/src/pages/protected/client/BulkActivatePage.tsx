@@ -4,7 +4,7 @@ import { BASE_URL_V1 } from "@definitions/configs/api.config";
 import { apiScope } from "@definitions/configs/msal/scopes";
 import { useSettings } from "@hooks/data-fetching/settings";
 import { useSwitch } from "@hooks/useToggle";
-import Uppy from "@uppy/core";
+import Uppy, { ErrorResponse, UppyFile } from "@uppy/core";
 import Dashboard from "@uppy/dashboard";
 import DashboardComponent from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
@@ -17,7 +17,7 @@ const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".csv", ".xlsx"],
     maxNumberOfFiles: 1,
-  },
+  },  
 })
   .use(Dashboard)
   .use(XHRUpload, {
@@ -27,6 +27,10 @@ const uppy = new Uppy({
     method: "PUT",
     fieldName: "file",
     endpoint: `${BASE_URL_V1}/accounts/bulk/activation`,
+    getResponseError(responseText){
+      return new Error(responseText)
+    },
+    limit:1,
   });
 
 const BulkActivatePage = () => {
@@ -35,15 +39,21 @@ const BulkActivatePage = () => {
   const [messages, setMessages] = useState<string[]>([]);
   const navigate = useNavigate();
   useEffect(() => {
-    uppy.on("upload-error", (file, err, response) => {
-      toast.error("An error occured while processing request.");
-      const messages = response?.body?.data?.errors?.messages;
+    uppy.on("upload-error", onUploadError);
+    return () => {
+      uppy.off("upload-error", onUploadError);
+      uppy.cancelAll();
+    };
+  }, []);
+ 
+  const onUploadError = (file:UppyFile<Record<string, unknown>, Record<string, unknown>> | undefined, err: Error, response: ErrorResponse | undefined)=>{
+    toast.error("An error occured while processing request.");
+      const errorResponse = JSON.parse(err.message)
+      const messages = errorResponse?.data?.errors?.messages
       if (messages) {
         setMessages(messages ?? []);
       }
-    });
-  }, []);
-
+  }
   const {} = useSettings({
     onSuccess: (settings) => {
       const validitySettings = settings?.["app.account-validity"];
@@ -71,6 +81,10 @@ const BulkActivatePage = () => {
       },
     });
     try {
+      const filesLength = uppy.getFiles().length;
+      if(filesLength === 0){
+        toast.error("Please attach a file.")
+      }
       setMessages([]);
       const response = await uppy.upload();
       if (response.failed) return;
