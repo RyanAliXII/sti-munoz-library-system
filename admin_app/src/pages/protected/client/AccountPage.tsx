@@ -221,7 +221,7 @@ const AccountPage = () => {
                   disabled={isActivateButtonDisabled}
                   onClick={initActivate}
                 >
-                  Activate
+                  Enable
                 </Dropdown.Item>
                 <Dropdown.Item
                   disabled={isDisableButtonDisabled}
@@ -242,7 +242,7 @@ const AccountPage = () => {
                 Import
               </Button>
               <Button as={Link} to={"/clients/accounts/bulk-activate"}>
-                Activate accounts
+                Enable accounts
               </Button>
             </HasAccess>
           </div>

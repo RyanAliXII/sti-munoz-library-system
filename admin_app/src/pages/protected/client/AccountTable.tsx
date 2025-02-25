@@ -140,7 +140,7 @@ const AccountTable: React.FC<AccountTableProps> = ({
                       initActivate(account);
                     }}
                   >
-                    Activate
+                    Enable
                   </Button>
                 )}
                 {account.isActive && (
