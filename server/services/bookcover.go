@@ -14,9 +14,10 @@ type BookCoverService struct{
 	storage  filestorage.FileStorage
 	config * configmanager.Config
 }
-func NewBookCoverService(fileStorage filestorage.FileStorage) BookCoverService{
+func NewBookCoverService(fileStorage filestorage.FileStorage, config * configmanager.Config) BookCoverService{
 	return BookCoverService{
 		storage: fileStorage,
+		config: config,
 	}
 }
 func(service * BookCoverService)NewCovers(bookId string, covers []*multipart.FileHeader)([]string, error){
