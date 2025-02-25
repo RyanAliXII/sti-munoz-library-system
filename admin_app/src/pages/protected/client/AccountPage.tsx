@@ -39,7 +39,7 @@ const AccountPage = () => {
     keyword: { type: "string", default: "" },
     deleted: { type: "boolean", default: false },
     active: { type: "boolean", default: true },
-    disabled: { type: "boolean", default: false },
+    disabled: { type: "boolean", default: true },
   });
   const {
     close: closeImportModal,
