@@ -49,7 +49,7 @@ func BuildServices (deps * ServicesDependency) Services {
 		Broadcaster: NewRabbitMQBroadcast(deps.RabbitMQ),
 		PenaltyExport: NewPenaltyExporter(),
 		FileStorage:  deps.FileStorage,
-		BookCoverService: NewBookCoverService(deps.FileStorage),
+		BookCoverService: NewBookCoverService(deps.FileStorage, deps.Config),
 		PermissionValidator: middlewares.NewPermissionValidator(deps.PermissionStore, deps.Config),
 		TokenValidator: middlewares.NewTokenValidator(deps.Db, deps.Logger, deps.Jwks, deps.Config),
 		Validator: validator.NewValidator(deps.Db),
