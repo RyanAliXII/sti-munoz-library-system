@@ -1,7 +1,9 @@
 package configmanager
 
 import (
+	"log"
 	"os"
+	"strconv"
 )
 
 type postgreSQLConfig struct {
@@ -19,7 +21,8 @@ type awsConfig struct {
 	DefaultBucket   string
 	Endpoint        string
 	Region          string
-	ForcePathStyle  string
+	ForcePathStyle  bool
+	DisableSSL 		bool
 	URL             string
 }
 
@@ -62,6 +65,30 @@ type Config struct {
 	APIAppClientID    string
 }
 
+func getAWSConfig() awsConfig {
+	forcePathStyle, err := strconv.ParseBool(os.Getenv("S3_FORCE_PATH_STYLE"))
+	if err != nil {
+		log.Printf("Invalid value for S3_FORCE_PATH_STYLE, defaulting to false: %v", err)
+		forcePathStyle = false
+	}
+
+	disableSSL, err := strconv.ParseBool(os.Getenv("S3_DISABLE_SSL"))
+	if err != nil {
+		log.Printf("Invalid value for S3_DISABLE_SSL, defaulting to false: %v", err)
+		disableSSL = false
+	}
+
+	return awsConfig{
+		AccessKey:      os.Getenv("S3_ACCESS_KEY"),
+		SecretKey:      os.Getenv("S3_SECRET_KEY"),
+		DefaultBucket:  os.Getenv("S3_DEFAULT_BUCKET"),
+		Endpoint:       os.Getenv("S3_ENDPOINT"),
+		Region:         os.Getenv("S3_REGION"),
+		ForcePathStyle: forcePathStyle,
+		DisableSSL:     disableSSL,
+		URL:            os.Getenv("S3_URL"),
+	}
+}
 func LoadConfig() *Config {
 	return &Config{
 		PostgreSQL: postgreSQLConfig{
@@ -72,15 +99,7 @@ func LoadConfig() *Config {
 			Port:     os.Getenv("DB_PORT"),
 			Driver:   os.Getenv("DB_DRIVER"),
 		},
-		AWS: awsConfig{
-			AccessKey:      os.Getenv("S3_ACCESS_KEY"),
-			SecretKey:      os.Getenv("S3_SECRET_KEY"),
-			DefaultBucket:  os.Getenv("S3_DEFAULT_BUCKET"),
-			Endpoint:       os.Getenv("S3_ENDPOINT"),
-			Region:         os.Getenv("S3_REGION"),
-			ForcePathStyle: os.Getenv("S3_FORCE_PATH_STYLE"),
-			URL:            os.Getenv("S3_URL"),
-		},
+		AWS: getAWSConfig(),
 		PGAdmin: pgAdminConfig{
 			Email:    os.Getenv("PGADMIN_DEFAULT_EMAIL"),
 			Password: os.Getenv("PGADMIN_DEFAULT_PASSWORD"),
