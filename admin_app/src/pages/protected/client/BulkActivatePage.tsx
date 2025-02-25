@@ -87,7 +87,8 @@ const BulkActivatePage = () => {
       }
       setMessages([]);
       const response = await uppy.upload();
-      if (response.failed) return;
+      if(response.failed.length > 0) return
+      toast.success("Account/s has been enabled.")
       navigate("/clients/accounts");
     } finally {
       uppy.cancelAll();
@@ -111,12 +112,12 @@ const BulkActivatePage = () => {
         )}
       </div>
       <div className="pb-4">
-        <h1 className="text-2xl dark:text-white">Activate Accounts</h1>
+        <h1 className="text-2xl dark:text-white">Enable Accounts</h1>
       </div>
       <div></div>
       <form onSubmit={importAccounts}>
         <div className="pb-2">
-          <Label>CSV or Excel Masterlist</Label>
+          <Label>CSV Masterlist</Label>
           <DashboardComponent
             hideUploadButton={true}
             uppy={uppy}

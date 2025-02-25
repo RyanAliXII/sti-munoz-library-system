@@ -141,7 +141,7 @@ const ActivateModal: FC<ActivateModalProps> = ({
   });
   return (
     <Modal show={isOpen} onClose={closeModal} dismissible size="lg">
-      <Modal.Header>Activate Account</Modal.Header>
+      <Modal.Header>Enable Account</Modal.Header>
       <Modal.Body className="overflow-visible">
         <form onSubmit={onSubmit}>
           <div className="pb-2">

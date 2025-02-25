@@ -14,11 +14,11 @@ const BulkActivateErrorModal: FC<ErrorModalProps> = ({
     <Modal show={isOpen} onClose={closeModal} dismissible>
       <Modal.Header>Upload Errors</Modal.Header>
       <Modal.Body>
-        <div className="bg-gray-700 p-4 rounded">
+        <div className="bg-gray-700 p-4 rounded max-h-96 overflow-y-scroll">
           {messages.map((m, index) => {
             return (
               <p
-                className="block dark:text-white text-sm p-1 text-red-500"
+                className="block  text-sm p-1 text-red-500"
                 key={index}
               >
                 {"Error"} {":"} {m}
