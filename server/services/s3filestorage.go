@@ -2,7 +2,6 @@ package services
 
 import (
 	"io"
-	"strings"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/configmanager"
@@ -206,20 +205,17 @@ func initS3FileStorage(config * configmanager.Config) (filestorage.FileStorage){
 	var S3Endpoint= config.AWS.Endpoint
 	var Region = config.AWS.Region
 	var Endpoint = config.AWS.Endpoint
-	var isForcePathStyle = strings.ToUpper(config.AWS.ForcePathStyle)
+	var isForcePathStyle = config.AWS.ForcePathStyle
+	var isDisableSSL = config.AWS.DisableSSL
 	if(len(AccessKey) == 0 || len(SecretKey) == 0 || len(S3Endpoint) == 0){
 		panic("S3_ACCESS_KEY, S3_SECRET_KEY and S3_ENDPOINT cannot be empty.")
 	}
-	var forcePathStyle = false;
-	if(isForcePathStyle == "TRUE"){
-		forcePathStyle = true;
-	}
 	session, err := session.NewSession(&aws.Config{
 		Region: aws.String(Region),
-		S3ForcePathStyle: aws.Bool(forcePathStyle),
+		S3ForcePathStyle: aws.Bool(isForcePathStyle),
 		Credentials: credentials.NewStaticCredentials(AccessKey, SecretKey, ""),
 		Endpoint: aws.String(Endpoint),
-		DisableSSL: aws.Bool(true),
+		DisableSSL: aws.Bool(isDisableSSL),
 	})
 	
 	if err != nil {
