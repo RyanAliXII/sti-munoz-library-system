@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"path/filepath"
+	"strings"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
@@ -132,7 +133,8 @@ func(ctrler *Account)validateTypeAndProgram(accounts * []model.AccountActivation
 		}
 		
 		if(account.UserType == 0) {
-			program, isProgramExists := programsMap[account.Program]
+			var accountProgram = strings.TrimSpace(account.Program)
+			program, isProgramExists := programsMap[accountProgram]
 			if(!isProgramExists){
 				messages = append(messages, fmt.Sprintf("Program is invalid or undefined on row: %d with value: %s", idx + 1, account.Program))
 			}
