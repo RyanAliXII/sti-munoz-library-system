@@ -82,7 +82,7 @@ func(ctrler * ScannerAccount)UpdateAccount(ctx * gin.Context){
 	if(len(body.Password) > 0) {
 		hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 		if hashErr != nil {
-			ctrler.services.Logger.Error(err.Error(), applog.Error("hashingErr"))
+			ctrler.services.Logger.Error(hashErr.Error(), applog.Error("hashingErr"))
 			ctx.JSON(httpresp.Fail400(nil, "Unknown error ocurred."))
 			return
 		}
