@@ -76,23 +76,35 @@ func main() {
     r.Run(":5200")
 }
 
-func CustomLogger(logger * zap.Logger) gin.HandlerFunc {
+func CustomLogger(logger *zap.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		method := ctx.Request.Method
-		if(method == "OPTIONS"){
+		if method == "OPTIONS" {
 			return
 		}
+
 		start := time.Now()
-		statusCode := ctx.Writer.Status()
+		ctx.Next() // Process the request before logging
+
+		statusCode := ctx.Writer.Status() // Get the correct status after processing
 		clientIP := ctx.ClientIP()
-		ctx.Next()
 		latency := time.Since(start)
 		path := ctx.Request.URL.Path
-		
-		if ctx.Writer.Status() >= 400 {
-			logger.Error("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
+
+		if statusCode >= 400 {
+			logger.Error("Server Request",
+				zap.String("path", path),
+				zap.String("method", method),
+				zap.Int("status", statusCode),
+				zap.String("ip", clientIP),
+				zap.String("duration", latency.String()))
 		} else {
-			logger.Info("Server Request", zap.String("path", path), zap.String("method", method), zap.Int("status", statusCode), zap.String("ip", clientIP), zap.String("duration", latency.String()))
+			logger.Info("Server Request",
+				zap.String("path", path),
+				zap.String("method", method),
+				zap.Int("status", statusCode),
+				zap.String("ip", clientIP),
+				zap.String("duration", latency.String()))
 		}
 	}
 }

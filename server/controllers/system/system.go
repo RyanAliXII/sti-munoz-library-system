@@ -8,6 +8,7 @@ import (
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/acl"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/http/httpresp"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/services"
+	"go.uber.org/zap"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/applog"
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/pkg/permissionstore"
@@ -100,6 +101,7 @@ func (ctrler *System) VerifyAccount(ctx *gin.Context) {
 	}
 	verifyErr := ctrler.services.Repos.AccountRepository.VerifyAndUpdateAccount(account)
 	if verifyErr != nil {
+		ctrler.services.Logger.Error("Failed to verify and update account." , applog.Function("SystemController.VerifyAccount"), zap.String("accountId", account.Id))
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
@@ -107,14 +109,17 @@ func (ctrler *System) VerifyAccount(ctx *gin.Context) {
 	if err != nil {
 		ctrler.services.Logger.Error(err.Error(), applog.Error("GetAccountByIdDontIgnoreIfDeletedOrInactiveErr"))
 		if(err == sql.ErrNoRows){
+			ctrler.services.Logger.Error("Account cannot be found." , applog.Function("SystemController.VerifyAccount"), zap.String("accountId", account.Id))
 			ctx.JSON(httpresp.Fail404(nil, "Account not found"))
 			return
 		}
+
 		ctx.JSON(httpresp.Fail500(nil, "Unknown error occured."))
 		return
 	}
 
 	if (!acccount.IsActive || acccount.IsDeleted ) &&  ctrler.services.Config.ClientAppClientID== ctx.GetString("requestorApp") {
+		ctrler.services.Logger.Error("Account has been disabled.." , applog.Function("SystemController.VerifyAccount"), zap.String("accountId", account.Id))
 		ctx.JSON(httpresp.Fail403(nil, "Account has been disabled. Please contact your library administrator."))
 		return 
 	}
@@ -189,7 +194,7 @@ func (ctrler * System) RemoveRoleAssignment(ctx * gin.Context){
 	}
 	accountId, parseUUIDErr := uuid.Parse(ctx.Param("accountId"))
 	if parseUUIDErr != nil {
-		ctrler.services.Logger.Error(convertErr.Error(), applog.Function("SystemController.RemoveRoleAssignment"), applog.Error("parseUUIDErr"))
+		ctrler.services.Logger.Error(parseUUIDErr.Error(), applog.Function("SystemController.RemoveRoleAssignment"), applog.Error("parseUUIDErr"))
 	}
 	ctrler.services.Repos.SystemRepository.RemoveRoleAssignment(roleId, accountId.String())
 	ctx.JSON(httpresp.Success200(nil, "Role assignment has been removed."))
