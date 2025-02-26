@@ -6,6 +6,7 @@ import (
 	"mime"
 	"mime/multipart"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/RyanAliXII/sti-munoz-library-system/server/app/filestorage"
@@ -297,6 +298,17 @@ func (repo *Account) VerifyAndUpdateAccount(account model.Account) error {
 
 	if len(registeredAccount.Id) > 0 {
 		if time.Now().Equal(registeredAccount.UpdatedAt.Time.Add(OneMonth)) || time.Now().After(registeredAccount.UpdatedAt.Add(OneMonth)) {
+			// This "if" case, where i check if given name and surname are not empty then reassign their old values.
+			// The reason behind this is because i am s2pid as fuck. I accidentally add a user in active directory where i forgot to add givenName and surname. 
+			// Now i have to prevent it from being an empty string in my db and manually add value to this fields.
+			// This check will make sure that if the sent fields are empty it will retains it old non empty values.
+
+			if(len(strings.TrimSpace(account.GivenName)) == 0 && len(strings.TrimSpace(registeredAccount.GivenName)) > 0){
+				account.GivenName = registeredAccount.GivenName
+			}
+			if(len(strings.TrimSpace(account.Surname)) == 0 && len(strings.TrimSpace(registeredAccount.Surname)) > 0){
+				account.Surname = registeredAccount.Surname
+			}
 			_, updateErr := repo.db.Exec("Update system.account set display_name = $1, email = $2, surname = $3, given_name = $4, updated_at = now() where id = $5 or email = $2",
 				account.DisplayName, account.Email, account.Surname, account.GivenName, account.Id)
 			if updateErr != nil {
