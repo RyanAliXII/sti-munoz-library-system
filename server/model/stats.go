@@ -12,8 +12,8 @@ type LibraryStats struct {
 	ReturnedBooks int `json:"returnedBooks" db:"returned_books"`
 	UnreturnedBooks int `json:"unreturnedBooks" db:"unreturned_books"`
 	CancelledBooks int `json:"cancelledBooks" db:"cancelled_books"`
-	WeeklyWalkIns []WalkInLog `json:"weeklyWalkIns" db:"weekly_walk_ins"`
-	MonthlyWalkIns []WalkInLog `json:"monthlyWalkIns" db:"monthly_walk_ins"`
+	WeeklyWalkIns []WalkInData `json:"weeklyWalkIns" db:"weekly_walk_ins"`
+	MonthlyWalkIns []WalkInData `json:"monthlyWalkIns" db:"monthly_walk_ins"`
 	MonthlyBorrowedSection []BorrowedSection `json:"monthlyBorrowedSections" db:"monthly_borrowed_section"`
 	WeeklyBorrowedSection []BorrowedSection `json:"weeklyBorrowedSections" db:"weekly_borrowed_section"`
 }
