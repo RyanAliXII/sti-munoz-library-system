@@ -10,7 +10,7 @@ func PublisherRoutes(router *gin.RouterGroup, services * services.Services) {
 	controller := NewPublisherController(services)
 
 	router.GET("/",
-	services.PermissionValidator.Validate([]string{"Book.Read","Bookp.Edit","Publisher.Read"}, 
+	services.PermissionValidator.Validate([]string{"Book.Read","Book.Edit","Publisher.Read"}, 
 	true),
 	controller.GetPublishers)
 
