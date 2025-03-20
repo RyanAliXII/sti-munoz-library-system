@@ -94,7 +94,6 @@ export const AuthProvider = ({ children }: BaseProps) => {
       return true;
     } catch (error) {
       console.error(error);
-      logout();
       return false;
     }
   };
@@ -168,20 +167,8 @@ export const AuthProvider = ({ children }: BaseProps) => {
     }
     return false;
   };
-
-  const logout = async () => {
-    const account = msalClient.getActiveAccount();
-    if (account) {
-      await msalClient.logout({
-        account: account,
-        logoutHint: account?.idTokenClaims?.login_hint,
-      });
-    }
-    localStorage.clear();
-  };
-
-  const subscribeMsalEvent = () => {
-    msalClient.enableAccountStorageEvents();
+  useEffect(() => {
+   msalClient.enableAccountStorageEvents();
     const callbackId = msalClient.addEventCallback((message: EventMessage) => {
       if (
         message.eventType === EventType.INITIALIZE_START ||
@@ -192,15 +179,11 @@ export const AuthProvider = ({ children }: BaseProps) => {
         });
       }
     });
-    return callbackId;
-  };
-
-  useEffect(() => {
-    const id = subscribeMsalEvent();
     return () => {
       msalClient.disableAccountStorageEvents();
-      if (!id) return;
-      msalClient.removeEventCallback(id);
+      if (!callbackId) return;
+     
+      msalClient.removeEventCallback(callbackId);
     };
   }, []);
   return (
