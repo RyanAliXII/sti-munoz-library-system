@@ -352,8 +352,8 @@ export type LibraryStats = {
   returnedBooks: number;
   unreturnedBooks: number;
   cancelledBooks: number;
-  monthlyWalkIns: WalkInLog[];
-  weeklyWalkIns: WalkInLog[];
+  monthlyWalkIns: WalkInData[];
+  weeklyWalkIns: WalkInData[];
   monthlyBorrowedSections: BorrowedSection[];
   weeklyBorrowedSections: BorrowedSection[];
 };
@@ -363,7 +363,11 @@ export type Metadata = {
 };
 export type WalkInLog = {
   date: string;
-  walkIns: number;
+  count: number;
+}
+export type WalkInData = {
+  userGroup: string;
+  logs: WalkInLog[];
 };
 export type BorrowedSection = {
   total: number;

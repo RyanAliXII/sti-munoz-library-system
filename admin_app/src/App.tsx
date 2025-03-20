@@ -23,9 +23,8 @@ const queryClient = new QueryClient({
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 import { useEffect } from "react";
-
+const msalInstance = new PublicClientApplication(msalConfig);
 const App = () => {
-  const msalInstance = new PublicClientApplication(msalConfig);
   const router = createBrowserRouter(pages);
   const [currentTheme, ,] = useThemeMode();
   useEffect(() => {
