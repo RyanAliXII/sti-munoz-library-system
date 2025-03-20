@@ -1,11 +1,12 @@
 import Container from "@components/ui/container/Container";
-import { BorrowedSection, LibraryStats, WalkInLog } from "@definitions/types";
+import { BorrowedSection, LibraryStats, WalkInData} from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useQuery } from "@tanstack/react-query";
 import { BiMoney } from "react-icons/bi";
 import { FaUserFriends } from "react-icons/fa";
 import { ImBooks } from "react-icons/im";
 import { Link } from "react-router-dom";
+import ZoomPlugin from "chartjs-plugin-zoom";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,10 +16,10 @@ import {
   Tooltip,
   Legend,
   ArcElement,
+  ChartOptions,
 } from "chart.js";
 import { Bar, Pie } from "react-chartjs-2";
-import { toReadableDate } from "@helpers/datetime";
-import { Button, Card } from "flowbite-react";
+import { Button, Card } from "flowbite-react";  
 import { useState } from "react";
 
 ChartJS.register(
@@ -28,12 +29,13 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ZoomPlugin,
 );
 
 const Dashboard = () => {
   const { Get } = useRequest();
-  const [walkInStats, setWalkInStats] = useState<WalkInLog[]>([]);
+  const [walkInStats, setWalkInStats] = useState<WalkInData[]>([]);
   const [borrowedSections, setBorrowedSections] = useState<BorrowedSection[]>(
     []
   );
@@ -119,26 +121,60 @@ const Dashboard = () => {
     setBorrowedSections(stats.monthlyBorrowedSections);
     setIsMonthlyBorrowedSection(true);
   };
+const labels = walkInStats[0]?.logs.map((l) => l.date) ?? [];
+  const colors = [
+    "rgba(255, 99, 132, 0.6)",  // Red
+    "rgba(54, 162, 235, 0.6)",  // Blue
+    "rgba(255, 206, 86, 0.6)",  // Yellow
+    "rgba(75, 192, 192, 0.6)",  // Teal
+    "rgba(153, 102, 255, 0.6)", // Purple
+    "rgba(255, 159, 64, 0.6)",  // Orange
+    "rgba(201, 203, 207, 0.6)", // Gray
+    "rgba(0, 255, 127, 0.6)",   // Spring Green
+    "rgba(255, 140, 0, 0.6)",   // Dark Orange
+    "rgba(60, 179, 113, 0.6)",  // Medium Sea Green
+  ];
   const data = {
-    labels: walkInStats?.map((w) => toReadableDate(w.date)),
-    datasets: [
-      {
-        label: "Statistics",
-        data: walkInStats.map((w) => w.walkIns),
-        backgroundColor: ["#0288D1"],
-      },
-    ],
+    labels: labels, 
+    datasets: walkInStats.map((walkIn, index) => {
+      return {
+        label: walkIn.userGroup,
+        data: walkIn.logs.map((l) => l.count),
+        backgroundColor: colors[index % colors.length], // Assign color dynamically
+        borderColor: colors[index % colors.length].replace("0.6", "1"), // Solid border
+        borderWidth: 1,
+      };
+    }),
   };
-  const options = {
+  const options:ChartOptions<"bar"> = {
     responsive: true,
+    scales:{
+      y:{
+        ticks:{ precision: 0}
+      }
+    },
     plugins: {
       legend: {
         position: "top" as const,
-      },
+      },  
       title: {
         display: true,
         text: "Client Statistics",
       },
+      zoom: {
+        zoom: {
+          wheel: {
+            enabled: true // SET SCROOL ZOOM TO TRUE
+          },
+          mode: "xy",
+          
+        },
+        pan: {
+          enabled: true,
+          mode: "xy",
+        }
+      }
+
     },
   };
 
