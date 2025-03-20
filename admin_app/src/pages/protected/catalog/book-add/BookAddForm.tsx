@@ -19,7 +19,7 @@ import Dashboard from "@uppy/react/src/Dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { AxiosError } from "axios";
 import { format } from "date-fns";
-import { Button, Table } from "flowbite-react";
+import { Alert, Button, Table } from "flowbite-react";
 import { BaseSyntheticEvent, useEffect, useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import { FaTimes } from "react-icons/fa";
@@ -34,6 +34,9 @@ import DDCSelectionModal from "./DDCSelectionModal";
 import AuthorNumberSelectionModal from "./author-number-selection/AuthorNumberSelectionModal";
 import AuthorSelectionModal from "./author-selection/AuthorSelectionModal";
 import SelectedAuthorsTable from "./author-selection/SelectedAuthorsTable";
+import { useAuthContext } from "@contexts/AuthContext";
+import HasNoAccess from "@components/auth/HasNoAccess";
+import HasAccess from "@components/auth/HasAccess";
 const TW0_SECONDS = 2000;
 const uppy = new Uppy({
   restrictions: {
@@ -277,7 +280,7 @@ const BookAddForm = () => {
       return { ...prev, accessions: accessions };
     });
   };
-
+  const {hasPermissions} = useAuthContext();
   return (
     <>
       <form onSubmit={submit}>
@@ -431,6 +434,7 @@ const BookAddForm = () => {
                     500
                   );
                 }}
+                isDisabled={!hasPermissions(["Publisher.Read"])}
                 onChange={handlePublisherSelect}
                 value={form.publisher}
                 getOptionLabel={(option) => option.name}
@@ -442,6 +446,7 @@ const BookAddForm = () => {
                 color="primary"
                 className="mt-0.5 ml-2"
                 type="button"
+                disabled={!hasPermissions(["Publisher.Add"])}
                 onClick={() => {
                   openAddPublisherModal();
                 }}
@@ -450,6 +455,22 @@ const BookAddForm = () => {
                 Add Publisher
               </Button>
             </div>
+            <HasNoAccess nonExistingPermissions={["Publisher.Read"]}>
+              <div className="my-2">
+                <Alert color="warning" rounded>
+                <span className="font-medium">Access Denied!</span> You are not allowed to select publisher. Missing required permission named
+                {" "} <span className="font-medium">Publisher.Read</span>. Please contact the administrator.
+                </Alert>
+              </div>
+            </HasNoAccess>
+            <HasNoAccess nonExistingPermissions={["Publisher.Add"]}>
+              <div className="my-2">
+                <Alert color="warning" rounded>
+                <span className="font-medium">Access Denied!</span> You are not allowed to add publisher. Missing required permission named
+                {" "} <span className="font-medium">Publisher.Add</span>. Please contact the administrator.
+                </Alert>
+              </div>
+            </HasNoAccess>
           </FieldRow>
 
           <FieldRow label="Cost Price" ref={registerFormGroup("costPrice")}>
@@ -559,19 +580,40 @@ const BookAddForm = () => {
             </h1>
             <hr className="mb-5 h-px my-3 bg-gray-200 border-0 dark:bg-gray-700"></hr>
           </div>
+          <HasNoAccess nonExistingPermissions={["Author.Read"]}>
+              <div className="my-2">
+                <Alert color="warning" rounded>
+                <span className="font-medium">Access Denied!</span> You are not allowed to select. Missing required permission named
+                {" "} <span className="font-medium">Author.Read</span>. Please contact the administrator.
+                </Alert>
+              </div>
+            </HasNoAccess>
+            <HasNoAccess nonExistingPermissions={["Author.Add"]}>
+              <div className="my-2">
+                <Alert color="warning" rounded> 
+                <span className="font-medium">Access Denied!</span> You are not allowed to add author. Missing required permission named
+                {" "} <span className="font-medium">Author.Add</span>. Please contact the administrator.
+                </Alert>
+              </div>
+            </HasNoAccess>
           <div className="flex gap-3 mb-5 ">
+            <HasAccess requiredPermissions={["Author.Read"]}>
             <a
               className=" text-blue-500 text-sm underline underline-offset-1 cursor-pointer font-semibold"
               onClick={openAuthorSelection}
+              
             >
               Select Authors
             </a>
+            </HasAccess>
+            <HasAccess requiredPermissions={["Author.Add"]}>
             <a
               className=" text-yellow-500 text-sm cursor-pointer font-semibold"
               onClick={openAddAuthorModal}
             >
               New Author
             </a>
+            </HasAccess>
           </div>
           <div
             className="mb-10 overflow-y-auto scroll-smooth small-scroll"

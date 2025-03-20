@@ -26,26 +26,66 @@ func(repo * Stats)GetLibraryStats()model.LibraryStats{
     return stats
 }
 
-func (repo * Stats)GetMonthlyLogs()([]model.WalkInLog, error){
-	logs := make([]model.WalkInLog, 0)
+func (repo * Stats)GetMonthlyLogs()([]model.WalkInData, error){
+	logs := make([]model.WalkInData, 0)
 	query := `
-	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
-	from system.client_log
-	where date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 MONTH'
-	GROUP BY date(client_log.created_at at time zone 'PHT')
-	ORDER BY date(client_log.created_at at time zone 'PHT') asc
+	WITH cte_series as(
+		SELECT date(d) as d from generate_series(date(now() at time zone 'PHT') - interval '1 MONTH',  date(now() at time zone 'PHT'), INTERVAL '1 day')  as d
+	),
+	cte_logs as (
+		SELECT
+			date(date_trunc('day', client_log.created_at at time zone 'PHT')) AS dt,
+			account_view.type_id,
+			count(1) AS walk_ins
+		FROM
+			system.client_log	
+		INNER JOIN
+			account_view ON client_log.client_id = account_view.id 
+		
+		WHERE
+			date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 MONTH'
+		-- Change the type_id based on the user type you're interested in
+		GROUP BY
+			dt,  account_view.type_id
+	),
+	cte_logs_series as (
+		SELECT id, name, cte_series.d, COALESCE(cte_logs.walk_ins, 0) as walk_ins  
+		FROM system.user_type CROSS JOIN cte_series
+		LEFT JOIN cte_logs on  cte_series.d = cte_logs.dt and user_type.id = cte_logs.type_id
+	)
+	SELECT name as user_group, COALESCE(JSON_AGG(JSON_BUILD_OBJECT('date', cls.d, 'count', COALESCE(cls.walk_ins, 0))), '[]') as logs from cte_logs_series as cls GROUP BY id,name
 	`
 	err := repo.db.Select(&logs, query)
 	return logs, err
 }
-func(repo * Stats)GetWeeklyLogs()([]model.WalkInLog, error) {
-	logs := make([]model.WalkInLog, 0)
+func(repo * Stats)GetWeeklyLogs()([]model.WalkInData, error) {
+	logs := make([]model.WalkInData, 0)
 	query := `
-	SELECT date(client_log.created_at at time zone 'PHT'), count(1) as walk_ins
-	from system.client_log
-	where date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK'
-	GROUP BY date(client_log.created_at at time zone 'PHT')
-	ORDER BY date(client_log.created_at at time zone 'PHT') asc
+	WITH cte_series as(
+		SELECT date(d) as d from generate_series(date(now() at time zone 'PHT') - interval '1 WEEK',  date(now() at time zone 'PHT'), INTERVAL '1 day')  as d
+	),
+	cte_logs as (
+		SELECT
+			date(date_trunc('day', client_log.created_at at time zone 'PHT')) AS dt,
+			account_view.type_id,
+			count(1) AS walk_ins
+		FROM
+			system.client_log	
+		INNER JOIN
+			account_view ON client_log.client_id = account_view.id 
+		
+		WHERE
+			date(client_log.created_at at time zone 'PHT') >= date(now() at time zone 'PHT') - interval '1 WEEK'
+		-- Change the type_id based on the user type you're interested in
+		GROUP BY
+			dt,  account_view.type_id
+	),
+	cte_logs_series as (
+		SELECT id, name, cte_series.d, COALESCE(cte_logs.walk_ins, 0) as walk_ins  
+		FROM system.user_type CROSS JOIN cte_series
+		LEFT JOIN cte_logs on  cte_series.d = cte_logs.dt and user_type.id = cte_logs.type_id
+	)
+	SELECT name as user_group, COALESCE(JSON_AGG(JSON_BUILD_OBJECT('date', cls.d, 'count', COALESCE(cls.walk_ins, 0))), '[]') as logs from cte_logs_series as cls GROUP BY id,name
 	`
 	err := repo.db.Select(&logs, query)
 	return logs, err
@@ -82,8 +122,8 @@ func NewStatsRepository(db * sqlx.DB) StatsRepository {
 
 type StatsRepository interface {
 	GetLibraryStats()model.LibraryStats
-	GetWeeklyLogs()([]model.WalkInLog, error)
-	GetMonthlyLogs()([]model.WalkInLog, error) 
+	GetWeeklyLogs()([]model.WalkInData, error)
+	GetMonthlyLogs()([]model.WalkInData, error) 
 	GetWeeklyBorrowedSection ()([]model.BorrowedSection, error)
 	GetMonthlyBorrowedSection ()([]model.BorrowedSection, error) 
 }

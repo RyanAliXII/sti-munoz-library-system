@@ -26,6 +26,7 @@
     "akronim": "^1.1.1",
     "axios": "^1.2.2",
     "chart.js": "^4.4.0",
+    "chartjs-plugin-zoom": "^2.2.0",
     "date-fns": "^2.30.0",
     "dom": "^0.0.3",
     "downshift": "^7.2.0",

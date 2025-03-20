@@ -20,7 +20,7 @@ const CollectionTree: FC<CollectionTreeData> = ({ tree, onSelectNode }) => {
   return (
     <ul className="tree">
       <li>
-        <details open={isOpen} className="cursor-pointer flex">
+        <details open={isOpen} className="cursor-pointer">
           <summary
             className="cursor-pointer flex items-center gap-1"
             onClick={(event) => {
