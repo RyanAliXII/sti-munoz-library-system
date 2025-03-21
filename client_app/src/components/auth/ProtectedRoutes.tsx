@@ -1,15 +1,15 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useMsal } from "@azure/msal-react";
-import AuthBaseLayout from "@layouts/AuthBaseLayout";
+import BaseLayout from "@layouts/BaseLayout";
 
 const ProtectedRoutes = () => {
   const { instance } = useMsal();
   if (instance.getActiveAccount())
     return (
-      <AuthBaseLayout>
+      <BaseLayout>
         <Outlet />
-      </AuthBaseLayout>
+      </BaseLayout>
     );
   return <Navigate to={"/"} />;
 };

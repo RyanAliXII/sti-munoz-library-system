@@ -23,7 +23,6 @@ const NavbarHeader: FC = function () {
   const [mode, , toggleMode] = useThemeMode();
   const { user } = useAuthContext();
   const { instance: msalClient } = useMsal();
-
   const logout = async () => {
     const account = msalClient.getActiveAccount();
     msalClient.logoutRedirect({

@@ -3,6 +3,7 @@ import { BaseProps } from "../definitions/interfaces/Props";
 import LogoutButton from "./LogoutButton";
 import { useAuthContext } from "../contexts/AuthContext";
 import { buildS3Url } from "@definitions/s3";
+import { useMsal } from "@azure/msal-react";
 
 const Header = ({ children }: BaseProps) => {
   const { user } = useAuthContext();
@@ -10,7 +11,6 @@ const Header = ({ children }: BaseProps) => {
   const toggleDropdown = () => {
     setVisibility((visible) => !visible);
   };
-
   const avatarUrl = `https://ui-avatars.com/api/?name=${user.givenName}${user.surname}&background=2563EB&color=fff`;
   const profilePicUrl =
     user.profilePicture.length > 0
