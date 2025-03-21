@@ -38,8 +38,10 @@ const CustomSelect = <
             },
             input: () => "text-gray-900 dark:text-white react-select-input",
             menu: () => {
-              return "bg-gray-50 dark:bg-gray-700";
+              return "bg-gray-50 dark:bg-gray-700 dark:text-white";
             },
+            multiValue:()=>"dark:bg-gray-800",
+            multiValueLabel: ()=>"dark:text-white",
             singleValue: () => "text-gray-900 dark:text-white",
           }}
           {...{
