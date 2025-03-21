@@ -17,6 +17,11 @@ const CustomSelect = <
 >(
   props: CustomSelectProps<Option, IsMulti, Group>
 ) => {
+  const ErrorClass =
+  "bg-red-50 border border-red-500 text-red-900 placeholder-red-700 text-sm rounded-lg dark:bg-gray-700 focus:border-red-500 block w-full p-0.5 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500";
+const DefaultClass =
+  "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg  block w-full p-0.5 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:!text-white";
+const selectedClass = props.error ? ErrorClass : DefaultClass;
   return (
     <>
       <label className="text-gray-600 text-sm">{props.label}</label>
@@ -26,6 +31,16 @@ const CustomSelect = <
             option: (props) => {
               return props.isSelected ? "bg-yellow-400" : "";
             },
+            control: () => {
+              return selectedClass;
+            },
+            input: () => "text-gray-900 dark:text-white react-select-input",
+            menu: () => {
+              return "bg-gray-50 dark:bg-gray-700 dark:text-white";
+            },
+            multiValue:()=>"dark:bg-gray-800",
+            multiValueLabel: ()=>"dark:text-white",
+            singleValue: () => "text-gray-900 dark:text-white",
           }}
           {...{
             ...props,

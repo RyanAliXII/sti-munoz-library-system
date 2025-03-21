@@ -28,6 +28,8 @@
     "daisyui": "^2.51.5",
     "date-fns": "^2.30.0",
     "downshift": "^7.6.0",
+    "flowbite": "^3.1.2",
+    "flowbite-react": "^0.10.2",
     "html2canvas": "^1.4.1",
     "http-status-codes": "^2.2.0",
     "jspdf": "^2.5.1",

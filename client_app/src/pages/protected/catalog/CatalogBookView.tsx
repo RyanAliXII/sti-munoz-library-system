@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import BookTypeSelectionModal from "./BookTypeSelectionModal";
 import { useSwitch } from "@hooks/useToggle";
+import { Button } from "flowbite-react";
 
 const CatalogBookView = () => {
   const { Post } = useRequest();
@@ -102,7 +103,152 @@ const CatalogBookView = () => {
   }
   return (
     <>
-      <div className="min-h-screen p-5">
+    <section className="py-8 bg-white md:py-16 dark:bg-gray-900 antialiased">
+    <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
+        <div className="shrink-0 max-w-md lg:max-w-lg mx-auto">
+            {bookCover.length > 0 ? (
+              <img
+                src={bookCover}
+                className="w-full"
+                alt="bookView?.book-image"
+              ></img>
+            ) : (
+              <div
+                className="lg:w-96 min-h-96 flex items-center justify-center bg-gray-100 dark:bg-gray-800 "
+                
+              >
+              </div>
+            )}
+        </div>
+
+        <div className="mt-6 sm:mt-8 lg:mt-0">
+          <h1
+            className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white"
+          >
+            {bookView.book.title}
+          </h1>
+          <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
+          {(authors?.length ?? 0) > 0 && ( <p
+              className="text-lg text-gray-900 sm:text-xl dark:text-gray-200"
+            >
+               {authors?.join(", ")}
+            </p>)}
+          </div>
+
+          <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8 flex-col lg:flex-row">
+            
+            <Button 
+            color="blue"
+            className="w-full"
+            disabled={
+              addItemToBag.isLoading ||
+              isAddToBagDisable ||
+              bookView.status.isAlreadyBorrowed ||
+              (bookView.book.section.isNonCirculating &&
+               bookView.book.ebook.length === 0)}
+               onClick={initializeItem}
+               >
+                Add to bag
+            </Button>
+            <Button 
+              className="sm:w-full"
+              color="light"
+              onClick={initHold}
+              disabled={
+                isPlaceHoldDisable || bookView.book.section.isNonCirculating
+              }
+               >
+                Place hold
+            </Button>
+          
+          </div>
+
+          <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
+          { 
+            bookView.book.description.length > 0 && (
+              <div className="mb-6 text-gray-500 dark:text-gray-400" dangerouslySetInnerHTML={{
+                __html: bookView?.book?.description ?? "",
+              }} >
+          </div>
+            )
+          }   
+          <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
+          <div className="mt-5 text-gray-500 dark:text-gray-400">
+              <h2 className="text-lg font-bold">Overview</h2>
+              <div className="w-full h-20 flex gap-2 items-center p-2">
+                <div>
+                  <RiPagesLine className="text-4xl" />
+                </div>
+                <div>
+                  <span className="block">{bookView?.book?.pages}</span>
+                  <small>Pages</small>
+                </div>
+              </div>
+              <div className="w-full h-20 flex gap-2 items-center p-2">
+                <div>
+                  <MdPublish className="text-4xl" />
+                </div>
+                <div>
+                  <span className="block">
+                    {bookView?.book?.publisher.name}
+                  </span>
+                  <small>Publisher</small>
+                </div>
+              </div>
+              <div className="w-full h-20 flex gap-2 items-center p-2">
+                <div>
+                  <AiFillCalendar className="text-4xl" />
+                </div>
+                <div>
+                  <span className="block">{bookView?.book?.yearPublished}</span>
+                  <small>Publish Date</small>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 text-gray-500 dark:text-gray-400">
+              <h2 className="text-lg font-bold">Book Details</h2>
+              <div className="p-2 flex flex-col gap-3">
+                {bookView?.book?.isbn.length > 0 && (
+                  <div className="grid grid-cols-2">
+                    <div>ISBN</div>
+                    <div>{bookView?.book?.isbn}</div>
+                  </div>
+                )}
+                {bookView?.book?.ddc.length > 0 && (
+                  <div className="grid grid-cols-2">
+                    <div>DDC</div>
+                    <div>{bookView?.book?.ddc}</div>
+                  </div>
+                )}
+                {bookView?.book?.authorNumber.length > 0 && (
+                  <div className="grid grid-cols-2">
+                    <div>Author Number</div>
+                    <div>{bookView?.book?.authorNumber}</div>
+                  </div>
+                )}
+                <div className="grid grid-cols-2">
+                  <div>Section</div>
+                  <div>{bookView?.book?.section.name}</div>
+                </div>
+              </div>
+              </div>
+        </div>
+      </div>
+    </div>
+   <BookTypeSelectionModal
+        book={bookView.book}
+        hasAvailablePhysicalCopy={bookView.status.isAvailable}
+        onSelect={onSelectType}
+        onClose={closeTypeSelection}
+        open={isTypeSelectionOpen}
+      />
+
+  </section>
+  
+
+      {/* <div className="min-h-screen p-5">
         <div className="w-11/12 md:w-8/12 rounded mx-auto flex flex-col md:flex-row gap-5 py-10">
           <div className="flex  flex-col  rounded">
             {bookCover.length > 1 ? (
@@ -229,7 +375,7 @@ const CatalogBookView = () => {
         onSelect={onSelectType}
         onClose={closeTypeSelection}
         open={isTypeSelectionOpen}
-      />
+      /> */}
     </>
   );
 };
