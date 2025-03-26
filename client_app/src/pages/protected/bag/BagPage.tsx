@@ -13,9 +13,9 @@ import { useSwitch } from "@hooks/useToggle";
 import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import LoadingBoundary from "@components/loader/LoadingBoundary";
-
 import noData from "@assets/images/no-data.svg";
 import { useAccountStats } from "@hooks/data-fetching/account";
+import { Card, Checkbox, Button } from "flowbite-react";
 const BagPage = () => {
   const { Get, Delete, Patch, Post } = useRequest();
   const fetchBagItems = async () => {
@@ -165,10 +165,11 @@ const BagPage = () => {
           </div>
         )}
         {(bagItems?.length ?? 0) > 0 && (
-          <div className="w-full h-16 border p-5 flex justify-between mt-1 rounded">
+          <Card className="mt-2 p-6">
+            <div className="flex gap-2 items-center justify-between">
             <div className="flex h-full items-center gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
+                color="blue"
                 className="lg:w-4 lg:h-4"
                 disabled={bagItems?.length === 0 || !hasAvailableItems}
                 checked={
@@ -183,15 +184,16 @@ const BagPage = () => {
                 }}
               />
 
-              <span className={"text-xs lg:text-sm " + disabledClass}>
+              <label className={"text-xs lg:text-sm text-gray-900 dark:text-gray-100 " + disabledClass}>
                 {isAllItemSelected && bagItems?.length != 0
                   ? "Unselect All"
                   : "Select All"}
-              </span>
+              </label>
             </div>
             <div className="flex h-full items-center gap-2">
-              <button
-                className="text-xs lg:text-sm p-2 bg-primary text-white rounded disabled:opacity-50"
+              <Button
+                size="xs"
+                color="blue"
                 disabled={
                   !hasSelectedItems ||
                   totalItems > (stats?.maxAllowedBorrowedBooks ?? 0)
@@ -201,18 +203,20 @@ const BagPage = () => {
                 }}
               >
                 Checkout
-              </button>
-              <button
-                className="text-xs lg:text-sm p-2 bg-error text-white rounded disabled:opacity-50"
-                disabled={!hasSelectedItems ?? false}
+              </Button>
+              <Button
+                size="xs"
+                color="failure"
+                disabled={!hasSelectedItems}
                 onClick={() => {
                   deleteCheckedItems.mutate();
                 }}
               >
                 Delete
-              </button>
+              </Button>
             </div>
-          </div>
+            </div>
+          </Card>
         )}
         <LoadingBoundary isLoading={isFetching} isError={isError}>
           {bagItems?.map((item) => {
@@ -222,20 +226,20 @@ const BagPage = () => {
             }
             const unavailableClass = !item.isAvailable ? "opacity-50 " : "";
             return (
-              <div
-                className="w-full h-32 rounded shadow  border border-gray-100 p-4 flex justify-between "
+              <Card
+                className="p-6"
                 style={{
                   maxWidth: "800px",
                 }}
                 key={item.accessionId}
               >
+                <div className="flex justify-between items-center">
                 <div className="flex gap-5">
                   <div className="flex items-center justify-center gap-5">
                     <div>
                       {item.isAvailable ? (
-                        <input
-                          type="checkbox"
-                          className="lg:h-4 lg:w-4"
+                        <Checkbox
+                          color="primary"
                           checked={item.isChecked ?? false}
                           onChange={() => {
                             checkItem.mutate(item.id ?? "");
@@ -271,7 +275,7 @@ const BagPage = () => {
                     <Link
                       to={`/catalog/${item.book.id}`}
                       className={
-                        "text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500 " +
+                        "text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500 dark:text-gray-200" +
                         unavailableClass
                       }
                     >
@@ -281,7 +285,7 @@ const BagPage = () => {
 
                     <p
                       className={
-                        "text-xs md:text-sm lg:text-base text-gray-500 " +
+                        "text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-300" +
                         unavailableClass
                       }
                     >
@@ -292,32 +296,30 @@ const BagPage = () => {
                     </p>
                     <p
                       className={
-                        "text-xs md:text-sm lg:text-base text-gray-500 " +
+                        "text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-300" +
                         unavailableClass
                       }
                     >
                       {item.isEbook ? "" : `${ordinal(item.copyNumber)} - Copy`}
                     </p>
                     {!item.isAvailable && (
-                      <small className="text-sm text-warning">
+                      <small className="text-orange-400">
                         Unavailable
                       </small>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col justify-center p-2  ">
-                  {
-                    <BsTrashFill
-                      className="lg:text-xl text-error mr-5 cursor-pointer"
-                      role="button"
-                      onClick={() => {
+                  {<Button color="failure" outline  size="xs" onClick={() => {
                         setSelectedItem(item);
                         openConfirmDeleteDialog();
-                      }}
-                    />
+                      }}>
+                    <BsTrashFill/>
+                    </Button>
                   }
                 </div>
-              </div>
+                </div>
+              </Card>
             );
           })}
         </LoadingBoundary>
@@ -338,13 +340,13 @@ const BagPage = () => {
       />
       {bagItems?.length === 0 && (
         <div className="flex items-center flex-col gap-10 mt-24">
-          <h1 className="text-2xl lg:text-4xl text-center font-bold  text-gray-400">
+          <h1 className="text-2xl lg:text-4xl text-center font-bold  text-gray-400 dark:text-gray-200">
             YOUR BAG IS EMPTY
           </h1>
           <img src={noData} className="w-44 lg:w-72" alt="No data"></img>
-          <Link to={"/catalog"} className="btn btn-primary text-sm">
+          <Button color="light" as={Link} to={"/catalog"} className="btn btn-primary text-sm">
             Browse Catalog
-          </Link>
+          </Button>
         </div>
       )}
     </>

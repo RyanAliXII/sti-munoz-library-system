@@ -111,7 +111,12 @@ const CatalogBookView = () => {
               <img
                 src={bookCover}
                 className="w-full"
-                alt="bookView?.book-image"
+                alt={bookView.book.title}
+                loading="lazy"
+                style={{
+                  maxWidth: "500px",
+                  maxHeight: "600px"
+                }}
               ></img>
             ) : (
               <div
@@ -136,7 +141,7 @@ const CatalogBookView = () => {
             </p>)}
           </div>
 
-          <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8 flex-col lg:flex-row">
+          <div className="mt-6 sm:items-center sm:flex sm:mt-8 flex-col lg:flex-row gap-4">
             
             <Button 
             color="blue"
@@ -152,7 +157,7 @@ const CatalogBookView = () => {
                 Add to bag
             </Button>
             <Button 
-              className="sm:w-full"
+              className="w-full mt-2 lg:mt-0"
               color="light"
               onClick={initHold}
               disabled={

@@ -15,9 +15,9 @@ export type OnlineBorrowStatus =
 
 export const StatusText = {
   Pending:
-    "The requested book is pending approval. Thank you for your patience",
+    "The requested book is pending for approval. Thank you for your patience",
   Approved:
-    "The requested book has received approval. You may now obtain it from the library.",
+    "The requested book has been approved. You may now obtain it from the library.",
   CheckedOut:
     "The book has been handed to you by the librarian. Please return on",
   Returned: "The book has been returned.",

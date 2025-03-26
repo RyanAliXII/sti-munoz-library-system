@@ -3,6 +3,28 @@ import { buildS3Url } from "@definitions/s3";
 import { Book } from "@definitions/types";
 import { Link } from "react-router-dom";
 
+
+const BookImage = ({cover}:{
+  cover: string | undefined
+})=>{
+  if(!cover){
+    return (
+      <div className="flex justify-center p-2">
+      <div style={{
+        width:"300px",
+        height:"300px",
+      }} className="bg-gray-200 dark:bg-gray-900"></div>
+      </div>
+    )
+  }
+  return (
+    <div className="flex justify-center p-2">
+    <img width={300} height={400} 
+    style={{maxHeight:"300px", maxWidth: "420px"}} 
+    className="object-fill" loading="lazy"  src={cover} alt="book-cover" />
+    </div>
+  )
+}
 const BookCard = ({ book }:{book: Book}) => {
   const bookCover = book.covers.length > 0 ? buildS3Url(book.covers[0]) : undefined;
   const isEbook = book.ebook.length > 0;
@@ -12,12 +34,11 @@ const BookCard = ({ book }:{book: Book}) => {
   return (
     <Card
     key={book.id}
-    imgAlt={book.title}
-    imgSrc={bookCover}
+    renderImage={() => <BookImage cover={bookCover}/>}
     className="w-full"
    
   >
-  <div className="w-full">
+  <div className="w-full p-5">
     <a href="#">
     <h5 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
       {book.title}
