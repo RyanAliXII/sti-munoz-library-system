@@ -74,9 +74,9 @@ const Catalog = () => {
         
         <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
           <BookList books={books ?? []} />
-          <div className="p-5 lg:p-10">
+          <div className="flex justify-center py-5">
           {!hasNoBooks && (
-          <Pagination currentPage={filterParams.page} totalPages={totalPages} onPageChange={(pageNumber) => {
+          <Pagination   currentPage={filterParams.page} totalPages={totalPages} onPageChange={(pageNumber) => {
             setFilterParams({ page: pageNumber});
             window.scrollTo({ top: 0  });
           }}></Pagination>)}

@@ -2,6 +2,8 @@ import { Card, Badge, Button } from "flowbite-react";
 import { buildS3Url } from "@definitions/s3";
 import { Book } from "@definitions/types";
 import { Link } from "react-router-dom";
+import useWindowDimensions from "@hooks/useWindowDimensions";
+import { size } from "lodash";
 
 
 const BookImage = ({cover}:{
@@ -11,18 +13,16 @@ const BookImage = ({cover}:{
     return (
       <div className="flex justify-center p-2">
       <div style={{
-        width:"300px",
-        height:"300px",
-      }} className="bg-gray-200 dark:bg-gray-900"></div>
+        
+      }} className="bg-gray-200 w-full h-44 dark:bg-gray-900  md:h-52 lg:h-56 xl:h-64"></div>
       </div>
     )
   }
   return (
     <div className="flex justify-center p-2">
-    <img width={300} height={400} 
-    style={{maxHeight:"300px", maxWidth: "420px"}} 
-    className="object-fill" loading="lazy"  src={cover} alt="book-cover" />
-    </div>
+    <img 
+    className="max-w-44 max-h-44 md:max-w-52 md:max-h-52 lg:max-w-56 lg:max-h-56 xl:max-w-64 xl:max-h-64" loading="lazy"  src={cover} alt="book-cover" />
+    </div>  
   )
 }
 const BookCard = ({ book }:{book: Book}) => {
@@ -30,7 +30,12 @@ const BookCard = ({ book }:{book: Book}) => {
   const isEbook = book.ebook.length > 0;
   const isAvailable = book.accessions.some((a) => a.isAvailable);
   const authors = book.authors.map((author) => author.name).join(", ");
-
+  
+  const {width} = useWindowDimensions();
+  const LARGE_SCREEN = 1024// 1024 px
+  console.log(width)
+  const seeMoreBtnSize = (width ?? 0)  >=  LARGE_SCREEN ? "sm" : "xs"
+  console.log(seeMoreBtnSize)
   return (
     <Card
     key={book.id}
@@ -40,7 +45,7 @@ const BookCard = ({ book }:{book: Book}) => {
   >
   <div className="w-full p-5">
     <Link to={`/catalog/${book.id}`}>
-    <h5 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+    <h5 className="text-sm md:text-base lg:text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
       {book.title}
     </h5>
   </Link>
@@ -85,7 +90,7 @@ const BookCard = ({ book }:{book: Book}) => {
         </div>
       )}
       <div className="mt-2">
-        <Button as={Link} to={`/catalog/${book.id}`}  className="w-full" color="blue" size="sm">See More</Button>
+        <Button as={Link} to={`/catalog/${book.id}`}  className="w-full" color="blue" size={seeMoreBtnSize}>See More</Button>
       </div>
       </div>
       </div>
