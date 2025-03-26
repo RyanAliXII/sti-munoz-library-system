@@ -11,6 +11,7 @@ import {
 } from "@internal/borrow_status";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
+import { Card } from "flowbite-react";
 import ordinal from "ordinal";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -160,8 +161,9 @@ const BorrowedBooksPage = () => {
             const isEbook = borrowedCopy.isEbook;
             const isDue = isPastDue(borrowedCopy.dueDate ?? "");
             return (
-              <div className="h-54 shadow" key={borrowedCopy.id}>
-                <div className="p-2 border border-b text-green-700">
+              <Card  key={borrowedCopy.id}>
+              <div>
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 text-green-700 dark:text-green-400">
                   <small className="text-xs lg:text-sm">
                     {borrowedCopy.statusId === BorrowStatus.Pending &&
                       (borrowedCopy.isEbook
@@ -192,7 +194,7 @@ const BorrowedBooksPage = () => {
                   </small>
                 </div>
 
-                <div className="w-full  p-5 flex  mt-1 rounded justify-between">
+                <div className="w-full flex p-4  mt-1 rounded justify-between">
                   <div className="flex gap-5 items-center">
                     <div className="flex">
                       {bookCover.length > 0 && (
@@ -208,21 +210,21 @@ const BorrowedBooksPage = () => {
                     <div className="flex flex-col">
                       <Link
                         to={`/catalog/${book.id}`}
-                        className="text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500"
+                        className="text-sm md:text-base lg:text-lg font-semibold hover:text-blue-500 dark:text-gray-300"
                       >
                         {book.title}{" "}
                         {isEbook
                           ? "- eBook"
                           : `- ${borrowedCopy.accessionNumber}`}
                       </Link>
-                      <p className="text-xs md:text-sm lg:text-base text-gray-500">
+                      <p className="text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-400">
                         {book.section.name}
                         {book.ddc.length > 0 ? ` - ${book.ddc}` : ""}
                         {book.authorNumber.length > 0
                           ? ` - ${book.authorNumber}`
                           : ""}
                       </p>
-                      <p className="text-xs md:text-sm lg:text-base text-gray-500">
+                      <p className="text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-400">
                         {isEbook
                           ? ""
                           : `${ordinal(borrowedCopy.copyNumber)} - Copy`}
@@ -281,7 +283,8 @@ const BorrowedBooksPage = () => {
                     )}
                   </div>
                 </div>
-              </div>
+                </div>
+              </Card>
             );
           })}
         </LoadingBoundary>
@@ -301,8 +304,8 @@ const BorrowedBooksPage = () => {
 
 const isTabActive = (activeTab: BorrowStatus | 0, tab: BorrowStatus | 0) => {
   return activeTab === tab
-    ? "tab  tab-bordered tab-active inline"
-    : "tab tab-bordered inline";
+    ? "tab  tab-bordered tab-active inline dark:text-gray-300"
+    : "tab tab-bordered inline text-gray-500";
 };
 
 export default BorrowedBooksPage;

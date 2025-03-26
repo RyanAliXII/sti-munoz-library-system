@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { Reservation } from "@definitions/types";
+import { Table } from "flowbite-react";
 
 const ReservationList = () => {
   const { data: reservations } = useReservations({});
@@ -46,28 +47,26 @@ const ReservationList = () => {
   };
   return (
     <div className="overflow-x-auto">
-      <table className="table w-full">
-        <thead>
-          <tr>
-            <th>Device</th>
-            <th>Reservation Date</th>
-            <th>Status</th>
-            <th>Remarks</th>
+      <Table>
+        <Table.Head>
+            <Table.HeadCell>Device</Table.HeadCell>
+            <Table.HeadCell>Reservation Date</Table.HeadCell>
+            <Table.HeadCell>Status</Table.HeadCell>
+            <Table.HeadCell>Remarks</Table.HeadCell>
             <th></th>
-          </tr>
-        </thead>
-        <tbody>
+        </Table.Head>
+        <Table.Body className="divide-y dark:divide-gray-700">
           {reservations?.map((reservation) => {
             return (
-              <tr key={reservation.id}>
-                <td>
+              <Table.Row key={reservation.id}>
+                <Table.Cell>
                   <div className="font-semibold">{reservation.device.name}</div>
                   <div className="text-sm">
                     {" "}
                     {reservation.device.description}
                   </div>
-                </td>
-                <td>
+                </Table.Cell>
+                <Table.Cell>
                   <div className="font-semibold">
                     {toReadableDate(reservation.dateSlot.date)}
                   </div>
@@ -76,17 +75,17 @@ const ReservationList = () => {
                       reservation.timeSlot.endTime
                     )}`}
                   </div>
-                </td>
-                <td>
+                </Table.Cell>
+                <Table.Cell>
                   <StatusBadge
                     status={reservation.status}
                     statusId={reservation.statusId}
                   />
-                </td>
-                <td>
+                </Table.Cell>
+                <Table.Cell>
                   {reservation.remarks.length > 0 ? reservation.remarks : "N/A"}
-                </td>
-                <td>
+                </Table.Cell>
+                <Table.Cell>
                   {reservation.statusId === ReservationStatus.Pending && (
                     <button
                       className="btn btn-outline btn-error btn-sm"
@@ -97,12 +96,12 @@ const ReservationList = () => {
                       <FaTimes />
                     </button>
                   )}
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             );
           })}
-        </tbody>
-      </table>
+        </Table.Body>
+      </Table>
 
       <RemarksModal
         closeModal={remarksModal.close}

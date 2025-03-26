@@ -9,12 +9,14 @@ import { Account, ModalProps } from "@definitions/types";
 import { useRequest } from "@hooks/useRequest";
 import { useSwitch } from "@hooks/useToggle";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Compressor from "@uppy/compressor";
 import Uppy from "@uppy/core";
 import "@uppy/core/dist/style.min.css";
 import Dashboard from "@uppy/dashboard";
 import "@uppy/dashboard/dist/style.min.css";
 import { Dashboard as DashboardComponent } from "@uppy/react";
 import XHRUpload from "@uppy/xhr-upload";
+import { Button, Card } from "flowbite-react";
 import html2canvas from "html2canvas";
 import { FormEvent, useRef, useState } from "react";
 import { AiFillCheckCircle } from "react-icons/ai";
@@ -25,9 +27,8 @@ import { MdOutlinePending } from "react-icons/md";
 import QRCode from "react-qr-code";
 import Modal from "react-responsive-modal";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import Compressor from "@uppy/compressor";
 import { ClipLoader } from "react-spinners";
+import { toast } from "react-toastify";
 const uppy = new Uppy({
   restrictions: {
     allowedFileTypes: [".png", ".webp", ".jpg"],
@@ -108,10 +109,10 @@ const ProfilePage = () => {
       <div className="flex justify-between flex-col w-full px-9 ">
         <div>
           <div>
-            <h1 className="lg:text-xl font-bold ">
+            <h1 className="lg:text-xl font-bold text-gray-800 dark:text-gray-200">
               {account.givenName} {account.surname}
             </h1>
-            <h2 className="lg:text-lg text-gray-500">{account.email}</h2>
+            <h2 className="lg:text-lg text-gray-500 dark:text-gray-300">{account.email}</h2>
             <a
               className="text-sm underline text-blue-400"
               role="button"
@@ -122,9 +123,10 @@ const ProfilePage = () => {
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 w-full mt-10 gap-3">
+          <Card className="p-4">
           <Link
             to={"#"}
-            className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-error gap-2"
+            className="w-full flex flex-col items-center justify-center text-red-500 gap-2"
           >
             <FaMoneyBill className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
@@ -136,9 +138,11 @@ const ProfilePage = () => {
             </span>
             <small className="text-xs lg:text-sm">Total Penalty</small>
           </Link>
+          </Card>
+          <Card>
           <Link
             to={"/borrowed-books?status_id=1"}
-            className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-gray-400 gap-2"
+            className="w-full flex flex-col items-center justify-center gap-2 dark:text-gray-100"
           >
             <MdOutlinePending className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
@@ -148,10 +152,11 @@ const ProfilePage = () => {
               Pending Borrow Request
             </small>
           </Link>
-
+          </Card>
+          <Card>
           <Link
             to={"/borrowed-books?status_id=2"}
-            className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-yellow-500 gap-2"
+            className="w-full flex flex-col items-center justify-center  text-yellow-500 gap-2"
           >
             <AiFillCheckCircle className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
@@ -161,9 +166,11 @@ const ProfilePage = () => {
               Approved Borrow Request
             </small>
           </Link>
+          </Card>
+          <Card className="p-4">
           <Link
             to={"/borrowed-books?status_id=3"}
-            className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-success gap-2"
+            className="w-full flex flex-col items-center justify-center text-success gap-2"
           >
             <FaHandHolding className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
@@ -173,9 +180,11 @@ const ProfilePage = () => {
               Checked-Out Books
             </small>
           </Link>
+          </Card>
+          <Card>
           <Link
             to={"/borrowed-books?status_id=4"}
-            className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-gray-500 gap-3"
+            className="w-full flex flex-col items-center justify-center text-gray-500   dark:text-gray-300 gap-3"
           >
             <BsArrowReturnLeft className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
@@ -185,9 +194,11 @@ const ProfilePage = () => {
               Returned Books
             </small>
           </Link>
+          </Card>
+          <Card>
           <Link
             to={"/borrowed-books?status_id=5"}
-            className="w-full flex flex-col items-center justify-center py-4 p-1 h-32 rounded shadow text-orange-500 gap-3"
+            className="w-full flex flex-col items-center justify-center text-orange-500 gap-3"
           >
             <CiCircleRemove className="text-2xl" />
             <span className="text-xs font-bold break-words text-center md:text-sm lg:text-lg">
@@ -197,32 +208,37 @@ const ProfilePage = () => {
               Cancelled Borrow Request
             </small>
           </Link>
+          </Card>
         </div>
         <div className="flex flex-col mt-10 items-center gap-3">
+          <Card className="px-10 py-5">
           <div ref={qrRef} className="flex flex-col items-center p-3">
             <QRCode
               value={account?.id ?? "none"}
               style={{ width: "2.0in", height: "2.0in" }}
             />
             <div className="text-center mt-4">
-              <h2 className="font-bold">STI Munoz Library Pass</h2>
-              <p>
+              <h2 className="font-bold dark:text-gray-100">STI Munoz Library Pass</h2>
+              <p className="dark:text-gray-200">
                 {user.givenName} {user.surname}
               </p>
+          
             </div>
           </div>
-          <div>
-            <button
-              className="text-sm p-2.5 bg-primary rounded text-white mb-2"
+          <div className="w-full flex justify-center">
+              <Button
               onClick={downloadQRCode}
+              color="light"
               disabled={isDownloading}
             >
               <div className="flex items-center gap-2">
                 {isDownloading && <ClipLoader size={20} />}
-
                 <span>Download QR</span>
               </div>
-            </button>
+            </Button>
+            </div>
+          </Card>
+          <div>
           </div>
         </div>
       </div>
