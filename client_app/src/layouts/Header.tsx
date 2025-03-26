@@ -49,10 +49,10 @@ const notificationTotal = notifications?.reduce((a, r) => {
         <div className="w-full p-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center"> 
-              <Navbar.Brand href="/" className="hidden lg:flex">
+              <Navbar.Brand href="/" className="lg:flex">
                 <img
                   src="/library-icon.svg"
-                  className="mr-3 h-6 sm:h-9"
+                  className="mr-3 h-9"
                   alt="Library Logo"
                 />
                 <span className="self-center whitespace-nowrap text-base  hidden  font-semibold dark:text-white lg:block">
