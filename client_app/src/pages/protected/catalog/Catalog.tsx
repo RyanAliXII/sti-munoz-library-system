@@ -78,11 +78,11 @@ const Catalog = () => {
           {!hasNoBooks && (
           <Pagination currentPage={filterParams.page} totalPages={totalPages} onPageChange={(pageNumber) => {
             setFilterParams({ page: pageNumber});
+            window.scrollTo({ top: 0  });
           }}></Pagination>)}
           </div>
         </LoadingBoundaryV2>
         <NoResult show={hasNoBooks}/>
-   
       </div>
     </div>
   );
