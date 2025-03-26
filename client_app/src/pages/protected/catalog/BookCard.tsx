@@ -39,11 +39,11 @@ const BookCard = ({ book }:{book: Book}) => {
    
   >
   <div className="w-full p-5">
-    <a href="#">
+    <Link to={`/catalog/${book.id}`}>
     <h5 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
       {book.title}
     </h5>
-  </a>
+  </Link>
   {authors.length > 0 && (
         <p className="text-xs md:text-sm lg:text-base text-gray-600 dark:text-gray-300 text-nowrap">
           {authors}
