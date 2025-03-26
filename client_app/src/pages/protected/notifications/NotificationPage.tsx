@@ -1,41 +1,43 @@
 import { toReadableDatetime } from "@helpers/datetime";
 import { useNotifications } from "@hooks/data-fetching/notification";
-import React from "react";
+import { Table } from "flowbite-react";
+
 import { Link } from "react-router-dom";
 
 const NotificationPage = () => {
-  const { data: notificatons } = useNotifications();
+  const { data: notifications } = useNotifications();
   return (
     <div className="py-4 w-11/12 mx-auto lg:w-9/12">
       <div className="overflow-x-auto">
-        <table className="table w-full">
-          {/* head */}
-          <thead>
-            <tr>
-              <th>Message</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {notificatons?.map((n) => {
+        <Table hoverable>
+          <Table.Head>
+            <Table.HeadCell>Message</Table.HeadCell>
+            <Table.HeadCell>Created At</Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y dark:divide-gray-700">
+            {notifications?.map((n) => {
               return (
-                <tr className="hover">
-                  <td>
+                <Table.Row key={n.id}>
+                  <Table.Cell>
                     <Link
-                      to={n.link}
+                      style={{
+                        maxWidth: "400px",
+                      }}
                       className={`py-5 rounded flex-col items-start ${
                         n.link.length === 0 ? "pointer-events-none" : ""
                       }`}
+                      to={n.link}
                     >
+                      {" "}
                       {n.message}
                     </Link>
-                  </td>
-                  <td>{toReadableDatetime(n.createdAt)}</td>
-                </tr>
+                  </Table.Cell>
+                  <Table.Cell>{toReadableDatetime(n.createdAt)}</Table.Cell>
+                </Table.Row>
               );
             })}
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table>
       </div>
     </div>
   );

@@ -1,15 +1,22 @@
 import { useMsal } from "@azure/msal-react";
 import { useAuthContext } from "@contexts/AuthContext";
 import { BaseProps } from "@definitions/props.definition";
+import { buildS3Url } from "@definitions/s3";
 import {
     useNotifications,
     useNotificationsRead,
 } from "@hooks/data-fetching/notification";
 import { useQueryClient } from "@tanstack/react-query";
-import { Avatar, Badge, DarkThemeToggle, Dropdown, Navbar, useThemeMode } from "flowbite-react";
+import { Avatar, Badge, DarkThemeToggle, Dropdown, Navbar, useThemeMode, ToggleSwitch } from "flowbite-react";
 import { IoIosNotifications } from "react-icons/io";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import TimeAgo from "timeago-react";
+const navLinkClass = ({isActive}:{isActive:boolean})=>{
+  const baseClass = "text-sm ";
+  const fontColor = " text-gray-600 dark:text-gray-400"
+  if(isActive) return baseClass + " font-semibold text-gray-700 dark:text-gray-200"
+  return baseClass + fontColor;
+}
 const Header = ({ children }: BaseProps) => {
 const { instance: msalClient } = useMsal();
 const logout = async () => {
@@ -32,7 +39,7 @@ const notificationTotal = notifications?.reduce((a, r) => {
     },
   });
   const {user} = useAuthContext()
-  const avatarUrl = new URL(
+  const avatarUrl = user.profilePicture.length > 0 ?  new URL(buildS3Url(user.profilePicture)) : new URL(
     "https://ui-avatars.com/api/&background=2563EB&color=fff"
   );
   const {mode, toggleMode} = useThemeMode();
@@ -51,11 +58,27 @@ const notificationTotal = notifications?.reduce((a, r) => {
                 <span className="self-center whitespace-nowrap text-base  hidden  font-semibold dark:text-white lg:block">
                   STI Munoz Library
                 </span>
-              </Navbar.Brand>
+              </Navbar.Brand> 
             </div>
-            <div className="flex items-center gap-3">
+            <nav className="hidden lg:block">
+              <ul className="flex gap-5 items-center">
+              <li>
+              <NavLink className={navLinkClass} to="/catalog">Catalog</NavLink>
+              </li>
+              <li>
+              <NavLink className={navLinkClass} to="/bag">Bag</NavLink>
+              </li>
+              <li>
+              <NavLink className={navLinkClass} to="/borrowed-books">My Books</NavLink>
+              </li>
+              <li>
+              <NavLink className={navLinkClass} to="/queues">Queues</NavLink>
+              </li>
+              </ul>
+            </nav>
+            <div className="flex items-center gap-1">
               <Dropdown
-                arrowIcon={false}
+                arrowIcon={true}
                 inline
                 label={
                   <Avatar
@@ -71,8 +94,24 @@ const notificationTotal = notifications?.reduce((a, r) => {
                     {user.email}
                   </span>
                 </Dropdown.Header>
-                <Dropdown.Item>Account Settings</Dropdown.Item>
+                <Dropdown.Item as={Link} className="lg:hidden" to={"/catalog"}>Catalog</Dropdown.Item>
+                <Dropdown.Item as={Link} className="lg:hidden"  to={"/bag"}>Bag</Dropdown.Item>
+                <Dropdown.Item as={Link} className="lg:hidden"  to={"/borrowed-books"}>My Books</Dropdown.Item>
+                <Dropdown.Item as={Link} className="lg:hidden"  to={"/queues"}>Queues</Dropdown.Item>
+                <Dropdown.Item as={Link} to={"/Penalties"}>Penalties</Dropdown.Item>
+                <Dropdown.Item as={Link} to={"/reservations"}>Reservations</Dropdown.Item>
                 <Dropdown.Divider />
+                <Dropdown.Item>
+                  <div className="flex gap-2">
+                  <ToggleSwitch checked={mode == "dark"} onChange={()=>{
+                      toggleMode()
+                  }} color="blue"/>
+                  <span>
+                  Dark Mode
+                  </span>
+                  </div>
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to={"/profile"}>My Account</Dropdown.Item>
                 <Dropdown.Item onClick={logout}>Sign out</Dropdown.Item> 
               </Dropdown>
               <Dropdown
@@ -86,7 +125,7 @@ const notificationTotal = notifications?.reduce((a, r) => {
                       if (!isAllRead) notificationRead.mutate({});
                     }}
                   >
-                    <IoIosNotifications className="text-xl text-gra"></IoIosNotifications>
+                    <IoIosNotifications className="text-xl"></IoIosNotifications>
                     {!isAllRead && (
                       <Badge color="primary" className="text-xs">
                         {notificationTotal}
@@ -125,6 +164,7 @@ const notificationTotal = notifications?.reduce((a, r) => {
                 </div>
               </Dropdown>
                <DarkThemeToggle
+                className="hidden sm:block"
                 onClick={() => {
                   let newMode = mode === "dark" ? "light" : "dark";
                   localStorage.setItem("theme", newMode);

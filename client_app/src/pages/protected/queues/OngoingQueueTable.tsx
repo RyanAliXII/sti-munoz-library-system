@@ -1,13 +1,12 @@
 import { DangerConfirmDialog } from "@components/ui/dialog/Dialog";
-import { BookInitialValue } from "@definitions/defaults";
 import { BorrowingQueue } from "@definitions/types";
 import { toReadableDatetime } from "@helpers/datetime";
 import { useDequeueItem } from "@hooks/data-fetching/borrowing-queue";
 import { useSwitch } from "@hooks/useToggle";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { toast } from "react-toastify";
-
+import {Button, Table} from "flowbite-react"
 type OngoingQueueTableProps = {
   queues: BorrowingQueue[];
 };
@@ -39,38 +38,37 @@ const OngoingQueueTable: FC<OngoingQueueTableProps> = ({ queues }) => {
   };
   return (
     <div className="overflow-x-auto mt-4">
-      <table className="table w-full">
-        <thead>
-          <tr>
-            <th>Book</th>
-            <th>Queued At</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <Table.Head>
+            <Table.HeadCell>Book</Table.HeadCell>
+            <Table.HeadCell>Queued At</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+        </Table.Head>
+        <Table.Body className="divide-y dark:divide-gray-700">
           {queues.map((item) => {
             return (
-              <tr key={item.id}>
-                <td>
+              <Table.Row key={item.id}>
+                <Table.Cell>
                   <div className="font-semibold">{item.book.title}</div>
                   <div className="text-sm">{item.book.section.name}</div>
-                </td>
-                <td>{toReadableDatetime(item.createdAt ?? "")}</td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-error"
+                </Table.Cell>
+                <Table.Cell>{toReadableDatetime(item.createdAt ?? "")}</Table.Cell>
+                <Table.Cell>
+                  <Button
+                    color="failure"
+                    size="sm"
                     onClick={() => {
                       initCancellation(item);
                     }}
                   >
                     Cancel
-                  </button>
-                </td>
-              </tr>
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
             );
           })}
-        </tbody>
-      </table>
+        </Table.Body>
+      </Table>
       <DangerConfirmDialog
         close={cancelQueue.close}
         isOpen={cancelQueue.isOpen}

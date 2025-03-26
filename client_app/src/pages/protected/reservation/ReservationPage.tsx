@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { useCallback, useRef, useState } from "react";
 import ReservationList from "./ReservationList";
 import ReserveModal from "./ReserveModal";
+import { TabItem, Tabs } from "flowbite-react";
 const ReservationPage = () => {
   const [dateSlot, setDateSlot] = useState<DateSlot>({
     id: "",
@@ -20,8 +21,6 @@ const ReservationPage = () => {
       name: "",
     },
   });
-  const [tab, setTab] = useState<1 | 2>(1);
-
   const { data: profile } = useTimeSlotProfile({
     queryKey: ["timeSlotProfile", dateSlot.timeSlotProfile],
   });
@@ -39,9 +38,6 @@ const ReservationPage = () => {
   }, []);
   const { Get } = useRequest();
   const { data: devices } = useDevices({});
-  const changeTab = (tab: 1 | 2) => {
-    setTab(tab);
-  };
 
   const fetchEvents: EventSourceFunc = useCallback(
     async (info, successCallback) => {
@@ -73,27 +69,9 @@ const ReservationPage = () => {
   const fullCalendar = useRef<FullCalendar>(null);
   return (
     <div className="py-4 w-11/12 mx-auto lg:w-9/12">
-      <div className="tabs">
-        <a
-          onClick={() => {
-            changeTab(1);
-            fullCalendar.current?.render();
-          }}
-          className={`tab tab-lifted ${tab == 1 ? "tab-active" : ""}`}
-        >
-          Reserve
-        </a>
-        <a
-          onClick={() => {
-            changeTab(2);
-          }}
-          className={`tab tab-lifted ${tab == 2 ? "tab-active" : ""}`}
-        >
-          Reservations
-        </a>
-      </div>
-      <section className={`mt-5 ${tab == 1 ? "" : "hidden"}`}>
-        <FullCalendar
+      <Tabs>
+          <TabItem title="Reserve">
+          <FullCalendar
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
           validRange={{
@@ -103,17 +81,18 @@ const ReservationPage = () => {
           eventClick={onEventClick}
           events={fetchEvents}
         />
-        <ReserveModal
+          </TabItem>
+          <TabItem title="Reservations">
+          <ReservationList />
+          </TabItem>
+      </Tabs>
+      <ReserveModal
           timeSlots={profile?.timeSlots ?? []}
           devices={devices ?? []}
           dateSlot={dateSlot}
           closeModal={closeReserveModal}
           isOpen={isReserveModalOpen}
         />
-      </section>
-      <section className={`mt-5 ${tab == 2 ? "" : "hidden"}`}>
-        <ReservationList />
-      </section>
     </div>
   );
 };

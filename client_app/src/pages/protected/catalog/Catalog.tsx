@@ -10,11 +10,11 @@ import { useSearchParamsState } from "react-use-search-params-state";
 import BookList from "./BookList";
 import SearchBar from "./SearchBar";
 import SidebarFilters from "./SidebarFilters";
+import NoResult from "./NoResult";
 
 const Catalog = () => {
   const { Get } = useRequest();
   const [totalPages, setTotalPages] = useState(1);
-  const [tempKeyword, setTempKeyword] = useState("");
   const [filterParams, setFilterParams] = useSearchParamsState({
     page: { type: "number", default: 1 },
     keyword: { type: "string", default: "" },
@@ -23,6 +23,7 @@ const Catalog = () => {
     fromYearPublished: { type: "number", default: 1980 },
     toYearPublished: { type: "number", default: new Date().getFullYear() },
   });
+  const [tempKeyword, setTempKeyword] = useState(filterParams.keyword ?? "");
   const fetchBooks = async () => {
     try {
       const { data: response } = await Get("/books/", { params: filterParams });
@@ -51,6 +52,7 @@ const Catalog = () => {
     if (event.key === "Enter") handleSearchSubmit();
   };
   const {close,open, isOpen} = useSwitch()
+  const hasNoBooks = !books || books.length === 0; 
   return (
     <div className="flex min-h-screen">
       <SidebarFilters close={close} isOpen={isOpen} filterParams={filterParams} setFilterParams={setFilterParams} />
@@ -73,12 +75,13 @@ const Catalog = () => {
         <LoadingBoundaryV2 isError={isError} isLoading={isFetching}>
           <BookList books={books ?? []} />
           <div className="p-5 lg:p-10">
+          {!hasNoBooks && (
           <Pagination currentPage={filterParams.page} totalPages={totalPages} onPageChange={(pageNumber) => {
             setFilterParams({ page: pageNumber});
-          }}></Pagination>
+          }}></Pagination>)}
           </div>
         </LoadingBoundaryV2>
-        
+        <NoResult show={hasNoBooks}/>
    
       </div>
     </div>
