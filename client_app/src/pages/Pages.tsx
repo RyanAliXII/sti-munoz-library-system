@@ -1,12 +1,12 @@
+import ProtectedRoutes from "@components/auth/ProtectedRoutes";
+import PublicRoutes from "@components/auth/PublicRoutes";
+import Loader from "@components/Loader";
+import { Suspense, lazy } from "react";
 import {
   Route,
   createBrowserRouter,
   createRoutesFromElements,
 } from "react-router-dom";
-import ProtectedRoutes from "@components/auth/ProtectedRoutes";
-import PublicRoutes from "@components/auth/PublicRoutes";
-import { Suspense, lazy } from "react";
-import Loader from "@components/Loader";
 
 const Login = lazy(() => import("./Login"));
 const Homepage = lazy(() => import("./Homepage"));

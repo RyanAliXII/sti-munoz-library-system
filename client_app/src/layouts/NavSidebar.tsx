@@ -1,12 +1,12 @@
+import { useMsal } from "@azure/msal-react";
 import { useSidebarState } from "@contexts/SiderbarContext";
 import { useNotifications } from "@hooks/data-fetching/notification";
-import {Button, Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, ToggleSwitch, useThemeMode} from "flowbite-react"
-import { HiArrowSmRight, HiBookOpen, HiCalendar, HiChartPie, HiFlag, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
-import { HiOutlineQueueList} from "react-icons/hi2"
-import { GiBookshelf, GiSchoolBag } from "react-icons/gi"
+import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, ToggleSwitch, useThemeMode } from "flowbite-react";
+import { useLayoutEffect } from "react";
+import { GiBookshelf, GiSchoolBag } from "react-icons/gi";
+import { HiArrowSmRight, HiBookOpen, HiCalendar, HiFlag, HiInbox, HiUser } from "react-icons/hi";
+import { HiOutlineQueueList } from "react-icons/hi2";
 import { NavLink, useLocation } from "react-router-dom";
-import { useMsal } from "@azure/msal-react";
-import { useEffect } from "react";
 const NavSidebar = () => {
   const {data:notifications} = useNotifications()
   const { instance: msalClient } = useMsal();
@@ -26,12 +26,14 @@ const NavSidebar = () => {
    const overlayClass = isOpen ? "" : "hidden";
    const location = useLocation();
    const {toggleMode, mode} = useThemeMode()
-   useEffect(() => {
+   useLayoutEffect(() => {
     setState(false)
   }, [location]);
  
     return (
-      <div className={"lg:hidden w-screen fixed h-screen z-30 bg-opacity-65  bg-gray-600 " + overlayClass}>
+      <div className={"lg:hidden w-screen fixed h-screen z-30 bg-opacity-65  bg-gray-600 " + overlayClass} onClick={()=>{
+          setState(false)
+      }}>
         <Sidebar className={sidebarClass}  >
           <div className="flex items-center gap-2 pb-10">
           <img
@@ -69,21 +71,21 @@ const NavSidebar = () => {
             </SidebarItem>
           </SidebarItemGroup>
           <SidebarItemGroup>
-          <SidebarItem>
-              <div className="flex gap-2">
-                <span>
-                  Dark Mode
-                </span> 
-                <ToggleSwitch checked={mode == "dark"} onChange={()=>{toggleMode()}} color="blue"/>
-                
-              </div>
-            </SidebarItem>
             <SidebarItem  as={NavLink} to="/profile"  icon={HiUser}>
               My Account
             </SidebarItem>
             <SidebarItem  onClick={logout}  icon={HiArrowSmRight}>
               Sign Out
             </SidebarItem>
+            <SidebarItem className="px-0">
+            <div className="flex gap-2 ml-2">
+               <ToggleSwitch checked={mode == "dark"} onChange={()=>{toggleMode()}} color="blue"/>
+               <span>
+                 Dark Mode
+               </span> 
+             </div>
+            </SidebarItem>
+            
           </SidebarItemGroup>
         </SidebarItems>
       </Sidebar>
