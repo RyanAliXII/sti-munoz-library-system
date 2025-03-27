@@ -48,7 +48,7 @@ const BookCard = ({ book }:{book: Book}) => {
     </h5>
   </Link>
   {authors.length > 0 && (
-        <p className="text-xs md:text-sm lg:text-base text-gray-600 dark:text-gray-300 text-nowrap">
+        <p className="text-xs md:text-sm lg:text-base text-gray-600 dark:text-gray-300">
           {authors}
         </p>
     )}

@@ -62,8 +62,8 @@ const Catalog = () => {
   const screenWidth = (width ?? 0)
   const paginationSettings = 
     screenWidth >= SMALL_SCREEN ? {margin: 2, range: 4} :
-    screenWidth >= MEDIUM_SCREEN ? {margin:4, range: 5} : 
-    screenWidth >= LARGE_SCREEN ? {margin:6, range: 7}  :{margin:0, range: 3}
+    screenWidth >= MEDIUM_SCREEN ? {margin:4, range: 6} : 
+    screenWidth >= LARGE_SCREEN ? {margin:6, range: 8}  :{margin:0, range: 3}
   return (
     <div className="flex min-h-screen">
       <SidebarFilters close={close} isOpen={isOpen} filterParams={filterParams} setFilterParams={setFilterParams} />
@@ -104,7 +104,7 @@ const Catalog = () => {
             nextClassName="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
             renderOnZeroPageCount={null}
             containerClassName="inline-flex -space-x-px text-sm"
-            activeClassName="!text-red-400"
+            activeClassName="active-page"
           />
         </div>
         </LoadingBoundaryV2>

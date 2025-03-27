@@ -31,7 +31,9 @@ const NavSidebar = () => {
   }, [location]);
  
     return (
-      <div className={"lg:hidden w-screen fixed h-screen z-30 bg-opacity-65  bg-gray-600 " + overlayClass}>
+      <div className={"lg:hidden w-screen fixed h-screen z-30 bg-opacity-65  bg-gray-600 " + overlayClass} onClick={()=>{
+          setState(false)
+      }}>
         <Sidebar className={sidebarClass}  >
           <div className="flex items-center gap-2 pb-10">
           <img
@@ -69,21 +71,21 @@ const NavSidebar = () => {
             </SidebarItem>
           </SidebarItemGroup>
           <SidebarItemGroup>
-          <SidebarItem>
-              <div className="flex gap-2">
-                <span>
-                  Dark Mode
-                </span> 
-                <ToggleSwitch checked={mode == "dark"} onChange={()=>{toggleMode()}} color="blue"/>
-                
-              </div>
-            </SidebarItem>
             <SidebarItem  as={NavLink} to="/profile"  icon={HiUser}>
               My Account
             </SidebarItem>
             <SidebarItem  onClick={logout}  icon={HiArrowSmRight}>
               Sign Out
             </SidebarItem>
+            <SidebarItem className="px-0">
+            <div className="flex gap-2 ml-2">
+               <ToggleSwitch checked={mode == "dark"} onChange={()=>{toggleMode()}} color="blue"/>
+               <span>
+                 Dark Mode
+               </span> 
+             </div>
+            </SidebarItem>
+            
           </SidebarItemGroup>
         </SidebarItems>
       </Sidebar>
