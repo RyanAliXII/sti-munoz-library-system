@@ -33,9 +33,7 @@ const BookCard = ({ book }:{book: Book}) => {
   
   const {width} = useWindowDimensions();
   const LARGE_SCREEN = 1024// 1024 px
-  console.log(width)
   const seeMoreBtnSize = (width ?? 0)  >=  LARGE_SCREEN ? "sm" : "xs"
-  console.log(seeMoreBtnSize)
   return (
     <Card
     key={book.id}
