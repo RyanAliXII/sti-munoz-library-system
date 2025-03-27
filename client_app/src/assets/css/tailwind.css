@@ -146,3 +146,6 @@
 .fc-daygrid-day {
   @apply cursor-pointer;
 }
+.active-page a{
+  @apply !text-blue-600 !bg-blue-50 hover:!text-blue-700 dark:!border-gray-700 dark:!bg-gray-700 dark:!text-white;
+}
