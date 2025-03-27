@@ -1,5 +1,6 @@
 import { useMsal } from "@azure/msal-react";
 import { useAuthContext } from "@contexts/AuthContext";
+import { useSidebarState } from "@contexts/SiderbarContext";
 import { BaseProps } from "@definitions/props.definition";
 import { buildS3Url } from "@definitions/s3";
 import {
@@ -7,7 +8,7 @@ import {
     useNotificationsRead,
 } from "@hooks/data-fetching/notification";
 import { useQueryClient } from "@tanstack/react-query";
-import { Avatar, Badge, DarkThemeToggle, Dropdown, Navbar, useThemeMode, ToggleSwitch } from "flowbite-react";
+import { Avatar, Badge, DarkThemeToggle, Dropdown, Navbar, useThemeMode, ToggleSwitch, NavbarToggle } from "flowbite-react";
 import { IoIosNotifications } from "react-icons/io";
 import { Link, NavLink } from "react-router-dom";
 import TimeAgo from "timeago-react";
@@ -44,6 +45,7 @@ const notificationTotal = notifications?.reduce((a, r) => {
   );
   const {mode, toggleMode} = useThemeMode();
   avatarUrl.searchParams.set("name", `${user.givenName} ${user.surname}`);
+  const {toggle} = useSidebarState()
   return (
    <Navbar fluid>
         <div className="w-full p-3 lg:px-5 lg:pl-3">
@@ -52,15 +54,16 @@ const notificationTotal = notifications?.reduce((a, r) => {
               <Navbar.Brand href="/" className="lg:flex">
                 <img
                   src="/library-icon.svg"
-                  className="mr-3 h-9"
+                  className="mr-3 h-9 hidden md:block"
                   alt="Library Logo"
                 />
-                <span className="self-center whitespace-nowrap text-base  hidden  font-semibold dark:text-white lg:block">
+                <span className="self-center whitespace-nowrap text-base  hidden  font-semibold dark:text-white md:block">
                   STI Munoz Library
                 </span>
               </Navbar.Brand> 
+              <NavbarToggle onClick={toggle}/>
             </div>
-            <nav className="hidden lg:block">
+            <nav className="hidden md:block">
               <ul className="flex gap-5 items-center">
               <li>
               <NavLink className={navLinkClass} to="/catalog">Catalog</NavLink>
@@ -77,9 +80,11 @@ const notificationTotal = notifications?.reduce((a, r) => {
               </ul>
             </nav>
             <div className="flex items-center gap-1">
+              <div className="hidden md:block">
               <Dropdown
                 arrowIcon={true}
                 inline
+                hidden={true}
                 label={
                   <Avatar
                   alt="User avatar"
@@ -114,6 +119,8 @@ const notificationTotal = notifications?.reduce((a, r) => {
                 <Dropdown.Item as={Link} to={"/profile"}>My Account</Dropdown.Item>
                 <Dropdown.Item onClick={logout}>Sign out</Dropdown.Item> 
               </Dropdown>
+              </div>
+              <div className="hidden md:block">
               <Dropdown
                 arrowIcon={false}
                 color=""
@@ -163,6 +170,7 @@ const notificationTotal = notifications?.reduce((a, r) => {
                   </Link>
                 </div>
               </Dropdown>
+              </div>
                <DarkThemeToggle
                 className="hidden sm:block"
                 onClick={() => {

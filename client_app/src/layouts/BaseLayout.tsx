@@ -3,6 +3,7 @@ import { Footer } from "flowbite-react";
 import type { FC, PropsWithChildren } from "react";
 import { FaDribbble, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";
 import { MdFacebook } from "react-icons/md";
+import NavSidebar from "./NavSidebar";
 
 
 interface BaseLayoutProps {
@@ -12,7 +13,7 @@ interface BaseLayoutProps {
 const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> =
   function ({ children, isFooter = true }) {
     return (
-      <>
+      <>  <NavSidebar/>
           <Header />
           <div className="flex items-start pt-16 ">
             <MainContent isFooter={isFooter}>{children}</MainContent>
