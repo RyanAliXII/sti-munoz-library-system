@@ -1,19 +1,19 @@
 import { RouterProvider } from "react-router-dom";
 
-import { AuthProvider } from "./contexts/AuthContext";
+import "@assets/css/global.css";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
-import msalConfig from "./definitions/configs/msal/msal.config";
-import "./assets/css/tailwind.css";
-import "react-responsive-modal/styles.css";
-import { useEffect } from "react";
-import pages from "./pages/Pages";
+import SidebarProvider from "@contexts/SiderbarContext";
+import { SocketProvider } from "@contexts/SocketContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import "react-responsive-modal/styles.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "@assets/css/global.css";
-import { SocketProvider } from "@contexts/SocketContext";
-import SidebarProvider from "@contexts/SiderbarContext";
+import "./assets/css/tailwind.css";
+import { AuthProvider } from "./contexts/AuthContext";
+import msalConfig from "./definitions/configs/msal/msal.config";
+import pages from "./pages/Pages";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

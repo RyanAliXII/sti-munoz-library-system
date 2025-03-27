@@ -1,12 +1,12 @@
+import { useMsal } from "@azure/msal-react";
 import { useSidebarState } from "@contexts/SiderbarContext";
 import { useNotifications } from "@hooks/data-fetching/notification";
-import {Button, Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, ToggleSwitch, useThemeMode} from "flowbite-react"
-import { HiArrowSmRight, HiBookOpen, HiCalendar, HiChartPie, HiFlag, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
-import { HiOutlineQueueList} from "react-icons/hi2"
-import { GiBookshelf, GiSchoolBag } from "react-icons/gi"
+import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, ToggleSwitch, useThemeMode } from "flowbite-react";
+import { useLayoutEffect } from "react";
+import { GiBookshelf, GiSchoolBag } from "react-icons/gi";
+import { HiArrowSmRight, HiBookOpen, HiCalendar, HiFlag, HiInbox, HiUser } from "react-icons/hi";
+import { HiOutlineQueueList } from "react-icons/hi2";
 import { NavLink, useLocation } from "react-router-dom";
-import { useMsal } from "@azure/msal-react";
-import { useEffect } from "react";
 const NavSidebar = () => {
   const {data:notifications} = useNotifications()
   const { instance: msalClient } = useMsal();
@@ -26,7 +26,7 @@ const NavSidebar = () => {
    const overlayClass = isOpen ? "" : "hidden";
    const location = useLocation();
    const {toggleMode, mode} = useThemeMode()
-   useEffect(() => {
+   useLayoutEffect(() => {
     setState(false)
   }, [location]);
  
