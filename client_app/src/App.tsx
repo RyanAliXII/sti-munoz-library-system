@@ -13,6 +13,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "@assets/css/global.css";
 import { SocketProvider } from "@contexts/SocketContext";
+import SidebarProvider from "@contexts/SiderbarContext";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -31,7 +32,9 @@ function App() {
       <MsalProvider instance={msalInstance}>
         <AuthProvider>
           <SocketProvider>
+            <SidebarProvider>
             <RouterProvider router={pages} />
+            </SidebarProvider>
           </SocketProvider>
         </AuthProvider>
       </MsalProvider>

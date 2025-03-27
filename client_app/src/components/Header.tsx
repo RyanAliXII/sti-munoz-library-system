@@ -1,9 +1,8 @@
+import { buildS3Url } from "@definitions/s3";
 import { useState } from "react";
+import { useAuthContext } from "../contexts/AuthContext";
 import { BaseProps } from "../definitions/interfaces/Props";
 import LogoutButton from "./LogoutButton";
-import { useAuthContext } from "../contexts/AuthContext";
-import { buildS3Url } from "@definitions/s3";
-import { useMsal } from "@azure/msal-react";
 
 const Header = ({ children }: BaseProps) => {
   const { user } = useAuthContext();
